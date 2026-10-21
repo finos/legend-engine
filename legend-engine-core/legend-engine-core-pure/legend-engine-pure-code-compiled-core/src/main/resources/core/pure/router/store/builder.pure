@@ -444,7 +444,7 @@ function <<access.private>> meta::pure::router::store::routing::buildDataTypePro
 // from permutations, then recursively builds the inner value.
 function <<access.private>> meta::pure::router::store::routing::buildFunctionRouted(funcRoutedVS:FunctionRoutedValueSpecification[1], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-  let built = $funcRoutedVS.propertyMap.v->map(p|
+  let built = $funcRoutedVS.propertyMap.v->filter(p | $p.second->instanceOf(StoreMappingRoutedValueSpecification))->map(p|
     let id = $p.second->cast(@StoreMappingRoutedValueSpecification).id;
     let resolvedSet = $permutationSets.values->filter(v|$v.id->toString() == $id).sets->toOne();
     pair($p.first, $resolvedSet);

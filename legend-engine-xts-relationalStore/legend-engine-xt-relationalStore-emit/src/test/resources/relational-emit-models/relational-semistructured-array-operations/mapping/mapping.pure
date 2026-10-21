@@ -82,7 +82,7 @@ Mapping demo::ssa::PersonMapping
         applyMap:
         {
           data: [ demo::ssa::store::PersonDB: Reference #{ demo::ssa::data::PersonData }# ];
-          asserts: [ shouldMap: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","name":"A1"},{"firstName":"Alice","name":"A3"}]'; }#; }# ];
+          asserts: [ shouldMap: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","name":"A1"},{"firstName":"Alice","name":"A3"},{"firstName":"Bob","name":null}]'; }#; }# ];
         }
       ];
     },

@@ -26,10 +26,7 @@ import meta::relational::runtime::*;
 import meta::relational::metamodel::*;
 import meta::pure::mapping::*;
 
-// ToFix: Union on both sides of model join — filtering Person.firm navigates the model join during SQL generation
-// but the SQL query builder expects a NamedRelation and instead finds a RelationFunction.
-// Error: 'Cast exception: RelationFunction cannot be cast to NamedRelation' (pureToSQLQuery.pure:10133).
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_FilterFromFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_FilterFromFirm():Boolean[1]
 {
    let resultFirmX = execute(
       |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName]),
@@ -61,10 +58,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $resultFirmA.values->at(0)->sort([~name->ascending()])->toString());
 }
 
-// ToFix: Union on both sides of model join — filtering from Firm navigating to Person (reverse model join) causes
-// the union SQL generator to fail resolving the join relation, returning an empty collection.
-// Error: 'Cannot cast a collection of size 0 to multiplicity [1]' (pureToSQLQuery_union.pure:747)
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_FilterToFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_FilterToFirm():Boolean[1]
 {
    let resultWright = execute(
       |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright'))->project(~[legalName:f|$f.legalName]),
@@ -93,10 +87,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $resultRoberts.values->at(0)->sort([~legalName->ascending()])->toString());
 }
 
-// ToFix: Union on both sides of model join — projecting through Firm.employees (reverse model join) causes
-// the union SQL generator to fail resolving the join relation, returning an empty collection.
-// Error: 'Cannot cast a collection of size 0 to multiplicity [1]' (pureToSQLQuery_union.pure:747)
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_ProjectThroughFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_ProjectThroughFirm():Boolean[1]
 {
    let result = execute(
       |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
@@ -116,10 +107,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~legalName->ascending(), ~name->ascending()])->toString());
 }
 
-// ToFix: Mixed union (one relation mapping leg + one standard relational/table mapping leg) — filtering from
-// Person.firm through the model join causes the SQL composer to encounter a TdsSelectSqlQuery where a NamedRelation
-// is required. Error: 'Cast exception: TdsSelectSqlQuery cannot be cast to NamedRelation' (functions.pure:308)
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_FilterFromFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_FilterFromFirm():Boolean[1]
 {
    let resultFirmX = execute(
       |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName]),
@@ -151,10 +139,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $resultFirmA.values->at(0)->sort([~name->ascending()])->toString());
 }
 
-// ToFix: Mixed union (one relation mapping leg + one standard relational/table mapping leg) — filtering from
-// Firm to Person (reverse model join) hits the same cast failure as FilterFromFirm.
-// Error: 'Cast exception: TdsSelectSqlQuery cannot be cast to NamedRelation' (functions.pure:308)
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_FilterToFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_FilterToFirm():Boolean[1]
 {
    let resultWright = execute(
       |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright'))->project(~[legalName:f|$f.legalName]),
@@ -183,10 +168,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $resultRoberts.values->at(0)->sort([~legalName->ascending()])->toString());
 }
 
-// ToFix: Mixed union (one relation mapping leg + one standard relational/table mapping leg) — projecting through
-// Firm.employees (reverse model join) hits the same cast failure as the Filter variants above.
-// Error: 'Cast exception: TdsSelectSqlQuery cannot be cast to NamedRelation' (functions.pure:308)
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_ProjectThroughFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_ProjectThroughFirm():Boolean[1]
 {
    let result = execute(
       |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
@@ -219,10 +201,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
 // Unioned Person.all() therefore produces three rows.
 // =============================================================================
 
-// ToFix: Union of sub-aggregated relation mappings — SQL generation double-quotes FirmID in the GROUP BY clause
-// (case-sensitive in H2) while the outer query references it without quotes, causing a SQL syntax error
-// Error: 'Column "FirmID" not found' (H2 JdbcSQLSyntaxErrorException).
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_SimpleProject():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_SimpleProject():Boolean[1]
 {
    let result = execute(
       |Person.all()->project(~[name:p|$p.lastName]),
@@ -240,10 +219,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~name->ascending()])->toString());
 }
 
-// ToFix: Union of sub-aggregated relation mappings — filtering from Person.firm through the model join causes
-// the SQL query builder to encounter a RelationFunction where a NamedRelation is expected.
-// Error: 'Cast exception: RelationFunction cannot be cast to NamedRelation' (pureToSQLQuery.pure:10133).
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_FilterFromFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_FilterFromFirm():Boolean[1]
 {
    let resultFirmX = execute(
       |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName]),
@@ -273,10 +249,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $resultFirmA.values->at(0)->sort([~name->ascending()])->toString());
 }
 
-// ToFix: Union of sub-aggregated relation mappings — filtering from Firm to Person (reverse model join) causes
-// the union SQL generator to fail resolving the join relation, returning an empty collection.
-// Error: 'Cannot cast a collection of size 0 to multiplicity [1]' (pureToSQLQuery_union.pure:747)
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_FilterToFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_FilterToFirm():Boolean[1]
 {
    let resultWright = execute(
       |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright'))->project(~[legalName:f|$f.legalName]),
@@ -305,10 +278,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $resultRoberts.values->at(0)->sort([~legalName->ascending()])->toString());
 }
 
-// ToFix: Union of sub-aggregated relation mappings — projecting through Firm.employees (reverse model join) causes
-// the union SQL generator to fail resolving the join relation, returning an empty collection.
-// Error: 'Cannot cast a collection of size 0 to multiplicity [1]' (pureToSQLQuery_union.pure:747)
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_ProjectThroughFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_ProjectThroughFirm():Boolean[1]
 {
    let result = execute(
       |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
@@ -337,11 +307,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
 //    PersonSet2 -> (FirmID=1,'Taylor','Wright')
 // =============================================================================
 
-// ToFix: Union of multi-column sub-aggregated relation mappings — SQL generation double-quotes FirmID in the
-// GROUP BY clause (case-sensitive in H2) while the outer query references it without quotes, causing a SQL
-// syntax error. Same root cause as the single-column sub-aggregation SimpleProject variant.
-// Error: 'Column "FirmID" not found' (H2 JdbcSQLSyntaxErrorException)
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfMultiColumnSubAggregations_SimpleProject():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfMultiColumnSubAggregations_SimpleProject():Boolean[1]
 {
    let result = execute(
       |Person.all()->project(~[first:p|$p.firstName, last:p|$p.lastName]),
@@ -359,11 +325,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~last->ascending(), ~first->ascending()])->toString());
 }
 
-// ToFix: Union of multi-column sub-aggregated relation mappings — projecting through Firm.employees (reverse
-// model join) causes the union SQL generator to fail resolving the join relation, returning an empty collection.
-// Same root cause as the single-column sub-aggregation ProjectThroughFirm variant.
-// Error: 'Cannot cast a collection of size 0 to multiplicity [1]' (pureToSQLQuery_union.pure:747).
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfMultiColumnSubAggregations_ProjectThroughFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfMultiColumnSubAggregations_ProjectThroughFirm():Boolean[1]
 {
    let result = execute(
       |Firm.all()->project(~[legalName:f|$f.legalName, first:f|$f.employees.firstName, last:f|$f.employees.lastName]),

@@ -85,7 +85,8 @@ function meta::pure::router::routing::enrichFunctionExpressions(expressions:Func
 
 function meta::pure::router::routing::processCollection(state:RoutingState[1], col:Any[*], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], shouldProcess:Function<{Any[1]->Boolean[1]}>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[*]
 {
-   $col->fold({c,a| let last = $a->last()->toOne();
+   $col->fold({c,a| let previous = $a->last()->toOne();
+                    let last = ^$previous(shouldBeRouted = $state.shouldBeRouted);
                     let newState = if([
                                         pair( |$c->instanceOf(ValueSpecification) && $shouldProcess->eval($c),
                                               |^$last(
@@ -190,8 +191,9 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
                                                                                                          i:InstanceValue[1]                    | ^$state(value=$i)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug),
                                                                                                          e:ExtendedRoutedValueSpecification[1] | if($va.name->in(['this', '_mj_src', '_mj_tgt']),
                                                                                                                                                   | let vaExtended=^$e(value=$va);
-                                                                                                                                                    ^$state(value=$vaExtended);,
-                                                                                                                                                  | ^$state(value=$e)),
+                                                                                                                                                    ^$state(value=$vaExtended, shouldBeRouted=true);,
+                                                                                                                                                  | ^$state(value=$e, shouldBeRouted=true)),
+                                                                                                         n:NoSetRoutedValueSpecification[1]    | ^$state(value=$n, shouldBeRouted=false),
                                                                                                         a:ValueSpecification[1]               | ^$state(value=$a)
                                                                                                       ]);
                                                   );
@@ -349,14 +351,17 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
         let preLastFirstPass  = $firstPassResults->last()->toOne();
         let lastFirstPass     = ^$preLastFirstPass(depth = $f.name->toOne()+'('+$fe.parametersValues->map(p|$p->varToString())->joinStrings(',')+')');
         let pathPrefix        = $state.pathPrefix->add($fe->varToString())->joinStrings(',');
-        let secondPassResults = $firstPass->fold({p,a|  let currentLast = $a->last()->toOne();
+        let iterated          = $firstPassResults->filter(r | $r.value->evaluateAndDeactivate()->match([vs:ValueSpecification[1] | !$vs->isFunction(), a:Any[*] | false]))->first();
+        let iteratedIsRoutable = if($iterated->isEmpty(), | $state.shouldBeRouted, | $iterated->toOne().shouldBeRouted);
+        let secondPassResults = $firstPass->fold({p,a|  let previous    = $a->last()->toOne();
+                                                        let currentLast = ^$previous(shouldBeRouted = $iteratedIsRoutable);
                                                         if($p->isFunction(),
                                                           | let i   = $p->byPassRouterInfo()->cast(@InstanceValue);
                                                             let res = if($i.values->size() == 1,
-                                                                        |^$i(values=$i.values->at(0))->match([r:ExtendedRoutedValueSpecification[1]|$r.value,v:ValueSpecification[1]|$v])->cast(@InstanceValue)->processLambda($routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));,
+                                                                        |^$i(values=$i.values->at(0))->match([r:ExtendedRoutedValueSpecification[1]|$r.value,v:ValueSpecification[1]|$v])->cast(@InstanceValue)->processLambda($firstPass, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, shouldBeRouted=$i.values->at(0)->lambdaShouldBeRouted($iteratedIsRoutable, $state.shouldBeRouted)), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));,
                                                                         |$i.values->cast(@Function<Any>)
                                                                                   ->fold(
-                                                                                    {f,a| let processOne    = ^$i(values=$f)->match([r:ExtendedRoutedValueSpecification[1]|$r.value,v:ValueSpecification[1]|$v])->cast(@InstanceValue)->processLambda($routed, ^$a(propertyMap=$state.propertyMap, shouldBeRouted=$currentLast.shouldBeRouted), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                    {f,a| let processOne    = ^$i(values=$f)->match([r:ExtendedRoutedValueSpecification[1]|$r.value,v:ValueSpecification[1]|$v])->cast(@InstanceValue)->processLambda($firstPass, $routed, ^$a(propertyMap=$state.propertyMap, shouldBeRouted=$f->lambdaShouldBeRouted($iteratedIsRoutable, $state.shouldBeRouted)), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                           let existingValue = $a.value->evaluateAndDeactivate()->toOne()->cast(@InstanceValue);
                                                                                           ^$processOne(
                                                                                               depth = $lastFirstPass.depth,
@@ -394,16 +399,12 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                              let res = prevalFuncColSpec($x, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                              $a->concatenate($res);,
                                                                                                                                           x:FuncColSpecArray<Any,Any>[1]|
-                                                                                                                                            // Per-sibling snapshot: reset shouldBeRouted / functionExpressionStack / depth
-                                                                                                                                            // from $lastState (the state entering the FuncColSpecArray, i.e. after Person.all()
-                                                                                                                                            // but before any column lambda). Without this reset, a prior column whose lambda
-                                                                                                                                            // body traversed an auto-mapped property (routeFunctionExpressionProperty sets
-                                                                                                                                            // shouldBeRouted=false on its NoSet emission) leaves shouldBeRouted=false in the fold
-                                                                                                                                            // accumulator.
+                                                                                                                                            // Each column starts from the state entering the array (depth included), not from
+                                                                                                                                            // what the previous column's lambda left behind.
                                                                                                                                             let res = $x.funcSpecs->fold({f, a|
                                                                                                                                                 let oldState = $a.first;
                                                                                                                                                 let colSpecs = $a.second;
-                                                                                                                                                let newState = prevalFuncColSpec($f, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter, shouldBeRouted = $lastState.shouldBeRouted, depth = $lastState.depth), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                let newState = prevalFuncColSpec($f, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter, shouldBeRouted = $iteratedIsRoutable, depth = $lastState.depth), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                                 pair($newState, ^$colSpecs(values += $newState.value->cast(@FuncColSpec<Any, Any>)));
                                                                                                                                               },
                                                                                                                                               pair($lastState, list([]->cast(@FuncColSpec<Any, Any>)))
@@ -416,12 +417,11 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                             let res = prevalAggColSpec($x, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                             $a->concatenate($res);,
                                                                                                                                           x:AggColSpecArray<Any,Any,Any>[1]|
-                                                                                                                                            // Per-sibling snapshot -- see the sibling FuncColSpecArray arm above for the full
-                                                                                                                                            // rationale. Same shouldBeRouted / functionExpressionStack / depth reset applied here.
+                                                                                                                                            // Each column starts from the state entering the array, as for FuncColSpecArray above.
                                                                                                                                             let res = $x.aggSpecs->fold({as, a|
                                                                                                                                                 let oldState = $a.first;
                                                                                                                                                 let colSpecs = $a.second;
-                                                                                                                                                let newState = prevalAggColSpec($as, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter, shouldBeRouted = $lastState.shouldBeRouted, depth = $lastState.depth), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                let newState = prevalAggColSpec($as, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter, shouldBeRouted = $iteratedIsRoutable, depth = $lastState.depth), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                                 pair($newState, ^$colSpecs(values += $newState.value->cast(@AggColSpec<Any, Any, Any>)));
                                                                                                                                               },
                                                                                                                                               pair($lastState, list([]->cast(@AggColSpec<Any, Any, Any>)))
@@ -477,7 +477,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
 
         let secondPassPre = $secondPassResults->tail()->evaluateAndDeactivate();
 
-        let secondPass = if($f->in([meta::pure::functions::lang::subType_Any_m__T_1__T_m_, meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_]) && $secondPassPre->at(0).shouldBeRouted,  // TODO: cleanup needed
+        let secondPass = if($f->in([meta::pure::functions::lang::subType_Any_m__T_1__T_m_, meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_]) && $firstPassResults->at(0).shouldBeRouted,  // TODO: cleanup needed
                             | let first = $secondPassPre->at(0);
                               let second = $secondPassPre->at(1);
                               let firstValue = $first.value->toOne()->cast(@ValueSpecification);
@@ -530,7 +530,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                let thisVe = ^VariableExpression(name='this', genericType=$qpSrcVal.genericType, multiplicity=$qpSrcVal.multiplicity);
                                                                                $newVarsWithSfePropsRemoved->put($thisVe->evaluateAndDeactivate(), $qpSrcExtended);,
                                                                               |$newVarsWithSfePropsRemoved);
-                                                      let routedExprSeq=$feExprSeq->routeFunctionExpression(^$lastSecondPass(pathPrefix=$pathPrefix), $executionContext, $vars->putAll($newVarsWithThis), $inScopeVars, $extensions, $debug);
+                                                      let routedExprSeq=$feExprSeq->routeFunctionExpression(^$lastSecondPass(pathPrefix=$pathPrefix, shouldBeRouted=$qpSrcState.shouldBeRouted), $executionContext, $vars->putAll($newVarsWithThis), $inScopeVars, $extensions, $debug);
                                                       $routedExprSeq.value->evaluateAndDeactivate()->match([
                                                           n:NoSetRoutedValueSpecification[1]    | ^$lastSecondPass(value=$fullRes, pathPrefix=$state.pathPrefix),
                                                           s:SimpleFunctionExpression[1]         | let newQp = ^$qp(expressionSequence=$s, owner=^PropertyOwner());
@@ -550,24 +550,50 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                 ^$first(value = $fullRes, routingStrategy = $lastSecondPass.routingStrategy);
                                             );
                     print(if($debug.debug,|$debug.space+'~>NQS) ('+$lastSecondPass.routingStrategy.toString()+') '+$possiblyWrapperd->evaluateAndDeactivate()->asString()+'\n',|''));
-                    let shouldBeRouted = if($f == letFunction_String_1__T_m__T_m_,
-                                            |false,
-                                            |$lastSecondPass.shouldBeRouted || isGetAllFunction($f));
+                    // Routable when a routed input of the return type flows into the result: the inputs that wrap it above.
+                    let shouldBeRouted = $f != letFunction_String_1__T_m__T_m_ && $routedValueSpecForReturnClass->isNotEmpty();
                     ^$lastSecondPass(shouldBeRouted = $shouldBeRouted, value=$possiblyWrapperd, pathPrefix=$state.pathPrefix);,
                   | let newVars = $fullRes->mapVariables(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),$inScopeVars);
                     assert($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1, | 'Function ' +$f->cast(@FunctionDefinition<Any>)->elementToPath() + ' is not yet supported as functions with more than one expression can not be routed');
-                    ^$lastSecondPass(value=$f->cast(@FunctionDefinition<Any>).expressionSequence->at(0))->routeValueSpecification($executionContext, $vars->putAll($newVars), $inScopeVars, $extensions, $debug);
+                    ^$lastSecondPass(value=$f->cast(@FunctionDefinition<Any>).expressionSequence->at(0), shouldBeRouted=$state.shouldBeRouted)->routeValueSpecification($executionContext, $vars->putAll($newVars), $inScopeVars, $extensions, $debug);
               );
         );
   );
 }
 
-function meta::pure::router::routing::processLambda(i:InstanceValue[1], routed:ExtendedRoutedValueSpecification[*], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
+// A class-typed lambda parameter is bound from an argument of its type in the same call: a routed one supplies
+// its class mapping, while an unrouted one (e.g. a semi-structured collection) means its values have no class
+// mapping by design, so the parameter stays unrouted. Only when the call has neither does it fall back to the
+// enclosing scope, where a miss is a class mapping the user has not defined. More than one local argument of
+// the same type is ambiguous -- which one the lambda actually means can't be inferred from the call shape, so
+// this fails fast rather than silently guessing (by position or by routed/unrouted status). Callers with no
+// sibling arguments to search (e.g. an aggregation's value function) pass arguments=[], which falls straight
+// through to the property/path/non-class-typed handling below -- never attempted class-typed binding outside
+// a routed context.
+function meta::pure::router::routing::processLambda(i:InstanceValue[1], arguments:ValueSpecification[*], routed:ExtendedRoutedValueSpecification[*], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
-   print(if($debug.debug,|$debug.space+'Processing Lambda\n',|''));
-   let func = $i.values->at(0)->cast(@Function<Any>);
-   // Map lambda variables to a Set
-   let propMap = $func->match(
+   let func        = $i.values->at(0)->cast(@Function<Any>);
+   let classParams = if($state.shouldBeRouted, | $func->match([f:FunctionDefinition<Any>[1] | $f->classTypedLambdaParameters(), a:Any[1] | []]), | []);
+   if($classParams->isNotEmpty(),
+      | print(if($debug.debug,|$debug.space+'Processing Lambda over arguments\n',|''));
+        let values         = $arguments->map(a | $a->match([f:FunctionRoutedValueSpecification[1] | $f.value, v:ValueSpecification[1] | $v]))->filter(a | !$a->isFunction());
+        let routedValues   = $values->filter(v | $v->instanceOf(ExtendedRoutedValueSpecification))->cast(@ExtendedRoutedValueSpecification);
+        let unroutedValues = $values->filter(v | !$v->instanceOf(ExtendedRoutedValueSpecification));
+        let bindings = $classParams->map(p |
+           let routedMatches   = $routedValues->filter(v | $v->evaluateAndDeactivate().value.genericType.rawType->toOne()->_subTypeOf($p.genericType.rawType->toOne()));
+           // Either direction: a lambda can also narrow its argument to a subtype, as match() does.
+           let unroutedMatches = $unroutedValues->filter(v | $v.genericType.rawType->isNotEmpty() && ($v.genericType.rawType->toOne()->_subTypeOf($p.genericType.rawType->toOne()) || $p.genericType.rawType->toOne()->_subTypeOf($v.genericType.rawType->toOne())));
+           // Routed matches come first: a param genuinely ambiguous between several candidates prefers
+           // "the thing that got routed" over an unrelated unrouted collection that merely shares a type.
+           let localMatches    = $routedMatches->cast(@Any)->concatenate($unroutedMatches->cast(@Any));
+           pair($p.name, if($localMatches->isNotEmpty(),
+                            | $localMatches->at(0),
+                            | $p->routedOfParameterTypeOrFail($routed)->cast(@Any)));
+        );
+        $i->routeLambdaBody($func, $bindings, ^$state(shouldBeRouted = $bindings.second->exists(b | $b->instanceOf(ExtendedRoutedValueSpecification))), $executionContext, $vars, $inScopeVars, $extensions, $debug);,
+      | print(if($debug.debug,|$debug.space+'Processing Lambda\n',|''));
+        // Map lambda variables to a Set
+        let propMap = $func->match(
                            [
                               p:Property<Nil,Any|*>[1]| let source = $p.classifierGenericType.typeArguments->at(0).rawType->toOne();
                                                         let map = $routed->filter(v|$v->cast(@meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification).sets.class == $source);   // TODO: cleanup needed
@@ -576,22 +602,36 @@ function meta::pure::router::routing::processLambda(i:InstanceValue[1], routed:E
                                                     let source = $property.classifierGenericType.typeArguments->at(0).rawType;
                                                     let map = $routed->filter(v|$v->cast(@meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification).sets.class == $source);   // TODO: cleanup needed
                                                     pair('__propertyOwner', if ($map->isEmpty(),|[0], |$map->at(0)->cast(@Any)));,
-                              f:FunctionDefinition<Any>[1]| if($state.shouldBeRouted,
-                                                              |$func->functionType().parameters->evaluateAndDeactivate()->map(
-                                                                                                          p | let class = $p.genericType.rawType;
-                                                                                                              if (!$class->toOne()->instanceOf(DataType) && $class != TDSRow && $class != meta::pure::functions::math::wavgUtility::WavgRowMapper && $class != meta::pure::functions::math::mathUtility::RowMapper && (!$class->toOne()->instanceOf(RelationType)) && ($class != meta::pure::metamodel::relation::Relation) && ($class != meta::pure::functions::relation::_Window),
-                                                                                                                  | let map = $routed->filter(v|$v->evaluateAndDeactivate().value.genericType.rawType->toOne()->_subTypeOf($class->toOne()););
-                                                                                                                    assert(!$map->isEmpty(),| 'Error mapping not found for class '+$class.name->toOne()+' cache:\''+$routed->cast(@meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification).sets.class.name->joinStrings(', ')+'\'');
-                                                                                                                    pair($p.name, $map->at(0)->cast(@Any));,
-                                                                                                                  |[]
-                                                                                                              );
-                                                                                                          );,
-                                                              |[]);,
+                              f:FunctionDefinition<Any>[1]| [];,   // classParams is already known empty here
                                a:Any[1]|[]
                            ]
                       );
+        $i->routeLambdaBody($func, $propMap, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);
+   );
+}
 
-   // Process Lambda (Or Property)
+function <<access.private>> meta::pure::router::routing::classTypedLambdaParameters(f:FunctionDefinition<Any>[1]):VariableExpression[*]
+{
+   $f->functionType().parameters->evaluateAndDeactivate()->filter(p |
+      let class = $p.genericType.rawType;
+      $class->isNotEmpty() && !$class->toOne()->instanceOf(DataType) && $class != TDSRow && $class != meta::pure::functions::math::wavgUtility::WavgRowMapper && $class != meta::pure::functions::math::mathUtility::RowMapper && (!$class->toOne()->instanceOf(RelationType)) && ($class != meta::pure::metamodel::relation::Relation) && ($class != meta::pure::functions::relation::_Window);
+   );
+}
+
+function <<access.private>> meta::pure::router::routing::routedOfParameterType(p:VariableExpression[1], routed:ExtendedRoutedValueSpecification[*]):ExtendedRoutedValueSpecification[0..1]
+{
+   $routed->filter(v | $v->evaluateAndDeactivate().value.genericType.rawType->toOne()->_subTypeOf($p.genericType.rawType->toOne()))->first();
+}
+
+function <<access.private>> meta::pure::router::routing::routedOfParameterTypeOrFail(p:VariableExpression[1], routed:ExtendedRoutedValueSpecification[*]):ExtendedRoutedValueSpecification[1]
+{
+   let match = $p->routedOfParameterType($routed);
+   assert($match->isNotEmpty(), | 'Error mapping not found for class '+$p.genericType.rawType.name->toOne()+' cache:\''+$routed->cast(@meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification).sets.class.name->joinStrings(', ')+'\'');
+   $match->toOne();
+}
+
+function <<access.private>> meta::pure::router::routing::routeLambdaBody(i:InstanceValue[1], func:Function<Any>[1], propMap:Pair<String,Any>[*], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
+{
    let oldPropMap = $state.propertyMap;
    ^$state(
          propertyMap = ^$oldPropMap(v=$propMap->concatenate($oldPropMap.v->filter(p|$p.first != '__propertyOwner'))),
@@ -600,13 +640,21 @@ function meta::pure::router::routing::processLambda(i:InstanceValue[1], routed:E
    )->routeSubFunction($executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
 }
 
+// A lambda's own parameters shadow outer variables of the same name, e.g. a match arm `s:` inside
+// a query that also captures an `s`.
+function <<access.private>> meta::pure::router::routing::lambdaBodyScope(f:FunctionDefinition<Any>[1], inScopeVars:Map<String, List<Any>>[1]):Map<String, List<Any>>[1]
+{
+  let params = $f->functionType().parameters->evaluateAndDeactivate().name;
+  newMap($inScopeVars->putAll($f->openVariableValues())->keyValues()->filter(kv | !$kv.first->in($params)));
+}
+
 function meta::pure::router::routing::routeSubFunction(state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    let i = $state.value->cast(@InstanceValue)->toOne()->evaluateAndDeactivate();
    $i.values->at(0)->match(
       [
          f:FunctionDefinition<Any>[1] |
-            let results = processCollection($state, $f.expressionSequence->evaluateAndDeactivate()->toOne(), $executionContext, $vars, $inScopeVars->putAll($f->openVariableValues()), v:Any[1]|true, $extensions, ^$debug(space = $debug.space+'  '))->evaluateAndDeactivate();
+            let results = processCollection($state, $f.expressionSequence->evaluateAndDeactivate()->toOne(), $executionContext, $vars, $f->lambdaBodyScope($inScopeVars), v:Any[1]|true, $extensions, ^$debug(space = $debug.space+'  '))->evaluateAndDeactivate();
 
             let last = $results->last()->toOne();
 
@@ -698,21 +746,24 @@ function meta::pure::router::routing::processAggregationValueFunction(fn:Functio
    ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=Function), values=$fn)
       ->evaluateAndDeactivate()
       ->processLambda(
+         [],
          $routed,
          $state,
          $executionContext,
          $vars,
          $inScopeVars,
          $extensions,
-         $debug);     
+         $debug);
 }
 
 function meta::pure::router::routing::resolveVar(va:VariableExpression[1], state:RoutingState[1], debug:DebugContext[1]):RoutingState[1]
 {
    let res = $state.propertyMap.v->filter(p|$p.first == $va.name);
    let fullRes = if (!$res->isEmpty(),
-                     |let routed = $res.second->evaluateAndDeactivate()->cast(@ExtendedRoutedValueSpecification)->at(0)->toOne();
-                      ^$state(value=^$routed(value = $va, genericType = $va.genericType));,
+                     |$res.second->evaluateAndDeactivate()->at(0)->match([
+                        routed:ExtendedRoutedValueSpecification[1] | ^$state(value=^$routed(value = $va, genericType = $va.genericType), shouldBeRouted=true),
+                        unmapped:Any[1]                            | ^$state(value=$va, shouldBeRouted=false)
+                      ]),
                      |^$state(value=$va)
                  );
    print(if($debug.debug,|$debug.space+'~>V) ('+$fullRes.routingStrategy.toString()+') '+$fullRes.value->evaluateAndDeactivate()->cast(@ValueSpecification)->toOne()->asString()+'\n',|''));
@@ -1121,4 +1172,15 @@ function <<access.private>> meta::pure::router::routing::checkValueSpecification
          vs:ValueSpecification[1] | true
       ]
    );
+}
+
+// A lambda with parameters iterates over the call's collection argument, so its parameters can be bound
+// only when that collection is routable. A lambda without parameters (e.g. an if branch) is routed in
+// the calling context.
+function <<access.private>> meta::pure::router::routing::lambdaShouldBeRouted(lambda:Any[1], iteratedIsRoutable:Boolean[1], contextIsRoutable:Boolean[1]):Boolean[1]
+{
+  $lambda->match([
+    f:FunctionDefinition<Any>[1] | if($f->functionType().parameters->isEmpty(), | $contextIsRoutable, | $iteratedIsRoutable),
+    a:Any[1]                     | $iteratedIsRoutable
+  ]);
 }

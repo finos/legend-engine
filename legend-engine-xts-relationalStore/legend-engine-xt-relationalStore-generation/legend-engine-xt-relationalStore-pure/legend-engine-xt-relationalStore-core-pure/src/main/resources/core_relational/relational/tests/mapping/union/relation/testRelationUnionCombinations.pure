@@ -1,0 +1,622 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::metamodel::relation::*;
+
+Class meta::relational::tests::mapping::union::relation::combinations::Colleague
+{
+   name : String[1];
+}
+
+Association meta::relational::tests::mapping::union::relation::combinations::Coworkers
+{
+   colleagues : meta::relational::tests::mapping::union::relation::combinations::Colleague[*];
+   coworkers  : meta::relational::tests::mapping::union::relation::combinations::Colleague[*];
+}
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::union::relation::combinations::setUp():Boolean[1]
+{
+   meta::relational::tests::mapping::union::createTablesAndFillDb();
+}
+
+function meta::relational::tests::mapping::union::relation::combinations::firmSet1Func():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::union::myDB.FirmSet1}#->select(~[ID, name]);
+}
+
+function meta::relational::tests::mapping::union::relation::combinations::firmSet2Func():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::union::myDB.FirmSet2}#->select(~[ID, name]);
+}
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::union::relation::combinations::*;
+
+Mapping meta::relational::tests::mapping::union::relation::combinations::unionOnBothSides
+(
+   *Person : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfPerson1, rfPerson2)
+   }
+
+   Person[rfPerson1] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::advanced::personSet1WithFirmIdFunc():Relation<Any>[1]
+      lastName: $row.lastName_s1->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
+   }
+
+   Person[rfPerson2] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::advanced::personSet2WithFirmIdFunc():Relation<Any>[1]
+      lastName: $row.lastName_s2->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
+   }
+
+   *Firm : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfFirm1, rfFirm2)
+   }
+
+   Firm[rfFirm1] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::combinations::firmSet1Func():Relation<Any>[1]
+      legalName: $row.name->toOne(),
+      +id: Integer[1]: $row.ID->toOne()
+   }
+
+   Firm[rfFirm2] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::combinations::firmSet2Func():Relation<Any>[1]
+      legalName: $row.name->toOne(),
+      +id: Integer[1]: $row.ID->toOne()
+   }
+
+   Employment: ModelJoin
+   {
+      {employees: Person[1], firm: Firm[1]|$employees.firmId == $firm.id}
+   }
+)
+
+Mapping meta::relational::tests::mapping::union::relation::combinations::subAggregationsToFirmUnion
+(
+   *Person : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfAggPerson1, rfAggPerson2)
+   }
+
+   Person[rfAggPerson1] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::advanced::personSet1AggregatedByFirmFunc():Relation<Any>[1]
+      lastName: $row.lastName_s1->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
+   }
+
+   Person[rfAggPerson2] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::advanced::personSet2AggregatedByFirmFunc():Relation<Any>[1]
+      lastName: $row.lastName_s2->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
+   }
+
+   *Firm : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfFirm1, rfFirm2)
+   }
+
+   Firm[rfFirm1] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::combinations::firmSet1Func():Relation<Any>[1]
+      legalName: $row.name->toOne(),
+      +id: Integer[1]: $row.ID->toOne()
+   }
+
+   Firm[rfFirm2] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::combinations::firmSet2Func():Relation<Any>[1]
+      legalName: $row.name->toOne(),
+      +id: Integer[1]: $row.ID->toOne()
+   }
+
+   Employment: ModelJoin
+   {
+      {employees: Person[1], firm: Firm[1]|$employees.firmId == $firm.id}
+   }
+)
+
+Mapping meta::relational::tests::mapping::union::relation::combinations::relationAndRelationalFirmUnion
+(
+   *Person : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfPerson1, rfPerson2)
+   }
+
+   Person[rfPerson1] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::advanced::personSet1WithFirmIdFunc():Relation<Any>[1]
+      lastName: $row.lastName_s1->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
+   }
+
+   Person[rfPerson2] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::advanced::personSet2WithFirmIdFunc():Relation<Any>[1]
+      lastName: $row.lastName_s2->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
+   }
+
+   *Firm : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfFirm1, relFirm2)
+   }
+
+   Firm[rfFirm1] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::combinations::firmSet1Func():Relation<Any>[1]
+      legalName: $row.name->toOne(),
+      +id: Integer[1]: $row.ID->toOne()
+   }
+
+   Firm[relFirm2] : Relational
+   {
+      ~primaryKey
+      (
+         [myDB]FirmSet2.ID
+      )
+      ~mainTable [myDB]FirmSet2
+      legalName: [myDB]FirmSet2.name,
+      +id: Integer[1]: [myDB]FirmSet2.ID
+   }
+
+   Employment: ModelJoin
+   {
+      {employees: Person[1], firm: Firm[1]|$employees.firmId == $firm.id}
+   }
+)
+
+Mapping meta::relational::tests::mapping::union::relation::combinations::selfModelJoinAcrossUnion
+(
+   *Colleague : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfColleague1, rfColleague2)
+   }
+
+   Colleague[rfColleague1] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::advanced::personSet1WithFirmIdFunc():Relation<Any>[1]
+      name: $row.lastName_s1->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
+   }
+
+   Colleague[rfColleague2] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::advanced::personSet2WithFirmIdFunc():Relation<Any>[1]
+      name: $row.lastName_s2->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
+   }
+
+   Coworkers: ModelJoin
+   {
+      {colleagues: Colleague[1], coworkers: Colleague[1]|$colleagues.firmId == $coworkers.firmId}
+   }
+)
+
+###Pure
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::mapping::union::relation::combinations::*;
+import meta::pure::mapping::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_FilterAndProjectThroughFirm():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName, firm:p|$p.firm.legalName]),
+      unionOnBothSides,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, firm
+        Anand, Firm X
+        Scott, Firm X
+        Taylor, Firm X
+        Wright, Firm X
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_ProjectToManyEmployees():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
+      unionOnBothSides,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName, name
+        Firm A, Roberts
+        Firm X, Anand
+        Firm X, Scott
+        Firm X, Taylor
+        Firm X, Wright
+     #->toString(),
+     $result.values->at(0)->sort([~legalName->ascending(), ~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_GroupByFirm():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[firm:p|$p.firm.legalName, name:p|$p.lastName])->groupBy(~firm, ~count:x|$x.name:y|$y->count()),
+      unionOnBothSides,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        firm, count
+        Firm A, 1
+        Firm X, 4
+     #->toString(),
+     $result.values->at(0)->sort([~firm->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_FilterOnEmployeesOfFirm():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Taylor') && $f.employees->exists(e|$e.lastName == 'Scott'))->project(~[legalName:f|$f.legalName]),
+      unionOnBothSides,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm X
+     #->toString(),
+     $result.values->at(0)->sort([~legalName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_MultiHopColleaguesThroughFirm():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.firm.employees->exists(e|$e.lastName == 'Wright'))->project(~[name:p|$p.lastName]),
+      unionOnBothSides,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Anand
+        Scott
+        Taylor
+        Wright
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testSubAggregationsToFirmUnion_FilterAndProject():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName, firm:p|$p.firm.legalName]),
+      subAggregationsToFirmUnion,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, firm
+        Scott, Firm X
+        Wright, Firm X
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testRelationAndRelationalFirmUnion_FilterAndProjectThroughFirm():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm A')->project(~[name:p|$p.lastName, firm:p|$p.firm.legalName]),
+      relationAndRelationalFirmUnion,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, firm
+        Roberts, Firm A
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testRelationAndRelationalFirmUnion_ProjectToManyEmployees():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
+      relationAndRelationalFirmUnion,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName, name
+        Firm A, Roberts
+        Firm X, Anand
+        Firm X, Scott
+        Firm X, Taylor
+        Firm X, Wright
+     #->toString(),
+     $result.values->at(0)->sort([~legalName->ascending(), ~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testSelfModelJoinAcrossUnion_ProjectCoworkers():Boolean[1]
+{
+   let result = execute(
+      |Colleague.all()->filter(c|$c.name == 'Taylor')->project(~[name:c|$c.name, coworker:c|$c.coworkers.name]),
+      selfModelJoinAcrossUnion,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, coworker
+        Taylor, Anand
+        Taylor, Scott
+        Taylor, Taylor
+        Taylor, Wright
+     #->toString(),
+     $result.values->at(0)->sort([~coworker->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testSelfModelJoinAcrossUnion_FilterOnCoworkers():Boolean[1]
+{
+   let result = execute(
+      |Colleague.all()->filter(c|$c.coworkers->exists(w|$w.name == 'Roberts'))->project(~[name:c|$c.name]),
+      selfModelJoinAcrossUnion,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Roberts
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::union::relation::combinations::*;
+
+Mapping meta::relational::tests::mapping::union::relation::combinations::mixedOnBothSides
+(
+   *Person : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfPerson1, relPerson2)
+   }
+
+   Person[rfPerson1] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::advanced::personSet1WithFirmIdFunc():Relation<Any>[1]
+      lastName: $row.lastName_s1->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
+   }
+
+   Person[relPerson2] : Relational
+   {
+      ~primaryKey
+      (
+         [myDB]PersonSet2.ID
+      )
+      ~mainTable [myDB]PersonSet2
+      lastName: [myDB]PersonSet2.lastName_s2,
+      +firmId: Integer[1]: [myDB]PersonSet2.FirmID
+   }
+
+   *Firm : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(relFirm1, rfFirm2)
+   }
+
+   Firm[relFirm1] : Relational
+   {
+      ~primaryKey
+      (
+         [myDB]FirmSet1.ID
+      )
+      ~mainTable [myDB]FirmSet1
+      legalName: [myDB]FirmSet1.name,
+      +id: Integer[1]: [myDB]FirmSet1.ID
+   }
+
+   Firm[rfFirm2] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::combinations::firmSet2Func():Relation<Any>[1]
+      legalName: $row.name->toOne(),
+      +id: Integer[1]: $row.ID->toOne()
+   }
+
+   Employment: ModelJoin
+   {
+      {employees: Person[1], firm: Firm[1]|$employees.firmId == $firm.id}
+   }
+)
+
+Mapping meta::relational::tests::mapping::union::relation::combinations::mixedSelfModelJoinAcrossUnion
+(
+   *Colleague : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfColleague1, relColleague2)
+   }
+
+   Colleague[rfColleague1] : Relation
+   {
+      ~func meta::relational::tests::mapping::union::relation::advanced::personSet1WithFirmIdFunc():Relation<Any>[1]
+      name: $row.lastName_s1->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
+   }
+
+   Colleague[relColleague2] : Relational
+   {
+      ~primaryKey
+      (
+         [myDB]PersonSet2.ID
+      )
+      ~mainTable [myDB]PersonSet2
+      name: [myDB]PersonSet2.lastName_s2,
+      +firmId: Integer[1]: [myDB]PersonSet2.FirmID
+   }
+
+   Coworkers: ModelJoin
+   {
+      {colleagues: Colleague[1], coworkers: Colleague[1]|$colleagues.firmId == $coworkers.firmId}
+   }
+)
+
+###Pure
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::mapping::union::relation::combinations::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_FilterAndProjectThroughFirm():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName, firm:p|$p.firm.legalName]),
+      mixedOnBothSides,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, firm
+        Anand, Firm X
+        Scott, Firm X
+        Taylor, Firm X
+        Wright, Firm X
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_ProjectToManyEmployees():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
+      mixedOnBothSides,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName, name
+        Firm A, Roberts
+        Firm X, Anand
+        Firm X, Scott
+        Firm X, Taylor
+        Firm X, Wright
+     #->toString(),
+     $result.values->at(0)->sort([~legalName->ascending(), ~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_GroupByFirm():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[firm:p|$p.firm.legalName, name:p|$p.lastName])->groupBy(~firm, ~count:x|$x.name:y|$y->count()),
+      mixedOnBothSides,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        firm, count
+        Firm A, 1
+        Firm X, 4
+     #->toString(),
+     $result.values->at(0)->sort([~firm->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_FilterOnEmployeesOfFirm():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Taylor') && $f.employees->exists(e|$e.lastName == 'Scott'))->project(~[legalName:f|$f.legalName]),
+      mixedOnBothSides,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm X
+     #->toString(),
+     $result.values->at(0)->sort([~legalName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_MultiHopColleaguesThroughFirm():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.firm.employees->exists(e|$e.lastName == 'Wright'))->project(~[name:p|$p.lastName]),
+      mixedOnBothSides,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Anand
+        Scott
+        Taylor
+        Wright
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedSelfModelJoinAcrossUnion_FilterOnCoworkers():Boolean[1]
+{
+   let result = execute(
+      |Colleague.all()->filter(c|$c.coworkers->exists(w|$w.name == 'Roberts'))->project(~[name:c|$c.name]),
+      mixedSelfModelJoinAcrossUnion,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Roberts
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedSelfModelJoinAcrossUnion_ProjectCoworkers():Boolean[1]
+{
+   let result = execute(
+      |Colleague.all()->filter(c|$c.name == 'Taylor')->project(~[name:c|$c.name, coworker:c|$c.coworkers.name]),
+      mixedSelfModelJoinAcrossUnion,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, coworker
+        Taylor, Anand
+        Taylor, Scott
+        Taylor, Taylor
+        Taylor, Wright
+     #->toString(),
+     $result.values->at(0)->sort([~coworker->ascending()])->toString());
+}

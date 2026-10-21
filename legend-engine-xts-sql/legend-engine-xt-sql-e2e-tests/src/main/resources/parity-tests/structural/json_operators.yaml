@@ -5,28 +5,28 @@ tests:
     feature: "JSON field extract (->)"
     category: "json_operators"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: json_extract_field_nested
     sql: "SELECT '{\"a\":{\"b\":3}}'::jsonb -> 'a' -> 'b' AS result FROM persons WHERE id = 1"
     feature: "JSON nested field extract (->)(->)"
     category: "json_operators"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: json_extract_array_index
     sql: "SELECT '[10,20,30]'::jsonb -> 1 AS result FROM persons WHERE id = 1"
     feature: "JSON array index extract (-> int)"
     category: "json_operators"
     expected_tds_status: ERROR
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: json_extract_array_negative_index
     sql: "SELECT '[10,20,30]'::jsonb -> -1 AS result FROM persons WHERE id = 1"
     feature: "JSON array negative index extract (-> -1)"
     category: "json_operators"
     expected_tds_status: ERROR
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   # JSON extract as text operator ->>
   - id: json_extract_text_field
@@ -34,14 +34,14 @@ tests:
     feature: "JSON field extract as text (->>)"
     category: "json_operators"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: json_extract_text_number
     sql: "SELECT '{\"a\":1,\"b\":2}'::jsonb ->> 'a' AS result FROM persons WHERE id = 1"
     feature: "JSON field extract number as text (->>)"
     category: "json_operators"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: json_extract_text_array_index
     sql: "SELECT '[\"a\",\"b\",\"c\"]'::jsonb ->> 1 AS result FROM persons WHERE id = 1"
@@ -55,29 +55,35 @@ tests:
     feature: "JSON extract text missing key returns NULL (->>)"
     category: "json_operators"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # JSON path extract operator #>
+  # Postgres's own jsonb canonical form inserts a space after ':' (`{"c": 42}`), but
+  # RelationalResult.getResultValue() re-serializes a Variant column's value through
+  # Jackson (OBJECT_MAPPER.readTree(...).toString()) to validate it's well-formed JSON,
+  # which always comes out compact -- `{"c":42}`, no space. That re-serialization is
+  # shared across every dialect, not Postgres-specific, so fixing it here is deferred;
+  # same whitespace-only mismatch as json_column_nested_extract_in_select_and_where below.
   - id: json_path_extract
     sql: "SELECT '{\"a\":{\"b\":{\"c\":42}}}'::jsonb #> '{a,b}' AS result FROM persons WHERE id = 1"
     feature: "JSON path extract (#>)"
     category: "json_operators"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: FAIL
 
   - id: json_path_extract_array
     sql: "SELECT '{\"a\":[1,2,3]}'::jsonb #> '{a,1}' AS result FROM persons WHERE id = 1"
     feature: "JSON path extract into array (#>)"
     category: "json_operators"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: json_path_extract_deep
     sql: "SELECT '{\"a\":{\"b\":{\"c\":\"deep\"}}}'::jsonb #> '{a,b,c}' AS result FROM persons WHERE id = 1"
     feature: "JSON deep path extract (#>)"
     category: "json_operators"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # JSON path extract as text operator #>>
   - id: json_path_extract_text
@@ -85,14 +91,14 @@ tests:
     feature: "JSON path extract as text (#>>)"
     category: "json_operators"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: json_path_extract_text_number
     sql: "SELECT '{\"a\":{\"b\":42}}'::jsonb #>> '{a,b}' AS result FROM persons WHERE id = 1"
     feature: "JSON path extract number as text (#>>)"
     category: "json_operators"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # JSONB containment operator @>
   - id: jsonb_contains_right
@@ -285,7 +291,7 @@ tests:
     feature: "JSON extract then text (-> then ->>)"
     category: "json_operators"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: json_operator_in_where
     sql: "SELECT name FROM persons WHERE id = ('{\"id\":1}'::jsonb ->> 'id')::integer ORDER BY 1"

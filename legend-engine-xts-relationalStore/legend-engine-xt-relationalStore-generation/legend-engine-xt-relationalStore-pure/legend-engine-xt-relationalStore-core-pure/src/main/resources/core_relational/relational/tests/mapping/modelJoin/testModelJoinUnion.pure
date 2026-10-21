@@ -280,6 +280,19 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
 }
 
 // =============================================================================
+// Non-union ModelJoin on a NOT NULL -> PRIMARY KEY relation-function key, used
+// inside exists() (which triggers the filter null-safety rule). Before this fix
+// this rendered null-safe ("is not distinct from") even though both sides of the
+// join are non-nullable (fullTimeTable.FIRMID NOT NULL, firmTable.ID PRIMARY KEY).
+// Contrast with testUnionWithExistsFilter below, where a genuinely nullable key
+// column still needs — and gets — the null-safe comparison.
+function <<test.Test>> meta::relational::tests::mapping::modelJoin::union::testDirectRelationFunctionJoinOnNotNullKeyIsPlainEqualInFilter():Boolean[1]
+{
+  let sql = meta::relational::functions::sqlstring::toSQLString(|meta::relational::tests::mapping::modelJoin::domain::Firm.all()->filter(f | $f.employees->exists(e | $e.lastName == 'Smith')), meta::relational::tests::mapping::modelJoin::union::DirectRelationFunctionMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+  assertEquals('select "dbAccessor_d#4".ID as "ID", "dbAccessor_d#4".LEGALNAME as "LEGALNAME", "dbAccessor_d#4".CITY as "CITY", "dbAccessor_d#4".COUNTRY as "COUNTRY", "dbAccessor_d#4".CODE as "CODE" from (select "_sub_d#2".ID as ID, "_sub_d#2".LEGALNAME as LEGALNAME, "_sub_d#2".CITY as CITY, "_sub_d#2".COUNTRY as COUNTRY, "_sub_d#2".CODE as CODE from firmTable as "_sub_d#2") as "dbAccessor_d#4" where exists (select 1 from (select "dbAccessor_d#3_mj_tgt_d#2".ID as "ID", "dbAccessor_d#3_mj_tgt_d#2".FIRSTNAME as "FIRSTNAME", "dbAccessor_d#3_mj_tgt_d#2".LASTNAME as "LASTNAME", "dbAccessor_d#3_mj_tgt_d#2".FIRMID as "FIRMID", "dbAccessor_d#3_mj_tgt_d#2".AGE as "AGE" from (select "_sub_d#3_mj_tgt".ID as ID, "_sub_d#3_mj_tgt".FIRSTNAME as FIRSTNAME, "_sub_d#3_mj_tgt".LASTNAME as LASTNAME, "_sub_d#3_mj_tgt".FIRMID as FIRMID, "_sub_d#3_mj_tgt".AGE as AGE from fullTimeTable as "_sub_d#3_mj_tgt" where "_sub_d#3_mj_tgt".LASTNAME = \'Smith\') as "dbAccessor_d#3_mj_tgt_d#2" where "dbAccessor_d#3_mj_tgt_d#2".LASTNAME = \'Smith\') as "dbAccessor_d#3_mj_tgt_d#2_d#3_mj_tgt_d#3" where "dbAccessor_d#3_mj_tgt_d#2_d#3_mj_tgt_d#3"."FIRMID" = "dbAccessor_d#4"."ID" and "dbAccessor_d#3_mj_tgt_d#2_d#3_mj_tgt_d#3"."LASTNAME" = \'Smith\')', $sql);
+}
+
+// =============================================================================
 // Union source + exists() filter
 // =============================================================================
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testUnionWithExistsFilter():Boolean[1]
@@ -480,10 +493,9 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
 }
 
 // =============================================================================
-// ToFix: Union on BOTH sides of model join (Relation-function)
-// Cast exception: RelationFunction cannot be cast to NamedRelation
+// Union on BOTH sides of model join (Relation-function)
 // =============================================================================
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testUnionBothSides():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testUnionBothSides():Boolean[1]
 {
   let fullTimeCsv =
     'default\n' +
@@ -534,4 +546,125 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
        Meta, Charlie
     #->toString(),
     $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Union on both sides with a condition that navigates Person.address
+// (employees.address.city == firm.city), for Relation, Relational and mixed unions.
+// From Person the address join sits on the source side of the join line; from Firm it
+// sits on the target side and materializes the target.
+//
+// Expected: Apple (NYC) employs Alice and Charlie, Google (London) employs Bob.
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::modelJoin::union::navigatingConditionRuntime():meta::core::runtime::Runtime[1]
+{
+  let fullTimeCsv =
+    'default\n' +
+    'fullTimeTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n';
+  let contractCsv =
+    'default\n' +
+    'contractTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '2,Bob,Jones,2,25\n' +
+    '3,Charlie,Brown,9,35\n';
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n';
+  let firmBCsv =
+    'default\n' +
+    'firmTableB\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '2,Google,,London,UK\n';
+  let addrACsv =
+    'default\n' +
+    'addressTableA\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,NYC,US\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::union::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$fullTimeCsv, $contractCsv, $firmCsv, $firmBCsv, $addrACsv], $db, $runtime);
+  $runtime;
+}
+
+function <<access.private>> meta::relational::tests::mapping::modelJoin::union::assertSourceSideNavigation(mapping:Mapping[1]):Boolean[1]
+{
+  let result = execute(
+    |Person.all()->project(~['First Name': x|$x.firstName, 'Legal Name': x|$x.firm.legalName]),
+    $mapping,
+    meta::relational::tests::mapping::modelJoin::union::navigatingConditionRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       'First Name', 'Legal Name'
+       Alice, Apple
+       Bob, Google
+       Charlie, Apple
+    #->toString(),
+    $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+}
+
+function <<access.private>> meta::relational::tests::mapping::modelJoin::union::assertTargetSideNavigation(mapping:Mapping[1]):Boolean[1]
+{
+  let result = execute(
+    |Firm.all()->project(~['Legal Name': x|$x.legalName, 'Employee First Name': x|$x.employees.firstName]),
+    $mapping,
+    meta::relational::tests::mapping::modelJoin::union::navigatingConditionRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Apple, Charlie
+       Google, Bob
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// ToFix: each branch pair compiles its own copy of the Relation-mapped address subselect, so the union code cannot
+// match the intermediate across join lines: "Match failure: TdsSelectSqlQuery" (reprocessJoinTreeNode).
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::union::testRelationUnionConditionWithSourceIntermediateJoin():Boolean[1]
+{
+  meta::relational::tests::mapping::modelJoin::union::assertSourceSideNavigation(meta::relational::tests::mapping::modelJoin::union::RelationUnionNavigatingConditionMapping);
+}
+
+// ToFix: the union rebuilds the target from its set implementations and drops the materialized target's address join,
+// so the ON clause reads a column no branch exposes: "Column fulltimetable_0.CITY not found".
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::union::testRelationUnionConditionWithMaterializedTarget():Boolean[1]
+{
+  meta::relational::tests::mapping::modelJoin::union::assertTargetSideNavigation(meta::relational::tests::mapping::modelJoin::union::RelationUnionNavigatingConditionMapping);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::union::testRelationalUnionConditionWithSourceIntermediateJoin():Boolean[1]
+{
+  meta::relational::tests::mapping::modelJoin::union::assertSourceSideNavigation(meta::relational::tests::mapping::modelJoin::union::RelationalUnionNavigatingConditionMapping);
+}
+
+// ToFix: the union rebuilds the target from its set implementations and drops the materialized target's address join,
+// so the ON clause reads a column no branch exposes: "Column unionalias_1.CITY_0 not found".
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::union::testRelationalUnionConditionWithMaterializedTarget():Boolean[1]
+{
+  meta::relational::tests::mapping::modelJoin::union::assertTargetSideNavigation(meta::relational::tests::mapping::modelJoin::union::RelationalUnionNavigatingConditionMapping);
+}
+
+// ToFix: each branch pair compiles its own copy of the Relation-mapped address subselect, so the union code cannot
+// match the intermediate across join lines: "Match failure: TdsSelectSqlQuery" (reprocessJoinTreeNode).
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::union::testMixedUnionConditionWithSourceIntermediateJoin():Boolean[1]
+{
+  meta::relational::tests::mapping::modelJoin::union::assertSourceSideNavigation(meta::relational::tests::mapping::modelJoin::union::MixedUnionNavigatingConditionMapping);
+}
+
+// ToFix: the union rebuilds the target from its set implementations and drops the materialized target's address join,
+// so the ON clause reads a column no branch exposes: "Column fulltimetable_0.CITY not found".
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::union::testMixedUnionConditionWithMaterializedTarget():Boolean[1]
+{
+  meta::relational::tests::mapping::modelJoin::union::assertTargetSideNavigation(meta::relational::tests::mapping::modelJoin::union::MixedUnionNavigatingConditionMapping);
 }

@@ -273,11 +273,16 @@ function <<access.private>> meta::relational::mapping::buildSemiStructuredProper
 {
   let bindingTransformer = $parentSet.transformer->cast(@meta::external::format::shared::binding::BindingTransformer<Any>);
 
+  // A to-many property is still a JSON array at this point, not a primitive scalar -- the
+  // dialect renderers (e.g. duckdbExtension.pure's avoidCastIfPrimitive check) otherwise append
+  // their scalar/text cast unconditionally, which flattens the array to a string before any
+  // array operation (->size(), ->toMany(), etc.) downstream ever sees it.
   let relOp = ^meta::relational::metamodel::operation::SemiStructuredPropertyAccess(
     operand = $parentSet.relationalOperationElement,
     property = ^Literal(value = $property.name->toOne()),
     returnType = $property->functionReturnType().rawType,
-    contentType = $bindingTransformer.binding.contentType
+    contentType = $bindingTransformer.binding.contentType,
+    avoidCastIfPrimitive = !$property.multiplicity->hasToOneUpperBound()
   );
 
   if ($property->isPrimitiveValueProperty(),
@@ -542,9 +547,10 @@ function <<access.private>> meta::relational::mapping::relationFunctionColumnsAs
     ^TableAliasColumn(
       alias = $alias,
       column = ^RelationFunctionColumn(
-        column = $c,
-        name = $c.name->toOne()->addQuotesIfNecessary(),
-        type = meta::relational::mapping::pureTypeToDataType($colType)->toOne()
+        column   = $c,
+        name     = $c.name->toOne()->addQuotesIfNecessary(),
+        type     = meta::relational::mapping::pureTypeToDataType($colType)->toOne(),
+        nullable = $c.classifierGenericType.multiplicityArguments->at(0)->getLowerBound() == 0
       )
     );
   );

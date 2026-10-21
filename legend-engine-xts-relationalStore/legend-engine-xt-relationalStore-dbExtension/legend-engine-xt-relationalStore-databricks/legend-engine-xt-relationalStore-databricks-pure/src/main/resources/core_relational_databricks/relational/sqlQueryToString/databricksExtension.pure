@@ -108,8 +108,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
-    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
-    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),
+    // Spark binds IS [NOT] DISTINCT FROM and IS [NOT] NULL more loosely than '=', so `x is not null = true`
+    // would parse as `x is not (null = true)`; keep these predicates parenthesised.
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='(%s is not distinct from %s)')),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='(%s is distinct from %s)')),
+    dynaFnToSql('isNull',                 $allStates,            ^ToSql(format='(%s is null)')),
+    dynaFnToSql('isNotNull',              $allStates,            ^ToSql(format='(%s is not null)')),
+    dynaFnToSql('isEmpty',                $allStates,            ^ToSql(format='(%s is null)')),
+    dynaFnToSql('isNotEmpty',             $allStates,            ^ToSql(format='(%s is not null)')),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDatabricks()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateTimeDatabricks()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as STRING)')),
@@ -1299,7 +1305,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
            // at() must tolerate an out-of-range index by returning null (mirroring array_first/
            // array_last's use of try_element_at above). Pure's index is 0-based; try_element_at is
            // 1-based, hence the '+ 1'.
-           a: SemiStructuredArrayElementAccess[1] | 'try_element_at(try_cast(' + $processedOperand + ' as array<variant>), ' + ($a.index->cast(@Literal).value->cast(@Integer) + 1)->toString() + ')'
+           a: SemiStructuredArrayElementAccess[1] | 'try_element_at(' + if($a.operand->isTypedArrayCastForDatabricks(), | $processedOperand, | 'try_cast(' + $processedOperand + ' as array<variant>)') + ', ' + ($a.index->cast(@Literal).value->cast(@Integer) + 1)->toString() + ')'
         ]);
 
         if($s.avoidCastIfPrimitive == true, | $elementAccess, | $elementAccess + castSuffixForDatabricksSemiStructuredData($s.returnType));
@@ -1540,13 +1546,27 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 // 1-element ARRAY<VARIANT>. Both coalesce arms are ARRAY<VARIANT> so their types match (a bare
 // `array(%s)` fallback over an already-ARRAY<VARIANT> value would yield ARRAY<ARRAY<VARIANT>> and
 // trip DATATYPE_MISMATCH.DATA_DIFF_TYPES).
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::lambdaCollectionExprForDatabricks(input:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::lambdaCollectionExprForDatabricks(param:RelationalLambdaParameter[1], sgc:SqlGenerationContext[1]): String[1]
 {
+   let input = $param.value;
    let processed = $input->processOperation($sgc);
+   let elementType = $sgc.dbConfig.dataTypeToSqlText($param.type);
    if($input->isSemiStructuredOperandForDatabricks(),
-      | 'coalesce(try_cast(' + $processed + ' as array<variant>), array(cast(' + $processed + ' as variant)))',
+      | 'coalesce(try_cast(' + $processed + ' as array<' + $elementType + '>), array(cast(' + $processed + ' as ' + $elementType + ')))',
       | $processed
    );
+}
+
+// Core types a semi-structured array before handing it to an array function or lambda, because Spark
+// compares, orders and does arithmetic only on concrete types, never on VARIANT.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isTypedArrayCastForDatabricks(op:RelationalOperationElement[1]): Boolean[1]
+{
+   $op->match([
+      d: DynaFunction[1]               | $d.name->in(['cast', 'variantTo']) && ($d.parameters->size() == 2)
+                                           && $d.parameters->at(1)->instanceOf(meta::relational::metamodel::DataTypeInfo)
+                                           && $d.parameters->at(1)->cast(@meta::relational::metamodel::DataTypeInfo).dataType->instanceOf(meta::relational::metamodel::datatype::Array),
+      o: RelationalOperationElement[1] | false
+   ]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildFoldLambdaForDatabricks(lambda:FoldRelationalLambda[1], sgc:SqlGenerationContext[1]): String[1]
@@ -1559,12 +1579,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    // aligns it with that BIGINT arithmetic; non-Integer accumulators (String, etc.) are left untouched.
    let identityValue = $lambda.parameters->at(1).value;
    let identityType = meta::relational::functions::typeInference::inferRelationalType($identityValue, false);
+   // A Float zero such as `0.0` is likewise a DECIMAL literal to Spark while the step yields DOUBLE.
    let identitySql = if($identityType->isNotEmpty() && $identityType->toOne()->instanceOf(meta::relational::metamodel::datatype::Integer),
       | 'cast(' + $identityValue->processOperation($sgc) + ' as bigint)',
-      | $identityValue->processOperation($sgc)
+      | if($identityType->isNotEmpty() && ($identityType->toOne()->instanceOf(meta::relational::metamodel::datatype::Float) || $identityType->toOne()->instanceOf(meta::relational::metamodel::datatype::Double)),
+           | 'cast(' + $identityValue->processOperation($sgc) + ' as double)',
+           | $identityValue->processOperation($sgc))
    );
    'aggregate(%s, %s, (`%s`, `%s`) -> %s)'->format([
-      lambdaCollectionExprForDatabricks($lambda.parameters->at(0).value, $sgc),
+      lambdaCollectionExprForDatabricks($lambda.parameters->at(0), $sgc),
       $identitySql,
       $lambda.parameters->at(1).name,
       $lambda.parameters->at(0).name,
@@ -1594,7 +1617,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         ]),
       | // Databricks `transform(array, x -> body)` - lambda param has no type annotation.
         'transform(%s, `%s` -> %s)'->format([
-            lambdaCollectionExprForDatabricks($collection, $sgc),
+            lambdaCollectionExprForDatabricks($lambda.parameters->at(0), $sgc),
             $lambda.parameters->at(0).name,
             $lambda.body->processOperation($sgc)
         ])
@@ -1605,7 +1628,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 {
    // Databricks `filter(array, x -> body)` - lambda param has no type annotation.
    'filter(%s, `%s` -> %s)'->format([
-      lambdaCollectionExprForDatabricks($lambda.parameters->at(0).value, $sgc),
+      lambdaCollectionExprForDatabricks($lambda.parameters->at(0), $sgc),
       $lambda.parameters->at(0).name,
       $lambda.body->processOperation($sgc)
    ]);
