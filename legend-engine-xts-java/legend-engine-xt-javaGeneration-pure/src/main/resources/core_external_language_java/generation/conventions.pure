@@ -237,6 +237,9 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
               | javaPair(if($typeArgs->size() > 0, | $typeArgs->at(0), | javaObject()),
                          if($typeArgs->size() > 1, | $typeArgs->at(1), | javaObject()))->listIfMulti($mult),
               |
+           if($type == meta::pure::functions::collection::List,
+              | javaList(if($typeArgs->isEmpty(), | javaObject(), | $typeArgs->at(0)))->listIfMulti($mult),
+              |
            if($type->instanceOf(meta::pure::metamodel::type::Enumeration) || $type->instanceOf(meta::pure::metamodel::type::Class) || $type->instanceOf(Unit) || $type->instanceOf(Measure),
               {|
                 let class = $conventions->className($type);
@@ -253,7 +256,7 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
                       ^meta::external::language::java::metamodel::Type();
                 );    
               }       
-   )))))))))))));
+   ))))))))))))));
 }
 
 function meta::external::language::java::transform::stringType(     conventions:Conventions[1]): meta::external::language::java::metamodel::Type[1] { $conventions->stringType(     PureOne); }
@@ -880,7 +883,7 @@ Class meta::external::language::java::transform::FuncCoderContext
    {
       let g = $this.fe.genericType;
       let rawType = if($g.rawType->isEmpty(), |Any, |$g.rawType->toOne());
-      let typeArgs = if($rawType == meta::pure::functions::collection::Pair && $g.typeArguments->isNotEmpty(),
+      let typeArgs = if($rawType->in([meta::pure::functions::collection::Pair, meta::pure::functions::collection::List]) && $g.typeArguments->isNotEmpty(),
                        {|
                           let multArgs = if($g.multiplicityArguments->isEmpty(),
                                            |ZeroOne->repeat($g.typeArguments->size()),

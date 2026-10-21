@@ -211,6 +211,7 @@ meta::pure::functions::collection::or_Boolean_$1_MANY$__Boolean_1_
 meta::pure::functions::collection::or_Boolean_MANY__Boolean_1_
 meta::pure::functions::collection::paginated_T_MANY__Integer_1__Integer_1__T_MANY_
 meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+meta::pure::functions::collection::partition_I_MANY__Function_1__Pair_1_
 meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_
 meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_MANY_
 meta::pure::functions::collection::range_Integer_1__Integer_MANY_

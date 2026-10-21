@@ -963,6 +963,24 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testPartitionInference()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "   v : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   as : test::A[*];\n" +
+                "   big(){$this.as->partition(a|$a.v > 1).first.values}:test::A[*];\n" +
+                "   small(){$this.as->partition(a|$a.v > 1).second.values.v}:Integer[*];\n" +
+                "   both(){$this.as->partition(a|$a.v > 1)}:Pair<List<test::A>, List<test::A>>[1];\n" +
+                "}"
+        );
+    }
+
+    @Test
     public void testMapLambdaInferenceWithClass()
     {
         test("Class test::A\n" +
