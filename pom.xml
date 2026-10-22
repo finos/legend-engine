@@ -204,7 +204,7 @@
         <io.netty.version>4.1.133.Final</io.netty.version>
         <!-- Some Jackson releases ship individual artifacts as Java 11+ bytecode by mistake (2.18.10
              jackson-dataformat-xml, 2.19.3 jackson-databind). Check class-file majors before bumping. -->
-        <jackson.bom.version>2.21.4</jackson.bom.version>
+        <jackson.bom.version>2.21.8</jackson.bom.version>
         <janino.version>3.1.0</janino.version>
         <javax.inject.version>1</javax.inject.version>
         <!-- Version of jakarta.servlet-api; the javax name is kept so already-installed module poms still resolve. -->
@@ -3710,7 +3710,7 @@
             <!-- JACKSON -->
             <dependency>
                 <!-- A BOM, not per-artifact pins: from 2.20 jackson-annotations has its own version line
-                     (2.21, not 2.21.4). -->
+                     (2.21, not 2.21.8). -->
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
                 <version>${jackson.bom.version}</version>
