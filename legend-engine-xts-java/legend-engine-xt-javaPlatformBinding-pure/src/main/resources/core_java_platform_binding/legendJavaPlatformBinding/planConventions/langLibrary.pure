@@ -204,7 +204,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
 
             assert($clsTypeInfo->size() == 1, 'Error: found multiple type infos for class');
 
-            let nestedDeps = generateInterfacesAndEnums($conventions, $typeInfo, $debug);
+            let nestedDeps = generateInterfacesAndEnums($conventions, ^$typeInfo(typeInfos = $typeInfo.typeInfos->filter(t | !$t.type->in($conventions.planInterfaceClasses))), $debug);
 
             let interface = $clsTypeInfo->toOne()->generateInterfaceForClass($conventions,$debug);
             let generationContext = ^GenerationContext(typeInfos=$typeInfo, conventions=$conventions);
@@ -238,7 +238,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
 
             let implementation = $implementationProject->getClass($implementationWithProps)->toOne();
 
-            let project = mergeProjects(newProject()->addClass($interface)->concatenate($implementationProject)->concatenate($nestedDeps)->toOneMany());
+            let interfaceProject = if($cls->in($conventions.planInterfaceClasses), | [], | newProject()->addClass($interface));
+            let project = mergeProjects($interfaceProject->concatenate($implementationProject)->concatenate($nestedDeps)->toOneMany());
             $state->addDependencyProject($name, $project);});
       
     let processed_args = $processedKV->map(arg | let prop = $props->filter(p| $p.name == $arg.first)->toOne();
