@@ -1,93 +1,36 @@
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Rules that apply to every task are inline; the rest is a link — read the linked file before working
+in that area. Full index: [`docs/engineering/README.md`](docs/engineering/README.md).
 
 ## Build & Run
 
-Toolchain: **JDK 11** (Maven enforcer: `[11.0.10,12)`), **Maven 3.6.2+**. Full clean build is expensive (15–25 min); prefer `-T 4` and `-DskipTests` during iteration.
+Toolchain: **JDK 11** (Maven enforcer: `[11.0.10,12)`), **Maven 3.6.2+**. Full clean build is
+expensive (15–25 min); prefer `-T 4` and `-DskipTests` during iteration.
 
-```bash
-mvn clean install -DskipTests -pl <module-path>    # directly touched module
-mvn checkstyle:check                               # Checkstyle (blocking in CI)
-```
+Module rebuild and test-rerun commands (always `clean`, touched modules only, no `-am`, direct
+Surefire for test-only reruns) are imported from `AGENTS.md`:
 
-Always pass `clean` for lifecycle builds — several Pure Maven plugins are buggy and fail with
-stale/generated-repository errors (for example, `The code repository ... already exists`) when
-building over a prior target directory. Build only directly touched modules; do not use `-am` or
-rebuild dependents unless explicitly requested.
+@AGENTS.md
 
-For a changed Pure/module source, use:
-
-```bash
-mvn clean install -DskipTests -pl <module-path>
-```
-
-When no source files changed and only tests need to be rerun, bypass the Maven lifecycle and invoke
-Surefire directly. This reuses the existing `target/` outputs without repeating Pure PAR generation,
-Pure compilation, Java code generation, or test compilation:
-
-```bash
-mvn -pl <module-path> org.apache.maven.plugins:maven-surefire-plugin:2.22.2:test
-```
-
-The direct test-only command is valid only when the module was previously clean-installed and its
-compiled outputs are current. If sources/resources changed, clean-install first.
-
-### Isolate your build from the shared `~/.m2` cache
-
-All checkouts share one local repository, and every branch builds the same
-`<version>-SNAPSHOT` coordinates. If two working copies are built at different times, whichever
-installed last wins, and the other silently runs against the wrong jars. This is especially
-dangerous for Pure modules, whose `.pure` sources are compiled to bytecode inside the installed
-jar — a stale jar produces failures with no connection to anything you changed.
-
-**Stamp the build with `-Drevision`.** The reactor uses Maven CI-friendly versions — a single
-`<revision>` property in the root `pom.xml`, which every module inherits — so overriding it on the
-command line gives the whole build its own coordinates without editing a single file:
-
-```bash
-mvn clean install -DskipTests -Drevision=$(git rev-parse --abbrev-ref HEAD)-SNAPSHOT
-mvn clean test -pl <module>  -Drevision=$(git rev-parse --abbrev-ref HEAD)-SNAPSHOT
-```
-
-Installs land under those coordinates and cannot collide with another checkout. Pass the same
-`-Drevision` on **every** command in the session, tests included — one that omits it silently builds
-and resolves the shared `4.x.y-SNAPSHOT` coordinates again. Never commit a changed `<revision>`.
-
-**When you must not write to `~/.m2` at all** — someone else's build is running concurrently, or the
-shared repository already holds jars from another branch you do not want to read — add a chained
-local repository as well. Maven 3.9+ writes to the **head** and reads through to a read-only
-**tail**:
-
-```bash
-HEAD=/tmp/m2-$(git rev-parse --abbrev-ref HEAD)
-mvn clean install -DskipTests -pl <changed-modules> \
-    -Dmaven.repo.local=$HEAD -Dmaven.repo.local.tail=$HOME/.m2/repository
-```
-
-Nothing is written to `~/.m2`, and anything you did not build resolves from it as usual, so there is
-nothing to re-download and `-o` still works. Naming only the changed modules is enough when the
-tail's engine jars match your branch; when they may not, add `-am` so every engine-internal artifact
-is built from source and only third-party dependencies come from the tail. Delete `$HEAD` when done.
-
-Do **not** isolate with `versions:set` — it rewrites every `pom.xml` in the reactor, which buries the
-real diff and can be committed by accident. `-Drevision` achieves the same thing with no edits.
-
-Symptoms of a collision, when you have skipped isolation altogether: tests failing in modules you
-never touched, a test count that changes between identical runs, or a failure that disappears after
-rebuilding an unrelated module. Suspect the cache before you suspect your change.
-
-Run the server (main: `org.finos.legend.engine.server.Server`):
-```
-server legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json
-```
-Swagger: <http://127.0.0.1:6300/api/swagger>.
-
-Pure IDE (main: `org.finos.legend.engine.ide.PureIDELight`) — required for iterating on `.pure` code without rebuilding Java. Args: `server legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json`. UI at <http://127.0.0.1:9010/ide> — read the port from `ideLightConfig.json` rather than assuming it.
-
-The IDE's delta compiler is drivable over HTTP (`POST /executeGo`), which turns a `.pure` edit-test cycle into seconds instead of a 15–25 min rebuild. **`openFiles` in that payload overwrites the target file on disk**, so every submission must be a delta of the existing version: `GET /fileAsJson/<path>` to read the current content in full, apply the edit to that text, submit the whole result. Never compose the file from scratch — anything you omit is silently deleted, and `welcome.pure` is gitignored so git cannot recover it. See `docs/engineering/guides/pure-ide-delta-compiler-debugging.md`.
-
-IntelliJ gotcha: **disable** `Clear output directory on rebuild` under `Preferences → Build → Compiler`. It wipes generated Pure-runtime resources the server needs to start, producing `ClassNotFoundException` for generated classes.
+- **Isolate from the shared `~/.m2`:** stamp every Maven command in a session, tests included, with
+  `-Drevision=$(git rev-parse --abbrev-ref HEAD)-SNAPSHOT`. Never commit a changed `<revision>`,
+  and do not isolate with `versions:set`. Tests failing in modules you never touched, or a test
+  count that changes between identical runs, mean another checkout's jars — suspect the cache before
+  your change. Why, and the chained local repository for when `~/.m2` must not be written at all:
+  [`build-isolation.md`](docs/engineering/guides/build-isolation.md).
+- **Checkstyle** (blocking in CI): `mvn checkstyle:check@verify -pl <module-path>`. The project
+  rules are bound to the `verify` execution; a bare `checkstyle:check` runs Checkstyle's defaults.
+- **`.pure` edit-test in seconds:** the Pure IDE delta compiler (`POST /executeGo`) —
+  [`pure-ide-delta-compiler-debugging.md`](docs/engineering/guides/pure-ide-delta-compiler-debugging.md).
+  **`openFiles` in that payload overwrites the target file on disk**: `GET /fileAsJson/<path>` to
+  read the current content in full, apply the edit to that text, submit the whole result. Never
+  compose the file from scratch — anything you omit is silently deleted, and `welcome.pure` is
+  gitignored so git cannot recover it.
+- Running the server, Pure IDE and REPL, IntelliJ settings, troubleshooting:
+  [`getting-started.md`](docs/engineering/guides/getting-started.md). Maven plugins, profiles, CI
+  pipeline, Docker, releases: [`build-and-ci.md`](docs/engineering/guides/build-and-ci.md).
 
 ### Claude Code dev-loop plugin (`pure-dev`)
 
@@ -110,104 +53,62 @@ legend-pure + legend-engine checkout). Deep internals and operating rules live i
 
 ## Tests
 
-JUnit 5 for new tests (JUnit 4 exists but is legacy — don't add more). Typical patterns:
-```bash
-mvn test -pl <module-path> -Dtest=TestClassName
-mvn test -pl <module-path> -Dtest="TestClassName#testMethodName"
-mvn verify -Pintegration-test                # Docker-based (Testcontainers)
-```
-
-Class naming: `Test<Subject>` (preferred) or `<Subject>Test` (legacy), `Test<Subject>WithH2` for H2-backed integration, `PCT<Store>_<Dialect>_Test` for PCT variants.
-
-### PCT (Pure Compatibility Tests)
-
-PCT is how cross-store behavioural parity is enforced. Pure functions marked `<<PCT.test>>` run against every registered store. Default-profile stores (run on every PR): **H2, DuckDB, Java binding**. Cloud stores (`pct-cloud-test` profile, CI-only, requires secrets): Postgres, Snowflake, BigQuery, Databricks, Spanner, MemSQL.
-
-Run a single dialect's PCT suite:
-```bash
-mvn test -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-h2/legend-engine-xt-relationalStore-h2-PCT
-```
-
-When a PCT test fails on a target, decide: real bug → fix; legitimately unsupported → add the test to that adapter's JSON manifest file under `src/main/resources/pct-manifests/<adapter>/` as an `exclusions` entry with the `test` FQN and `expectedError` string (the test runner prints the copy-paste snippet on failure). See `docs/pct/expected-failures-howto.md`.
-
-Detailed PCT authoring guides: `docs/pct/` (`purefunction-howto.md`, `native-howto.md`, `wiring-howto.md`, `conventions.md`). PCT framework itself is defined in `legend-pure` upstream.
+- JUnit 5 for new tests (JUnit 4 exists but is legacy — don't add more). Class naming:
+  `Test<Subject>`. Single test: `mvn test -pl <module-path> -Dtest="TestClassName#testMethodName"`.
+- Use `JsonUnit.assertJsonEquals` for JSON comparison (not `String.equals`). Pure test resources go
+  under `src/test/resources/` mirroring the production package.
+- **PCT** (Pure Compatibility Tests) runs every `<<PCT.test>>` Pure function against every
+  registered store. H2, DuckDB and the Java binding run on every PR; cloud stores are CI-only
+  (`pct-cloud-test` profile, requires secrets). When a PCT test fails on a target, decide: real bug →
+  fix; legitimately unsupported → add an `exclusions` entry (`test` FQN + `expectedError`) to that
+  adapter's JSON manifest under `src/main/resources/pct-manifests/<adapter>/` — the runner prints
+  the copy-paste snippet. See [`expected-failures-howto.md`](docs/pct/expected-failures-howto.md).
+- Frameworks, naming, test data, running suites, CI matrix:
+  [`testing-strategy.md`](docs/engineering/testing/testing-strategy.md). PCT authoring:
+  [`docs/pct/`](docs/pct/) (`purefunction-howto.md`, `native-howto.md`, `wiring-howto.md`,
+  `conventions.md`, `taxonomy.md`).
 
 ## Architecture
 
-Legend Engine is the execution backbone of the FINOS Legend platform: a Dropwizard HTTP server wrapping a Pure language runtime. Given a Pure query + Mapping + Runtime, it executes the five-stage pipeline:
+Legend Engine is the execution backbone of the FINOS Legend platform: a Dropwizard HTTP server
+wrapping the Pure runtime. A Pure query + Mapping + Runtime goes through grammar ↔ protocol,
+compilation, plan generation and plan execution. Production always runs **compiled mode** (Pure
+pre-translated to Java bytecode at build time); the Pure IDE path uses interpreted mode.
 
-1. **Grammar ↔ Protocol** — `POST /api/pure/v1/grammar/transformGrammarToJson` — ANTLR4 parsers ↔ `PureModelContextData` POJOs.
-2. **Compilation** — `POST /api/pure/v1/compilation/compile` — builds a fully-typed `PureModel` (in-memory Pure graph) via multi-pass compiler.
-3. **Plan generation** — `POST /api/pure/v1/executionPlan/generate` — `PlanGenerator` calls into Pure; `meta::pure::router::routeFunction` dispatches sub-expressions to `StoreContract`s; produces an `ExecutionPlan` tree; `PlanTransformer`s (e.g. `JavaPlatformBinder`) add platform-native nodes.
-4. **Plan execution** — `POST /api/pure/v1/execution/execute` — `PlanExecutor` walks the tree; each node type goes to a registered `StoreExecutor`; results streamed as `Result`/`StreamingResult`.
-5. **Service execution** — compiles + plans + executes a packaged Legend Service inline.
+Dependency direction: `config → xts-* → core → legend-pure → legend-shared`. Extensions depend only
+on core interfaces.
 
-Production always runs **compiled mode** (Pure functions pre-translated to Java bytecode at build time — see `legend-engine-pure-runtime-java-extension-compiled-*`). The Pure IDE path uses interpreted mode.
+| For | Read |
+|-----|------|
+| Pipelines and their endpoints, extension SPIs (Java `ServiceLoader` + Pure `Extension`), dependency layers, key data structures | [`architecture/overview.md`](docs/engineering/architecture/overview.md) |
+| What each module is and its entry-point classes | [`reference/modules.md`](docs/engineering/reference/modules.md) |
+| Adding a grammar section, store extension or function activator | [`guides/contributor-workflow.md`](docs/engineering/guides/contributor-workflow.md) |
+| Router, Pure-to-SQL, dialects | [`architecture/router-and-pure-to-sql.md`](docs/engineering/architecture/router-and-pure-to-sql.md) |
+| Domain concepts, execution plans, pre-evaluation, Alloy compiler, and the rest | [`docs/engineering/architecture/`](docs/engineering/architecture/) |
 
-### Module taxonomy (prefix-based)
+Rules that hold wherever you are working:
 
-| Prefix | Role |
-|--------|------|
-| `legend-engine-core` | Compiler, grammar, plan generation, plan execution, Pure runtime wiring |
-| `legend-engine-xts-*` | Extension modules — stores, formats, DSLs, function activators |
-| `legend-engine-config` | Server assembly, REPL, configuration |
-| `legend-engine-application-query` | Saved-query backend |
-
-Dependency direction: `config → xts-* → core → legend-pure → legend-shared`. Extensions depend only on core interfaces (one common exception: several `xts-*` modules reuse `xts-relationalStore` for their relational test harness).
-
-Sub-module suffixes are consistent across `xts-*`: `-grammar`, `-protocol`, `-compiler`, `-pure`, `-execution`, `-http-api`. Use this convention when adding a new extension.
-
-### Extension architecture — how to add stores/formats/DSLs
-
-Two parallel SPI mechanisms, both required for a full extension:
-
-- **Java side:** register SPI implementations via `java.util.ServiceLoader` (files under `META-INF/services/`): `CompilerExtension`, `StoreExecutorBuilder`, `PlanGeneratorExtension`, `PureGrammarParserExtension`.
-- **Pure side:** register against `meta::pure::extension::Extension` — aggregates `availableStores` (StoreContracts), `availableExternalFormats`, `availableFeatures`, `availablePlatformBindings`. The `Extension` is threaded through all planning/execution functions as an explicit parameter.
-
-When adding a new store, also register a `-PCT` module and add it to `.github/workflows/resources/modulesToTest.json` in the appropriate CI group.
-
-### Key data structures
-
-- `PureModelContextData` — JSON-serialisable model snapshot (protocol POJOs).
-- `PureModel` — compiled in-memory Pure graph (wraps legend-pure's `ModelRepository`).
-- `ExecutionPlan` (Pure) / `SingleExecutionPlan` (Java POJO) — tree of `ExecutionNode`s.
-- `ExecutionState` — mutable bag threaded through the executor (variables, result caches).
-- `Extension` (Pure) — registry of all active plug-ins; must be passed into most planning/execution calls.
-
-### Protocol versioning
-
-Protocol classes are versioned (`v1_24_0`, `v1_25_0`, …). Breaking changes require a new version sub-package, a transfer function from the old version, and an entry in `PureClientVersions`. Do **not** mutate an existing version's classes.
+- **New extension:** follow the `xts-*` sub-module suffixes (`-grammar`, `-protocol`, `-compiler`,
+  `-pure`, `-execution`, `-http-api`), and register on both sides — Java SPI files under
+  `META-INF/services/` and the Pure `meta::pure::extension::Extension`.
+- **New store:** also register a `-PCT` module and add it to
+  `.github/workflows/resources/modulesToTest.json` in the appropriate CI group.
+- **Protocol versioning:** protocol classes are versioned (`v1_24_0`, `v1_25_0`, …). Breaking changes
+  require a new version sub-package, a transfer function from the old version, and an entry in
+  `PureClientVersions`. Do **not** mutate an existing version's classes.
 
 ## Conventions to follow
+
+Full detail: [`coding-standards.md`](docs/engineering/standards/coding-standards.md).
 
 - **Indentation:** Java 4 spaces, Pure 2 spaces, XML/JSON/YAML 4 spaces. No tabs anywhere (`.java`, `.xml`, `.pure` all checked).
 - **Braces:** always required (including single-statement `if`). Opening brace on a new line; closing brace alone on its line.
 - **Copyright header:** every new file (including `.pure`) needs the Apache 2.0 header — Checkstyle enforces this.
 - **Logging:** SLF4J only — never `System.out.println`. For `INFO`-level operational events use `LogInfo` wrapper + `LoggingEventType` enum (in `legend-shared`); add new event types to the enum rather than free-text strings. Never log credentials/tokens, not even at DEBUG.
 - **Errors:** user-facing errors throw `EngineException` with `SourceInformation` and an `EngineErrorType` (`COMPILATION`/`EXECUTION`/`PARSER`/`INTERNAL`). Don't swallow exceptions. Pure-level: `assert(cond, | 'msg')` or `fail('msg')` — the Java layer converts `PureException` → `EngineException`.
-- **Comments:** naming is the documentation. A function name and its body should read better than any
-  comment you could put above them; if they don't, rename or restructure rather than explain. Do not
-  narrate what the code does, and do not rationalise why you wrote it — both restate the code and
-  both go stale the moment it changes.
-
-  A comment earns its place only when the code is *genuinely ambiguous*, or when it looks like it
-  contradicts the status quo and a reader would otherwise "fix" it: a spec or dialect quirk being
-  worked around, a deliberate deviation from the surrounding pattern, an ordering constraint that
-  isn't visible locally, or a link to an issue. Write the surprise, not the summary.
-
-  **Tests are not an exception, they are the clearest case.** A test's name and its assertions
-  already state the intended behaviour; a comment above them almost always repeats it. Name the test
-  so the comment becomes unnecessary. The only test comment worth keeping is one explaining why an
-  assertion that *looks* wrong is correct.
-
-  Match the surrounding file's comment density; most functions here have none.
+- **Comments:** naming is the documentation — rename or restructure rather than explain. Do not
+  narrate what the code does or rationalise why you wrote it, in tests least of all. A comment earns
+  its place only when the code is genuinely ambiguous or looks like a mistake a reader would "fix".
+  Match the surrounding file's comment density; most functions here have none. Full policy:
+  [`coding-standards.md` §8](docs/engineering/standards/coding-standards.md#8-comments).
 - **Grammar changes:** update both parser and composer, and add a round-trip test.
-- **Tests:** use `JsonUnit.assertJsonEquals` for JSON comparison (not `String.equals`). Pure test resources go under `src/test/resources/` mirroring the production package.
-
-## Further docs in this repo
-
-- `docs/engineering/README.md` — full engineering documentation index (architecture deep-dives, module reference, guides).
-- `docs/engineering/architecture/` — overview, domain concepts, key Java/Pure areas, execution plans, router/Pure-to-SQL, pre-evaluation, Alloy compiler.
-- `docs/engineering/standards/coding-standards.md` — Checkstyle rules, naming, PR checklist.
-- `docs/engineering/testing/testing-strategy.md` — test pyramid, frameworks, PCT, CI matrix.
-- `docs/pct/` — PCT framework how-tos (Pure functions, native functions, wiring, expected failures, conventions, taxonomy).
