@@ -57,4 +57,30 @@ public class TestGenerationSpecificationGrammarParser extends TestGrammarParser.
                 "}\n\n", "PARSER error at [2:1-4:93]: Field 'fileGenerations' should be specified only once");
 
     }
+
+    @Test
+    public void testGenerationSpecificationParallelGenerationElements()
+    {
+        // both forms in one node
+        test("###GenerationSpecification\n" +
+                "GenerationSpecification model::GenerationSpecification\n" +
+                "{\n" +
+                "  generationNodes: [\n" +
+                "    {\n" +
+                "      generationElement: model::MyElement1;\n" +
+                "      generationElements: [model::MyElement2];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n", "PARSER error at [7:7-24]: Unexpected token 'generationElements'");
+        // empty group
+        test("###GenerationSpecification\n" +
+                "GenerationSpecification model::GenerationSpecification\n" +
+                "{\n" +
+                "  generationNodes: [\n" +
+                "    {\n" +
+                "      generationElements: [];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n", "PARSER error at [6:28]: Unexpected token ']'");
+    }
 }

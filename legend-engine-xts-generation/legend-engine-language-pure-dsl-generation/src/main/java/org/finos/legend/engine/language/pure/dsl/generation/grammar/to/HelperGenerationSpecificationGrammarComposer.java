@@ -29,8 +29,12 @@ public class HelperGenerationSpecificationGrammarComposer
     public static String renderGenerationNode(GenerationTreeNode generationTreeNode)
     {
         return getTabString(2) + "{\n" +
-                (generationTreeNode.id != null && !generationTreeNode.id.equals(generationTreeNode.generationElement) ? getTabString(3) + "id: " + convertString(generationTreeNode.id, true) + ";\n" : "") +
-                getTabString(3) + "generationElement: " + generationTreeNode.generationElement + ";\n" +
+                (generationTreeNode.id != null && !generationTreeNode.id.equals(generationTreeNode.defaultId()) ? getTabString(3) + "id: " + convertString(generationTreeNode.id, true) + ";\n" : "") +
+                (generationTreeNode.generationElement != null
+                        ? getTabString(3) + "generationElement: " + generationTreeNode.generationElement + ";\n"
+                        : getTabString(3) + "generationElements: [\n"
+                                + ListIterate.collect(generationTreeNode.generationElements, element -> getTabString(4) + element).makeString(",\n") + "\n"
+                                + getTabString(3) + "];\n") +
                 getTabString(2) + "}";
     }
 

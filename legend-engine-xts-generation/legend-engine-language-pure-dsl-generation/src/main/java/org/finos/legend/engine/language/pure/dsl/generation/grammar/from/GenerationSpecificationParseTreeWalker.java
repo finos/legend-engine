@@ -69,10 +69,22 @@ public class GenerationSpecificationParseTreeWalker
     private GenerationTreeNode visitGenerationTreeNode(GenerationSpecificationParserGrammar.GenerationNodeContext ctx)
     {
         GenerationTreeNode generationTreeNode = new GenerationTreeNode();
-        generationTreeNode.generationElement = PureGrammarParserUtility.fromQualifiedName(ctx.generationElement().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.generationElement().qualifiedName().packagePath().identifier(), ctx.generationElement().qualifiedName().identifier());
-        generationTreeNode.id = ctx.nodeId() != null ? PureGrammarParserUtility.fromGrammarString(ctx.nodeId().STRING().getText(), true) : generationTreeNode.generationElement;
+        if (ctx.generationElement() != null)
+        {
+            generationTreeNode.generationElement = visitGenerationElement(ctx.generationElement().qualifiedName());
+        }
+        else
+        {
+            generationTreeNode.generationElements = ListIterate.collect(ctx.generationElements().qualifiedName(), this::visitGenerationElement);
+        }
+        generationTreeNode.id = ctx.nodeId() != null ? PureGrammarParserUtility.fromGrammarString(ctx.nodeId().STRING().getText(), true) : generationTreeNode.defaultId();
         generationTreeNode.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return generationTreeNode;
+    }
+
+    private String visitGenerationElement(GenerationSpecificationParserGrammar.QualifiedNameContext ctx)
+    {
+        return PureGrammarParserUtility.fromQualifiedName(ctx.packagePath() == null ? Collections.emptyList() : ctx.packagePath().identifier(), ctx.identifier());
     }
 
     private PackageableElementPointer visitFileGeneration(GenerationSpecificationParserGrammar.QualifiedNameContext ctx)

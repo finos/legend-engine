@@ -163,6 +163,12 @@
         </dependency>
         <!-- COMMONS-LANG -->
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <!-- SLF4J -->
+
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>

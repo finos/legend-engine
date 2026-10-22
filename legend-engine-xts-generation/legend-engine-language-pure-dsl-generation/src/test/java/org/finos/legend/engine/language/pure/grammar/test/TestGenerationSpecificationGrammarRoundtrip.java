@@ -44,6 +44,32 @@ public class TestGenerationSpecificationGrammarRoundtrip extends TestGrammarRoun
     }
 
     @Test
+    public void testGenerationSpecificationWithParallelGenerationElements()
+    {
+        test("###GenerationSpecification\n" +
+                "GenerationSpecification test::x\n" +
+                "{\n" +
+                "  generationNodes: [\n" +
+                "    {\n" +
+                "      generationElements: [\n" +
+                "        model::serializableSpec,\n" +
+                "        model::modelSpec\n" +
+                "      ];\n" +
+                "    },\n" +
+                "    {\n" +
+                "      id: 'secondGeneration';\n" +
+                "      generationElements: [\n" +
+                "        model::otherSpec\n" +
+                "      ];\n" +
+                "    },\n" +
+                "    {\n" +
+                "      generationElement: model::lastSpec;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
+
+    @Test
     public void testGenerationSpecificationWithImport()
     {
         testWithSectionInfoPreserved("###GenerationSpecification\n" +
