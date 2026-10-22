@@ -14,30 +14,30 @@
 
 package org.finos.legend.engine.server.core.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.pac4j.core.profile.CommonProfile;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.pac4j.core.profile.UserProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
-@Api(tags = "Server")
+@Tag(name = "Server")
 @Path("server/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class CurrentUser
 {
     @GET
     @Path("currentUser")
-    @ApiOperation(value = "Provides server build and dependency information")
-    public Response executePureGet(@Pac4JProfileManager @ApiParam(hidden = true) ProfileManager<CommonProfile> pm)
+    @Operation(summary = "Provides server build and dependency information")
+    public Response executePureGet(@Pac4JProfileManager @Parameter(hidden = true) ProfileManager pm)
     {
-        CommonProfile profile = pm.get(true).orElse(null);
+        UserProfile profile = pm.getProfile().orElse(null);
         return Response.status(200).type(MediaType.APPLICATION_JSON).entity("\"" + (profile != null ? profile.getId() : "UNKNOWN") + "\"").build();
     }
 }

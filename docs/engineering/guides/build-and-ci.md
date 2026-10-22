@@ -37,9 +37,9 @@ mvn install -DskipTests -e -X 2>&1 | head -200
 | Property | Default | Effect |
 |----------|---------|--------|
 | `skipTests` | `false` | Skip test execution (sources still compiled) |
-| `maven.compiler.source` / `.target` | `1.8` | Compiler source/target level (enforced as Java 8 bytecode) |
-| `maven.compiler.release` | `8` | Combined source+target+bootclasspath |
-| `maven.enforcer.requireJavaVersion` | `[11.0.10,12)` | Enforces JDK 11 at build time |
+| `maven.compiler.source` / `.target` | `1.8` | Compiler source/target level (Java 8 bytecode; `17` in server-side modules) |
+| `maven.compiler.release` | `8` | Combined source+target+bootclasspath (`17` in server-side modules) |
+| `maven.enforcer.requireJavaVersion` | `[17,18)` | Enforces JDK 17 at build time |
 | `surefire.vm.params` | see root POM | JVM args for test forks: timezone, soft-ref LRU policy |
 | `dependencies.failOnWarning` | `true` | `maven-dependency-plugin:analyze` fails on unused declared deps |
 
@@ -49,10 +49,10 @@ mvn install -DskipTests -e -X 2>&1 | head -200
 
 | Plugin | Version property | Purpose |
 |--------|-----------------|---------|
-| `maven-compiler-plugin` | `maven.compiler.plugin.version` | Java compilation (source/target 8, runtime JDK 11) |
+| `maven-compiler-plugin` | `maven.compiler.plugin.version` | Java compilation (release 8, or 17 for server-side modules; build JDK 17) |
 | `maven-surefire-plugin` | `maven.surefire.plugin.version` | Test execution; configured with JVM params |
 | `maven-checkstyle-plugin` | `maven.checkstyle.plugin.version` | Enforces `checkstyle.xml` rules on `.java`, `.xml`, `.pure` files |
-| `maven-enforcer-plugin` | `maven.enforcer.plugin.version` | Enforces JDK 11, Maven 3.6.2+, no banned dependencies |
+| `maven-enforcer-plugin` | `maven.enforcer.plugin.version` | Enforces JDK 17, Maven 3.6.2+, no banned dependencies |
 | `maven-dependency-plugin` | `maven.dependency.plugin.version` | Dependency analysis; fails on unused declared / used undeclared deps |
 | `jacoco-maven-plugin` | `jacoco.maven.plugin.version` | Code coverage instrumentation and reporting |
 | `maven-shade-plugin` | `maven.shade.plugin.version` | Assembles fat JARs for the server and REPL |
@@ -135,7 +135,7 @@ Concurrent runs on the same PR branch are cancelled automatically.
 ```mermaid
 flowchart TD
     Push["Push / PR"]
-    Build["build job\n1. Cache Maven repository\n2. Set up JDK 11 (Zulu distribution)\n3. Download all dependencies offline\n4. mvn install -DskipTests [-P docker-snapshot,pct-cloud-test]\n5. Upload target/** + ~/.m2/repository to artifact store\n6. Compute test matrix from modulesToTest.json"]
+    Build["build job\n1. Cache Maven repository\n2. Set up JDK 17 (Zulu distribution)\n3. Download all dependencies offline\n4. mvn install -DskipTests [-P docker-snapshot,pct-cloud-test]\n5. Upload target/** + ~/.m2/repository to artifact store\n6. Compute test matrix from modulesToTest.json"]
     Tests["test jobs (one per matrix entry)\n1. Restore artifact store from build job\n2. mvn test for the modules in this matrix slice\n3. Upload test reports"]
     Results["test-result job\nAggregates JUnit XML reports from all test jobs"]
 
@@ -180,7 +180,7 @@ lists the Maven module name(s) to test in that job. Key groups:
 The `legend-engine-config/legend-engine-server` module produces a Docker image via the
 `jib-maven-plugin` (no Dockerfile, no Docker daemon needed to build/push). The image:
 
-- Base: `eclipse-temurin:11.0.17_8-jdk-jammy` (`<from><image>` in the module pom)
+- Base: `eclipse-temurin:17.0.20_8-jdk-jammy` (`<from><image>` in the module pom)
 - Server listens on port `6300`
 - Entrypoint: `java <jvmFlags> -cp ... org.finos.legend.engine.server.Server server /config/config.json`
 - `src/main/resources/docker/config/` is baked in at `/config/`

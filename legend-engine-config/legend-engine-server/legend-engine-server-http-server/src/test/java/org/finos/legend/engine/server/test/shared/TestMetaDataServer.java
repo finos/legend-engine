@@ -19,11 +19,12 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.jetty.server.Handler;
+import java.nio.ByteBuffer;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.server.test.shared.execute.PureFunctions;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -37,11 +38,7 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSu
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.function.BiFunction;
 
 import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
@@ -166,7 +163,7 @@ public class TestMetaDataServer
                 CompiledExtensionLoader.extensions()
         );
 
-        AbstractHandler mappingHandle = registerService(
+        ContextHandler mappingHandle = registerService(
                 "/alloy/pureModelFromMapping",
                 messageFromPureJAR ?
                         (_package, version) -> PureFunctions.alloy_metadataServer_pureModelFromMapping(_package, version, Root_meta_relational_extension_relationalExtensions__Extension_MANY_(executionSupport), executionSupport) :
@@ -179,7 +176,7 @@ public class TestMetaDataServer
                         }
         );
 
-        AbstractHandler storeHandle = registerService(
+        ContextHandler storeHandle = registerService(
                 "/alloy/pureModelFromStore",
                 messageFromPureJAR ?
                         (_package, version) -> PureFunctions.alloy_metadataServer_pureModelFromStore(_package, version, Root_meta_relational_extension_relationalExtensions__Extension_MANY_(executionSupport), executionSupport) :
@@ -193,15 +190,14 @@ public class TestMetaDataServer
         );
 
 
-        AbstractHandler versionHandler = createVersionHandler();
-        AbstractHandler pureBaseVersionHandler = createPureBaseVersionHandler();
+        ContextHandler versionHandler = createVersionHandler();
+        ContextHandler pureBaseVersionHandler = createPureBaseVersionHandler();
 
-        HandlerCollection handlerCollection = new HandlerCollection();
-        handlerCollection.setHandlers(new Handler[]{
+        Handler.Sequence handlerCollection = new Handler.Sequence(
                 mappingHandle,
                 storeHandle,
                 versionHandler,
-                pureBaseVersionHandler});
+                pureBaseVersionHandler);
 
         this.server.setHandler(handlerCollection);
         this.server.start();
@@ -219,17 +215,16 @@ public class TestMetaDataServer
         this.server.stop();
     }
 
-    private static AbstractHandler registerService(String mappingBase, BiFunction<String, String, String> content)
+    static ContextHandler registerService(String mappingBase, BiFunction<String, String, String> content)
     {
-        ContextHandler contextHandler = new ContextHandler(mappingBase + "/*");
-        AbstractHandler handler = new AbstractHandler()
+        ContextHandler contextHandler = new ContextHandler(mappingBase);
+        Handler handler = new Handler.Abstract()
         {
             @Override
-            public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException
+            public boolean handle(Request request, Response response, Callback callback)
             {
-                OutputStream stream = httpServletResponse.getOutputStream();
-
-                String url = request.getRequestURL().toString();
+                // Path only: callers may append a query ("?auth=kerberos"), which is not part of the element path.
+                String url = request.getHttpURI().getPath();
                 String path = url.substring(url.indexOf(mappingBase) + mappingBase.length());
 
                 if (path.startsWith("/") && path.length() > 2)
@@ -238,44 +233,43 @@ public class TestMetaDataServer
                     String version = path.substring(1, end);
                     String _package = path.substring(end + 1);
                     String r = content.apply(_package, version);
-                    stream.write(r.getBytes());
-                    stream.flush();
+                    response.write(true, ByteBuffer.wrap(r.getBytes()), callback);
+                    return true;
                 }
+                return false;
             }
         };
         contextHandler.setHandler(handler);
         return contextHandler;
     }
 
-    private AbstractHandler createPureBaseVersionHandler()
+    private ContextHandler createPureBaseVersionHandler()
     {
         ContextHandler contextHandler = new ContextHandler("/alloy/pureServerBaseVersion");
-        AbstractHandler handler = new AbstractHandler()
+        Handler handler = new Handler.Abstract()
         {
             @Override
-            public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException
+            public boolean handle(Request request, Response response, Callback callback)
             {
-                OutputStream stream = httpServletResponse.getOutputStream();
                 String r = "1";
-                stream.write(r.getBytes());
-                stream.flush();
+                response.write(true, ByteBuffer.wrap(r.getBytes()), callback);
+                return true;
             }
         };
         contextHandler.setHandler(handler);
         return contextHandler;
     }
 
-    private AbstractHandler createVersionHandler()
+    private ContextHandler createVersionHandler()
     {
         ContextHandler contextHandler = new ContextHandler("/jsonInfo");
-        AbstractHandler handler = new AbstractHandler()
+        Handler handler = new Handler.Abstract()
         {
             @Override
-            public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException
+            public boolean handle(Request request, Response response, Callback callback)
             {
-                OutputStream stream = httpServletResponse.getOutputStream();
-                stream.write("{}".getBytes());
-                stream.flush();
+                response.write(true, ByteBuffer.wrap("{}".getBytes()), callback);
+                return true;
             }
         };
         contextHandler.setHandler(handler);

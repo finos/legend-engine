@@ -23,13 +23,17 @@ package org.finos.legend.engine.postgres;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.prometheus.metrics.core.metrics.Gauge;
-import io.prometheus.metrics.exporter.servlet.javax.PrometheusMetricsServlet;
+import io.prometheus.metrics.exporter.servlet.jakarta.PrometheusMetricsServlet;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -63,11 +67,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.finos.legend.engine.postgres.protocol.wire.SessionStats;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethod;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.ConnectionProperties;
@@ -80,8 +83,8 @@ import org.finos.legend.engine.postgres.utils.netty.Netty4OpenChannelsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 
 public class PostgresServer
@@ -271,23 +274,24 @@ public class PostgresServer
 
         // Static
         ResourceHandler staticResourceHandler = new ResourceHandler();
-        staticResourceHandler.setDirectoriesListed(true);
+        staticResourceHandler.setDirAllowed(true);
         staticResourceHandler.setWelcomeFiles(new String[]{"index.html"});
-        staticResourceHandler.setBaseResource(Resource.newClassPathResource("/static/"));
+        staticResourceHandler.setBaseResource(
+                ResourceFactory.of(staticResourceHandler).newClassLoaderResource("/static/"));
 
         // Dynamic get Info
         ContextHandler dynamicContentHandler = new ContextHandler("/server/info");
-        dynamicContentHandler.setHandler(new AbstractHandler()
+        dynamicContentHandler.setHandler(new Handler.Abstract()
         {
             @Override
-            public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException
+            public boolean handle(Request request, Response response, Callback callback) throws IOException
             {
-                response.setContentType("application/json");
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().println(MAPPER.writeValueAsString(
+                response.getHeaders().put(HttpHeader.CONTENT_TYPE, "application/json;charset=utf-8");
+                response.setStatus(HttpStatus.OK_200);
+                Content.Sink.write(response, true, MAPPER.writeValueAsString(
                         new Info(startTime, connectionsHistory, collectOpenSessionStats())
-                ));
-                baseRequest.setHandled(true);
+                ), callback);
+                return true;
             }
         });
 
@@ -304,9 +308,7 @@ public class PostgresServer
         prometheusServletContext.addServlet(new ServletHolder(new PrometheusMetricsServlet(this.registry)), "/prometheus");
 
         // Manage collections
-        HandlerCollection handlerCollection = new HandlerCollection();
-        handlerCollection.setHandlers(new Handler[]{staticResourceHandler, dynamicContentHandler, prometheusServletContext});
-        server.setHandler(handlerCollection);
+        server.setHandler(new Handler.Sequence(staticResourceHandler, dynamicContentHandler, prometheusServletContext));
 
         // Start the server
         server.start();

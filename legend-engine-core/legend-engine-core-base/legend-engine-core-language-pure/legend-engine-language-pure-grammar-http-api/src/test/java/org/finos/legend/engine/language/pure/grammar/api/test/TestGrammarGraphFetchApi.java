@@ -30,7 +30,7 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.function.Function5;
 import org.junit.Test;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.util.Map;
 
 public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>

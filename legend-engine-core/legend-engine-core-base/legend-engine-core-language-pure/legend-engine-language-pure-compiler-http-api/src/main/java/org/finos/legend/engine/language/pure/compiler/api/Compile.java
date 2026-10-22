@@ -17,9 +17,9 @@ package org.finos.legend.engine.language.pure.compiler.api;
 import io.opentracing.Scope;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -46,15 +46,15 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -64,7 +64,7 @@ import java.util.Map;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
-@Api(tags = "Pure - Compiler")
+@Tag(name = "Pure - Compiler")
 @Path("pure/v1/compilation")
 @Produces(MediaType.APPLICATION_JSON)
 public class Compile
@@ -87,10 +87,10 @@ public class Compile
 
     @POST
     @Path("compile")
-    @ApiOperation(value = "Loads the model and then compiles. It performs no action. Mostly used for testing")
+    @Operation(summary = "Loads the model and then compiles. It performs no action. Mostly used for testing")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "compile model", doc = "Pure model compilation duration summary")
-    public Response compile(PureModelContext model, @ApiParam("Optional client version. When omitted, falls back to the serializer version if a Pointer, otherwise null.") @QueryParam("clientVersion") String clientVersion, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response compile(PureModelContext model, @Parameter(description = "Optional client version. When omitted, falls back to the serializer version if a Pointer, otherwise null.") @QueryParam("clientVersion") String clientVersion, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -122,10 +122,10 @@ public class Compile
 
     @POST
     @Path("lambdaReturnType")
-    @ApiOperation(value = "Loads a given model and lambda. Returns the lambda return type")
+    @Operation(summary = "Loads a given model and lambda. Returns the lambda return type")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "lambda return type")
-    public Response lambdaReturnType(LambdaReturnTypeInput lambdaReturnTypeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response lambdaReturnType(LambdaReturnTypeInput lambdaReturnTypeInput, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -152,10 +152,10 @@ public class Compile
 
     @POST
     @Path("lambdaRelationType")
-    @ApiOperation(value = "Loads a given model and lambda. Returns the lambda relation type")
+    @Operation(summary = "Loads a given model and lambda. Returns the lambda relation type")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "lambda relation type")
-    public Response lambdaRelationType(LambdaReturnTypeInput lambdaReturnTypeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response lambdaRelationType(LambdaReturnTypeInput lambdaReturnTypeInput, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -177,10 +177,10 @@ public class Compile
 
     @POST
     @Path("lambdaRelationType/batch")
-    @ApiOperation(value = "Loads a given model and a map of lambdas. Returns the relation type for each lambda.")
+    @Operation(summary = "Loads a given model and a map of lambdas. Returns the relation type for each lambda.")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "lambda relation type batch")
-    public Response lambdaRelationTypeBatch(LambdaRelationTypesInput lambdaRelationTypesInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response lambdaRelationTypeBatch(LambdaRelationTypesInput lambdaRelationTypesInput, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -227,10 +227,10 @@ public class Compile
 
     @POST
     @Path("c3Linearization")
-    @ApiOperation(value = "Given a model and a list of types. Returns the list of inheritance lines (according to C3Linearization algorithm).")
+    @Operation(summary = "Given a model and a list of types. Returns the list of inheritance lines (according to C3Linearization algorithm).")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "c3 linearization")
-    public Response c3Linearization(C3LinearizationInput c3LinerizationInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response c3Linearization(C3LinearizationInput c3LinerizationInput, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);

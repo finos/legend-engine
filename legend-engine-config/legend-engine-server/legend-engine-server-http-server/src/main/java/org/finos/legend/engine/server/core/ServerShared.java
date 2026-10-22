@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.server.core;
 
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import io.federecio.dropwizard.swagger.SwaggerResource;
 

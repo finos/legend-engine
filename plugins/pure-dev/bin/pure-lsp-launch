@@ -43,7 +43,7 @@
 # the old behavior of source-rooting the full transitive dependency chain. Only layers actually
 # being source-rooted need their checkout env var ($LEGEND_PURE_ROOT etc.) set.
 #
-# Defaults: --java "java" (plain JDK 11 java on PATH). The daemon runs a JVM against a precomputed
+# Defaults: --java "java" (plain JDK 17 java on PATH). The daemon runs a JVM against a precomputed
 # classpath - it never invokes a project's own Maven build/enforcer, so a project pinned to a newer
 # JDK for its BUILD does not need that JDK to RUN this daemon; override with --java if a project's
 # classpath needs a different runtime JVM than plain "java" on PATH.

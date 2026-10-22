@@ -319,7 +319,7 @@ pieces into a running HTTP process.
 **Bootstrap phase:**
 
 - Registers Jackson subtypes for all protocol element types (classpath scan at startup).
-- Registers Dropwizard bundles: `SwaggerBundle`, `MultiPartBundle`, `AssetsBundle`.
+- Registers Dropwizard bundles: `ServerUrlSwaggerBundle`, `MultiPartBundle`, `AssetsBundle`.
 - Configures environment-variable substitution in YAML config.
 
 **Run phase:**

@@ -22,8 +22,8 @@ import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Objects;
 

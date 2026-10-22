@@ -39,9 +39,9 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -73,7 +73,8 @@ public class ExecutionState
     private final Map<String, Result> res;
     private final List<? extends String> templateFunctions;
     private final boolean isJavaCompilationAllowed;
-    private final Map<StoreType, StoreExecutionState> states = new EnumMap<>(StoreType.class);
+    // TreeMap so iteration follows StoreType registration order, as an EnumMap's would.
+    private final Map<StoreType, StoreExecutionState> states = new TreeMap<>();
     private final boolean logSQLWithParamValues;
 
     public final List<Function3<ExecutionNode,Identity, ExecutionState, Result>> extraNodeExecutors;

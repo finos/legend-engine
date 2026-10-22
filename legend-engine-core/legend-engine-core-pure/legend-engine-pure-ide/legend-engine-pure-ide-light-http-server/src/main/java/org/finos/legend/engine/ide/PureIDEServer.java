@@ -14,10 +14,10 @@
 
 package org.finos.legend.engine.ide;
 
-import io.dropwizard.Application;
+import io.dropwizard.core.Application;
 import io.dropwizard.assets.AssetsBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import io.federecio.dropwizard.swagger.SwaggerResource;
@@ -27,7 +27,7 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
-import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.eclipse.jetty.ee10.servlets.CrossOriginFilter;
 import org.finos.legend.engine.ide.api.*;
 import org.finos.legend.engine.ide.api.concept.Concept;
 import org.finos.legend.engine.ide.api.concept.MovePackageableElements;
@@ -51,8 +51,8 @@ import org.finos.legend.pure.m3.serialization.runtime.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;

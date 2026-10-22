@@ -163,7 +163,7 @@ function meta::mystore::contract(): meta::pure::store::StoreContract[1]
 ```java
 public class MyStoreExecutorBuilder implements StoreExecutorBuilder {
     @Override
-    public StoreType getStoreType() { return StoreType.MY_STORE; }
+    public StoreType getStoreType() { return StoreType.register("MyStore"); }
     @Override
     public StoreExecutor build(StoreExecutorConfiguration config) {
         return new MyStoreExecutor((MyStoreExecutorConfiguration) config);

@@ -34,7 +34,7 @@ import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.mongo.util.StoredVersionedAssetFetchOptions;
 
 import javax.lang.model.SourceVersion;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;

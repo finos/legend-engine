@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.RawSQLExecuteInput;
@@ -34,16 +34,16 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "Utilities - Database")
+@Tag(name = "Utilities - Database")
 @Path("pure/v1/utilities/database")
 public class SchemaExplorationApi
 {
@@ -63,10 +63,10 @@ public class SchemaExplorationApi
 
     @POST
     @Path("schemaExploration")
-    @ApiOperation(value = "Use JDBC connection to survey database metadata (schemas, tables, columns, etc.) and build database Pure model")
+    @Operation(summary = "Use JDBC connection to survey database metadata (schemas, tables, columns, etc.) and build database Pure model")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response buildDatabase(DatabaseBuilderInput databaseBuilderInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response buildDatabase(DatabaseBuilderInput databaseBuilderInput, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -85,10 +85,10 @@ public class SchemaExplorationApi
 
     @POST
     @Path("executeRawSQL")
-    @ApiOperation(value = "Use JDBC connection to execute SQL (this API is meant for non-production use case such exploring/previewing data, its result set is capped)")
+    @Operation(summary = "Use JDBC connection to execute SQL (this API is meant for non-production use case such exploring/previewing data, its result set is capped)")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
-    public Response executeRawSQL(RawSQLExecuteInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeRawSQL(RawSQLExecuteInput input, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);

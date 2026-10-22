@@ -18,18 +18,18 @@ package org.finos.legend.engine.api.analytics.fct;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Scanner;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.finos.legend.engine.api.analytics.mft.MFTReportCollector;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.test.mft.model.MFTTestReport;
@@ -37,7 +37,7 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-@Api(tags = "FCT")
+@Tag(name = "FCT")
 @Path("fct")
 
 public class FCT
@@ -55,9 +55,9 @@ public class FCT
 
     @GET
     @Path("json")
-    @ApiOperation(value = "FCT report in JSON")
+    @Operation(summary = "FCT report in JSON")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response jsonFCT(@Pac4JProfileManager @ApiParam(hidden = true) ProfileManager<CommonProfile> pm)
+    public Response jsonFCT(@Pac4JProfileManager @Parameter(hidden = true) ProfileManager pm)
     {
         try
         {
@@ -74,9 +74,9 @@ public class FCT
 
     @GET
     @Path("html")
-    @ApiOperation(value = "PCT report in HTML")
+    @Operation(summary = "PCT report in HTML")
     @Produces(MediaType.TEXT_HTML)
-    public Response htmlFCT(@Pac4JProfileManager @ApiParam(hidden = true) ProfileManager<CommonProfile> pm)
+    public Response htmlFCT(@Pac4JProfileManager @Parameter(hidden = true) ProfileManager pm)
     {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream("FCTPage.html");
         if (inputStream == null)

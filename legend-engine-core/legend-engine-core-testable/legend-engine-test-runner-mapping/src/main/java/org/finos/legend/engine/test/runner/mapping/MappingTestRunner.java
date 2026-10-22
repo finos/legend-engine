@@ -54,7 +54,6 @@ import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
-import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -66,6 +65,11 @@ import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperR
 @Deprecated
 public class MappingTestRunner
 {
+    // Inlined rather than taken from jakarta.ws.rs.core.MediaType: this module is Java 8 and
+    // client-reachable, so it must not acquire the jakarta.ws.rs API, which requires Java 11+.
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String APPLICATION_XML = "application/xml";
+
     private static final ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
     private final PureModel pureModel;
@@ -127,7 +131,7 @@ public class MappingTestRunner
                 JsonModelConnection jsonModelConnection = new JsonModelConnection();
                 jsonModelConnection.element = "ModelStore";
                 jsonModelConnection._class = objectInputData.sourceClass;
-                jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
+                jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
                 connectionRegistrar.accept(jsonModelConnection);
             }
             else if (ObjectInputType.XML.equals(objectInputData.inputType))
@@ -135,7 +139,7 @@ public class MappingTestRunner
                 XmlModelConnection xmlModelConnection = new XmlModelConnection();
                 xmlModelConnection._class = objectInputData.sourceClass;
                 xmlModelConnection.element = "ModelStore";
-                xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
+                xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
                 connectionRegistrar.accept(xmlModelConnection);
             }
             else

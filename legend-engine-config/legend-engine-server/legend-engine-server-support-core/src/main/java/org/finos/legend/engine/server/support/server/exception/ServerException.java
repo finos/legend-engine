@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.server.support.server.exception;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;

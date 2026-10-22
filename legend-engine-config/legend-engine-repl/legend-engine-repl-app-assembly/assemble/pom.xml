@@ -34,6 +34,14 @@
             <scope>runtime</scope>
             <version>${slf4j.version}</version>
         </dependency>
+        <dependency>
+            <!-- Loaded via ServiceLoader: the only AuthenticationSourceProvider on the REPL classpath, without
+                 which platform-bound graph fetches fail. -->
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-identity-pac4j</artifactId>
+            <scope>runtime</scope>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <profiles>

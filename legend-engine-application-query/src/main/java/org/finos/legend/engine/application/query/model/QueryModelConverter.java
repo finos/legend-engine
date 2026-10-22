@@ -15,10 +15,11 @@
 package org.finos.legend.engine.application.query.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.finos.legend.engine.application.query.api.ApplicationQueryException;
 import org.finos.legend.engine.shared.mongo.model.StoredAuditInformation;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -28,6 +29,8 @@ import java.time.ZoneId;
  */
 public class QueryModelConverter
 {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
+
     private QueryModelConverter()
     {
     }
@@ -45,7 +48,7 @@ public class QueryModelConverter
         Query query;
         try
         {
-            query = new ObjectMapper().convertValue(stored, Query.class);
+            query = OBJECT_MAPPER.convertValue(stored, Query.class);
         }
         catch (Exception e)
         {

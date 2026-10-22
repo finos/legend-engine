@@ -17,9 +17,10 @@ package org.finos.legend.engine.language.dataquality.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.testing.junit.ResourceTestRule;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import io.dropwizard.testing.junit5.ResourceExtension;
 
-import javax.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Entity;
 
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -43,15 +44,14 @@ import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.consta
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality;
 import org.glassfish.jersey.test.TestProperties;
-import org.junit.ClassRule;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -62,15 +62,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@org.junit.jupiter.api.extension.ExtendWith(DropwizardExtensionsSupport.class)
 public class TestDataQualityApi
 {
 
@@ -81,11 +82,9 @@ public class TestDataQualityApi
 
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final PureModelContextData pureModelContextData = GrammarParseTestUtils.loadPureModelContextFromResource("inputs/test-data.pure", TestDataQualityApi.class);
+    public static final ResourceExtension resources = getResourceTestRule();
 
-    @ClassRule
-    public static final ResourceTestRule resources = getResourceTestRule();
-
-    public static ResourceTestRule getResourceTestRule()
+    public static ResourceExtension getResourceTestRule()
 
     {
         DeploymentMode deploymentMode = DeploymentMode.TEST;
@@ -107,7 +106,7 @@ public class TestDataQualityApi
                 null
         );
 
-        return ResourceTestRule.builder()
+        return ResourceExtension.builder()
                 .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
                 .addResource(api)
                 .addResource(new MockPac4jFeature())
@@ -347,9 +346,9 @@ public class TestDataQualityApi
                 .post(Entity.json(input));
 
         String resultAsString = response.readEntity(String.class);
-        assertEquals(resultAsString, 200, response.getStatus());
+        assertEquals(200, response.getStatus(), resultAsString);
         List<String> sqlQueries = objectMapper.readTree(resultAsString).findValues("sqlQuery").stream().map(JsonNode::asText).collect(Collectors.toList());
-        assertTrue(resultAsString, sqlQueries.stream().anyMatch(sql -> definesCommonTableExpression(sql, "olderThan26") && definesCommonTableExpression(sql, "positiveIds")));
+        assertTrue(sqlQueries.stream().anyMatch(sql -> definesCommonTableExpression(sql, "olderThan26") && definesCommonTableExpression(sql, "positiveIds")), resultAsString);
     }
 
     @Test
@@ -365,7 +364,7 @@ public class TestDataQualityApi
 
         assertEquals(500, response.getStatus());
         String resultAsString = response.readEntity(String.class);
-        assertTrue(resultAsString, resultAsString.contains("The 'from' function is not supported inside let 'people' of the target query; apply 'from' to the final expression only"));
+        assertTrue(resultAsString.contains("The 'from' function is not supported inside let 'people' of the target query; apply 'from' to the final expression only"), resultAsString);
     }
 
     @Test
@@ -382,7 +381,7 @@ public class TestDataQualityApi
                 .post(Entity.json(input));
 
         String resultAsString = response.readEntity(String.class);
-        assertEquals(resultAsString, 200, response.getStatus());
+        assertEquals(200, response.getStatus(), resultAsString);
     }
 
     private static boolean definesCommonTableExpression(String sql, String name)
@@ -408,7 +407,7 @@ public class TestDataQualityApi
                 .request()
                 .post(Entity.json(input));
         String resultAsString = response.readEntity(String.class);
-        assertEquals(resultAsString, 200, response.getStatus());
+        assertEquals(200, response.getStatus(), resultAsString);
         return resultAsString;
     }
 
@@ -417,7 +416,7 @@ public class TestDataQualityApi
         JsonNode result = objectMapper.readTree(reconResult);
         JsonNode columns = result.path("builder").path("columns");
         JsonNode rows = result.path("result").path("rows");
-        assertTrue(reconResult, rows.isArray());
+        assertTrue(rows.isArray(), reconResult);
 
         int sourceKeyIndex = -1;
         int targetKeyIndex = -1;
@@ -433,7 +432,7 @@ public class TestDataQualityApi
                 targetKeyIndex = i;
             }
         }
-        assertTrue(key + "_SOURCE/_TARGET columns not found in " + columns, sourceKeyIndex >= 0 && targetKeyIndex >= 0);
+        assertTrue(sourceKeyIndex >= 0 && targetKeyIndex >= 0, key + "_SOURCE/_TARGET columns not found in " + columns);
 
         Set<String> defectKeys = new LinkedHashSet<>();
         for (JsonNode row : rows)
@@ -481,7 +480,7 @@ public class TestDataQualityApi
         assertFalse(DataQualityPropertyPathTreeGenerator.isDataQualityInstance(packageableElement2));
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testDataQualityGetPropertyPathTree_WithNullDataQualityValidation() throws IOException
     {
@@ -540,14 +539,14 @@ public class TestDataQualityApi
         if (columns.isMissingNode())
         {
             // Fallback: result may be wrapped differently — just check the raw result contains the expected column names
-            assertTrue("Response should contain column_name", resultAsString.contains("column_name"));
-            assertTrue("Response should contain column_data_type", resultAsString.contains("column_data_type"));
-            assertTrue("Response should contain count", resultAsString.contains("count"));
-            assertTrue("Response should contain string_value", resultAsString.contains("string_value"));
-            assertTrue("Response should contain int_value", resultAsString.contains("int_value"));
-            assertTrue("Response should contain float_value", resultAsString.contains("float_value"));
-            assertTrue("Response should contain date_value", resultAsString.contains("date_value"));
-            assertTrue("Response should contain boolean_value", resultAsString.contains("boolean_value"));
+            assertTrue(resultAsString.contains("column_name"), "Response should contain column_name");
+            assertTrue(resultAsString.contains("column_data_type"), "Response should contain column_data_type");
+            assertTrue(resultAsString.contains("count"), "Response should contain count");
+            assertTrue(resultAsString.contains("string_value"), "Response should contain string_value");
+            assertTrue(resultAsString.contains("int_value"), "Response should contain int_value");
+            assertTrue(resultAsString.contains("float_value"), "Response should contain float_value");
+            assertTrue(resultAsString.contains("date_value"), "Response should contain date_value");
+            assertTrue(resultAsString.contains("boolean_value"), "Response should contain boolean_value");
         }
         else
         {
@@ -584,7 +583,7 @@ public class TestDataQualityApi
         JsonNode rows = result.path("result").path("rows");
         if (!rows.isMissingNode() && rows.isArray())
         {
-            assertTrue("At most 2 rows per column when maxNumberOfSampleValues=2", rows.size() <= 2);
+            assertTrue(rows.size() <= 2, "At most 2 rows per column when maxNumberOfSampleValues=2");
         }
     }
 
@@ -607,7 +606,7 @@ public class TestDataQualityApi
         JsonNode rows = result.path("result").path("rows");
         if (!rows.isMissingNode() && rows.isArray())
         {
-            assertTrue("Rows should be <= 20 (default max)", rows.size() <= 20);
+            assertTrue(rows.size() <= 20, "Rows should be <= 20 (default max)");
         }
     }
 
@@ -625,7 +624,7 @@ public class TestDataQualityApi
         assertEquals(200, response.getStatus());
         String resultAsString = response.readEntity(String.class);
         // Verify column_data_type says "String"
-        assertTrue("String column should report data type as String", resultAsString.contains("String"));
+        assertTrue(resultAsString.contains("String"), "String column should report data type as String");
     }
 
     @Test
@@ -642,7 +641,7 @@ public class TestDataQualityApi
         assertEquals(200, response.getStatus());
         String resultAsString = response.readEntity(String.class);
         // Verify column_data_type says "Integer"
-        assertTrue("Integer column should report data type as Integer", resultAsString.contains("Integer"));
+        assertTrue(resultAsString.contains("Integer"), "Integer column should report data type as Integer");
     }
 
     @Test
@@ -664,7 +663,7 @@ public class TestDataQualityApi
         int fullNamePos = resultAsString.indexOf("\"fullName\"");
         if (idPos >= 0 && fullNamePos >= 0)
         {
-            assertTrue("id block should appear before fullName block", idPos < fullNamePos);
+            assertTrue(idPos < fullNamePos, "id block should appear before fullName block");
         }
     }
 
@@ -703,12 +702,12 @@ public class TestDataQualityApi
                 .post(Entity.json(input));
 
         String resultAsString = response.readEntity(String.class);
-        assertEquals(resultAsString, 200, response.getStatus());
+        assertEquals(200, response.getStatus(), resultAsString);
 
         JsonNode result = objectMapper.readTree(resultAsString);
         JsonNode columns = result.path("builder").path("columns");
         JsonNode rows = result.path("result").path("rows");
-        assertTrue(resultAsString, rows.isArray());
+        assertTrue(rows.isArray(), resultAsString);
 
         int nameIndex = -1;
         for (int i = 0; i < columns.size(); i++)
@@ -718,13 +717,13 @@ public class TestDataQualityApi
                 nameIndex = i;
             }
         }
-        assertTrue("FULL_NAME column not found in " + columns, nameIndex >= 0);
+        assertTrue(nameIndex >= 0, "FULL_NAME column not found in " + columns);
 
         Set<String> actual = new LinkedHashSet<>();
         for (JsonNode row : rows)
         {
             actual.add(row.path("values").get(nameIndex).asText());
         }
-        assertEquals(resultAsString, expectedNames, actual);
+        assertEquals(expectedNames, actual, resultAsString);
     }
 }

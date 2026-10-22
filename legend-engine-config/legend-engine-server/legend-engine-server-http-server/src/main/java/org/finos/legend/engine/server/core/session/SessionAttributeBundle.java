@@ -14,30 +14,32 @@
 
 package org.finos.legend.engine.server.core.session;
 
-import io.dropwizard.Bundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-import org.pac4j.core.context.JEEContext;
+import io.dropwizard.core.Configuration;
+import io.dropwizard.core.ConfiguredBundle;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
+import org.pac4j.jee.context.JEEContext;
 import org.pac4j.core.context.WebContext;
-import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.jee.context.session.JEESessionStore;
+import org.pac4j.core.profile.UserProfile;
 import org.pac4j.core.profile.ProfileManager;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.EnumSet;
 import java.util.Optional;
 
-public class SessionAttributeBundle implements Bundle
+public class SessionAttributeBundle implements ConfiguredBundle<Configuration>
 {
     @Override
     public void initialize(Bootstrap<?> bootstrap)
@@ -45,7 +47,7 @@ public class SessionAttributeBundle implements Bundle
     }
 
     @Override
-    public void run(Environment environment)
+    public void run(Configuration configuration, Environment environment)
     {
         environment.servlets().addFilter("SessionAttributeEnricher", Enricher.class)
                 .addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
@@ -69,9 +71,9 @@ public class SessionAttributeBundle implements Bundle
             {
                 session.setAttribute(SessionTracker.ATTR_USER_ID, userPrincipal.getName());
                 WebContext context = new JEEContext((HttpServletRequest) request, (HttpServletResponse) response);
-                ProfileManager<CommonProfile> manager = new ProfileManager<>(context);
-                Optional<CommonProfile> profile = manager.get(true);
-                profile.ifPresent(commonProfile -> session.setAttribute(SessionTracker.ATTR_USER_PROFILE, commonProfile));
+                ProfileManager manager = new ProfileManager(context, new JEESessionStore());
+                Optional<UserProfile> profile = manager.getProfile();
+                profile.ifPresent(userProfile -> session.setAttribute(SessionTracker.ATTR_USER_PROFILE, userProfile));
             }
             session.setAttribute(SessionTracker.ATTR_CALLS, (session.getAttribute(SessionTracker.ATTR_CALLS) == null ? 0 : (Integer) session.getAttribute(SessionTracker.ATTR_CALLS)) + 1);
             chain.doFilter(request, response);

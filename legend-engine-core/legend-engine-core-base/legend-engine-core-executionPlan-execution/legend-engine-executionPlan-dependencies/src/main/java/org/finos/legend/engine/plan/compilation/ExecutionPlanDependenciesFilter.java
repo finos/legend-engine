@@ -39,7 +39,10 @@ public class ExecutionPlanDependenciesFilter implements ClassPathFilter
             "com.fasterxml",
             "org.eclipse.collections",
             "org.apache.commons",
-            "org.finos.legend.pure.m4.coreinstance.primitive.date"
+            "org.finos.legend.pure.m4.coreinstance.primitive.date",
+            // Used by generated code, which is compiled at runtime. Unlike javax, these have no JDK fallback.
+            "jakarta.annotation",
+            "jakarta.validation"
     );
 
     /*
@@ -53,6 +56,8 @@ public class ExecutionPlanDependenciesFilter implements ClassPathFilter
     {
         System.out.println(com.fasterxml.jackson.core.JsonFactory.class.getSimpleName());
         System.out.println(com.fasterxml.jackson.dataformat.xml.XmlFactory.class.getSimpleName());
+        System.out.println(jakarta.annotation.Generated.class.getSimpleName());
+        System.out.println(jakarta.validation.constraints.NotNull.class.getSimpleName());
     }
 
     private static List<Class<?>> expandClass(Class<?> c)

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build & Run
 
-Toolchain: **JDK 11** (Maven enforcer: `[11.0.10,12)`), **Maven 3.6.2+**. Full clean build is expensive (15–25 min); prefer `-T 4` and `-DskipTests` during iteration.
+Toolchain: **JDK 17** (Maven enforcer: `[17,18)`), **Maven 3.6.2+**. Full clean build is expensive (15–25 min); prefer `-T 4` and `-DskipTests` during iteration.
 
 ```bash
 mvn clean install -DskipTests -pl <module-path>    # directly touched module

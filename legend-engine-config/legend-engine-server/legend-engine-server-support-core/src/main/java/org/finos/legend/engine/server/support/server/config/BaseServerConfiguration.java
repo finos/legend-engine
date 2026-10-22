@@ -15,7 +15,7 @@
 package org.finos.legend.engine.server.support.server.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.dropwizard.Configuration;
+import io.dropwizard.core.Configuration;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jConfiguration;
 

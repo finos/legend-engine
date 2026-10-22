@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.ide.api;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.eclipse.collections.api.block.predicate.Predicate;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -31,12 +31,12 @@ import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.welcome
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Comparator;
@@ -44,7 +44,7 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-@Api(tags = "File Management")
+@Tag(name = "File Management")
 @Path("/")
 public class FileManagement
 {

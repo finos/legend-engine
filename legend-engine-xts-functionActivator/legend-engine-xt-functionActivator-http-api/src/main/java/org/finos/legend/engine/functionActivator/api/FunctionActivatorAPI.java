@@ -15,9 +15,9 @@
 package org.finos.legend.engine.functionActivator.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
@@ -49,17 +49,17 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 
 import java.util.List;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "Function Activator")
+@Tag(name = "Function Activator")
 @Path("functionActivator/")
 public class FunctionActivatorAPI
 {
@@ -87,10 +87,10 @@ public class FunctionActivatorAPI
 
     @GET
     @Path("list")
-    @ApiOperation(value = "List all available function activators")
+    @Operation(summary = "List all available function activators")
     @Consumes({MediaType.TEXT_PLAIN, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response list(@ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response list(@Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -100,11 +100,11 @@ public class FunctionActivatorAPI
 
     @POST
     @Path("validate")
-    @ApiOperation(value = "Validate that the functions can be properly activated by the activator.")
+    @Operation(summary = "Validate that the functions can be properly activated by the activator.")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     @Prometheus(name = "FunctionActivator validate", doc = "Function Activator validate duration histogram")
-    public Response validate(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response validate(FunctionActivatorInput input, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -130,11 +130,11 @@ public class FunctionActivatorAPI
 
     @POST
     @Path("publishToSandbox")
-    @ApiOperation(value = "Public the activator to a sandbox environment. Production deployment will occur using the SDLC pipeline.")
+    @Operation(summary = "Public the activator to a sandbox environment. Production deployment will occur using the SDLC pipeline.")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     @Prometheus(name = "FunctionActivator publishToSandbox", doc = "Function Activator publishToSandbox duration histogram")
-    public Response publishToSandbox(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response publishToSandbox(FunctionActivatorInput input, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -160,10 +160,10 @@ public class FunctionActivatorAPI
 
     @POST
     @Path("renderArtifact")
-    @ApiOperation(value = "Display generated artifact as text where applicable")
+    @Operation(summary = "Display generated artifact as text where applicable")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response renderArtifact(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response renderArtifact(FunctionActivatorInput input, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -184,10 +184,10 @@ public class FunctionActivatorAPI
 
     @POST
     @Path("generateLineage")
-    @ApiOperation(value = "generated activator lineage")
+    @Operation(summary = "generated activator lineage")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response generateLineage(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generateLineage(FunctionActivatorInput input, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);

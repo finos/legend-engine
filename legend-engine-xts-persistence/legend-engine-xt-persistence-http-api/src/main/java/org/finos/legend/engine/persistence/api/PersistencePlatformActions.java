@@ -15,9 +15,9 @@
 
 package org.finos.legend.engine.persistence.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.FixedSizeList;
@@ -28,6 +28,7 @@ import org.finos.legend.engine.language.pure.dsl.persistence.platform.Persistenc
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -35,16 +36,16 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
 
 
-@Api(tags = "Persistence")
+@Tag(name = "Persistence")
 @Path("persistence/v1/platform")
 @Produces(MediaType.APPLICATION_JSON)
 public class PersistencePlatformActions
@@ -62,16 +63,16 @@ public class PersistencePlatformActions
 
     @POST
     @Path("validate")
-    @ApiOperation(value = "Checks that the given persistence context contains a valid platform")
-    public void validate(PersistencePlatformActionPayload payload, @Pac4JProfileManager @ApiParam(hidden = true) ProfileManager<CommonProfile> pm)
+    @Operation(summary = "Checks that the given persistence context contains a valid platform")
+    public void validate(PersistencePlatformActionPayload payload, @Pac4JProfileManager @Parameter(hidden = true) ProfileManager pm)
     {
         this.action(payload, pm, PersistencePlatformActionsExtension::validate);
     }
 
     @POST
     @Path("install")
-    @ApiOperation(value = "Install the given persistence context using its defined platform")
-    public void install(PersistencePlatformActionPayload payload, @Pac4JProfileManager @ApiParam(hidden = true) ProfileManager<CommonProfile> pm)
+    @Operation(summary = "Install the given persistence context using its defined platform")
+    public void install(PersistencePlatformActionPayload payload, @Pac4JProfileManager @Parameter(hidden = true) ProfileManager pm)
     {
         this.validate(payload, pm);
         this.action(payload, pm, PersistencePlatformActionsExtension::install);
@@ -79,16 +80,19 @@ public class PersistencePlatformActions
 
     @POST
     @Path("uninstall")
-    @ApiOperation(value = "Uninstall the given persistence context using its defined platform")
-    public void uninstall(PersistencePlatformActionPayload payload, @Pac4JProfileManager @ApiParam(hidden = true) ProfileManager<CommonProfile> pm)
+    @Operation(summary = "Uninstall the given persistence context using its defined platform")
+    public void uninstall(PersistencePlatformActionPayload payload, @Pac4JProfileManager @Parameter(hidden = true) ProfileManager pm)
     {
         this.action(payload, pm, PersistencePlatformActionsExtension::uninstall);
     }
 
-    private void action(PersistencePlatformActionPayload payload, ProfileManager<CommonProfile> pm, Procedure2<PersistencePlatformActionsExtension, PersistencePlatformActionRequest> action)
+    private void action(PersistencePlatformActionPayload payload, ProfileManager pm, Procedure2<PersistencePlatformActionsExtension, PersistencePlatformActionRequest> action)
     {
-        FixedSizeList<CommonProfile> profiles = pm.get(true).map(Lists.fixedSize::of).orElse(null);
-        Identity identity = Identity.makeIdentity(profiles);
+        // getProfile(), not ProfileManagerHelper.extractProfiles(): it yields the one real profile
+        // and skips AnonymousProfile, as the sibling resources do.
+        Identity identity = Identity.makeIdentity(pm == null
+                ? Lists.fixedSize.<CommonProfile>empty()
+                : pm.getProfile().map(p -> Lists.fixedSize.of((CommonProfile) p)).orElse(Lists.fixedSize.empty()));
         Pair<PureModelContextData, PureModel> pureModelContextDataPureModelPair = this.modelManager.loadModelAndData(payload.model, payload.clientVersion, identity, null);
         PureModel model = pureModelContextDataPureModelPair.getTwo();
         PackageableElement packageableElement = model.getPackageableElement(payload.persistenceContextPath);

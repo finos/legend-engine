@@ -602,7 +602,10 @@ public class PlanExecutor
         ImmutableListMultimap<StoreType, StoreExecutorConfiguration> configurationsByType = Lists.immutable.with(storeExecutorConfigurations).groupBy(storeExecutorConfiguration -> storeExecutorConfiguration.getStoreType());
         ImmutableListMultimap<StoreType, StoreExecutorBuilder> buildersByType = Lists.immutable.withAll(storeExecutorBuilders).groupBy(storeExecutorBuilder -> storeExecutorBuilder.getStoreType());
 
-        List<StoreExecutor> storeExecutors = Lists.immutable.with(StoreType.values())
+        // Not StoreType.values(): that holds only the store types registered so far, which depends on
+        // which extension classes happened to be initialised first.
+        List<StoreExecutor> storeExecutors = buildersByType.keysView()
+                .toSortedList()
                 .stream()
                 .map(storeType ->
                         {

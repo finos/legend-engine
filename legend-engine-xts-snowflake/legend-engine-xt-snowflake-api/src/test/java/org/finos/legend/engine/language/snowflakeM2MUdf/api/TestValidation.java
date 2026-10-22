@@ -30,7 +30,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.util.List;
 
 

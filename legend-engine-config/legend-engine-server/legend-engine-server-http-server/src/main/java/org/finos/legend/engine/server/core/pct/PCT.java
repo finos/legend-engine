@@ -15,32 +15,32 @@
 package org.finos.legend.engine.server.core.pct;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.apache.commons.io.IOUtils;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
 import java.util.Set;
 
-@Api(tags = "PCT")
+@Tag(name = "PCT")
 @Path("pct")
 public class PCT
 {
     @GET
     @Path("form")
-    @ApiOperation(value = "PCT report form")
+    @Operation(summary = "PCT report form")
     @Produces(MediaType.TEXT_HTML)
     public Response formPCT()
     {
@@ -59,7 +59,7 @@ public class PCT
 
     @GET
     @Path("functions")
-    @ApiOperation(value = "PCT function reference")
+    @Operation(summary = "PCT function reference")
     @Produces(MediaType.TEXT_HTML)
     public Response functionsPCT()
     {
@@ -78,7 +78,7 @@ public class PCT
 
     @GET
     @Path("git-info.json")
-    @ApiOperation(value = "Git info for PCT report")
+    @Operation(summary = "Git info for PCT report")
     @Produces(MediaType.APPLICATION_JSON)
     public Response gitInfoPct()
     {
@@ -87,7 +87,7 @@ public class PCT
 
     @GET
     @Path("html")
-    @ApiOperation(value = "PCT report in HTML")
+    @Operation(summary = "PCT report in HTML")
     @Produces(MediaType.TEXT_HTML)
     public Response htmlPCT(@QueryParam("adapter") Set<String> adapterKeys, @QueryParam("qualifier") Set<String> adapterQualifiers, @QueryParam("skipFunctionsWithoutTest") @DefaultValue("true") boolean skipFunctionsWithoutTest)
     {
@@ -96,7 +96,7 @@ public class PCT
 
     @GET
     @Path("pct-docs.json")
-    @ApiOperation(value = "PCT report in JSON")
+    @Operation(summary = "PCT report in JSON")
     @Produces(MediaType.APPLICATION_JSON)
     public Response jsonPCT() throws JsonProcessingException
     {

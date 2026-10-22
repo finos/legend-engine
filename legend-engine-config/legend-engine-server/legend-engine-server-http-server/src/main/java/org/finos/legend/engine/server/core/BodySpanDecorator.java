@@ -18,9 +18,9 @@ import io.opentracing.util.GlobalTracer;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.ext.ReaderInterceptor;
-import javax.ws.rs.ext.ReaderInterceptorContext;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.ext.ReaderInterceptor;
+import jakarta.ws.rs.ext.ReaderInterceptorContext;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

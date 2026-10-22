@@ -31,7 +31,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
+import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper;
 import org.finos.legend.engine.query.graphQL.api.execute.SerializedNamedPlans;
 import org.finos.legend.engine.query.graphQL.api.execute.directives.IGraphQLDirectiveExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -60,7 +60,7 @@ public class TotalCountDirective implements IGraphQLDirectiveExtension
     {
         try
         {
-            org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = GraphQLExecute.toPureModel(document, pureModel);
+            org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = GraphQLExecutionHelper.toPureModel(document, pureModel);
             RichIterable<? extends Root_meta_external_query_graphQL_transformation_queryToPure_NamedExecutionPlan> purePlans = core_external_query_graphql_transformation_transformation_graphFetch.Root_meta_external_query_graphQL_transformation_queryToPure_getPlanForTotalCountDirective_Class_1__Mapping_1__Runtime_1__Document_1__Extension_MANY__NamedExecutionPlan_MANY_(_class, mapping, runtime, queryDoc, extensions, pureModel.getExecutionSupport());
             List<SerializedNamedPlans> plans = purePlans.toList().stream().map(p ->
             {

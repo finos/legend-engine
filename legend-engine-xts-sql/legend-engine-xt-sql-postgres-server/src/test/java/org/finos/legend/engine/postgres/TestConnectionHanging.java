@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.postgres;
 
-import io.dropwizard.testing.junit.ResourceTestRule;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import io.dropwizard.testing.junit5.ResourceExtension;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsTestClient;
@@ -24,12 +25,12 @@ import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIde
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecuteTest;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.postgresql.PGProperty;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
@@ -84,12 +85,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  *   <li>2.4 ? Rapid connection churn: sustained open/close cycles don't exhaust resources</li>
  * </ul>
  */
+@org.junit.jupiter.api.extension.ExtendWith(DropwizardExtensionsSupport.class)
 public class TestConnectionHanging
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestConnectionHanging.class);
-
-    @ClassRule
-    public static final ResourceTestRule resources = SqlExecuteTest.getResourceTestRule();
+    public static final ResourceExtension resources = SqlExecuteTest.getResourceTestRule();
 
     /**
      * A {@link LegendTdsTestClient} subclass whose behaviour can be changed at
@@ -103,7 +103,7 @@ public class TestConnectionHanging
         volatile boolean throwOnQuery = false;
         volatile boolean throwOnSchema = false;
 
-        ConfigurableLegendClient(ResourceTestRule resources)
+        ConfigurableLegendClient(ResourceExtension resources)
         {
             super(resources);
         }
@@ -163,7 +163,7 @@ public class TestConnectionHanging
     private static ConfigurableLegendClient client;
     private static TestPostgresServer testPostgresServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp()
     {
         // Use only 1 Netty worker thread to amplify I/O-thread-blocking bugs
@@ -184,13 +184,13 @@ public class TestConnectionHanging
         testPostgresServer.startUp();
     }
 
-    @Before
+    @BeforeEach
     public void resetClient()
     {
         client.reset();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown()
     {
         System.clearProperty("io.netty.eventLoopThreads");
@@ -220,7 +220,8 @@ public class TestConnectionHanging
      * <p>With only 1 Netty worker thread, if the I/O thread were blocked
      * (e.g. by {@code activeExecution.join()}), connection B would time out.
      */
-    @Test(timeout = 60_000)
+    @Test
+    @Timeout(value = 60_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testSlowQueryDoesNotBlockNewConnection() throws Exception
     {
         // Connection A's query will take 8 seconds
@@ -279,11 +280,11 @@ public class TestConnectionHanging
             // Connection B must complete within the timeout ? if it doesn't,
             // the I/O thread is blocked by the slow query on A
             int fastResult = fastConnection.get(10, TimeUnit.SECONDS);
-            Assert.assertEquals(1, fastResult);
+            Assertions.assertEquals(1, fastResult);
 
             // Connection A should eventually complete too
             int slowResult = slowQuery.get(30, TimeUnit.SECONDS);
-            Assert.assertEquals(4, slowResult);
+            Assertions.assertEquals(4, slowResult);
         }
         finally
         {
@@ -306,7 +307,8 @@ public class TestConnectionHanging
      * <p>This test opens and closes 50 connections concurrently. With a
      * corrupted set, the test either hangs (infinite loop) or throws.
      */
-    @Test(timeout = 60_000)
+    @Test
+    @Timeout(value = 60_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testConcurrentConnectionsThreadSafety() throws Exception
     {
         int numConnections = 50;
@@ -361,9 +363,8 @@ public class TestConnectionHanging
             executor.shutdownNow();
         }
 
-        Assert.assertEquals("Some connections failed", 0, failures.get());
-        Assert.assertEquals("Not all connections succeeded",
-                numConnections, successes.get());
+        Assertions.assertEquals(0, failures.get(), "Some connections failed");
+        Assertions.assertEquals(numConnections, successes.get(), "Not all connections succeeded");
     }
 
     // -----------------------------------------------------------------------
@@ -383,7 +384,8 @@ public class TestConnectionHanging
      * by {@code PostgresServer}. Thread count stays near baseline because
      * threads are reused, not created per session.
      */
-    @Test(timeout = 60_000)
+    @Test
+    @Timeout(value = 60_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testSessionThreadPoolCleanup() throws Exception
     {
         // Warm up ? ensure class loading and internal pools are initialized
@@ -428,12 +430,7 @@ public class TestConnectionHanging
 
         // With a shared executor, the delta should be very small (< 15).
         // With per-session pools, delta ? numConnections (one leaked thread each).
-        Assert.assertTrue(
-                "Thread count grew by " + threadDelta + " after " + numConnections
-                        + " connections ? per-session executor pools are likely leaking."
-                        + " Expected delta < 15 (shared pool), got " + threadDelta + "."
-                        + " Baseline=" + baselineThreads + " Final=" + afterThreads,
-                threadDelta < 15);
+        Assertions.assertTrue(threadDelta < 15, "Thread count grew by " + threadDelta + " after " + numConnections + " connections ? per-session executor pools are likely leaking." + " Expected delta < 15 (shared pool), got " + threadDelta + "." + " Baseline=" + baselineThreads + " Final=" + afterThreads);
     }
 
     // -----------------------------------------------------------------------
@@ -450,7 +447,8 @@ public class TestConnectionHanging
      * reported via the protocol), or (b) is cleanly closed so the client fails
      * fast rather than hanging.
      */
-    @Test(timeout = 30_000)
+    @Test
+    @Timeout(value = 30_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testConnectionRecoveryAfterError() throws Exception
     {
         Properties info = new Properties();
@@ -464,7 +462,7 @@ public class TestConnectionHanging
             try (PreparedStatement stmt = conn.prepareStatement(
                     "SELECT * FROM service.\"/nonExistentService\""))
             {
-                Assert.assertThrows(PSQLException.class, stmt::executeQuery);
+                Assertions.assertThrows(PSQLException.class, stmt::executeQuery);
             }
 
             // Second query ? should either succeed or fail fast (not hang)
@@ -477,7 +475,7 @@ public class TestConnectionHanging
                 {
                     rows++;
                 }
-                Assert.assertEquals(4, rows);
+                Assertions.assertEquals(4, rows);
             }
         }
     }
@@ -487,7 +485,8 @@ public class TestConnectionHanging
      * unchecked exception during execution. Verify the connection does not
      * hang on a subsequent attempt.
      */
-    @Test(timeout = 30_000)
+    @Test
+    @Timeout(value = 30_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testConnectionRecoveryAfterLegendClientException() throws Exception
     {
         Properties info = new Properties();
@@ -506,7 +505,7 @@ public class TestConnectionHanging
             try
             {
                 stmt.executeQuery("SELECT * FROM service.\"/personService\"");
-                Assert.fail("Expected exception");
+                Assertions.fail("Expected exception");
             }
             catch (PSQLException e)
             {
@@ -525,7 +524,7 @@ public class TestConnectionHanging
                 {
                     rows++;
                 }
-                Assert.assertEquals(4, rows);
+                Assertions.assertEquals(4, rows);
             }
         }
         catch (PSQLException e)
@@ -554,7 +553,8 @@ public class TestConnectionHanging
      * <p>This test saturates the common pool, then issues a query and verifies
      * it completes within a reasonable timeout.
      */
-    @Test(timeout = 30_000)
+    @Test
+    @Timeout(value = 30_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testQueryCompletesWhenCommonPoolIsSaturated() throws Exception
     {
         int parallelism = ForkJoinPool.commonPool().getParallelism();
@@ -609,7 +609,7 @@ public class TestConnectionHanging
                 try
                 {
                     int result = queryResult.get(15, TimeUnit.SECONDS);
-                    Assert.assertEquals(1, result);
+                    Assertions.assertEquals(1, result);
                     LOGGER.info("Query completed despite saturated ForkJoinPool ? "
                             + "server uses a dedicated executor (good)");
                 }
@@ -617,7 +617,7 @@ public class TestConnectionHanging
                 {
                     // This is the bug: the query hung because ForkJoinPool.commonPool()
                     // is saturated and the task chain couldn't make progress.
-                    Assert.fail("Query timed out ? ForkJoinPool.commonPool() saturation "
+                    Assertions.fail("Query timed out ? ForkJoinPool.commonPool() saturation "
                             + "blocked the wire-protocol task chain. The server should "
                             + "use a dedicated executor for thenRunAsync/thenComposeAsync.");
                 }
@@ -660,7 +660,8 @@ public class TestConnectionHanging
      * have been opened. With per-session pools, each session creates its own
      * pool-N group.
      */
-    @Test(timeout = 60_000)
+    @Test
+    @Timeout(value = 60_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testSharedExecutorAcrossSessions() throws Exception
     {
         // Warm up
@@ -701,11 +702,7 @@ public class TestConnectionHanging
 
         // With a shared executor, 0 new pool IDs should be created (all reuse
         // the same pool). With per-session pools, 50 new pool-N groups appear.
-        Assert.assertTrue(
-                "Created " + newPoolIds + " new thread pool(s) for 50 sessions."
-                        + " Expected 0 (shared executor). This indicates per-session"
-                        + " CachedThreadPool creation is still happening.",
-                newPoolIds <= 1);
+        Assertions.assertTrue(newPoolIds <= 1, "Created " + newPoolIds + " new thread pool(s) for 50 sessions." + " Expected 0 (shared executor). This indicates per-session" + " CachedThreadPool creation is still happening.");
     }
 
     /**
@@ -751,7 +748,8 @@ public class TestConnectionHanging
      * <p>Pre-fix (UnifiedSet): could hang in an infinite loop, throw
      * ConcurrentModificationException, or lose entries silently.
      */
-    @Test(timeout = 90_000)
+    @Test
+    @Timeout(value = 90_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testLiveConnectionsThreadSafetyWithIteration() throws Exception
     {
         int httpPort = testPostgresServer.getHttpPort();
@@ -872,16 +870,12 @@ public class TestConnectionHanging
         LOGGER.info("liveConnections thread-safety: {} ok, {} fail, {} httpPolls, {} httpErrors",
                 successes.get(), failures.get(), httpPolls.get(), httpErrors.get());
 
-        Assert.assertEquals("Some connections failed under concurrent load",
-                0, failures.get());
-        Assert.assertEquals("Not all connections succeeded",
-                numConnections, successes.get());
+        Assertions.assertEquals(0, failures.get(), "Some connections failed under concurrent load");
+        Assertions.assertEquals(numConnections, successes.get(), "Not all connections succeeded");
         if (canPollHttp)
         {
-            Assert.assertTrue("/server/info was never polled during test",
-                    httpPolls.get() > 0);
-            Assert.assertEquals("/server/info returned errors (possible set corruption)",
-                    0, httpErrors.get());
+            Assertions.assertTrue(httpPolls.get() > 0, "/server/info was never polled during test");
+            Assertions.assertEquals(0, httpErrors.get(), "/server/info returned errors (possible set corruption)");
         }
     }
 
@@ -901,12 +895,12 @@ public class TestConnectionHanging
      * <p>Post-fix: {@code Collections.synchronizedList} capped at 1000 entries
      * with FIFO eviction in {@code PostgresServer.close()}.
      */
-    @Test(timeout = 120_000)
+    @Test
+    @Timeout(value = 120_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testConnectionsHistoryBounded() throws Exception
     {
         int httpPort = testPostgresServer.getHttpPort();
-        Assert.assertTrue("HTTP port not available for /server/info test",
-                httpPort > 0);
+        Assertions.assertTrue(httpPort > 0, "HTTP port not available for /server/info test");
 
         // Open more than MAX_HISTORY (1000) connections.
         // Use a smaller number (1100) to keep the test fast but exceed the cap.
@@ -939,8 +933,7 @@ public class TestConnectionHanging
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setConnectTimeout(5_000);
         conn.setReadTimeout(10_000);
-        Assert.assertEquals("GET /server/info/ should return 200",
-                200, conn.getResponseCode());
+        Assertions.assertEquals(200, conn.getResponseCode(), "GET /server/info/ should return 200");
 
         String body;
         try (BufferedReader reader = new BufferedReader(
@@ -961,16 +954,10 @@ public class TestConnectionHanging
                 historySize, numConnections);
 
         // History should be capped at 1000 (MAX_HISTORY), NOT equal to numConnections
-        Assert.assertTrue(
-                "connectionsHistory has " + historySize + " entries after "
-                        + numConnections + " connections. Expected <= 1000 (MAX_HISTORY)."
-                        + " History is not being capped.",
-                historySize <= 1000);
+        Assertions.assertTrue(historySize <= 1000, "connectionsHistory has " + historySize + " entries after " + numConnections + " connections. Expected <= 1000 (MAX_HISTORY)." + " History is not being capped.");
 
         // It should also not be trivially empty (connections were tracked)
-        Assert.assertTrue(
-                "connectionsHistory is empty ? connections are not being tracked at all",
-                historySize > 0);
+        Assertions.assertTrue(historySize > 0, "connectionsHistory is empty ? connections are not being tracked at all");
     }
 
     // -----------------------------------------------------------------------
@@ -986,7 +973,8 @@ public class TestConnectionHanging
      * executor, thread-safe collections, and bounded history into a single
      * realistic scenario.
      */
-    @Test(timeout = 120_000)
+    @Test
+    @Timeout(value = 120_000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testRapidConnectionChurn() throws Exception
     {
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
@@ -1063,18 +1051,13 @@ public class TestConnectionHanging
                 baselineThreads, afterThreads);
 
         // All connections must succeed
-        Assert.assertEquals("Connection failures during churn",
-                0, failures.get());
-        Assert.assertEquals("Not all churn connections succeeded",
-                totalConnections, successes.get());
+        Assertions.assertEquals(0, failures.get(), "Connection failures during churn");
+        Assertions.assertEquals(totalConnections, successes.get(), "Not all churn connections succeeded");
 
         // Thread count should not grow proportionally to connection count.
         // With a shared executor: delta < 30 (some Netty/GC overhead).
         // With per-session pools: delta ? 500 (one leaked thread each).
-        Assert.assertTrue(
-                "Thread count grew by " + threadDelta + " after " + totalConnections
-                        + " concurrent connections. Expected < 30 with shared executor.",
-                threadDelta < 30);
+        Assertions.assertTrue(threadDelta < 30, "Thread count grew by " + threadDelta + " after " + totalConnections + " concurrent connections. Expected < 30 with shared executor.");
 
         // Verify the server is still healthy ? new connections work fine
         try (Connection conn = DriverManager.getConnection(jdbcUrl(), "dummy", "dummy");
@@ -1082,7 +1065,7 @@ public class TestConnectionHanging
              ResultSet rs = stmt.executeQuery("SELECT 1"))
         {
             rs.next();
-            Assert.assertEquals(1, rs.getInt(1));
+            Assertions.assertEquals(1, rs.getInt(1));
         }
     }
 

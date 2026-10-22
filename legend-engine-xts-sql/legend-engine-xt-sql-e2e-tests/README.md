@@ -19,7 +19,7 @@ End-to-end tests that compare SQL execution between a real **PostgreSQL 16** dat
 
 ## Prerequisites
 
-- **JDK 11** (`[11.0.10, 12)`)
+- **JDK 17** (`[17,18)`)
 - **Docker** (required by Testcontainers)
 - Module must be built after its dependencies: `mvn clean install -DskipTests -pl legend-engine-xts-sql/legend-engine-xt-sql-e2e-tests -am`
 

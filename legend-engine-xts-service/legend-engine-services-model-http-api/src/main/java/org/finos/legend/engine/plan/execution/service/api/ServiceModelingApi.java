@@ -15,9 +15,9 @@
 package org.finos.legend.engine.plan.execution.service.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -41,20 +41,20 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import java.util.List;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "Service")
+@Tag(name = "Service")
 @Path("service/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class ServiceModelingApi
@@ -76,10 +76,10 @@ public class ServiceModelingApi
 
     @POST
     @Path("doTest")
-    @ApiOperation(value = "Test a service. Only Full_Interactive mode is supported by giving appropriate PureModelContext (i.e. PureModelContextData)")
+    @Operation(summary = "Test a service. Only Full_Interactive mode is supported by giving appropriate PureModelContext (i.e. PureModelContextData)")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "service test", doc = "Service test execution duration")
-    public Response doTest(PureModelContext service, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response doTest(PureModelContext service, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles  = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -114,13 +114,13 @@ public class ServiceModelingApi
 
     @POST
     @Path("doValidation")
-    @ApiOperation(value = "Execute a service validation assertion. Only Full_Interactive mode is supported by giving appropriate PureModelContext (i.e. PureModelContextData)")
+    @Operation(summary = "Execute a service validation assertion. Only Full_Interactive mode is supported by giving appropriate PureModelContext (i.e. PureModelContextData)")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "service validation", doc = "Service validation execution duration")
     public Response doValidation(PureModelContext service,
-                                 @DefaultValue("") @ApiParam(value = "The ID of the assertion to execute from the service", required = true) @QueryParam("assertionId") String assertionId,
+                                 @DefaultValue("") @Parameter(description = "The ID of the assertion to execute from the service", required = true) @QueryParam("assertionId") String assertionId,
                                  @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format,
-                                 @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm,
+                                 @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm,
                                  @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles  = ProfileManagerHelper.extractProfiles(pm);

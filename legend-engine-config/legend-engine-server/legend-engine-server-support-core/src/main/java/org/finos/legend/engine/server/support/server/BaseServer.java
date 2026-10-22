@@ -16,16 +16,15 @@ package org.finos.legend.engine.server.support.server;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import io.dropwizard.Application;
+import io.dropwizard.core.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.eclipse.jetty.ee10.servlet.SessionHandler;
+import org.eclipse.jetty.ee10.servlets.CrossOriginFilter;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;
@@ -33,10 +32,10 @@ import org.slf4j.LoggerFactory;
 import org.finos.legend.engine.server.support.server.config.BaseServerConfiguration;
 import org.finos.legend.engine.server.support.server.tools.StringTools;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.ext.ParamConverter;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.ext.ParamConverter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Instant;
@@ -215,7 +214,7 @@ public abstract class BaseServer<C extends BaseServerConfiguration> extends Appl
         }
     }
 
-    private static class DropwizardConfigurationSwaggerBundle extends SwaggerBundle<BaseServerConfiguration>
+    private static class DropwizardConfigurationSwaggerBundle extends ServerUrlSwaggerBundle<BaseServerConfiguration>
     {
         @Override
         protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(BaseServerConfiguration configuration)

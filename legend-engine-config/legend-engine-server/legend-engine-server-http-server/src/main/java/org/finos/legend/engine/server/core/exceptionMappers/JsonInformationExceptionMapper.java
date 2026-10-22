@@ -19,8 +19,8 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
 import java.util.Map;
 
 public class JsonInformationExceptionMapper implements ExceptionMapper<JsonProcessingException>

@@ -678,7 +678,7 @@
         <!-- GraphQL -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-graphQL-http-api</artifactId>
+            <artifactId>legend-engine-xt-graphQL-api-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

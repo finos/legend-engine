@@ -15,7 +15,7 @@
 package org.finos.legend.engine.external.shared.format.generations;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +25,7 @@ public class GenerationConfiguration
 
     @JsonProperty("class")
     public String classPath;
-    @ApiModelProperty(required = true, example = "meta::pure::tests::model::inheritance")
+    @Schema(required = true, example = "meta::pure::tests::model::inheritance")
     @JsonProperty("package")
     public String packagePath;
     public List<String> scopeElements = Collections.emptyList();

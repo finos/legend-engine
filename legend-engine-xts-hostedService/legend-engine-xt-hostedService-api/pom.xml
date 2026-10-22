@@ -27,6 +27,14 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Hosted Service - API</name>
 
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+        <!-- The root pom's 2.10 cannot read Java 17 class files -->
+        <maven.dependency.plugin.version>3.6.1</maven.dependency.plugin.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -148,5 +156,13 @@
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
     </dependencies>
 </project>

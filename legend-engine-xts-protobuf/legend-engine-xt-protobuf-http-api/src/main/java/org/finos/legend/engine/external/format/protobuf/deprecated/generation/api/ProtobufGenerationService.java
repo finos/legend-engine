@@ -16,9 +16,9 @@ package org.finos.legend.engine.external.format.protobuf.deprecated.generation.a
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationConfig;
@@ -40,17 +40,17 @@ import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Deprecated
-@Api(tags = "Z - Deprecated - Generation - Schema")
+@Tag(name = "Z - Deprecated - Generation - Schema")
 @Path("pure/v1/schemaGeneration")
 @Produces(MediaType.APPLICATION_JSON)
 public class ProtobufGenerationService
@@ -66,9 +66,9 @@ public class ProtobufGenerationService
     @Deprecated
     @POST
     @Path("protobuf")
-    @ApiOperation(value = "Generates Protobuf for a given class and transitive dependencies")
+    @Operation(summary = "Generates Protobuf for a given class and transitive dependencies")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generateProtobuf(ProtobufGenerationInput generateProtobufInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generateProtobuf(ProtobufGenerationInput generateProtobufInput, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);

@@ -74,7 +74,6 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.valuespecification.ValueSpecificationProcessor;
 
-import javax.ws.rs.core.MediaType;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -85,6 +84,10 @@ import java.util.function.Function;
 
 public class ServiceTestGenerationHelper
 {
+    // Not jakarta.ws.rs.core.MediaType: this module stays on Java 8 for clients, and jakarta.ws.rs requires Java 11+.
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String APPLICATION_XML = "application/xml";
+
     public static Runtime buildSingleExecutionTestRuntime(PureSingleExecution pureSingleExecution, SingleExecutionTest singleExecutionTest, PureModelContextData pureModelContextData, PureModel pureModel)
     {
         return buildTestRuntime(pureSingleExecution.runtime, pureSingleExecution.mapping, singleExecutionTest.data, pureModelContextData, pureModel);
@@ -254,9 +257,9 @@ public class ServiceTestGenerationHelper
             String connectionTestData = resolveTestData(executorId, idTestDataAccessorResult, testDataAccessor, testData);
             if (idTestDataAccessorResult != null)
             {
-                ((JsonModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes(StandardCharsets.UTF_8));
+                ((JsonModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes(StandardCharsets.UTF_8));
             }
-            testJsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(connectionTestData.getBytes(StandardCharsets.UTF_8));
+            testJsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(connectionTestData.getBytes(StandardCharsets.UTF_8));
             return Optional.of(conn);
         }
         if (connection instanceof XmlModelConnection)
@@ -269,9 +272,9 @@ public class ServiceTestGenerationHelper
             String connectionTestData = resolveTestData(executorId, idTestDataAccessorResult, testDataAccessor, testData);
             if (idTestDataAccessorResult != null)
             {
-                ((XmlModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes(StandardCharsets.UTF_8));
+                ((XmlModelConnection) connection).url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes(StandardCharsets.UTF_8));
             }
-            testXmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(connectionTestData.getBytes(StandardCharsets.UTF_8));
+            testXmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(connectionTestData.getBytes(StandardCharsets.UTF_8));
             return Optional.of(testXmlModelConnection);
         }
         if (connection instanceof ModelChainConnection)

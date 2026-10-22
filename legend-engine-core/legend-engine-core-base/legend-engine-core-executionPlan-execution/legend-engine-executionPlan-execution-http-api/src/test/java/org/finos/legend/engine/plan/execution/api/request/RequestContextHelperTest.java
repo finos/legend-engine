@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.api.request;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.junit.Assert;
 import org.junit.Test;

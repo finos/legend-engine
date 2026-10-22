@@ -147,7 +147,7 @@ Pac4j handles the browser/client-side authentication protocol (Kerberos SPNEGO, 
 @POST
 @Path("execute")
 public Response execute(
-    @Pac4JProfileManager @ApiParam(hidden = true) ProfileManager<CommonProfile> pm,
+    @Pac4JProfileManager @Parameter(hidden = true) ProfileManager pm,
     ...
 ) {
     MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);

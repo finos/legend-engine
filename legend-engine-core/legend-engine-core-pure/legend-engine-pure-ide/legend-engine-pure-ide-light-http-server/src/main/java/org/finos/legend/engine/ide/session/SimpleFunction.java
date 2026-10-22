@@ -17,7 +17,7 @@ package org.finos.legend.engine.ide.session;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 
 public interface SimpleFunction

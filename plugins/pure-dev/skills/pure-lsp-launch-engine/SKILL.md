@@ -20,7 +20,7 @@ pure-lsp-launch-engine [--port N] [--socket-port N] [--java PATH]
 ```
 
 Defaults: `--port 8991`, `--socket-port 9100` (this shop's standing convention for `LegendLspServer`,
-shared with `pure-lsp-connect`/`pure-lsp-restart`'s default), `--java` = plain `java` on `PATH` (JDK 11).
+shared with `pure-lsp-connect`/`pure-lsp-restart`'s default), `--java` = plain `java` on `PATH` (JDK 17).
 `$LEGEND_ENGINE_ROOT` defaults to the checkout containing the current directory.
 Only legend-engine is source-rooted; legend-pure comes from the classpath jar and needs no checkout
 or `$LEGEND_PURE_ROOT`. Add `--source legend-pure` to edit platform `.pure` live too (needs

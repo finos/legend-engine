@@ -119,6 +119,11 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-simple</artifactId>
                 </exclusion>
+                <!-- Unused: snowpark only needs jaxb-api's DatatypeConverter, which never touches javax.activation -->
+                <exclusion>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>javax.activation-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 

@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.grammar.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hazelcast.internal.json.Json;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;

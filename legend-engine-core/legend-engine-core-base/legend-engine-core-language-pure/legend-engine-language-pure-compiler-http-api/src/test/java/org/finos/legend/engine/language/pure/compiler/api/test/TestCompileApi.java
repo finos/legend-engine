@@ -50,7 +50,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.Exception
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Objects;

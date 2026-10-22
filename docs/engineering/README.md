@@ -152,7 +152,7 @@ all backends. See [Testing Strategy — PCT](testing/testing-strategy.md#5-pct-p
 ## Quick-Start (TL;DR)
 
 ```bash
-# Prerequisites: JDK 11, Maven 3.6.2+
+# Prerequisites: JDK 17, Maven 3.6.2+
 git clone https://github.com/finos/legend-engine.git
 cd legend-engine
 mvn install -DskipTests -T 4          # fast first build (~15-25 min)

@@ -15,9 +15,9 @@
 
 package org.finos.legend.engine.server.core.bundles;
 
-import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.ConfiguredBundle;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import org.finos.legend.engine.server.core.configuration.ErrorHandlingConfiguration;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 

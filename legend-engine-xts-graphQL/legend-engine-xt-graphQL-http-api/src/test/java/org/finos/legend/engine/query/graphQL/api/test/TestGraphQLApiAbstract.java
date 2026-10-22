@@ -19,11 +19,11 @@ import com.google.common.cache.CacheBuilder;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.jetty.server.Handler;
+import java.nio.ByteBuffer;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
@@ -50,10 +50,10 @@ import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -73,8 +73,7 @@ public abstract class TestGraphQLApiAbstract
     {
         int serverPort = DynamicPortGenerator.generatePort();
         server = new Server(serverPort);
-        HandlerCollection handlerCollection = new HandlerCollection();
-        handlerCollection.setHandlers(new Handler[] {
+        Handler.Sequence handlerCollection = new Handler.Sequence(
                 buildPMCDMetadataHandler("/api/projects/Project1/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project1_Workspace1.pure"),
                 buildJsonHandler("/api/projects/Project1/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]"),
                 buildPMCDMetadataHandler("/projects/org.finos.legend.graphql/model.one/versions/1.0.0/pureModelContextData","/org/finos/legend/engine/query/graphQL/api/test/Project1_Workspace1.pure",new Protocol("pure", PureClientVersions.production),new PureModelContextPointer()),
@@ -94,7 +93,7 @@ public abstract class TestGraphQLApiAbstract
 
                 buildPMCDMetadataHandler("/api/projects/ExtendedPrimitivesProject/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/ExtendedPrimitivesProject_Workspace1.pure"),
                 buildJsonHandler("/api/projects/ExtendedPrimitivesProject/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]")
-        });
+        );
         server.setHandler(handlerCollection);
         server.start();
         metaDataServerConfiguration = new MetaDataServerConfiguration(null, new ServerConnectionConfiguration("127.0.0.1", serverPort), new ServerConnectionConfiguration("127.0.0.1", serverPort));
@@ -142,14 +141,13 @@ public abstract class TestGraphQLApiAbstract
         PureModelContextData pureModelContextData = PureModelContextData.newBuilder().withOrigin(pointer).withSerializer(serializer).withPureModelContextData(PureGrammarParser.newInstance().parseModel(readModelContentFromResource(resourcePath))).build();
         byte[] bytes = OBJECT_MAPPER.writeValueAsBytes(pureModelContextData);
 
-        AbstractHandler handler = new AbstractHandler()
+        Handler handler = new Handler.Abstract()
         {
             @Override
-            public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException
+            public boolean handle(Request request, org.eclipse.jetty.server.Response response, Callback callback)
             {
-                OutputStream stream = httpServletResponse.getOutputStream();
-                stream.write(bytes);
-                stream.flush();
+                response.write(true, ByteBuffer.wrap(bytes), callback);
+                return true;
             }
         };
         contextHandler.setHandler(handler);
@@ -159,14 +157,13 @@ public abstract class TestGraphQLApiAbstract
     protected static Handler buildJsonHandler(String path, String json)
     {
         ContextHandler contextHandler = new ContextHandler(path);
-        AbstractHandler handler = new AbstractHandler()
+        Handler handler = new Handler.Abstract()
         {
             @Override
-            public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException
+            public boolean handle(Request request, org.eclipse.jetty.server.Response response, Callback callback)
             {
-                OutputStream stream = httpServletResponse.getOutputStream();
-                stream.write(json.getBytes(StandardCharsets.UTF_8));
-                stream.flush();
+                response.write(true, ByteBuffer.wrap(json.getBytes(StandardCharsets.UTF_8)), callback);
+                return true;
             }
         };
         contextHandler.setHandler(handler);

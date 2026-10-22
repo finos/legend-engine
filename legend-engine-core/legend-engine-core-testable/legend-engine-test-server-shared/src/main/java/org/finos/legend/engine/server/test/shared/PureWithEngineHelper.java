@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.server.test.shared;
 
-import io.dropwizard.Application;
+import io.dropwizard.core.Application;
 import org.eclipse.collections.api.block.function.Function0;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 

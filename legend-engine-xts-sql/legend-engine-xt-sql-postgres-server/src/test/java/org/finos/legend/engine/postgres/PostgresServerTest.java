@@ -16,7 +16,8 @@ package org.finos.legend.engine.postgres;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.dropwizard.testing.junit.ResourceTestRule;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import io.dropwizard.testing.junit5.ResourceExtension;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsTestClient;
@@ -26,12 +27,11 @@ import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIde
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecuteTest;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.postgresql.PGProperty;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
@@ -48,10 +48,10 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Properties;
 
+@org.junit.jupiter.api.extension.ExtendWith(DropwizardExtensionsSupport.class)
 public class PostgresServerTest
 {
-    @ClassRule
-    public static final ResourceTestRule resources = SqlExecuteTest.getResourceTestRule();
+    public static final ResourceExtension resources = SqlExecuteTest.getResourceTestRule();
     private static TestPostgresServer testPostgresServer;
 
     static
@@ -60,7 +60,7 @@ public class PostgresServerTest
         SLF4JBridgeHandler.install();
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp()
     {
         ServerConfig serverConfig = new ServerConfig();
@@ -84,17 +84,17 @@ public class PostgresServerTest
         )
         {
             ResultSetMetaData resultSetMetaData = statement.getMetaData();
-            Assert.assertEquals(5, resultSetMetaData.getColumnCount());
-            Assert.assertEquals("Id", resultSetMetaData.getColumnName(1));
-            Assert.assertEquals("Name", resultSetMetaData.getColumnName(2));
-            Assert.assertEquals("Employee Type", resultSetMetaData.getColumnName(3));
-            Assert.assertEquals("Full Name", resultSetMetaData.getColumnName(4));
-            Assert.assertEquals("Derived Name", resultSetMetaData.getColumnName(5));
-            Assert.assertEquals("int8", resultSetMetaData.getColumnTypeName(1));
-            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(2));
-            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(3));
-            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(4));
-            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(5));
+            Assertions.assertEquals(5, resultSetMetaData.getColumnCount());
+            Assertions.assertEquals("Id", resultSetMetaData.getColumnName(1));
+            Assertions.assertEquals("Name", resultSetMetaData.getColumnName(2));
+            Assertions.assertEquals("Employee Type", resultSetMetaData.getColumnName(3));
+            Assertions.assertEquals("Full Name", resultSetMetaData.getColumnName(4));
+            Assertions.assertEquals("Derived Name", resultSetMetaData.getColumnName(5));
+            Assertions.assertEquals("int8", resultSetMetaData.getColumnTypeName(1));
+            Assertions.assertEquals("varchar", resultSetMetaData.getColumnTypeName(2));
+            Assertions.assertEquals("varchar", resultSetMetaData.getColumnTypeName(3));
+            Assertions.assertEquals("varchar", resultSetMetaData.getColumnTypeName(4));
+            Assertions.assertEquals("varchar", resultSetMetaData.getColumnTypeName(5));
         }
     }
 
@@ -108,7 +108,7 @@ public class PostgresServerTest
         )
         {
             ParameterMetaData parameterMetaData = statement.getParameterMetaData();
-            Assert.assertEquals(0, parameterMetaData.getParameterCount());
+            Assertions.assertEquals(0, parameterMetaData.getParameterCount());
         }
     }
 
@@ -131,8 +131,8 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(0, rows);
-            Assert.assertEquals(2, parameterMetaData.getParameterCount());
+            Assertions.assertEquals(0, rows);
+            Assertions.assertEquals(2, parameterMetaData.getParameterCount());
         }
     }
 
@@ -151,7 +151,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(4, rows);
+            Assertions.assertEquals(4, rows);
         }
     }
 
@@ -173,7 +173,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(4, rows);
+            Assertions.assertEquals(4, rows);
         }
     }
 
@@ -196,13 +196,13 @@ public class PostgresServerTest
             {
                 rows1++;
             }
-            Assert.assertEquals(4, rows1);
+            Assertions.assertEquals(4, rows1);
             int rows2 = 0;
             while (resultSet2.next())
             {
                 rows2++;
             }
-            Assert.assertEquals(4, rows2);
+            Assertions.assertEquals(4, rows2);
         }
     }
 
@@ -222,15 +222,15 @@ public class PostgresServerTest
         )
         {
 
-            PSQLException exception = Assert.assertThrows(PSQLException.class, statement1::executeQuery);
-            Assert.assertEquals("ERROR: IllegalArgumentException: No Service found for pattern '/personServiceNonExistent'", exception.getMessage());
+            PSQLException exception = Assertions.assertThrows(PSQLException.class, statement1::executeQuery);
+            Assertions.assertEquals("ERROR: IllegalArgumentException: No Service found for pattern '/personServiceNonExistent'", exception.getMessage());
             int rows2 = 0;
             ResultSet resultSet2 = statement2.executeQuery();
             while (resultSet2.next())
             {
                 rows2++;
             }
-            Assert.assertEquals(4, rows2);
+            Assertions.assertEquals(4, rows2);
         }
     }
 
@@ -251,15 +251,15 @@ public class PostgresServerTest
         )
         {
 
-            PSQLException exception = Assert.assertThrows(PSQLException.class, statement1::executeQuery);
-            Assert.assertEquals("ERROR: IllegalArgumentException: No Service found for pattern '/personServiceNonExistent'", exception.getMessage());
+            PSQLException exception = Assertions.assertThrows(PSQLException.class, statement1::executeQuery);
+            Assertions.assertEquals("ERROR: IllegalArgumentException: No Service found for pattern '/personServiceNonExistent'", exception.getMessage());
             int rows2 = 0;
             ResultSet resultSet2 = statement2.executeQuery();
             while (resultSet2.next())
             {
                 rows2++;
             }
-            Assert.assertEquals(4, rows2);
+            Assertions.assertEquals(4, rows2);
         }
     }
 
@@ -278,7 +278,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(4, rows);
+            Assertions.assertEquals(4, rows);
         }
     }
 
@@ -291,7 +291,7 @@ public class PostgresServerTest
         )
         {
             connection.setAutoCommit(false);
-            Assert.assertFalse(connection.getAutoCommit());
+            Assertions.assertFalse(connection.getAutoCommit());
         }
     }
 
@@ -312,7 +312,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(4, rows);
+            Assertions.assertEquals(4, rows);
         }
     }
 
@@ -331,7 +331,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(4, rows);
+            Assertions.assertEquals(4, rows);
         }
     }
 
@@ -350,7 +350,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(1, rows);
+            Assertions.assertEquals(1, rows);
         }
     }
 
@@ -372,7 +372,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(1, rows);
+            Assertions.assertEquals(1, rows);
         }
     }
 
@@ -396,16 +396,16 @@ public class PostgresServerTest
             {
                 psRows++;
             }
-            Assert.assertEquals(1, psRows);
+            Assertions.assertEquals(1, psRows);
 
-            Assert.assertTrue(statement.execute(sql));
+            Assertions.assertTrue(statement.execute(sql));
             ResultSet statementResultSet = statement.getResultSet();
             int statementRows = 0;
             while (statementResultSet.next())
             {
                 statementRows++;
             }
-            Assert.assertEquals(1, statementRows);
+            Assertions.assertEquals(1, statementRows);
         }
     }
 
@@ -427,7 +427,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(1, rows);
+            Assertions.assertEquals(1, rows);
         }
     }
 
@@ -446,7 +446,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(6, rows);
+            Assertions.assertEquals(6, rows);
         }
     }
 
@@ -465,7 +465,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(2, rows);
+            Assertions.assertEquals(2, rows);
         }
     }
 
@@ -484,7 +484,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(375, rows);
+            Assertions.assertEquals(375, rows);
         }
     }
 
@@ -498,7 +498,7 @@ public class PostgresServerTest
         {
             // This triggers an empty query and expects an empty response
             boolean isValid = connection.isValid(1);
-            Assert.assertTrue(isValid);
+            Assertions.assertTrue(isValid);
         }
     }
 
@@ -512,7 +512,7 @@ public class PostgresServerTest
         )
         {
             int rowCount = statement.executeUpdate();
-            Assert.assertEquals(0, rowCount);
+            Assertions.assertEquals(0, rowCount);
         }
     }
 
@@ -525,10 +525,10 @@ public class PostgresServerTest
                 PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')")
         )
         {
-            PSQLException exception = Assert.assertThrows(PSQLException.class, statement::executeQuery);
+            PSQLException exception = Assertions.assertThrows(PSQLException.class, statement::executeQuery);
             ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
-            Assert.assertNotNull(serverErrorMessage);
-            Assert.assertEquals("IllegalArgumentException: No Service found for pattern '/blah'", serverErrorMessage.getMessage());
+            Assertions.assertNotNull(serverErrorMessage);
+            Assertions.assertEquals("IllegalArgumentException: No Service found for pattern '/blah'", serverErrorMessage.getMessage());
         }
     }
 
@@ -541,11 +541,11 @@ public class PostgresServerTest
                 PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')")
         )
         {
-            PSQLException exception = Assert.assertThrows(PSQLException.class, statement::executeQuery);
+            PSQLException exception = Assertions.assertThrows(PSQLException.class, statement::executeQuery);
             ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
-            Assert.assertNotNull(serverErrorMessage);
-            Assert.assertNotNull(serverErrorMessage.getMessage());
-            Assert.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named: 'some_random_column_name'. Available columns: [Id, Name, Employee Type, Full Name, Derived Name]\""));
+            Assertions.assertNotNull(serverErrorMessage);
+            Assertions.assertNotNull(serverErrorMessage.getMessage());
+            Assertions.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named: 'some_random_column_name'. Available columns: [Id, Name, Employee Type, Full Name, Derived Name]\""));
         }
     }
 
@@ -558,10 +558,10 @@ public class PostgresServerTest
                 PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')")
         )
         {
-            PSQLException exception = Assert.assertThrows(PSQLException.class, statement::getMetaData);
+            PSQLException exception = Assertions.assertThrows(PSQLException.class, statement::getMetaData);
             ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
-            Assert.assertNotNull(serverErrorMessage);
-            Assert.assertEquals("IllegalArgumentException: No Service found for pattern '/blah'", serverErrorMessage.getMessage());
+            Assertions.assertNotNull(serverErrorMessage);
+            Assertions.assertEquals("IllegalArgumentException: No Service found for pattern '/blah'", serverErrorMessage.getMessage());
         }
     }
 
@@ -574,16 +574,16 @@ public class PostgresServerTest
                 PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')")
         )
         {
-            PSQLException exception = Assert.assertThrows(PSQLException.class, statement::getMetaData);
+            PSQLException exception = Assertions.assertThrows(PSQLException.class, statement::getMetaData);
             ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
-            Assert.assertNotNull(serverErrorMessage);
-            Assert.assertNotNull(serverErrorMessage.getMessage());
-            Assert.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named: 'some_random_column_name'. Available columns: [Id, Name, Employee Type, Full Name, Derived Name]\""));
+            Assertions.assertNotNull(serverErrorMessage);
+            Assertions.assertNotNull(serverErrorMessage.getMessage());
+            Assertions.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named: 'some_random_column_name'. Available columns: [Id, Name, Employee Type, Full Name, Derived Name]\""));
         }
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testLotsOfConnectionsBadConnectionManagementPreparedStatement() throws SQLException
     {
         for (int i = 0; i < 500; i++)
@@ -595,7 +595,7 @@ public class PostgresServerTest
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM pg_catalog.pg_tablespace");
 
             int numberOfColumns = statement.getMetaData().getColumnCount();
-            Assert.assertEquals(4, numberOfColumns);
+            Assertions.assertEquals(4, numberOfColumns);
 
             //we do twice to ensure reuse works as expected
             testLotsOfConnections(statement.executeQuery());
@@ -605,7 +605,7 @@ public class PostgresServerTest
 
 
     @Test
-    @Ignore
+    @Disabled
     public void testLotsOfConnectionsGoodConnectionManagementPreparedStatement() throws SQLException
     {
         for (int i = 0; i < 500; i++)
@@ -618,7 +618,7 @@ public class PostgresServerTest
             )
             {
                 int numberOfColumns = statement.getMetaData().getColumnCount();
-                Assert.assertEquals(4, numberOfColumns);
+                Assertions.assertEquals(4, numberOfColumns);
 
                 //we do twice to ensure reuse works as expected
                 testLotsOfConnections(statement.executeQuery());
@@ -628,7 +628,7 @@ public class PostgresServerTest
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testLotsOfConnectionsBadConnectionManagementStatement() throws SQLException
     {
         for (int i = 0; i < 500; i++)
@@ -647,7 +647,7 @@ public class PostgresServerTest
 
 
     @Test
-    @Ignore
+    @Disabled
     public void testLotsOfConnectionsGoodConnectionManagementStatement() throws SQLException
     {
         for (int i = 0; i < 500; i++)
@@ -667,7 +667,7 @@ public class PostgresServerTest
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testLotsOfConcurrentConnectionsGoodConnectionManagementStatement() throws SQLException
     {
         for (int i = 0; i < 500; i++)
@@ -687,7 +687,7 @@ public class PostgresServerTest
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testLotsOfConcurrentConnectionsBadConnectionManagementStatement() throws SQLException
     {
         List<Connection> connections = Lists.mutable.empty();
@@ -706,7 +706,7 @@ public class PostgresServerTest
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testLotsOfConcurrentConnectionsBadConnectionManagementPreparedStatement() throws SQLException
     {
         List<Connection> connections = Lists.mutable.empty();
@@ -734,7 +734,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(2, rows);
+            Assertions.assertEquals(2, rows);
         }
         catch (Exception e)
         {
@@ -743,7 +743,7 @@ public class PostgresServerTest
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown()
     {
         testPostgresServer.stopListening();

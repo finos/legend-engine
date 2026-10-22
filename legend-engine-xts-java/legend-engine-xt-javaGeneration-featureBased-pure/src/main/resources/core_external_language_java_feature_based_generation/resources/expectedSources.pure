@@ -20,8 +20,8 @@ function <<access.private>> meta::external::language::java::generation::featureB
 {
   'package meta.external.language.java.generation.featureBased.tests.model;\n'+
   '\n'+
+  'import jakarta.annotation.Generated;\n'+
   'import java.util.List;\n'+
-  'import javax.annotation.Generated;\n'+
   '\n'+
     '@Generated("meta::external::language::java::generation::featureBased::tests::model::Person")\n'+
   'public class Person\n'+
@@ -197,10 +197,10 @@ function <<access.private>> meta::external::language::java::generation::featureB
 {
   'package meta.external.language.java.generation.featureBased.tests.model;\n'+
   '\n'+
+  'import jakarta.annotation.Generated;\n'+
   'import java.math.BigDecimal;\n'+
   'import java.time.LocalDate;\n'+
   'import java.time.ZonedDateTime;\n'+
-  'import javax.annotation.Generated;\n'+
   '\n'+
   '@Generated("meta::external::language::java::generation::featureBased::tests::model::Address")\n'+
   'public class Address\n'+
@@ -383,7 +383,7 @@ function <<access.private>> meta::external::language::java::generation::featureB
 {
   'package meta.external.language.java.generation.featureBased.tests.model;\n'+
   '\n'+
-  'import javax.annotation.Generated;\n'+
+  'import jakarta.annotation.Generated;\n'+
   '\n'+
   '@Generated("meta::external::language::java::generation::featureBased::tests::model::AddressExtension")\n'+
   'public class AddressExtension extends Address\n'+
@@ -450,8 +450,8 @@ function <<access.private>> meta::external::language::java::generation::featureB
 {
   'package meta.external.language.java.generation.featureBased.tests.model;\n'+
   '\n'+
+  'import jakarta.annotation.Generated;\n'+
   'import java.util.List;\n'+
-  'import javax.annotation.Generated;\n'+
   '\n'+
   '@Generated("meta::external::language::java::generation::featureBased::tests::model::Firm")\n'+
   'public class Firm\n'+
@@ -569,7 +569,7 @@ function <<access.private>> meta::external::language::java::generation::featureB
 {
   'package meta.external.language.java.generation.featureBased.tests.model;\n'+
   '\n'+
-  'import javax.annotation.Generated;\n'+
+  'import jakarta.annotation.Generated;\n'+
   '\n'+
   '@Generated("meta::external::language::java::generation::featureBased::tests::model::ASimpleChoice")\n'+
   'public enum ASimpleChoice\n'+
@@ -583,10 +583,10 @@ function <<access.private>> meta::external::language::java::generation::featureB
 {
   'package meta.external.language.java.generation.featureBased.tests.model;\n'+
   '\n'+
+  'import jakarta.annotation.Generated;\n'+
   'import java.math.BigDecimal;\n'+
   'import java.time.LocalDate;\n'+
   'import java.time.ZonedDateTime;\n'+
-  'import javax.annotation.Generated;\n'+
   '\n'+
   '@Generated("meta::external::language::java::generation::featureBased::tests::model::Address")\n'+
   'public class Address\n'+
@@ -953,7 +953,7 @@ function <<access.private>> meta::external::language::java::generation::featureB
 {
   'package meta.external.language.java.generation.featureBased.tests.model;\n'+
   '\n'+
-  'import javax.annotation.Generated;\n'+
+  'import jakarta.annotation.Generated;\n'+
   '\n'+
   '@Generated("meta::external::language::java::generation::featureBased::tests::model::AddressExtension")\n'+
   'public class AddressExtension extends Address\n'+
@@ -1034,8 +1034,8 @@ function <<access.private>> meta::external::language::java::generation::featureB
   'package meta.external.language.java.generation.featureBased.tests.constructorInjection;\n'+
   '\n'+
   'import com.fasterxml.jackson.annotation.JsonIgnoreProperties;\n' +
+  'import jakarta.annotation.Generated;\n'+
   'import java.util.List;\n'+
-  'import javax.annotation.Generated;\n'+
   '\n'+
   '@Generated("meta::external::language::java::generation::featureBased::tests::constructorInjection::Person")\n'+
   '@JsonIgnoreProperties(ignoreUnknown=true)\n' +
@@ -1192,8 +1192,8 @@ function <<access.private>> meta::external::language::java::generation::featureB
   'package meta.external.language.java.generation.featureBased.tests.constructorInjection;\n'+
   '\n'+
   'import com.fasterxml.jackson.annotation.JsonIgnoreProperties;\n' +
+  'import jakarta.annotation.Generated;\n'+
   'import java.util.List;\n'+
-  'import javax.annotation.Generated;\n'+
   '\n'+
   '@Generated("meta::external::language::java::generation::featureBased::tests::constructorInjection::Firm")\n'+
   '@JsonIgnoreProperties(ignoreUnknown=true)\n' +
@@ -1296,7 +1296,7 @@ function <<access.private>> meta::external::language::java::generation::featureB
 {
   'package meta.external.language.java.generation.featureBased.tests.constructorInjection;\n'+
   '\n'+
-  'import javax.annotation.Generated;\n'+
+  'import jakarta.annotation.Generated;\n'+
   '\n'+
   '@Generated("meta::external::language::java::generation::featureBased::tests::constructorInjection::ASimpleChoice")\n'+
   'public enum ASimpleChoice\n'+

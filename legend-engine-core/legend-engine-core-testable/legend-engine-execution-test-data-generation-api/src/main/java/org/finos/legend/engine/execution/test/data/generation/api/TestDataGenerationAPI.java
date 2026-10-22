@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.execution.test.data.generation.api;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.execution.test.data.generation.SeedDataGeneration;
@@ -26,7 +26,7 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.planHelper.PrimitiveValueSpecificationToObjectVisitor;
@@ -40,22 +40,22 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import java.util.Map;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "Query - Pure")
+@Tag(name = "Query - Pure")
 @Path("pure/v1/execution")
 @Produces(MediaType.APPLICATION_JSON)
 @Singleton
@@ -75,7 +75,7 @@ public class TestDataGenerationAPI
     @Path("testDataGeneration/generateSeedData")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response seed_data_generate(@Context HttpServletRequest request, SeedDataGenerationInput seedDataGenerationInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response seed_data_generate(@Context HttpServletRequest request, SeedDataGenerationInput seedDataGenerationInput, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -111,7 +111,7 @@ public class TestDataGenerationAPI
     @Path("testDataGeneration/generateTestData_WithSeed")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
-    public Response test_data_generate_with_seed(@Context HttpServletRequest request, TestDataGenerationWithSeedInput testDataGenerationInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response test_data_generate_with_seed(@Context HttpServletRequest request, TestDataGenerationWithSeedInput testDataGenerationInput, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -151,7 +151,7 @@ public class TestDataGenerationAPI
     @Path("testDataGeneration/generateTestData_WithDefaultSeed")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
-    public Response test_data_generate_with_default_seed(@Context HttpServletRequest request, TestDataGenerationWithDefaultSeedInput testDataGenerationInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response test_data_generate_with_default_seed(@Context HttpServletRequest request, TestDataGenerationWithDefaultSeedInput testDataGenerationInput, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);

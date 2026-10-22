@@ -17,18 +17,19 @@ package org.finos.legend.engine.query.graphQL.api;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import javax.security.auth.Subject;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
-import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
-import org.finos.legend.engine.protocol.graphQL.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
+import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
+import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document;
 
 
 public abstract class GraphQL
@@ -38,11 +39,6 @@ public abstract class GraphQL
     public GraphQL(ModelManager modelManager, MetaDataServerConfiguration metadataserver)
     {
         this.modelManager = modelManager;
-    }
-
-    public static org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document toPureModel(Document document, PureModel pureModel)
-    {
-        return new ProtocolToMetamodelTranslator().translate(document, pureModel);
     }
 
     protected PureModel loadSDLCProjectModel(Identity identity, HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace) throws PrivilegedActionException
@@ -73,5 +69,15 @@ public abstract class GraphQL
         return subject == null ?
                 this.modelManager.loadModel(pointer, PureClientVersions.production, identity, "") :
                 Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> this.modelManager.loadModel(pointer, PureClientVersions.production, identity, ""));
+    }
+
+    /**
+     * @deprecated use {@link GraphQLExecutionHelper#toPureModel}. Kept for out-of-tree
+     * {@code IGraphQLDirectiveExtension} implementations that call it through {@code GraphQLExecute}.
+     */
+    @Deprecated
+    public static Root_meta_external_query_graphQL_metamodel_sdl_Document toPureModel(Document document, PureModel pureModel)
+    {
+        return GraphQLExecutionHelper.toPureModel(document, pureModel);
     }
 }

@@ -16,7 +16,7 @@ package org.finos.legend.engine.plan.execution.api.request;
 
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class RequestContextHelper
 {
