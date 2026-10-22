@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationTreeNode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationTreeNodeHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 
 import java.util.Collections;
@@ -77,7 +78,7 @@ public class GenerationSpecificationParseTreeWalker
         {
             generationTreeNode.generationElements = ListIterate.collect(ctx.generationElements().qualifiedName(), this::visitGenerationElement);
         }
-        generationTreeNode.id = ctx.nodeId() != null ? PureGrammarParserUtility.fromGrammarString(ctx.nodeId().STRING().getText(), true) : generationTreeNode.defaultId();
+        generationTreeNode.id = ctx.nodeId() != null ? PureGrammarParserUtility.fromGrammarString(ctx.nodeId().STRING().getText(), true) : GenerationTreeNodeHelper.defaultId(generationTreeNode);
         generationTreeNode.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return generationTreeNode;
     }

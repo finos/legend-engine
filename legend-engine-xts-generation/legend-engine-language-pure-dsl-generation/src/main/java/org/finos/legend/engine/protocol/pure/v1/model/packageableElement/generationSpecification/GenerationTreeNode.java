@@ -39,14 +39,4 @@ public class GenerationTreeNode
     public List<String> generationElements = Collections.emptyList();
 
     public SourceInformation sourceInformation;
-
-    public List<String> resolveGenerationElements()
-    {
-        return this.generationElement == null ? this.generationElements : Collections.singletonList(this.generationElement);
-    }
-
-    public String defaultId()
-    {
-        return String.join(",", this.resolveGenerationElements());
-    }
 }

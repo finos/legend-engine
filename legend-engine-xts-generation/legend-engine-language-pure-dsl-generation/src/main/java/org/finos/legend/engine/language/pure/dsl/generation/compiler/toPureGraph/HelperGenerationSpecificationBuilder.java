@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationTreeNodeHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
@@ -50,7 +51,7 @@ public class HelperGenerationSpecificationBuilder
             {
                 throw new EngineException("Generation node must specify either 'generationElement' or 'generationElements', not both", node.sourceInformation, EngineErrorType.COMPILATION);
             }
-            List<String> generationElements = node.resolveGenerationElements();
+            List<String> generationElements = GenerationTreeNodeHelper.generationElements(node);
             if (generationElements.isEmpty())
             {
                 throw new EngineException("Generation node must specify at least one generation element", node.sourceInformation, EngineErrorType.COMPILATION);

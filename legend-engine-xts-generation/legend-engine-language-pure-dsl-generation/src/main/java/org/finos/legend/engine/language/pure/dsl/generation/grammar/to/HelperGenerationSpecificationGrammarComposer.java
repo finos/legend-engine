@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.generation.grammar.to;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationTreeNode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationTreeNodeHelper;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class HelperGenerationSpecificationGrammarComposer
     public static String renderGenerationNode(GenerationTreeNode generationTreeNode)
     {
         return getTabString(2) + "{\n" +
-                (generationTreeNode.id != null && !generationTreeNode.id.equals(generationTreeNode.defaultId()) ? getTabString(3) + "id: " + convertString(generationTreeNode.id, true) + ";\n" : "") +
+                (generationTreeNode.id != null && !generationTreeNode.id.equals(GenerationTreeNodeHelper.defaultId(generationTreeNode)) ? getTabString(3) + "id: " + convertString(generationTreeNode.id, true) + ";\n" : "") +
                 (generationTreeNode.generationElement != null
                         ? getTabString(3) + "generationElement: " + generationTreeNode.generationElement + ";\n"
                         : getTabString(3) + "generationElements: [\n"

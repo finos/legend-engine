@@ -32,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationTreeNode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationTreeNodeHelper;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.slf4j.Logger;
@@ -140,7 +141,7 @@ public class ModelGenerationRunner
         {
             for (GenerationTreeNode node : this.generationSpecification.generationNodes)
             {
-                List<String> generationElements = node.resolveGenerationElements();
+                List<String> generationElements = GenerationTreeNodeHelper.generationElements(node);
                 generationCount += generationElements.size();
                 CompileContext context = currentPureModel().getContext();
                 List<PureModelContextData> generated;
