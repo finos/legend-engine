@@ -28,6 +28,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.multimap.list.FastListMultimap;
+import org.eclipse.collections.impl.set.mutable.SetAdapter;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -120,6 +121,7 @@ import java.lang.management.ThreadInfo;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -157,7 +159,10 @@ public class PureModel implements IPureModel
     // this as part of `CompileContext`
     final CompilerExtensions extensions;
 
-    private final MutableList<Defect> defects = Lists.mutable.empty();
+    // Ordered as found, which a hashed set would not keep: checkNoErrorDefect locates its error at the first ERROR and
+    // lists them in order, as does the Compile API.
+    private final MutableSet<Defect> defects = SetAdapter.adapt(new LinkedHashSet<>());
+    private volatile boolean constructed;
 
     final Handlers handlers;
 
@@ -449,6 +454,7 @@ public class PureModel implements IPureModel
             }
             long postValidationEnd = System.nanoTime();
             LOGGER.debug("{}", new LogInfo(user, "GRAPH_POST_VALIDATION_COMPLETED", nanosDurationToMillis(postValidationStart, postValidationEnd)));
+            this.constructed = true;
 
             long end = System.nanoTime();
             LOGGER.debug("{}", new LogInfo(user, "GRAPH_STOP", nanosDurationToMillis(start, end)));
@@ -515,7 +521,7 @@ public class PureModel implements IPureModel
     @Deprecated
     public synchronized void addWarnings(Iterable<Warning> warnings)
     {
-        this.defects.addAllIterable(warnings);
+        addDefects(warnings);
     }
 
     /**
@@ -524,22 +530,29 @@ public class PureModel implements IPureModel
     @Deprecated
     public MutableList<Warning> getWarnings()
     {
-        return this.defects.select(d -> d instanceof Warning).collect(w -> (Warning) w);
+        return this.defects.toList().select(d -> d instanceof Warning).collect(w -> (Warning) w);
     }
 
+    /**
+     * Records defects found while this model is being built. Once it is built, the model may be cached and shared, so
+     * defects found compiling something else against it, such as a query, are not recorded on it and are ignored.
+     */
     public synchronized void addDefects(Iterable<? extends Defect> defects)
     {
-        this.defects.addAllIterable(defects);
+        if (!this.constructed)
+        {
+            this.defects.addAllIterable(defects);
+        }
     }
 
-    public MutableList<? extends Defect> getDefects()
+    public RichIterable<? extends Defect> getDefects()
     {
         return this.defects;
     }
 
     public synchronized void checkNoErrorDefect()
     {
-        MutableList<Defect> errors = this.defects.select(d -> d.defectSeverityLevel == DefectSeverityLevel.ERROR);
+        MutableList<Defect> errors = this.defects.toList().select(d -> d.defectSeverityLevel == DefectSeverityLevel.ERROR);
         if (errors.isEmpty())
         {
             return;

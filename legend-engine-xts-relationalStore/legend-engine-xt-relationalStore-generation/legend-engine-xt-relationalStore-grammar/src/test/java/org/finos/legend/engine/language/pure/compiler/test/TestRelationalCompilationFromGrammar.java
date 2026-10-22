@@ -290,7 +290,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "}\n" +
             "function my::personFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRM_DETAILS:Variant[1])>);\n" +
+            "  []->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRM_DETAILS:Variant[1])>);\n" +
             "}\n";
 
     @Test
@@ -355,7 +355,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "}\n" +
             "function my::personWithEnumFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], EMPLOYEE_TYPE:String[1])>);\n" +
+            "  []->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], EMPLOYEE_TYPE:String[1])>);\n" +
             "}\n";
 
     @Test
@@ -427,7 +427,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "\n" +
             "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
+            "  []->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
             "}\n";
 
     @Test
