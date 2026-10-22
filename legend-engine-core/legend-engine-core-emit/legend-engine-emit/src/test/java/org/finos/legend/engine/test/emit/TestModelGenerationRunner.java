@@ -117,6 +117,37 @@ public class TestModelGenerationRunner
         Assertions.assertEquals("Generated element '" + generatedPath("SourceA") + "' of type Class can't override existing element of type Class", e.getMessage());
     }
 
+    @Test
+    void oneGenerationProducingAPathTwiceStaysDeduped()
+    {
+        PureModelContextData model = parse(SOURCE_A
+                + "###GenerationSpecification\n"
+                + "GenerationSpecification demo::modelgen::Spec\n"
+                + "{\n"
+                + "  generationNodes: [\n"
+                + "    {\n"
+                + "      generationElement: demo::modelgen::SourceA;\n"
+                + "    }\n"
+                + "  ];\n"
+                + "}\n");
+
+        ModelGenerationRunner runner = newRunner(model);
+        runner.addGeneratedModel("demo::modelgen::SourceA", PureModelContextData.newBuilder()
+                .withElement(generatedClass())
+                .withElement(generatedClass())
+                .build());
+
+        Assertions.assertEquals(1, runner.getGeneratedModel().getElements().size(), "a generation repeating a path within its own output was deduped before, and must stay so");
+    }
+
+    private static org.finos.legend.engine.protocol.pure.m3.type.Class generatedClass()
+    {
+        org.finos.legend.engine.protocol.pure.m3.type.Class generated = new org.finos.legend.engine.protocol.pure.m3.type.Class();
+        generated.name = "SourceA" + EmitDemoModelGenerationExtension.GENERATED_SUFFIX;
+        generated._package = EmitDemoModelGenerationExtension.GENERATED_PACKAGE;
+        return generated;
+    }
+
     private static ModelGenerationRunner newRunner(PureModelContextData model)
     {
         PureModel pureModel = EMITTasks.compile(model);

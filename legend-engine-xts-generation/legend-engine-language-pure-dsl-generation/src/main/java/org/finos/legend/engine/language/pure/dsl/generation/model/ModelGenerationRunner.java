@@ -305,10 +305,18 @@ public class ModelGenerationRunner
             }
             // PureModelContextData.Builder.distinct() keeps the first of two elements sharing a path, so a collision within a node has to be caught here
             String otherGenerationElement = elementSources.put(path, generationElement);
-            if (otherGenerationElement != null)
+            if (otherGenerationElement == null)
             {
-                throw new EngineException("Generation elements '" + otherGenerationElement + "' and '" + generationElement + "' of the same generation node both generated element '" + path + "'", EngineErrorType.COMPILATION);
+                return;
             }
+            if (otherGenerationElement.equals(generationElement))
+            {
+                // One generation emitting a path twice should be an error for the same reason, but distinct() has always
+                // dropped the repeat and projects depend on that. A follow-up will turn this warning into a failure.
+                LOGGER.warn("Generation element '{}' generated element '{}' more than once, keeping the first", generationElement, path);
+                return;
+            }
+            throw new EngineException("Generation elements '" + otherGenerationElement + "' and '" + generationElement + "' of the same generation node both generated element '" + path + "'", EngineErrorType.COMPILATION);
         });
         this.fullModelBuilder.withPureModelContextData(generated).distinct().sorted();
         this.generatedModelBuilder.withPureModelContextData(generated).distinct().sorted();
