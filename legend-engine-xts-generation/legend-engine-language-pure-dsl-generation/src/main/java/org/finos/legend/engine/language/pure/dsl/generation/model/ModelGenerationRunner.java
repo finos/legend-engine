@@ -180,6 +180,7 @@ public class ModelGenerationRunner
     public ModelGenerationRunner addGeneratedModel(String generationElement, PureModelContextData generated)
     {
         merge(generationElement, generated, Maps.mutable.empty());
+        normalize();
         return this;
     }
 
@@ -289,6 +290,17 @@ public class ModelGenerationRunner
         {
             merge(generationElements.get(i), generated.get(i), elementSources);
         }
+        normalize();
+    }
+
+    /**
+     * Dedups and sorts both accumulators. Both walk and sort everything accumulated so far rather
+     * than what was just generated, so this runs once a node is done instead of once per element.
+     */
+    private void normalize()
+    {
+        this.fullModelBuilder.distinct().sorted();
+        this.generatedModelBuilder.distinct().sorted();
     }
 
     private void merge(String generationElement, PureModelContextData generated, MutableMap<String, String> nodeElementSources)
@@ -325,8 +337,8 @@ public class ModelGenerationRunner
                 LOGGER.warn("Generation element '{}' generated element '{}', which generation element '{}' already generated in an earlier node, keeping the first", generationElement, path, earlierGenerationElement);
             }
         });
-        this.fullModelBuilder.withPureModelContextData(generated).distinct().sorted();
-        this.generatedModelBuilder.withPureModelContextData(generated).distinct().sorted();
+        this.fullModelBuilder.withPureModelContextData(generated);
+        this.generatedModelBuilder.withPureModelContextData(generated);
         this.recompileNeeded = true;
     }
 
