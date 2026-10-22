@@ -585,7 +585,7 @@ public class DomainParseTreeWalker
         int startLine = primitiveValueContext.getStart().getLine();
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + primitiveValueContext.getStart().getCharPositionInLine();
-        ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         String expectedValue = primitiveValueContext.start.getInputStream().getText(Interval.of(primitiveValueContext.start.getStartIndex(), primitiveValueContext.stop.getStopIndex()));
         parameterValue.value = parser.parsePrimitiveValue(expectedValue, serviceParamSourceInformation, null);
         if (variable != null)
@@ -625,7 +625,7 @@ public class DomainParseTreeWalker
             int startLine = functionTestSuiteContext.primitiveValue().getStart().getLine();
             int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
             int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + functionTestSuiteContext.primitiveValue().getStart().getCharPositionInLine();
-            ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+            ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
             String expectedValue = functionTestSuiteContext.primitiveValue().start.getInputStream().getText(Interval.of(functionTestSuiteContext.primitiveValue().start.getStartIndex(), functionTestSuiteContext.primitiveValue().stop.getStopIndex()));
             ValueSpecification valueSpecification = parser.parsePrimitiveValue(expectedValue, serviceParamSourceInformation, null);
             EqualTo equalToAssertion = new EqualTo();

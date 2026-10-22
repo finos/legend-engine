@@ -75,7 +75,7 @@ public class ClassInstance extends One
             Class<?> _class = classMap.get(result.type);
             if (_class == null)
             {
-                throw new RuntimeException("Can't parse the ClassInstance value for type '" + result.type + "'");
+                throw new UnknownClassInstanceTypeException(result.type);
             }
             if (ValueSpecification.class.isAssignableFrom(_class))
             {
