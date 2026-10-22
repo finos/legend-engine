@@ -437,7 +437,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_withTabularDataSet():Boolean[1]
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
-  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+  let mapping = meta::external::dataquality::tests::domain::dataqualitymappings;
   let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
     ->select(~[ID,HASH])
     ->extend(~[ID_SOURCE: row | $row.ID, HASH_SOURCE: row | $row.HASH])
@@ -464,7 +464,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_withTabularDataSetAndRemoveFrom():Boolean[1]
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
-  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+  let mapping = meta::external::dataquality::tests::domain::dataqualitymappings;
   let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
     ->select(~[ID,HASH])
     ->extend(~[ID_SOURCE: row | $row.ID, HASH_SOURCE: row | $row.HASH])
@@ -724,7 +724,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_tdsJoinSourceNeedsExtensions():Boolean[1]
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
-  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+  let mapping = meta::external::dataquality::tests::domain::dataqualitymappings;
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, HASH])->from($runtime)};
   let target = {| Person.all()->project([ x|$x.id, x|$x.hash ],[ 'ID', 'HASH' ])
@@ -744,7 +744,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_tdsRowAndOlapOperatorsChain():Boolean[1]
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
-  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+  let mapping = meta::external::dataquality::tests::domain::dataqualitymappings;
 
   let source = {| Person.all()->project([x|$x.id, x|$x.name, x|$x.age], ['ID', 'FULL_NAME', 'AGE_SUM'])->from($mapping, $runtime)};
   let target = {| Person.all()->project([x|$x.id, x|$x.name, x|$x.age], ['ID', 'FULL_NAME', 'AGE'])
@@ -762,7 +762,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_tdsProjectionVariantsChain():Boolean[1]
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
-  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+  let mapping = meta::external::dataquality::tests::domain::dataqualitymappings;
 
   let source = {| Person.all()->project([x|$x.id, x|$x.name], ['ID', 'NAME'])->from($mapping, $runtime)};
   let target = {| Person.all()->project([x|$x.id, x|$x.name], ['ID', 'NAME'])
@@ -778,7 +778,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_tdsAnalyticsExtensionsChain():Boolean[1]
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
-  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+  let mapping = meta::external::dataquality::tests::domain::dataqualitymappings;
 
   let source = {| Person.all()->project([x|$x.id, x|'inlier', x|true], ['ID', 'AGE_CLASS', 'row_matched'])->from($mapping, $runtime)};
   let target = {| Person.all()->project([x|$x.id, x|$x.age], ['ID', 'AGE'])
@@ -794,7 +794,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_tdsUserDefinedFunction():Boolean[1]
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
-  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+  let mapping = meta::external::dataquality::tests::domain::dataqualitymappings;
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, HASH])->from($runtime)};
   let target = {| meta::external::dataquality::tests::udf::personIdHashTds()->from($mapping, $runtime)};

@@ -20,19 +20,3 @@ Binding meta::external::format::json::executionPlan::test::customSchema::PersonB
     meta::external::format::json::executionPlan::test::customSchema::Address
   ];
 }
-
-###Pure
-import meta::external::format::json::executionPlan::test::customSchema::*;
-
-Class meta::external::format::json::executionPlan::test::customSchema::Person
-{
-  firstName  : String[1];
-  lastAtName : String[1];
-  age        : Integer[1];
-  address    : Address[*];
-}
-
-Class meta::external::format::json::executionPlan::test::customSchema::Address
-{
-  streetName : String[1];
-}

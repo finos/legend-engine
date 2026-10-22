@@ -370,13 +370,28 @@ public class HelperModelBuilder
      */
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getOwnedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, final String name, SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
+        return getOwnedProperty(_class, classPath, name, sourceInformation, PureModel.fromExecutionSupport(executionSupport), executionSupport);
+    }
+
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getOwnedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, final String name, SourceInformation sourceInformation, PureModel pureModel, CompiledExecutionSupport executionSupport)
+    {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property = _class._properties().detect(p -> name.equals(p.getName()));
         if (property == null)
         {
-            property = _class._propertiesFromAssociations().detect(p -> name.equals(p.getName()));
+            property = propertiesFromAssociations(_class, pureModel).detect(p -> name.equals(p.getName()));
         }
         Assert.assertTrue(property != null, () -> "Can't find property '" + name + "' in class '" + (classPath != null ? classPath : getElementFullPath(_class, executionSupport)) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return property;
+    }
+
+    private static RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> propertiesFromAssociations(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, PureModel pureModel)
+    {
+        return (pureModel == null) ? _class._propertiesFromAssociations() : pureModel.getPropertiesFromAssociations(_class);
+    }
+
+    private static RichIterable<? extends QualifiedProperty<?>> qualifiedPropertiesFromAssociations(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, PureModel pureModel)
+    {
+        return (pureModel == null) ? _class._qualifiedPropertiesFromAssociations() : pureModel.getQualifiedPropertiesFromAssociations(_class);
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getAssociationProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association _association, final String name, SourceInformation sourceInformation, CompileContext context)
@@ -403,10 +418,15 @@ public class HelperModelBuilder
      */
     public static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, String name, SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
+        return getOwnedAppliedProperty(_class, classPath, name, sourceInformation, PureModel.fromExecutionSupport(executionSupport), executionSupport);
+    }
+
+    private static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, String name, SourceInformation sourceInformation, PureModel pureModel, CompiledExecutionSupport executionSupport)
+    {
         AbstractProperty<?> prop = _class._properties().detect(p -> name.equals(p.getName()));
         if (prop == null)
         {
-            prop = _class._propertiesFromAssociations().detect(p -> name.equals(p._name()));
+            prop = propertiesFromAssociations(_class, pureModel).detect(p -> name.equals(p._name()));
         }
         if (prop == null)
         {
@@ -414,7 +434,7 @@ public class HelperModelBuilder
         }
         if (prop == null)
         {
-            prop = _class._qualifiedPropertiesFromAssociations().detect(p -> name.equals(p._name()));
+            prop = qualifiedPropertiesFromAssociations(_class, pureModel).detect(p -> name.equals(p._name()));
         }
         Assert.assertTrue(prop != null, () -> "Can't find property '" + name + "' in class '" + (classPath != null ? classPath : getElementFullPath(_class, executionSupport)) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return prop;
@@ -425,6 +445,11 @@ public class HelperModelBuilder
      */
     public static AbstractProperty<?> getAllOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner propertyOwner, String name, SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
+        return getAllOwnedAppliedProperty(propertyOwner, name, sourceInformation, PureModel.fromExecutionSupport(executionSupport), executionSupport);
+    }
+
+    private static AbstractProperty<?> getAllOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner propertyOwner, String name, SourceInformation sourceInformation, PureModel pureModel, CompiledExecutionSupport executionSupport)
+    {
         AbstractProperty<?> prop = null;
         if (propertyOwner instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)
         {
@@ -432,7 +457,7 @@ public class HelperModelBuilder
             prop = _class._properties().detect(p -> name.equals(p.getName()));
             if (prop == null)
             {
-                prop = _class._propertiesFromAssociations().detect(p -> name.equals(p._name()));
+                prop = propertiesFromAssociations(_class, pureModel).detect(p -> name.equals(p._name()));
             }
             if (prop == null)
             {
@@ -440,7 +465,7 @@ public class HelperModelBuilder
             }
             if (prop == null)
             {
-                prop = _class._qualifiedPropertiesFromAssociations().detect(p -> name.equals(p._name()));
+                prop = qualifiedPropertiesFromAssociations(_class, pureModel).detect(p -> name.equals(p._name()));
             }
         }
         else if (propertyOwner instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association)
@@ -497,7 +522,7 @@ public class HelperModelBuilder
             {
                 return property;
             }
-            property = type._propertiesFromAssociations().detect(p -> name.equals(p.getName()));
+            property = context.pureModel.getPropertiesFromAssociations(type).detect(p -> name.equals(p.getName()));
             if (property != null)
             {
                 return property;
@@ -507,7 +532,7 @@ public class HelperModelBuilder
             {
                 return property;
             }
-            property = type._qualifiedPropertiesFromAssociations().detect(p -> name.equals(p._name()));
+            property = context.pureModel.getQualifiedPropertiesFromAssociations(type).detect(p -> name.equals(p._name()));
             if (property != null)
             {
                 return property;

@@ -543,16 +543,22 @@ public class CompileContext
 
     public FunctionExpressionBuilder resolveFunctionBuilder(String functionName, Set<String> metaPackages, Map<String, FunctionExpressionBuilder> functionHandlerMap, SourceInformation sourceInformation, ProcessingContext processingContext)
     {
+        return resolveFunctionBuilder(functionName, metaPackages, functionHandlerMap::get, sourceInformation, processingContext);
+    }
+
+    public FunctionExpressionBuilder resolveFunctionBuilder(String functionName, Set<String> metaPackages, Function<String, FunctionExpressionBuilder> functionHandlers, SourceInformation sourceInformation, ProcessingContext processingContext)
+    {
         // First do an optimistic check in the current handler to see if the function we are finding is available
         // so we don't waste time going through all of the auto-imports
         String extractedFunctionName = extractMetaFunctionName(functionName, metaPackages);
 
-        if (functionHandlerMap.containsKey(extractedFunctionName))
+        FunctionExpressionBuilder direct = functionHandlers.apply(extractedFunctionName);
+        if (direct != null)
         {
-            return functionHandlerMap.get(extractedFunctionName);
+            return direct;
         }
 
-        MutableMap<String, FunctionExpressionBuilder> results = searchImports(extractedFunctionName, functionHandlerMap::get);
+        MutableMap<String, FunctionExpressionBuilder> results = searchImports(extractedFunctionName, functionHandlers);
         switch (results.size())
         {
             case 0:

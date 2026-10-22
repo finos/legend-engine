@@ -180,7 +180,7 @@ public class MongoDBCompilerHelper
                                  ? buildPrimitivePropertyMapping((Property<?, ?>) prop, sourceSetId, context)
                                  : buildNonPrimitivePropertyMapping((Property<?, ?>) prop, sourceSetId, bindingDetail, embeddedSetImplementations, owner, sourceInformation, Sets.mutable.withAll(processedClasses), parent, context, false),
                         allPropertyMappings);
-        context.pureModel.getClass(HelperModelBuilder.getElementFullPath(pureClass, context.pureModel.getExecutionSupport()))._propertiesFromAssociations().collectIf(
+        context.pureModel.getPropertiesFromAssociations(context.pureModel.getClass(HelperModelBuilder.getElementFullPath(pureClass, context.pureModel.getExecutionSupport()))).collectIf(
                 p -> !processedClasses.contains(p._genericType()._rawType()),
                 p -> buildNonPrimitivePropertyMapping(p, sourceSetId, bindingDetail, embeddedSetImplementations, owner, sourceInformation, processedClasses, parent, context, true),
                 allPropertyMappings);

@@ -49,7 +49,7 @@ public class LegendCompile extends NativeFunction
     public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
         String code = Instance.getValueForMetaPropertyToOneResolved(params.get(0), M3Properties.values, processorSupport).getName();
-        MutableList<PackageableElement> createdElements = org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile.doCompile(code, new InterpretedMetadata(processorSupport));
+        MutableList<PackageableElement> createdElements = org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile.doCompile(code, LegendCompileMixedProcessorSupport.callingMetadata(processorSupport));
         return ValueSpecificationBootstrap.wrapValueSpecification(createdElements, true, functionExecution.getProcessorSupport());
     }
 }

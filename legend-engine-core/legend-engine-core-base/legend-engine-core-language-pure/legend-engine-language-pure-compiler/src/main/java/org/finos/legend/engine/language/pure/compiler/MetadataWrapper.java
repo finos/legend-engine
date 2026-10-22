@@ -40,6 +40,11 @@ public class MetadataWrapper implements Metadata
         this.pureModel = pureModel;
     }
 
+    public PureModel getPureModel()
+    {
+        return this.pureModel;
+    }
+
     @Override
     public void startTransaction()
     {

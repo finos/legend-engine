@@ -87,12 +87,12 @@ public class PackageableElementMilestoningPassBuilder implements PackageableElem
 
         if (sourceIsTemporal)
         {
-            Milestoning.applyMilestoningPropertyTransformations(association, class1, class2, properties, qualifiedProperties, originalMilestonedProperties);
+            Milestoning.applyMilestoningPropertyTransformations(this.context.pureModel, association, class1, class2, properties, qualifiedProperties, originalMilestonedProperties);
         }
 
         if (targetIsTemporal)
         {
-            Milestoning.applyMilestoningPropertyTransformations(association, class2, class1, properties, qualifiedProperties, originalMilestonedProperties);
+            Milestoning.applyMilestoningPropertyTransformations(this.context.pureModel, association, class2, class1, properties, qualifiedProperties, originalMilestonedProperties);
         }
 
         assert properties.size() >= association._properties().size();

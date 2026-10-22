@@ -106,7 +106,8 @@ java ... org.finos.legend.engine.perf.PipelineBench --suite default
 java ... org.finos.legend.engine.perf.PipelineBench --suite default --out perf-results.json
 ```
 
-Flags: `--baseline <path>` (default `perf-baseline.json`), `--out <path>`, `--rebase`,
+Flags: `--baseline <path>` (default `perf-baseline.json`, or `perf-baseline-<suite>.json` for a suite
+other than `default`, since a baseline file holds a single suite), `--out <path>`, `--rebase`,
 `--record <results.json>` (write a results file measured elsewhere into the baseline without
 re-running the suite),
 `--margin 0.5` (allowed deviation for absolute phase medians), `--canary-margin 0.3` (allowed
@@ -251,3 +252,30 @@ Suggested canaries, with the shape each one guards:
 
 Baselines belong in a checked-in file updated by pull request, so an intentional performance change
 is reviewed alongside the code that causes it.
+
+## SQL suite
+
+`--suite sql` times the SQL flows that compile generated Pure through `meta::legend::compile`. A
+`tb('<database>.<table>')` source compiles a relation accessor on the database it names, so these
+flows pay for that compile on every statement. The workload is a generated database of `scale`
+tables of 20 columns, measured at 100 and 1000 tables; the statements stay fixed, so the pair shows
+whether the cost follows the size of the database.
+
+| Phase | What it measures |
+|---|---|
+| `compile` | `Compiler.compile` of the database plus 10 functions that each embed `#SQL{select ... from tb(...)}#` |
+| `sqlQuery` | 10 `#SQL{<query>}#` lambdas, each reading one `tb()`, compiled against the loaded model - what the Postgres server has the engine do for every query |
+| `sqlJoin` | the same with a join of two `tb()` sources |
+| `schema` | the SQL schema endpoint over the loaded model: the schema transform plus `alloyToJSON` |
+
+| Canary | Guards |
+|---|---|
+| `sqlQuery(1000 tables) / sqlQuery(100 tables)` | a `#SQL` query compiling the whole database it reads from, rather than an accessor on it |
+| `compile(1000 tables) / compile(100 tables)` | compiling `#SQL` functions recompiling the database once per `tb()` source |
+
+Both ratios stay close to 1 while a compile only adds the accessor to the graph it runs on. Before
+that, every `tb()` printed the database back to grammar and compiled it again, and the same ratios
+were between 5 and 6.
+
+`schema` stays linear in the number of tables either way, since the endpoint compiles one accessor
+per table, so it has no canary.

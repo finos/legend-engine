@@ -36,7 +36,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.type.Type;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
 import java.util.List;
 import java.util.Map;
@@ -83,14 +85,13 @@ public abstract class FunctionExpressionBuilder
 
     private boolean isPackageableElementSubtypeOfFunction(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification valueSpecification, ProcessingContext processingContext, PureModel pureModel)
     {
-        return (valueSpecification instanceof PackageableElementPtr
-                    && pureModel.getExecutionSupport().getProcessorSupport().package_getByUserPath(((PackageableElementPtr) valueSpecification).fullPath) != null
-                    && Type.subTypeOf(
-                            pureModel.getExecutionSupport().getProcessorSupport().package_getByUserPath(((PackageableElementPtr) valueSpecification).fullPath).getClassifier(),
-                            pureModel.getExecutionSupport().getProcessorSupport().package_getByUserPath(M3Paths.Function),
-                            pureModel.getExecutionSupport().getProcessorSupport()
-                    )
-                );
+        if (!(valueSpecification instanceof PackageableElementPtr))
+        {
+            return false;
+        }
+        ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
+        CoreInstance element = processorSupport.package_getByUserPath(((PackageableElementPtr) valueSpecification).fullPath);
+        return (element != null) && Type.subTypeOf(processorSupport.getClassifier(element), processorSupport.package_getByUserPath(M3Paths.Function), processorSupport);
     }
 
     private boolean isVariableSubtypeOfFunction(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification valueSpecification, ProcessingContext processingContext, PureModel pureModel)

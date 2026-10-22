@@ -98,22 +98,14 @@ public class ClassCompilerExtension implements CompilerExtension
                 throw new EngineException("Duplicated super type '" + superType + "' in class '" + fullPath + "'", srcClass.sourceInformation, EngineErrorType.COMPILATION);
             }
             Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", SourceInformationHelper.toM3SourceInformation(superTypePtr.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))._general(context.resolveGenericType(superType, superTypePtr.sourceInformation))._specific(_class);
-            if (!context.pureModel.isImmutable(superType))
+            Type type = context.resolveType(superType, superTypePtr.sourceInformation);
+            if (type instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)
             {
-                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> superTypeClass;
-                Type type = context.resolveType(superType, superTypePtr.sourceInformation);
-                try
-                {
-                    superTypeClass = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) type;
-                }
-                catch (ClassCastException e)
-                {
-                    throw new EngineException("Invalid supertype: '" + srcClass.name + "' cannot extend '" + superType + "' as it is not a class.", srcClass.sourceInformation, EngineErrorType.COMPILATION);
-                }
-                synchronized (superTypeClass)
-                {
-                    superTypeClass._specializationsAdd(g);
-                }
+                context.pureModel.addSpecialization(type, g);
+            }
+            else if (!context.pureModel.isImmutable(superType))
+            {
+                throw new EngineException("Invalid supertype: '" + srcClass.name + "' cannot extend '" + superType + "' as it is not a class.", srcClass.sourceInformation, EngineErrorType.COMPILATION);
             }
             return g;
         });

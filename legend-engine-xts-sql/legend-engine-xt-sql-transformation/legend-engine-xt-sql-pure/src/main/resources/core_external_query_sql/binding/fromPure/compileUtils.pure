@@ -269,7 +269,8 @@ function meta::external::query::sql::transformation::compile::utils::compileViaG
   let dependencies = $value
                           ->meta::external::query::sql::transformation::compile::utils::_extractDependencies([])
                           ->scanDependencies([], meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraScanDependenciesType)
-                          ->removeDuplicates({a,b|$a->elementToPath() == $b->elementToPath()});
+                          ->removeDuplicates({a,b|$a->elementToPath() == $b->elementToPath()})
+                          ->filter(x|!$x->meta::legend::isInGraph());
 
   let dependenciesAsStr = $dependencies->map(x|$x->printPackageableElements($config))->joinStrings('\n');
 

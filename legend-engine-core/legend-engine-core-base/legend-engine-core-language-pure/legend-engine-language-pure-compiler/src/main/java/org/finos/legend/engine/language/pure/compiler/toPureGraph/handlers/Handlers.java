@@ -1500,7 +1500,8 @@ public class Handlers
     public static final ParametersInference ReduceInference = (parameters, valueSpecificationBuilder) ->
             (parameters.size() >= 5 ? WindowReduceInference : GroupReduceInference).update(parameters, valueSpecificationBuilder);
 
-    private final Map<String, FunctionExpressionBuilder> map = Maps.mutable.empty();
+    private final Map<String, FunctionExpressionBuilder> map = new java.util.concurrent.ConcurrentHashMap<>();
+    private final Set<String> seededFromBaseline = Sets.mutable.empty();
     private final Map<String, Dispatch> dispatchMap = Maps.mutable.empty();
     private final PureModel pureModel;
     private final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object>> fcache;
@@ -3254,7 +3255,45 @@ public class Handlers
 
     public FunctionExpressionBuilder getExpressionBuilder(String functionName, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
-        return valueSpecificationBuilder.getContext().resolveFunctionBuilder(functionName, this.registeredMetaPackages, this.map, sourceInformation, valueSpecificationBuilder.getProcessingContext());
+        return valueSpecificationBuilder.getContext().resolveFunctionBuilder(functionName, this.registeredMetaPackages, this::lookUpFunctionBuilder, sourceInformation, valueSpecificationBuilder.getProcessingContext());
+    }
+
+    public boolean isRegisteredMetaPackage(String packagePath)
+    {
+        return this.registeredMetaPackages.contains(packagePath);
+    }
+
+    public FunctionExpressionBuilder lookUpFunctionBuilder(String functionName)
+    {
+        if (this.pureModel.isLayered())
+        {
+            synchronized (this)
+            {
+                if (!this.seededFromBaseline.contains(functionName))
+                {
+                    this.pureModel.getBaselineFunctionHandlers(functionName).forEach(h -> addBaselineFunctionHandler(functionName, h));
+                    this.seededFromBaseline.add(functionName);
+                }
+            }
+        }
+        return this.map.get(functionName);
+    }
+
+    private void addBaselineFunctionHandler(String functionName, FunctionHandler handler)
+    {
+        FunctionExpressionBuilder builder = this.map.get(functionName);
+        if (builder == null)
+        {
+            this.map.put(functionName, new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler));
+        }
+        else if (builder.supportFunctionHandler(handler))
+        {
+            builder.addFunctionHandler(handler);
+        }
+        else
+        {
+            this.addFunctionHandler(handler, builder);
+        }
     }
 
     public void collectPrerequisiteElementsFromUserDefinedFunctionHandlers(Set<PackageableElementPointer> prerequisiteElements, String functionName, int parametersSize)

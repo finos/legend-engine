@@ -183,8 +183,8 @@ public class PipelineBench
         result.put("config", this.config.toMap());
         result.put("iterations", this.config.iterations);
         result.put("warmup", this.config.warmup);
-        result.put("coldMs", phaseValues(cold));
-        result.put("warmMedianMs", medians(measured));
+        result.put("coldMs", phaseValues(cold, PHASES));
+        result.put("warmMedianMs", medians(measured, PHASES));
         result.put("planJsonChars", cold == null ? null : cold.get("planJsonChars"));
         this.rows = measured;
         return result;
@@ -209,14 +209,14 @@ public class PipelineBench
         }
     }
 
-    static Map<String, Object> phaseValues(Map<String, Object> row)
+    static Map<String, Object> phaseValues(Map<String, Object> row, String[] phases)
     {
         Map<String, Object> values = new LinkedHashMap<>();
         if (row == null)
         {
             return values;
         }
-        for (String phase : PHASES)
+        for (String phase : phases)
         {
             if (row.containsKey(phase))
             {
@@ -226,10 +226,10 @@ public class PipelineBench
         return values;
     }
 
-    static Map<String, Object> medians(List<Map<String, Object>> rows)
+    static Map<String, Object> medians(List<Map<String, Object>> rows, String[] phases)
     {
         Map<String, Object> result = new LinkedHashMap<>();
-        for (String phase : PHASES)
+        for (String phase : phases)
         {
             List<Long> values = new ArrayList<>();
             for (Map<String, Object> row : rows)
@@ -368,7 +368,7 @@ public class PipelineBench
         }
     }
 
-    private static long millis(long from, long to)
+    static long millis(long from, long to)
     {
         return (to - from) / 1_000_000L;
     }

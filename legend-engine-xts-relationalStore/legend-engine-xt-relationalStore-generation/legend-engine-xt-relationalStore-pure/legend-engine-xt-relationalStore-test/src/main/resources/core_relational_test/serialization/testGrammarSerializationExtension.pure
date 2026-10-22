@@ -4,8 +4,10 @@ import meta::relational::grammar::serialization::tests::*;
 
 function <<test.Test>> meta::relational::grammar::serialization::tests::testPrintDatabase():Boolean[1]
 {
-  let str = printDatabase(TestDB);
-  let compiled = meta::legend::compileLegendGrammar('###Relational\n' + $str)->filter(e | $e->elementToPath() == meta::relational::grammar::serialization::tests::TestDB->elementToPath())->toOne()->cast(@Database);
+  let path = TestDB->elementToPath();
+  let copyPath = $path + 'Copy';
+  let str = printDatabase(TestDB)->replace($path, $copyPath);
+  let compiled = meta::legend::compileLegendGrammar('###Relational\n' + $str)->filter(e | $e->elementToPath() == $copyPath)->toOne()->cast(@Database);
 
   assertEquals($compiled->printDatabase(), $str);
 }

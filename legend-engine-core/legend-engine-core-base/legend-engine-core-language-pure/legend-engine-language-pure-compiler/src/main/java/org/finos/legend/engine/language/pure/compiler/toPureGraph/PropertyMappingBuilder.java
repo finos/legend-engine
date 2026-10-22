@@ -177,7 +177,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
             while (allClzMappings.hasNext())
             {
                 SetImplementation c = allClzMappings.next();
-                RichIterable<? extends Property<?, ?>> candidateProperties = !c._class()._originalMilestonedProperties().isEmpty() ? c._class()._originalMilestonedProperties() : c._class()._propertiesFromAssociations();
+                RichIterable<? extends Property<?, ?>> candidateProperties = !c._class()._originalMilestonedProperties().isEmpty() ? c._class()._originalMilestonedProperties() : this.context.pureModel.getPropertiesFromAssociations(c._class());
                 for (Property<?, ?> candidateProperty: candidateProperties)
                 {
                     if ((sourceSet == null || targetSet == null) && candidateProperty._owner().equals(this.parent._association()))

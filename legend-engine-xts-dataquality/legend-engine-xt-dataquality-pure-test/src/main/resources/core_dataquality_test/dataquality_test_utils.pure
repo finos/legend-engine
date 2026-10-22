@@ -7,7 +7,6 @@ import meta::external::dataquality::*;
 
 function meta::external::dataquality::tests::loadDataQuality(tree:String[1]):DataQuality<Any>[1]
 {
-  let model = readFile('/core_dataquality_test/dataquality_test_model.pure')->toOne();
   let extra = readFile('/core_dataquality_test/dataquality_test_model_legend.txt')->toOne();
 
   let dq =
@@ -18,7 +17,7 @@ function meta::external::dataquality::tests::loadDataQuality(tree:String[1]):Dat
     '    validationTree: ' + $tree + ';' +
     '}';
 
-  let code = $model + '\n' + $extra + '\n' + $dq;
+  let code = $extra + '\n' + $dq;
 
   let compiled = meta::legend::compileLegendGrammar($code);
 
@@ -32,10 +31,9 @@ function meta::external::dataquality::tests::loadDataQualityRelationValidation(d
 
 function meta::external::dataquality::tests::loadModel(items:String[*]):PackageableElement[*]
 {
-  let model = readFile('/core_dataquality_test/dataquality_test_model.pure')->toOne();
   let extra = readFile('/core_dataquality_test/dataquality_test_model_legend.txt')->toOne();
 
-  let code = $model + '\n' + $extra + '\n' + $items->joinStrings('\n');
+  let code = $extra + '\n' + $items->joinStrings('\n');
 
   meta::legend::compileLegendGrammar($code);
 }

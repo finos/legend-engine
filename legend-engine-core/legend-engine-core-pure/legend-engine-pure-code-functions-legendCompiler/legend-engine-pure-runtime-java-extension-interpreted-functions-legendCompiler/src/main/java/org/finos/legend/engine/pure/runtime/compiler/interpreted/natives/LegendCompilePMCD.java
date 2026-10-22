@@ -51,7 +51,7 @@ public class LegendCompilePMCD extends NativeFunction
         String code = Instance.getValueForMetaPropertyToOneResolved(params.get(0), M3Properties.values, processorSupport).getName();
 
         MutableList<PackageableElement> createdElements = null;
-        createdElements = org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile.doCompilePMCD(code, new InterpretedMetadata(processorSupport));
+        createdElements = org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile.doCompilePMCD(code, LegendCompileMixedProcessorSupport.callingMetadata(processorSupport));
         return ValueSpecificationBootstrap.wrapValueSpecification(createdElements, true, functionExecution.getProcessorSupport());
     }
 }

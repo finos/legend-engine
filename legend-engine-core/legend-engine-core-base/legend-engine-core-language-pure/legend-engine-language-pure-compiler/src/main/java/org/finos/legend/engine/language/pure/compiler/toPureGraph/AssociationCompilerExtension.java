@@ -97,14 +97,8 @@ public class AssociationCompilerExtension implements CompilerExtension
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object> property1 = HelperModelBuilder.processProperty(context, context.pureModel.getGenericTypeFromIndex(property1Ref), association).valueOf(srcAssociation.properties.get(0));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object> property2 = HelperModelBuilder.processProperty(context, context.pureModel.getGenericTypeFromIndex(property0Ref), association).valueOf(srcAssociation.properties.get(1));
 
-        synchronized (source)
-        {
-            source._propertiesFromAssociationsAdd(property2);
-        }
-        synchronized (target)
-        {
-            target._propertiesFromAssociationsAdd(property1);
-        }
+        context.pureModel.addPropertyFromAssociation(source, property2);
+        context.pureModel.addPropertyFromAssociation(target, property1);
 
         ProcessingContext ctx = new ProcessingContext("Association " + packageString + " (second pass)");
 
@@ -116,14 +110,7 @@ public class AssociationCompilerExtension implements CompilerExtension
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class cl = context.newGenericType(p.returnGenericType)._rawType() == source ? target : source;
             return HelperModelBuilder.processQualifiedPropertyFirstPass(context, association, org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(cl), ctx).valueOf(p);
         });
-        qualifiedProperties.forEach(q ->
-        {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class _class = q._genericType()._rawType() == source ? target : source;
-            synchronized (_class)
-            {
-                _class._qualifiedPropertiesFromAssociationsAdd(q);
-            }
-        });
+        qualifiedProperties.forEach(q -> context.pureModel.addQualifiedPropertyFromAssociation(q._genericType()._rawType() == source ? target : source, q));
         ctx.flushVariable("this");
         association._originalMilestonedProperties(ListIterate.collect(srcAssociation.originalMilestonedProperties, HelperModelBuilder.processProperty(context, context.newGenericType(srcAssociation.properties.get(0).genericType), association)))
                 ._properties(Lists.mutable.with(property1, property2))

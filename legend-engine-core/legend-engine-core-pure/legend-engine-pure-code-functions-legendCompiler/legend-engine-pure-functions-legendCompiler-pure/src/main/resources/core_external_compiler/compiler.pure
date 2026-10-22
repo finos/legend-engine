@@ -18,6 +18,177 @@ import meta::pure::mapping::*;
 
 native function meta::legend::compile(s:String[1]):PackageableElement[*];
 
+native function meta::legend::compile<T|m>(grammar:String[1], f:Function<{->T[m]}>[1]):T[m];
+
 native function meta::legend::compileVS(s:String[1]):Any[1];
 
 native function meta::legend::compilePMCD(pmcdJSON:String[1]):PackageableElement[*];
+
+native function meta::legend::compilePMCD<T|m>(pmcdJSON:String[1], f:Function<{->T[m]}>[1]):T[m];
+
+Class meta::legend::tests::Base
+{
+}
+
+function meta::legend::tests::nameOfA():String[1]
+{
+  'a::A'->pathToElement().name->toOne()
+}
+
+function <<test.Test>> meta::legend::tests::compiledElementsAreOnTheGraphOnlyInsideTheFunction():Boolean[1]
+{
+  assertEmpty('a::A'->lenientPathToElement());
+  assertEquals('A', meta::legend::compile('Class a::A{}', {|
+    assertEquals('A', 'a::A'->pathToElement().name->toOne());
+    meta::legend::tests::nameOfA();
+  }));
+  assertEmpty('a::A'->lenientPathToElement());
+}
+
+function <<test.Test>> meta::legend::tests::compiledElementsOutliveTheFunctionButStayOutOfTheCallingGraph():Boolean[1]
+{
+  let a = meta::legend::compile('Class a::A{}', {|'a::A'->pathToElement()});
+  assertEquals('A', $a.name);
+  assertEmpty('a::A'->lenientPathToElement());
+}
+
+function <<test.Test>> meta::legend::tests::compileWithFunctionReturnsManyValues():Boolean[1]
+{
+  assertEquals(['A', 'B'], meta::legend::compile('Class a::A{} Class a::B{}', {|['a::A', 'a::B']->map(p | $p->pathToElement().name->toOne())}));
+}
+
+function <<test.Test>> meta::legend::tests::compiledElementsReferenceTheCallingGraph():Boolean[1]
+{
+  assertIs(meta::legend::tests::Base, meta::legend::compile('Class a::Sub extends meta::legend::tests::Base {}', {|'a::Sub'->pathToElement()->cast(@Class<Any>).generalizations.general.rawType->toOne()}));
+}
+
+function <<test.Test>> meta::legend::tests::compileWithFunctionDoesNotMutateTheCallingGraph():Boolean[1]
+{
+  assertEquals(0, meta::legend::compile('Class a::Sub extends meta::legend::tests::Base {}', {|meta::legend::tests::Base.specializations->size()}));
+  assertEmpty(meta::legend::tests::Base.specializations);
+}
+
+function meta::legend::tests::compileOnA():Boolean[1]
+{
+  assertEquals('A', meta::legend::compile('Class b::B extends a::A {}', {|'b::B'->pathToElement()->cast(@Class<Any>).generalizations.general.rawType.name->toOne()}));
+  assertEmpty('b::B'->lenientPathToElement());
+}
+
+function <<test.Test>> meta::legend::tests::nestedCompileWithFunctionLayersOnTheEnclosingCompile():Boolean[1]
+{
+  assert(meta::legend::compile('Class a::A{}', {|meta::legend::tests::compileOnA()}));
+  assertEmpty('a::A'->lenientPathToElement());
+}
+
+function <<test.Test>> meta::legend::tests::compileWithoutAFunctionInsideTheFunctionLayersOnTheEnclosingCompile():Boolean[1]
+{
+  assertEquals('A', meta::legend::compile('Class a::A{}', {|meta::legend::compile('Class b::B extends a::A {}')->cast(@Class<Any>).generalizations.general.rawType.name->toOne()}));
+}
+
+function <<test.Test>> meta::legend::tests::compiledElementsLeaveTheGraphWhenTheFunctionFails():Boolean[1]
+{
+  assertError(|meta::legend::compile('Class a::A{}', {|fail('function failed')}), 'function failed');
+  assertEmpty('a::A'->lenientPathToElement());
+}
+
+function <<test.Test>> meta::legend::tests::compileWithAFunctionPointer():Boolean[1]
+{
+  assertEquals('A', meta::legend::compile('Class a::A{}', meta::legend::tests::nameOfA__String_1_));
+}
+
+function <<test.Test>> meta::legend::tests::compilePMCDWithFunctionSeesTheCompiledElements():Boolean[1]
+{
+  assertEquals('a', meta::legend::compilePMCD('{"_type": "data", "elements": [{"_type": "class", "package": "test::class", "name": "a"}]}', {|'test::class::a'->pathToElement().name->toOne()}));
+}
+
+function <<test.Test>> meta::legend::tests::compileClass():Boolean[1]
+{
+  let x = meta::legend::compile('Class a::A{}')->cast(@Class<Any>);
+  assertEquals(1, $x->size());
+  assertEquals('A', $x.name);
+}
+
+function <<test.Test>> meta::legend::tests::compileFunctionEvaluatingAFunctionPointer():Boolean[1]
+{
+  let x = meta::legend::compile('function x::z():Integer[1]{meta::pure::functions::math::plus_Integer_MANY__Integer_1_->eval([1,2]);}');
+  assertEquals(1, $x->size());
+  assertEquals(3, $x->toOne()->cast(@FunctionDefinition<{->Integer[1]}>).expressionSequence->at(0)->reactivate());
+}
+
+function <<test.Test>> meta::legend::tests::compileClassAndNavigateItsProperties():Boolean[1]
+{
+  let x = meta::legend::compile('Class a::A{name:String[1];other:Integer[1];}')->cast(@Class<Any>);
+  assertEquals(1, $x->size());
+  assertEquals(['name', 'other'], $x.properties.name->sort());
+}
+
+function meta::legend::tests::increment(i:Integer[1]):Integer[1]
+{
+  $i + 1
+}
+
+function <<test.Test>> meta::legend::tests::compiledCodeCallsAFunctionOfTheCallingGraph():Boolean[1]
+{
+  let f = meta::legend::compile('function a::g():Integer[1]{meta::legend::tests::increment(1)}')->cast(@ConcreteFunctionDefinition<Any>)->toOne();
+  assertIs(meta::legend::tests::increment_Integer_1__Integer_1_, $f.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@SimpleFunctionExpression).func);
+}
+
+function <<test.Test>> meta::legend::tests::compileFunction():Boolean[1]
+{
+  let x = meta::legend::compile('function a::f():Integer[1]{1+1}')->cast(@ConcreteFunctionDefinition<Any>);
+  assertEquals(1, $x->size());
+  assertEquals(1, $x.expressionSequence->size());
+}
+
+Class meta::legend::tests::ClassWithProperty
+{
+  prop: AbstractProperty<Any>[1];
+}
+
+function <<test.Test>> meta::legend::tests::copyPropertiesOfACompiledClass():Boolean[1]
+{
+  let firm = meta::legend::compile('Class <<meta::pure::profiles::temporal.processingtemporal>> l::Firm{employee: l::Person[1]; name: String[1]; loc: String[1];} Class <<meta::pure::profiles::temporal.processingtemporal>> l::Person{name:String[1];}')->at(0)->cast(@Class<Any>);
+  let p = $firm.properties->at(0);
+  let copy = ^$p();
+  assertEquals($p.name, $copy.name);
+  assertEquals($firm.properties, $firm.properties->map(property | ^meta::legend::tests::ClassWithProperty(prop = $property)).prop);
+}
+
+function <<test.Test>> meta::legend::tests::copyACompiledFunction():Boolean[1]
+{
+  let x = meta::legend::compile('function a::f():Integer[1]{1+1}')->toOne()->cast(@ConcreteFunctionDefinition<Any>);
+  assertNotEquals('copied name', $x.name);
+  let copy = ^$x(name = 'copied name');
+  assertEquals('copied name', $copy.name);
+}
+
+function <<test.Test>> meta::legend::tests::compileProfile():Boolean[1]
+{
+  let x = meta::legend::compile('Profile a::prof {stereotypes:[a,b];tags:[c,d,e];}')->cast(@Profile);
+  assertEquals(1, $x->size());
+  assertEquals(2, $x.p_stereotypes->size());
+  assertEquals(3, $x.p_tags->size());
+}
+
+function <<test.Test>> meta::legend::tests::compileEnumeration():Boolean[1]
+{
+  let x = meta::legend::compile('Enum a::E{a,b,c}')->cast(@Enumeration<Any>);
+  assertEquals(['a', 'b', 'c'], $x->toOne()->enumValues()->map(z | $z->id()));
+}
+
+function <<test.Test>> meta::legend::tests::compileAssociation():Boolean[1]
+{
+  let x = meta::legend::compile('Class a::A{} Class a::B{} Association a::C{a : a::A[1]; b: a::B[1];}')->filter(x | $x->instanceOf(Association))->cast(@Association);
+  assertEquals(['a', 'b'], $x.properties.name);
+}
+
+function <<test.Test>> meta::legend::tests::compileValueSpecification():Boolean[1]
+{
+  assertEquals(1, meta::legend::compileVS('1'));
+}
+
+function <<test.Test>> meta::legend::tests::compilePMCD():Boolean[1]
+{
+  let x = meta::legend::compilePMCD('{"_type": "data", "elements": [{"_type": "class", "package": "test::class", "name": "a"}]}');
+  assertEquals('a', $x->at(0)->cast(@Class<Any>).name);
+}
