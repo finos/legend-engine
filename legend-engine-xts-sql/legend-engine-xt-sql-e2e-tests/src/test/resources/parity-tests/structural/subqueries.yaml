@@ -327,3 +327,57 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+
+  # Correlated EXISTS reading an UNQUALIFIED outer column. 'salary' only exists on
+  # the outer relation (persons), so Postgres resolves the bare name against the
+  # enclosing query.
+  - id: subquery_exists_correlated_unqualified_outer_column
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT 1 FROM orders o WHERE o.person_id = p.id AND o.amount > salary / 1000) ORDER BY 1"
+    feature: "Correlated EXISTS with unqualified outer column"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Same shape as above with a different outer-only column ('dept_id'). orders has
+  # no dept_id, so the bare name is unambiguously outer.
+  - id: subquery_exists_correlated_unqualified_outer_dept_id
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT 1 FROM orders o WHERE o.person_id = p.id AND dept_id IS NOT NULL) ORDER BY 1"
+    feature: "Correlated EXISTS with unqualified outer column"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Control: bare column ('amount') is present on the INNER relation, so it must
+  # resolve locally rather than being routed to the outer p. Guards the fix from
+  # over-reaching to columns that already resolve.
+  - id: subquery_exists_unqualified_inner_column_control
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT 1 FROM orders o WHERE o.person_id = p.id AND amount > 100) ORDER BY 1"
+    feature: "Correlated EXISTS with unqualified inner column"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Outer subquery alias reuses an alias used inside the subquery ('root' appears
+  # both as the inner FROM alias and as the outer derived-table alias).
+  - id: subquery_alias_collision_outer_reuses_inner_alias
+    sql: "SELECT root.computed_flag FROM (SELECT CASE WHEN b.dept_id IS NULL THEN 0 ELSE 1 END AS computed_flag FROM persons AS root LEFT OUTER JOIN persons AS b ON root.dept_id = b.dept_id) AS root ORDER BY computed_flag"
+    feature: "outer subquery alias reuses inner FROM alias"
+    category: "subqueries"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Control for the case above - same shape with all distinct aliases; must keep passing.
+  - id: subquery_alias_collision_different_names_control
+    sql: "SELECT sub.computed_flag FROM (SELECT CASE WHEN b.dept_id IS NULL THEN 0 ELSE 1 END AS computed_flag FROM persons AS p LEFT OUTER JOIN persons AS b ON p.dept_id = b.dept_id) AS sub ORDER BY computed_flag"
+    feature: "distinct outer/inner aliases (control)"
+    category: "subqueries"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Outer alias 'b' matches the inner LEFT JOIN RHS alias 'b'.
+  - id: subquery_alias_collision_outer_matches_inner_join_side
+    sql: "SELECT b.computed_flag FROM (SELECT CASE WHEN b.dept_id IS NULL THEN 0 ELSE 1 END AS computed_flag FROM persons AS p LEFT OUTER JOIN persons AS b ON p.dept_id = b.dept_id) AS b ORDER BY computed_flag"
+    feature: "outer alias matches inner join RHS alias"
+    category: "subqueries"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
