@@ -56,8 +56,7 @@ import java.util.function.Function;
  * reference what this one produced. A node holding several elements therefore recompiles once
  * instead of once per element.
  * <p>
- * The final recompile is deferred to {@link #getPureModel()}, so a caller that only needs the
- * generated elements never pays for it.
+ * The run ends by compiling, since nothing else proves that what was generated compiles.
  */
 public class ModelGenerationRunner
 {
@@ -167,6 +166,8 @@ public class ModelGenerationRunner
                 executor.shutdownNow();
             }
         }
+        // the last node's output would otherwise never be compiled, and compiling is the only check that what was generated is valid
+        currentPureModel();
         PureModelContextData generatedModel = this.generatedModelBuilder.build();
         LOGGER.info("Finished running generation specification '{}'. Generated {} elements", this.generationSpecification.getPath(), generatedModel.getElements().size());
         return new Result(this.fullModelBuilder.build(), generatedModel, generationCount);
@@ -199,7 +200,7 @@ public class ModelGenerationRunner
     }
 
     /**
-     * The graph holding the core elements and everything generated so far, recompiling first if a
+     * The graph holding the core elements and everything generated so far, compiling first if a
      * generation has landed since the last compilation.
      */
     public PureModel getPureModel()
