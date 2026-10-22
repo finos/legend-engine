@@ -44,7 +44,7 @@ function meta::external::dataquality::lambdaRelationType::getLambdaRelationType(
                                             $c.additionalColumnsToPersist
                                           );
                                           getDataReconLambda($reconInput, $compiler, $extensions);,
-    e: PackageableElement[1]            | fail('Unsupported DataQuality element for relation type: ' + $e->elementToPath())->cast(@LambdaFunction<Any>);
+    e: PackageableElement[1]            | fail('Unsupported DataQuality element for relation type: ' + $e->elementToPath())->cast(@LambdaFunction<Any>)->toMultiplicity(@[1]);
   ]);
   $lambda.expressionSequence->last()->evaluateAndDeactivate().genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>);
 }

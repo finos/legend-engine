@@ -238,7 +238,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processProjectColum
           let scripted = $iv->toRuntimeMapping($resultPath, $initReq);
           pair(^TDSESDetail(type = $type, name = $name, resultPath = $resultPath, runtimeMappingVS = $iv, runtimeMappingVSTDSDetails = $scripted.tdsESDetails, format = $scripted.search.runtime_mappings->toOne()->get($resultPath.path()).format.value), $scripted);
         },
-        other: Any[*] | fail(|'Cannot project column - %s:%s'->format([$name,$any->type()->elementToPath()]))->cast(@Pair<TDSESDetail, State>)
+        other: Any[*] | fail(|'Cannot project column - %s:%s'->format([$name,$any->type()->elementToPath()]))->cast(@Pair<TDSESDetail, State>)->toMultiplicity(@[1])
       ])
     }
   ]);
@@ -504,10 +504,10 @@ function meta::external::store::elasticsearch::v7::pureToEs::processFilterLambda
     iv: InstanceValue[1] |
         $iv.values->match([
           f: FunctionDefinition<Any>[1] | $f.expressionSequence->at(0)->processFilterLambda($req),
-          any: Any[1] |   fail('not supported: ' + $iv.values->type()->toString())->cast(@State)
+          any: Any[1] |   fail('not supported: ' + $iv.values->type()->toString())->cast(@State)->toMultiplicity(@[1])
         ]),
     fe: FunctionExpression[1] |  $req.supportedFilterFunctions->findAndEvalSupportedFunction($fe, $req, $req),
-    any: Any[1] | fail('not supported: ' + $any->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='')))->cast(@State)
+    any: Any[1] | fail('not supported: ' + $any->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='')))->cast(@State)->toMultiplicity(@[1])
   ]);
 }
 
@@ -1349,7 +1349,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::literalOrExpression
     planVar: PlanVarPlaceHolder[1] | $planVar->expression($supportZeroMult),
     enum: Enum[1] | $enum->toString()->literal(),
     none: Any[0] | [],
-    a: Any[1] | fail(|'not supported type: ' + $a->type()->elementToPath())->literal(),
+    a: Any[1] | fail(|'not supported type: ' + $a->type()->elementToPath())->toMultiplicity(@[1])->literal(),
     mult: Any[*] | $mult->map(x | $x->literalOrExpression($supportZeroMult));
   ]);
 }

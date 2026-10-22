@@ -25,7 +25,7 @@ function <<test.Test, test.ToFix>> meta::relational::tests::projection::concaten
    assertSize($result.values.rows, 14 );
    //assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
    //assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());
-   fail('Expectations need updating once it works');
+   fail('Expectations need updating once it works')->toMultiplicity(@[1]);
 }
 
 ###Pure

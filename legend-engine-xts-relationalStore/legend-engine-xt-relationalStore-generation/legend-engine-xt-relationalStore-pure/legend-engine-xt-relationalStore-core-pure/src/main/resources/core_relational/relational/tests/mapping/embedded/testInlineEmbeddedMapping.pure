@@ -128,7 +128,7 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
 
    let result = execute(|Product.all()->project([p| $p.name, p | $p.bondDetails.description], ['name', 'description'])
                          ,testMappingEmbedded, testRuntime(), meta::relational::extension::relationalExtensions());
-   fail();
+   fail()->toMultiplicity(@[1]);
  }
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::embedded::advanced::setUp():Boolean[1]

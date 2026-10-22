@@ -34,10 +34,9 @@ public class MayExecuteAlloyTest extends AbstractNative
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
         ProcessorSupport processorSupport = processorContext.getSupport();
-        ListIterable<? extends CoreInstance> parametersValues = Instance.getValueForMetaPropertyToManyResolved(functionExpression, M3Properties.parametersValues, processorSupport);
-        CoreInstance functionType = Instance.getValueForMetaPropertyToOneResolved(parametersValues.get(1), M3Properties.genericType, M3Properties.typeArguments, M3Properties.rawType, processorSupport);
-        CoreInstance param = functionType.getValueForMetaPropertyToOne(M3Properties.returnType);
-        String type = TypeProcessor.typeToJavaPrimitiveWithMul(param, functionType.getValueForMetaPropertyToOne(M3Properties.returnMultiplicity), true, processorContext);
+        CoreInstance genericType = Instance.getValueForMetaPropertyToOneResolved(functionExpression, M3Properties.genericType, processorSupport);
+        CoreInstance multiplicity = Instance.getValueForMetaPropertyToOneResolved(functionExpression, M3Properties.multiplicity, processorSupport);
+        String type = TypeProcessor.typeToJavaPrimitiveWithMul(genericType, multiplicity, true, processorContext);
         return "((" + type + ")FunctionsGen.alloyTest(es, " + transformedParams.get(0) + "," + transformedParams.get(1) + "))";
     }
 }

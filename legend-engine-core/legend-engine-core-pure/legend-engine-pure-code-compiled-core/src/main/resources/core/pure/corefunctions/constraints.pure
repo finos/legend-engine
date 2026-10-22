@@ -19,7 +19,7 @@ function meta::pure::constraints::functions::noOpConstraintHandler(instance:Any[
 
 function meta::pure::functions::constraints::fail(b:Boolean[1], message:String[1]):Boolean[1]
 {
-    if($b,|fail($message),|$b)
+    if($b,|fail($message)->toMultiplicity(@[1]),|$b)
 }
 
 function meta::pure::functions::constraints::warn(b:Boolean[1], message:String[1]):Boolean[1]

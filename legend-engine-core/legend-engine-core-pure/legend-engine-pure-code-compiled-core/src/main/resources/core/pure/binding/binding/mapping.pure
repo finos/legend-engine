@@ -20,6 +20,6 @@ Class meta::external::format::shared::binding::BindingTransformer<T> extends Val
    binding : Binding[1];
    class   : Class<T>[1];
 
-   toDomainValue(sourceValue: Any[1]) { fail('Only supported in store execution flow!') }: Any[1];
+   toDomainValue(sourceValue: Any[1]) { fail('Only supported in store execution flow!')->toMultiplicity(@[1]) }: Any[1];
    toSourceValues(domainValue: Any[1]) { fail('Only supported in store execution flow!') }: Any[*];
 }

@@ -212,7 +212,7 @@ function meta::external::store::elasticsearch::v7::specification::utils::propert
           | ^BooleanProperty(),
           | if ($type == Date || $type == DateTime || $type == StrictDate,
             | ^DateProperty(),
-            | fail(|'Datatype not supported for runtime mapping: ' + $type->elementToPath())->cast(@PropertyBase)
+            | fail(|'Datatype not supported for runtime mapping: ' + $type->elementToPath())->cast(@PropertyBase)->toMultiplicity(@[1])
           )
         )
       )

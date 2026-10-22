@@ -44,9 +44,9 @@ function meta::external::query::sql::schema::tdsColToSchemaCol(col: TDSColumn[1]
     c:Class<Any>[1]         | if ([
                                 pair(| $c == meta::pure::metamodel::variant::Variant, | ^meta::external::query::sql::schema::metamodel::VariantSchemaColumn(type = meta::pure::metamodel::variant::Variant->elementToPath(),name=$columnName))
                               ],
-                                | fail('Unsupported type on column: ' + $columnName + ' (' + $tdsType->meta::pure::functions::meta::elementToPath() + '), only primitive types and enums are supported')
+                                | fail('Unsupported type on column: ' + $columnName + ' (' + $tdsType->meta::pure::functions::meta::elementToPath() + '), only primitive types and enums are supported')->toMultiplicity(@[1])
                               );,
-    a:Any[*]                | fail('Unsupported type on column: ' + $columnName + ' (' + $tdsType->meta::pure::functions::meta::elementToPath() + '), only primitive types and enums are supported');
+    a:Any[*]                | fail('Unsupported type on column: ' + $columnName + ' (' + $tdsType->meta::pure::functions::meta::elementToPath() + '), only primitive types and enums are supported')->toMultiplicity(@[1]);
   ])->cast(@meta::external::query::sql::schema::metamodel::SchemaColumn);
 }
 
