@@ -19,7 +19,7 @@ import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.finos.legend.pure.m4.exception.PureException;
 import org.json.simple.JSONValue;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;

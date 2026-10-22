@@ -52,7 +52,7 @@ When extending the pure2sql layer:
 ## Operating conventions (project-specific, non-negotiable)
 
 - **Build discipline:** Always run `mvn clean install …` — Pure Maven plugins produce spurious `duplicate artifact present` failures without `clean`. For iteration use `-T 4 -DskipTests` and scope with `-pl <module> -am`.
-- **Toolchain:** JDK 11, Maven 3.6.2+. Do not propose code/APIs that require newer Java.
+- **Toolchain:** JDK 17, Maven 3.6.2+. Most modules compile with `--release 8` (server-side modules with 17); do not propose code/APIs newer than the module's `maven.compiler.release`.
 - **Indentation:** Java 4 spaces, Pure 3 spaces, XML/JSON/YAML 4 spaces. No tabs.
 - **Braces:** always required, opening brace on a new line, closing brace alone.
 - **Copyright header:** every new file (including `.pure`) gets the Apache 2.0 header — Checkstyle enforces this.

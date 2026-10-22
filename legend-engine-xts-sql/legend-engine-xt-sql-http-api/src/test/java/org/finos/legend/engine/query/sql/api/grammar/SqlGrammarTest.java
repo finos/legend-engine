@@ -15,7 +15,8 @@
 
 package org.finos.legend.engine.query.sql.api.grammar;
 
-import io.dropwizard.testing.junit.ResourceTestRule;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import io.dropwizard.testing.junit5.ResourceExtension;
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
@@ -25,13 +26,13 @@ import org.finos.legend.engine.protocol.sql.metamodel.SelectItem;
 import org.finos.legend.engine.protocol.sql.metamodel.Table;
 import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
 import org.glassfish.jersey.test.TestProperties;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.client.Entity;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import jakarta.ws.rs.client.Entity;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@org.junit.jupiter.api.extension.ExtendWith(DropwizardExtensionsSupport.class)
 public class SqlGrammarTest
 {
     static
@@ -39,8 +40,7 @@ public class SqlGrammarTest
         System.setProperty(TestProperties.CONTAINER_PORT, "0");
     }
 
-    @ClassRule
-    public static final ResourceTestRule resources = ResourceTestRule.builder()
+    public static final ResourceExtension resources = ResourceExtension.builder()
             .addResource(new SqlGrammar())
             .addResource(new MockPac4jFeature())
             .build();

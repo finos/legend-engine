@@ -17,8 +17,8 @@ package org.finos.legend.engine.server.core.session;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionEvent;
 
 public class TestSessionTracker
 {

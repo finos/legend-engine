@@ -181,9 +181,10 @@
         </dependency>
 
         <!-- WIREMOCK -->
+        <!-- Shaded standalone: this module stays on Java 8 for clients, and plain wiremock drags in Jetty 10 -->
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock-jre8</artifactId>
+            <artifactId>wiremock-jre8-standalone</artifactId>
         </dependency>
         <!-- WIREMOCK -->
 
@@ -210,8 +211,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

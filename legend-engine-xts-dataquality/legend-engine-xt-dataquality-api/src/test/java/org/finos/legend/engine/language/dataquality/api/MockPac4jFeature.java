@@ -15,70 +15,61 @@
 
 package org.finos.legend.engine.language.dataquality.api;
 
-import org.glassfish.hk2.api.Factory;
-import org.glassfish.hk2.api.InjectionResolver;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.TypeLiteral;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.server.internal.inject.AbstractValueFactoryProvider;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.internal.inject.InjectionResolver;
+import org.glassfish.jersey.server.ContainerRequest;
+import org.glassfish.jersey.server.internal.inject.AbstractValueParamProvider;
 import org.glassfish.jersey.server.internal.inject.MultivaluedParameterExtractorProvider;
 import org.glassfish.jersey.server.internal.inject.ParamInjectionResolver;
 import org.glassfish.jersey.server.model.Parameter;
-import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
-import org.pac4j.core.profile.CommonProfile;
+import org.glassfish.jersey.server.spi.internal.ValueParamProvider;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.GenericType;
+import java.util.function.Function;
 
-
+/**
+ * Injects a null {@link ProfileManager} for {@code @Pac4JProfileManager} parameters so resources can
+ * be exercised without a pac4j security context.
+ */
 public class MockPac4jFeature extends AbstractBinder
 {
 
     @Override
     protected void configure()
     {
-        bind(Pac4JProfileValueFactoryProvider.class).to(ValueFactoryProvider.class).in(Singleton.class);
+        bind(Pac4JProfileValueParamProvider.class).to(ValueParamProvider.class).in(Singleton.class);
 
-        bind(ProfileManagerInjectionResolver.class).to(new TypeLiteral<InjectionResolver<Pac4JProfileManager>>()
+        bind(ProfileManagerInjectionResolver.class).to(new GenericType<InjectionResolver<Pac4JProfileManager>>()
         {
         }).in(Singleton.class);
     }
 
     static class ProfileManagerInjectionResolver extends ParamInjectionResolver<Pac4JProfileManager>
     {
-        public ProfileManagerInjectionResolver()
+        @Inject
+        public ProfileManagerInjectionResolver(Pac4JProfileValueParamProvider provider, Provider<ContainerRequest> request)
         {
-            super(Pac4JProfileValueFactoryProvider.class);
+            super(provider, Pac4JProfileManager.class, request);
         }
     }
 
-    static class Pac4JProfileValueFactoryProvider extends AbstractValueFactoryProvider
+    static class Pac4JProfileValueParamProvider extends AbstractValueParamProvider
     {
         @Inject
-        protected Pac4JProfileValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator)
+        protected Pac4JProfileValueParamProvider(Provider<MultivaluedParameterExtractorProvider> mpep)
         {
-            super(mpep, locator, Parameter.Source.UNKNOWN);
+            super(mpep, Parameter.Source.UNKNOWN);
         }
 
         @Override
-        protected Factory<?> createValueFactory(Parameter parameter)
+        protected Function<ContainerRequest, ?> createValueProvider(Parameter parameter)
         {
-            return new Factory<ProfileManager<CommonProfile>>()
-            {
-                @Override
-                public ProfileManager<CommonProfile> provide()
-                {
-                    return null;
-                }
-
-                @Override
-                public void dispose(ProfileManager<CommonProfile> commonProfileProfileManager)
-                {
-
-                }
-            };
+            return request -> null;
         }
     }
 

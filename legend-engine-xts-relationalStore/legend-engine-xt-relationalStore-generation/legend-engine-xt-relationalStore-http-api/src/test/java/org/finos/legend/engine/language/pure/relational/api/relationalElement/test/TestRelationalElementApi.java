@@ -31,7 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import net.javacrumbs.jsonunit.JsonAssert;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;

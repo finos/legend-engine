@@ -16,8 +16,8 @@ package org.finos.legend.engine.server.core.session;
 
 import org.finos.legend.engine.plan.execution.stores.StoreExecutableManager;
 
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
 
 
 public class StoreExecutableManagerSessionListener  implements HttpSessionListener

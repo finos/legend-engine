@@ -36,7 +36,7 @@ These are upgraded in lock-step when the companion repos release.
 
 | Property | Value |
 |----------|-------|
-| Version | `1.3.29` |
+| Version | `5.0.2` |
 | Property | `dropwizard.version` |
 
 **Rationale:** Dropwizard provides a production-ready HTTP server (Jetty), JAX-RS (Jersey),
@@ -49,10 +49,10 @@ where Legend originated.
 - `io.dropwizard:dropwizard-core` — `Application`, `Configuration`, `Environment`.
 - `io.dropwizard:dropwizard-assets` — serves static web assets (Swagger UI).
 - `io.dropwizard:dropwizard-forms` — multi-part form upload support.
-- `io.federecio:dropwizard-swagger` (`1.3.17-1`) — Swagger/OpenAPI 2.0 UI integration.
+- `com.smoketurner:dropwizard-swagger` (`4.0.5-1`) — Swagger/OpenAPI 3 UI integration.
 
-**HTTP server:** Jetty (`9.4.44.v20210927`).  
-**JAX-RS implementation:** Jersey (`2.25.1`).
+**HTTP server:** Jetty (`12.1.13`).  
+**JAX-RS implementation:** Jersey (`3.1.11`).
 
 ---
 
@@ -134,8 +134,8 @@ Key types used:
 
 | Property | Value |
 |----------|-------|
-| Version | `2.10.5` / `2.10.5.1` (databind) |
-| Properties | `jackson.version`, `jackson.databind.version` |
+| Version | `2.21.4` |
+| Property | `jackson.bom.version` |
 
 Jackson is the **primary JSON serialisation library**. Key usage:
 
@@ -214,9 +214,9 @@ docker run -p 9411:9411 openzipkin/zipkin
 
 | Property | Value |
 |----------|-------|
-| Version | `pac4j.version = 4.5.8` |
+| Version | `pac4j.version = 6.5.8` |
 
-Pac4J (`org.pac4j:pac4j-core`, `...pac4j-jaxrs`, `...pac4j-jersey`) handles HTTP-level
+Pac4J (`org.pac4j:pac4j-core`, `...pac4j-jakartaee`, `...jersey3-pac4j`) handles HTTP-level
 authentication (JWT, Kerberos, OAuth2 callbacks). The authenticated principal is resolved into
 a Legend `Identity` object (from `legend-shared`) which flows through the execution pipeline.
 
@@ -227,7 +227,7 @@ a Legend `Identity` object (from `legend-shared`) which flows through the execut
 | Library | Version property |
 |---------|-----------------|
 | Prometheus Java client | `prometheus.version = 0.8.1` |
-| Dropwizard Metrics | `dropwizard.metrics.version = 4.1.16` |
+| Dropwizard Metrics | `dropwizard.metrics.version = 4.2.39` |
 
 The server exposes a Prometheus scrape endpoint at `/prometheus`. Metrics include JVM stats,
 Jersey request rates/latencies, and custom gauges for execution and compilation.
@@ -264,7 +264,7 @@ Key grammar files (in `legend-engine-language-pure-grammar`):
 the JDK's `javax.tools.JavaCompiler` (preferred when available) or Janino as fallback.
 This is used to JIT-compile the `JavaPlatformImplementation` sources embedded in execution plans.
 
-**Important:** JDK 11 must be used (not JRE) for the `javax.tools` API to be available.
+**Important:** JDK 17 must be used (not JRE) for the `javax.tools` API to be available.
 
 ---
 

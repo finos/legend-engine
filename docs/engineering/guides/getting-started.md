@@ -9,7 +9,7 @@
 
 | Tool | Required version | Notes |
 |------|-----------------|-------|
-| JDK | **11** (LTS) | Enforced by Maven enforcer: `[11.0.10,12)`. Download: [Adoptium](https://adoptium.net/) or `sdk install java 11.0.23-tem` (SDKMAN). |
+| JDK | **17** (LTS) | Enforced by Maven enforcer: `[17,18)`. Download: [Adoptium](https://adoptium.net/) or `sdk install java 17.0.12-tem` (SDKMAN). |
 | Maven | **3.6.2+** | Download: [maven.apache.org](https://maven.apache.org/download.cgi). |
 | Git | Any recent | — |
 | Docker | Optional, recommended | Required for Testcontainers-based integration tests (MongoDB, Postgres, etc.) and local Zipkin tracing. |

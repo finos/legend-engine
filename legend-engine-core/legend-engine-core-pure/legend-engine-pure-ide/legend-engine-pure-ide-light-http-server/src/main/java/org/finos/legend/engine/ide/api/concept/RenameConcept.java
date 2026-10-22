@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.ide.api.concept;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.impl.factory.Multimaps;
@@ -23,17 +23,17 @@ import org.finos.legend.engine.ide.helpers.response.ExceptionTranslation;
 import org.finos.legend.engine.ide.session.PureSession;
 import org.json.simple.JSONValue;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 
-@Api(tags = "Concepts")
+@Tag(name = "Concepts")
 @Path("/")
 public class RenameConcept
 {

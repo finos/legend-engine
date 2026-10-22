@@ -14,25 +14,25 @@
 
 package org.finos.legend.engine.server.core.sql;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.apache.commons.io.IOUtils;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
-@Api(tags = "SQL Documentation")
+@Tag(name = "SQL Documentation")
 @Path("sql-docs")
 public class SQLDocumentation
 {
@@ -41,7 +41,7 @@ public class SQLDocumentation
 
     @GET
     @Path("summary")
-    @ApiOperation(value = "SQL coverage summary report")
+    @Operation(summary = "SQL coverage summary report")
     @Produces(MediaType.TEXT_HTML)
     public Response summary()
     {
@@ -50,7 +50,7 @@ public class SQLDocumentation
 
     @GET
     @Path("function-coverage")
-    @ApiOperation(value = "SQL function coverage report")
+    @Operation(summary = "SQL function coverage report")
     @Produces(MediaType.TEXT_HTML)
     public Response functionCoverage()
     {
@@ -59,7 +59,7 @@ public class SQLDocumentation
 
     @GET
     @Path("structural-parity")
-    @ApiOperation(value = "SQL structural parity report")
+    @Operation(summary = "SQL structural parity report")
     @Produces(MediaType.TEXT_HTML)
     public Response structuralParity()
     {
@@ -68,7 +68,7 @@ public class SQLDocumentation
 
     @GET
     @Path("failure-details")
-    @ApiOperation(value = "SQL failure details report")
+    @Operation(summary = "SQL failure details report")
     @Produces(MediaType.TEXT_HTML)
     public Response failureDetails()
     {

@@ -1,5 +1,5 @@
 steps:
-  - name: 'maven:3.8-openjdk-11'
+  - name: 'maven:3.9-eclipse-temurin-17'
     args: ['bash', './.gcp/cloud-build/build.sh']
 timeout: 7200s
 logsBucket: 'gs://finos-legend-engine-logs'

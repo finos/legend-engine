@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.postgres;
 
-import io.dropwizard.testing.junit.ResourceTestRule;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import io.dropwizard.testing.junit5.ResourceExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -27,11 +28,10 @@ import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIde
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecuteTest;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.postgresql.PGProperty;
 
 import java.sql.Connection;
@@ -43,6 +43,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.Properties;
 
+@org.junit.jupiter.api.extension.ExtendWith(DropwizardExtensionsSupport.class)
 public class TestTraceIdNotice
 {
     private static OpenTelemetrySdk openTelemetrySdk;
@@ -58,11 +59,10 @@ public class TestTraceIdNotice
                 .buildAndRegisterGlobal();
     }
 
-    @ClassRule
-    public static final ResourceTestRule resources = SqlExecuteTest.getResourceTestRule();
+    public static final ResourceExtension resources = SqlExecuteTest.getResourceTestRule();
     private static TestPostgresServer testPostgresServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp()
     {
         ServerConfig serverConfig = new ServerConfig();
@@ -76,7 +76,7 @@ public class TestTraceIdNotice
         testPostgresServer.startUp();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown()
     {
         if (testPostgresServer != null)
@@ -113,9 +113,8 @@ public class TestTraceIdNotice
             }
 
             SQLWarning warning = statement.getWarnings();
-            Assert.assertNotNull("Expected a notice with the trace id", warning);
-            Assert.assertTrue("Notice should contain traceId",
-                    warning.getMessage().contains("traceId:"));
+            Assertions.assertNotNull(warning, "Expected a notice with the trace id");
+            Assertions.assertTrue(warning.getMessage().contains("traceId:"), "Notice should contain traceId");
         }
     }
 
@@ -136,9 +135,8 @@ public class TestTraceIdNotice
             }
 
             SQLWarning warning = statement.getWarnings();
-            Assert.assertNotNull("Expected a notice with the trace id", warning);
-            Assert.assertTrue("Notice should contain traceId",
-                    warning.getMessage().contains("traceId:"));
+            Assertions.assertNotNull(warning, "Expected a notice with the trace id");
+            Assertions.assertTrue(warning.getMessage().contains("traceId:"), "Notice should contain traceId");
         }
     }
 
@@ -160,7 +158,7 @@ public class TestTraceIdNotice
             try
             {
                 statement.executeQuery("SELECT * FROM service.\"/nonExistentService\"");
-                Assert.fail("Expected an exception");
+                Assertions.fail("Expected an exception");
             }
             catch (SQLException e)
             {
@@ -168,9 +166,8 @@ public class TestTraceIdNotice
             }
 
             SQLWarning warning = statement.getWarnings();
-            Assert.assertNotNull("Expected a notice with trace id even on failure", warning);
-            Assert.assertTrue("Notice should contain traceId",
-                    warning.getMessage().contains("traceId:"));
+            Assertions.assertNotNull(warning, "Expected a notice with trace id even on failure");
+            Assertions.assertTrue(warning.getMessage().contains("traceId:"), "Notice should contain traceId");
         }
     }
 }

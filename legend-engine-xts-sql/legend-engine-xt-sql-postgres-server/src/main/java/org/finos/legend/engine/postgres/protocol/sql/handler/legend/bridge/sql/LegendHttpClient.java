@@ -44,7 +44,7 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.function.IntSupplier;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
 public class LegendHttpClient implements LegendClient
 {

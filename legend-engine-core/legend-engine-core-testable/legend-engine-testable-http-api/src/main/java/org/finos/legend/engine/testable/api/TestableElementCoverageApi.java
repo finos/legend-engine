@@ -17,9 +17,9 @@ package org.finos.legend.engine.testable.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.finos.legend.engine.testable.api.model.TestableElementCoverageResult;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
@@ -31,19 +31,18 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
-@Api(tags = "Testable")
+@Tag(name = "Testable")
 @Path("pure/v1/testable")
 public class TestableElementCoverageApi
 {
@@ -58,13 +57,13 @@ public class TestableElementCoverageApi
 
     @GET
     @Path("coverage/{groupId}/{artifactId}/{versionId}")
-    @ApiOperation(value = "Analyze the testable element coverage for services and mappings in a project")
+    @Operation(summary = "Analyze the testable element coverage for services and mappings in a project")
     @Produces(MediaType.APPLICATION_JSON)
     public Response analyzeTestableElementCoverage(@PathParam("groupId") String groupId,
                                                    @PathParam("artifactId") String artifactId,
                                                    @PathParam("versionId") String versionId,
                                                    @QueryParam("clientVersion") String clientVersion,
-                                                   @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                                                   @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         Identity identity = Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm));
 

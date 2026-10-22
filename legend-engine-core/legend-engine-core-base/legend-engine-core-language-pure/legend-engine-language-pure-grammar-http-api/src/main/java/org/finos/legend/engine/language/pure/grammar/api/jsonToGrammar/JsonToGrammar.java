@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
@@ -29,27 +29,28 @@ import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.consta
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import java.util.Map;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "Pure - Grammar")
+@Tag(name = "Pure - Grammar")
 @Path("pure/v1/grammar/jsonToGrammar")
 public class JsonToGrammar extends GrammarAPI
 {
@@ -62,19 +63,19 @@ public class JsonToGrammar extends GrammarAPI
 
     @POST
     @Path("model")
-    @ApiOperation(value = "Generates Pure language text from Pure protocol Pure Model Context Data")
+    @Operation(summary = "Generates Pure language text from Pure protocol Pure Model Context Data")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
     @Prometheus(name = "GrammarToJson model", doc = "Grammar to Json duration summary")
     public Response model(PureModelContext pureModelContext,
                           @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
-                          @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm,
+                          @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm,
                           @Context UriInfo uriInfo)
     {
         long start = System.currentTimeMillis();
         PureGrammarComposerExtensionLoader.logExtensionList();
         Identity identity = Identity.makeIdentity(pm);
-        Response response = jsonToGrammar(pureModelContext, renderStyle, (value, renderStyle1) -> PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle1).build()).renderPureModelContextData(modelManager.loadData(value, "vX_X_X", identity)), pm, "Json to Grammar : Model");
+        Response response = jsonToGrammar(pureModelContext, renderStyle, (value, renderStyle1) -> PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle1).build()).renderPureModelContextData(modelManager.loadData(value, "vX_X_X", identity)), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Json to Grammar : Model");
         long end = System.currentTimeMillis();
         MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
         return response;
@@ -82,79 +83,79 @@ public class JsonToGrammar extends GrammarAPI
 
     @POST
     @Path("graphFetch")
-    @ApiOperation(value = "Generates Pure language text from Pure protocol GraphFetch fragment")
+    @Operation(summary = "Generates Pure language text from Pure protocol GraphFetch fragment")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
     public Response graphFetch(RootGraphFetchTree graphFetchTree,
                                @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
-                               @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                               @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarComposerExtensionLoader.logExtensionList();
-        return jsonToGrammar(graphFetchTree, renderStyle, (vs, renderStyle1) -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build().processGraphFetchTree(vs, 0), pm, "Json to Grammar : Graph Fetch");
+        return jsonToGrammar(graphFetchTree, renderStyle, (vs, renderStyle1) -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build().processGraphFetchTree(vs, 0), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Json to Grammar : Graph Fetch");
     }
 
     @POST
     @Path("graphFetch/batch")
-    @ApiOperation(value = "Generates Pure language text from Pure protocol GraphFetch fragment")
+    @Operation(summary = "Generates Pure language text from Pure protocol GraphFetch fragment")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response graphFetchBatch(Map<String, RootGraphFetchTree> graphFetchTrees,
                                     @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
-                                    @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                                    @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarComposerExtensionLoader.logExtensionList();
-        return jsonToGrammarBatch(renderStyle, graphFetchTrees, (vs, renderStyle1) -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build().processGraphFetchTree(vs, 0), pm, "Json to Grammar : Graph Fetch Batch");
+        return jsonToGrammarBatch(renderStyle, graphFetchTrees, (vs, renderStyle1) -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build().processGraphFetchTree(vs, 0), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Json to Grammar : Graph Fetch Batch");
     }
 
     @POST
     @Path("valueSpecification")
-    @ApiOperation(value = "Generates Pure language text from Pure protocol Value Specification fragment")
+    @Operation(summary = "Generates Pure language text from Pure protocol Value Specification fragment")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
     public Response valueSpecification(ValueSpecification valueSpecification,
                                        @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
-                                       @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                                       @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarComposerExtensionLoader.logExtensionList();
-        return jsonToGrammar(valueSpecification, renderStyle, (vs, renderStyle1) -> vs.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build()), pm, "Json to Grammar : Value Specification");
+        return jsonToGrammar(valueSpecification, renderStyle, (vs, renderStyle1) -> vs.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build()), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Json to Grammar : Value Specification");
     }
 
     @POST
     @Path("valueSpecification/batch")
-    @ApiOperation(value = "Generates Pure language text from Pure protocol Value Specification fragment")
+    @Operation(summary = "Generates Pure language text from Pure protocol Value Specification fragment")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response valueSpecificationBatch(Map<String, ValueSpecification> valueSpecifications,
                                             @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
-                                            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                                            @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarComposerExtensionLoader.logExtensionList();
-        return jsonToGrammarBatch(renderStyle, valueSpecifications, (vs, renderStyle1) -> vs.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build()), pm, "Json to Grammar : Value Specification Batch");
+        return jsonToGrammarBatch(renderStyle, valueSpecifications, (vs, renderStyle1) -> vs.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build()), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Json to Grammar : Value Specification Batch");
     }
 
     @POST
     @Path("lambda")
-    @ApiOperation(value = "Generates Pure language text from Pure protocol Value Specification fragment")
+    @Operation(summary = "Generates Pure language text from Pure protocol Value Specification fragment")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
     public Response lambda(LambdaFunction lambda,
                            @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
-                           @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                           @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarComposerExtensionLoader.logExtensionList();
-        return jsonToGrammar(lambda, renderStyle, (vs, renderStyle1) -> vs.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build()), pm, "Json to Grammar : Lambda");
+        return jsonToGrammar(lambda, renderStyle, (vs, renderStyle1) -> vs.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build()), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Json to Grammar : Lambda");
     }
 
     @POST
     @Path("lambda/batch")
-    @ApiOperation(value = "Generates Pure language text from Pure protocol Value Specification fragment")
+    @Operation(summary = "Generates Pure language text from Pure protocol Value Specification fragment")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response lambdaBatch(Map<String, LambdaFunction> lambdas,
                                 @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
-                                @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                                @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarComposerExtensionLoader.logExtensionList();
-        return jsonToGrammarBatch(renderStyle, lambdas, (vs, renderStyle1) -> vs.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build()), pm, "Json to Grammar : Lambda Batch");
+        return jsonToGrammarBatch(renderStyle, lambdas, (vs, renderStyle1) -> vs.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build()), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Json to Grammar : Lambda Batch");
     }
 }

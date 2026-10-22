@@ -22,9 +22,9 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -87,18 +87,18 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -114,7 +114,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 import static org.finos.legend.engine.shared.core.operational.logs.LoggingEventType.GRAPHQL_EXECUTE;
 import static org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler.GRAPHQL_ERROR_COUNTER;
 
-@Api(tags = "GraphQL - Execution")
+@Tag(name = "GraphQL - Execution")
 @Path("graphQL/v1/execution")
 @Produces(MediaType.APPLICATION_JSON)
 public class GraphQLExecute extends GraphQL
@@ -154,7 +154,7 @@ public class GraphQLExecute extends GraphQL
         Root_meta_core_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(GraphQLExecute.class.getClassLoader().getResourceAsStream("exampleRuntime.json"), org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime.class), pureModel.getContext());
 
         Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
-        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
+        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = GraphQLExecutionHelper.toPureModel(document, pureModel);
         if (isQueryIntrospection(GraphQLExecutionHelper.findQuery(document)))
         {
             return Response.ok("").type(MediaType.TEXT_HTML_TYPE).build();
@@ -184,33 +184,33 @@ public class GraphQLExecute extends GraphQL
 
     @Deprecated
     @POST
-    @ApiOperation(value = "Generate plans from a GraphQL query in the context of a mapping and a runtime from a SDLC project", notes = "DEPRECATED: use the generatePlans APIs that include a 'workspace' or 'groupWorkspace' path param")
+    @Operation(summary = "Generate plans from a GraphQL query in the context of a mapping and a runtime from a SDLC project", description = "DEPRECATED: use the generatePlans APIs that include a 'workspace' or 'groupWorkspace' path param")
     @Path("generatePlans/dev/{projectId}/{workspaceId}/query/{queryClassPath}/mapping/{mappingPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generatePlansDev(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generatePlansDev(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         return this.generatePlansDevWithUserWorkspace(request, projectId, workspaceId, queryClassPath, mappingPath, query, pm);
     }
 
     @POST
-    @ApiOperation(value = "Generate plans from a GraphQL query in the context of a mapping and a runtime from a SDLC project (user workspace)")
+    @Operation(summary = "Generate plans from a GraphQL query in the context of a mapping and a runtime from a SDLC project (user workspace)")
     @Path("generatePlans/dev/{projectId}/workspace/{workspaceId}/query/{queryClassPath}/mapping/{mappingPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generatePlansDevWithUserWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generatePlansDevWithUserWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         return this.generatePlansDevWithWorkspaceImpl(request, projectId, workspaceId, false, queryClassPath, mappingPath, query, pm);
     }
 
     @POST
-    @ApiOperation(value = "Generate plans from a GraphQL query in the context of a mapping and a runtime from a SDLC project (group workspace)")
+    @Operation(summary = "Generate plans from a GraphQL query in the context of a mapping and a runtime from a SDLC project (group workspace)")
     @Path("generatePlans/dev/{projectId}/groupWorkspace/{workspaceId}/query/{queryClassPath}/mapping/{mappingPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generatePlansDevWithGroupWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generatePlansDevWithGroupWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         return this.generatePlansDevWithWorkspaceImpl(request, projectId, workspaceId, true, queryClassPath, mappingPath, query, pm);
     }
 
-    private Response generatePlansDevWithWorkspaceImpl(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String queryClassPath, String mappingPath, Query query, ProfileManager<CommonProfile> pm)
+    private Response generatePlansDevWithWorkspaceImpl(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String queryClassPath, String mappingPath, Query query, ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -225,10 +225,10 @@ public class GraphQLExecute extends GraphQL
     }
 
     @POST
-    @ApiOperation(value = "Generate plans from a GraphQL query in the context of a mapping and a runtime")
+    @Operation(summary = "Generate plans from a GraphQL query in the context of a mapping and a runtime")
     @Path("generatePlans/prod/{groupId}/{artifactId}/{versionId}/query/{queryClassPath}/mapping/{mappingPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generatePlansProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generatePlansProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -245,7 +245,7 @@ public class GraphQLExecute extends GraphQL
     private Response executeIntrospection(String queryClassPath, Document document, PureModel pureModel)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
-        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
+        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = GraphQLExecutionHelper.toPureModel(document, pureModel);
 
         return Response.ok("{" +
                 "  \"data\":" + core_external_query_graphql_transformation_transformation_introspection_query.Root_meta_external_query_graphQL_transformation_introspection_graphQLIntrospectionQuery_Class_1__Document_1__String_1_(_class, queryDoc, pureModel.getExecutionSupport()) +
@@ -494,7 +494,7 @@ public class GraphQLExecute extends GraphQL
     {
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions = this.extensionsFunc.apply(pureModel);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
-        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
+        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = GraphQLExecutionHelper.toPureModel(document, pureModel);
 
         Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContextPureElement = getDataspaceExecutionContext(dataspacePath, executionContext, pureModel);
         Mapping mapping = executionContextPureElement._mapping();
@@ -510,7 +510,7 @@ public class GraphQLExecute extends GraphQL
     {
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions = this.extensionsFunc.apply(pureModel);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
-        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
+        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = GraphQLExecutionHelper.toPureModel(document, pureModel);
 
         Mapping mapping = pureModel.getMapping(mappingPath);
         Root_meta_core_runtime_Runtime runtime = pureModel.getRuntime(runtimePath);
@@ -565,52 +565,52 @@ public class GraphQLExecute extends GraphQL
     }
     
     @POST
-    @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime from a SDLC project", notes = "DEPRECATED: use the execute APIs that include a 'workspace' or 'groupWorkspace' path param")
+    @Operation(summary = "Execute a GraphQL query in the context of a mapping and a runtime from a SDLC project", description = "DEPRECATED: use the execute APIs that include a 'workspace' or 'groupWorkspace' path param")
     @Path("execute/dev/{projectId}/{workspaceId}/query/{queryClassPath}/mapping/{mappingPath}/runtime/{runtimePath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response executeDev(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeDev(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         return this.executeDevWithUserWorkspace(request, projectId, workspaceId, queryClassPath, mappingPath, runtimePath, query, pm);
     }
 
     @POST
-    @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime from a SDLC project", notes = "DEPRECATED: use the execute APIs that include a 'workspace' or 'groupWorkspace' path param")
+    @Operation(summary = "Execute a GraphQL query in the context of a mapping and a runtime from a SDLC project", description = "DEPRECATED: use the execute APIs that include a 'workspace' or 'groupWorkspace' path param")
     @Path("execute/dev/{projectId}/{workspaceId}/query/{queryClassPath}/mapping/{mappingPath}/runtime/{runtimePath}/binding/{bindingPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response executeDev(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, @PathParam("bindingPath") String bindingPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeDev(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, @PathParam("bindingPath") String bindingPath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         return this.executeDevWithUserWorkspace(request, projectId, workspaceId, queryClassPath, mappingPath, runtimePath, bindingPath, query, pm);
     }
 
     @POST
-    @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime from a SDLC project (user workspace)")
+    @Operation(summary = "Execute a GraphQL query in the context of a mapping and a runtime from a SDLC project (user workspace)")
     @Path("execute/dev/{projectId}/workspace/{workspaceId}/query/{queryClassPath}/mapping/{mappingPath}/runtime/{runtimePath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response executeDevWithUserWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeDevWithUserWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         return this.executeDevImpl(request, projectId, workspaceId, false, queryClassPath, mappingPath, runtimePath, query, pm);
     }
 
     @POST
-    @ApiOperation(value = "Execute a GraphQL query in the context of a mapping, runtime, and binding from a SDLC project (user workspace)")
+    @Operation(summary = "Execute a GraphQL query in the context of a mapping, runtime, and binding from a SDLC project (user workspace)")
     @Path("execute/dev/{projectId}/workspace/{workspaceId}/query/{queryClassPath}/mapping/{mappingPath}/runtime/{runtimePath}/binding/{bindingPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response executeDevWithUserWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, @PathParam("bindingPath") String bindingPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeDevWithUserWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, @PathParam("bindingPath") String bindingPath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         return this.executeDevImpl(request, projectId, workspaceId, false, queryClassPath, mappingPath, runtimePath, bindingPath, query, pm);
     }
 
     @POST
-    @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime from a SDLC project (group workspace)")
+    @Operation(summary = "Execute a GraphQL query in the context of a mapping and a runtime from a SDLC project (group workspace)")
     @Path("execute/dev/{projectId}/groupWorkspace/{workspaceId}/query/{queryClassPath}/mapping/{mappingPath}/runtime/{runtimePath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response executeDevWithGroupWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeDevWithGroupWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         return this.executeDevImpl(request, projectId, workspaceId, true, queryClassPath, mappingPath, runtimePath, query, pm);
     }
 
     @Prometheus(name = "graphql plan generation", labels = {"projectBasePath", "mappingPath", "runtimePath", "queryClassPath"})
-    public Response executeDevImpl(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String queryClassPath, String mappingPath, String runtimePath, Query query, ProfileManager<CommonProfile> pm)
+    public Response executeDevImpl(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String queryClassPath, String mappingPath, String runtimePath, Query query, ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -635,16 +635,16 @@ public class GraphQLExecute extends GraphQL
     }
 
     @POST
-    @ApiOperation(value = "Execute a GraphQL query in the context of a mapping, runtime, and binding from a SDLC project (group workspace)")
+    @Operation(summary = "Execute a GraphQL query in the context of a mapping, runtime, and binding from a SDLC project (group workspace)")
     @Path("execute/dev/{projectId}/groupWorkspace/{workspaceId}/query/{queryClassPath}/mapping/{mappingPath}/runtime/{runtimePath}/binding/{bindingPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response executeDevWithGroupWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, @PathParam("bindingPath") String bindingPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeDevWithGroupWorkspace(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, @PathParam("bindingPath") String bindingPath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         return this.executeDevImpl(request, projectId, workspaceId, true, queryClassPath, mappingPath, runtimePath, bindingPath, query, pm);
     }
 
     @Prometheus(name = "graphql plan generation", labels = {"projectBasePath", "mappingPath", "runtimePath", "queryClassPath"})
-    public Response executeDevImpl(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String queryClassPath, String mappingPath, String runtimePath, String bindingPath, Query query, ProfileManager<CommonProfile> pm)
+    public Response executeDevImpl(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String queryClassPath, String mappingPath, String runtimePath, String bindingPath, Query query, ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -669,11 +669,11 @@ public class GraphQLExecute extends GraphQL
     }
 
     @POST
-    @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime")
+    @Operation(summary = "Execute a GraphQL query in the context of a mapping and a runtime")
     @Path("execute/prod/{groupId}/{artifactId}/{versionId}/query/{queryClassPath}/mapping/{mappingPath}/runtime/{runtimePath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "graphql plan generation", labels = {"projectBasePath", "mappingPath", "runtimePath", "queryClassPath"})
-    public Response executeProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -697,11 +697,11 @@ public class GraphQLExecute extends GraphQL
     }
 
     @POST
-    @ApiOperation(value = "Execute a GraphQL query in the context of a mapping, runtime, and binding")
+    @Operation(summary = "Execute a GraphQL query in the context of a mapping, runtime, and binding")
     @Path("execute/prod/{groupId}/{artifactId}/{versionId}/query/{queryClassPath}/mapping/{mappingPath}/runtime/{runtimePath}/binding/{bindingPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "graphql plan generation", labels = {"projectBasePath", "mappingPath", "runtimePath", "queryClassPath"})
-    public Response executeProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath,  @PathParam("bindingPath") String bindingPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath,  @PathParam("bindingPath") String bindingPath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -725,11 +725,11 @@ public class GraphQLExecute extends GraphQL
     }
 
     @POST
-    @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime")
+    @Operation(summary = "Execute a GraphQL query in the context of a mapping and a runtime")
     @Path("execute/prod/{groupId}/{artifactId}/{versionId}/query/{queryClassPath}/dataspace/{dataspacePath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "graphql plan generation", labels = {"projectBasePath", "mappingPath", "runtimePath", "queryClassPath"})
-    public Response executeProdWithDataspace(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("dataspacePath") String dataspacePath, @QueryParam("executionContext") @DefaultValue("defaultExecutionContext") String executionContext, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeProdWithDataspace(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("dataspacePath") String dataspacePath, @QueryParam("executionContext") @DefaultValue("defaultExecutionContext") String executionContext, @PathParam("queryClassPath") String queryClassPath, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);

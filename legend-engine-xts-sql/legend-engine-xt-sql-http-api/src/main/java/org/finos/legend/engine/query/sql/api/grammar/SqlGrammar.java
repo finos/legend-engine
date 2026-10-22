@@ -15,9 +15,9 @@
 
 package org.finos.legend.engine.query.sql.api.grammar;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.language.sql.grammar.from.SQLParserException;
@@ -25,39 +25,41 @@ import org.finos.legend.engine.language.sql.grammar.to.SQLGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.util.Map;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "SQL - Grammar")
+@Tag(name = "SQL - Grammar")
 @Path("sql/v1/grammar")
 public class SqlGrammar extends GrammarAPI
 {
     @POST
     @Path("grammarToJson")
-    @ApiOperation(value = "Generates SQL protocol JSON from SQL language text")
+    @Operation(summary = "Generates SQL protocol JSON from SQL language text")
     @Consumes({MediaType.TEXT_PLAIN, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response grammarToJson(String text,
-                                  @DefaultValue("") @ApiParam("The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
-                                  @DefaultValue("0") @ApiParam("The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
-                                  @DefaultValue("0") @ApiParam("The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
+                                  @DefaultValue("") @Parameter(description = "The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
+                                  @DefaultValue("0") @Parameter(description = "The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
+                                  @DefaultValue("0") @Parameter(description = "The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
                                   @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
-                                  @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                                  @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         return grammarToJson(text, (query) ->
         {
@@ -69,7 +71,7 @@ public class SqlGrammar extends GrammarAPI
             {
                 throw new EngineException(ex.getMessage(), ex.getSourceInformation(), EngineErrorType.PARSER);
             }
-        }, pm, "Grammar to Json : SQL");
+        }, Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Grammar to Json : SQL");
     }
 
     // Required so that Jackson properly includes _type for the top level element
@@ -79,10 +81,10 @@ public class SqlGrammar extends GrammarAPI
 
     @POST
     @Path("grammarToJson/batch")
-    @ApiOperation(value = "Generates SQL protocol JSON from SQL language text (for multiple elements)")
+    @Operation(summary = "Generates SQL protocol JSON from SQL language text (for multiple elements)")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response grammarToJsonBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response grammarToJsonBatch(Map<String, ParserInput> input, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         return grammarToJsonBatch(input, (query, b, c, d, e) ->
         {
@@ -94,30 +96,30 @@ public class SqlGrammar extends GrammarAPI
             {
                 throw new EngineException(ex.getMessage(), ex.getSourceInformation(), EngineErrorType.PARSER);
             }
-        }, new TypedMap(), pm, "Grammar to Json : SQL Batch");
+        }, new TypedMap(), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Grammar to Json : SQL Batch");
     }
 
     @POST
     @Path("jsonToGrammar")
-    @ApiOperation(value = "Generates SQL language text from SQL protocol JSON")
+    @Operation(summary = "Generates SQL language text from SQL protocol JSON")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
     public Response jsonToGrammar(Node query,
                                   @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
-                                  @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                                  @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
-        return jsonToGrammar(query, renderStyle, (vs, renderStyle1) -> SQLGrammarComposer.newInstance().renderNode(vs), pm, "Json to Grammar : SQL");
+        return jsonToGrammar(query, renderStyle, (vs, renderStyle1) -> SQLGrammarComposer.newInstance().renderNode(vs), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Json to Grammar : SQL");
     }
 
     @POST
     @Path("jsonToGrammar/batch")
-    @ApiOperation(value = "Generates SQL language text from SQL protocol JSON")
+    @Operation(summary = "Generates SQL language text from SQL protocol JSON")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response jsonToGrammarBatch(Map<String, Node> documents,
                                        @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
-                                       @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                                       @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
-        return jsonToGrammarBatch(renderStyle, documents, (vs, renderStyle1) -> SQLGrammarComposer.newInstance().renderNode(vs), pm, "Json to Grammar : SQL Batch");
+        return jsonToGrammarBatch(renderStyle, documents, (vs, renderStyle1) -> SQLGrammarComposer.newInstance().renderNode(vs), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Json to Grammar : SQL Batch");
     }
 }

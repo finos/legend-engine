@@ -683,7 +683,7 @@ Surveys a live database's metadata (schemas, tables, columns) and returns a Pure
 @POST
 @Path("schemaExploration")
 public Response buildDatabase(DatabaseBuilderInput input,
-    @Pac4JProfileManager ProfileManager<CommonProfile> pm) {
+    @Pac4JProfileManager ProfileManager pm) {
 
     MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
     Identity identity = Identity.makeIdentity(profiles); // Alice's identity
@@ -706,7 +706,7 @@ Executes arbitrary SQL against a live connection (capped result set, non-product
 @POST
 @Path("executeRawSQL")
 public Response executeRawSQL(RawSQLExecuteInput input,
-    @Pac4JProfileManager ProfileManager<CommonProfile> pm) {
+    @Pac4JProfileManager ProfileManager pm) {
 
     Identity identity = Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm));
     String result = new AdhocSQLExecutor()

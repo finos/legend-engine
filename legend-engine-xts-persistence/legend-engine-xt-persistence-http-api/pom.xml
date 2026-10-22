@@ -27,8 +27,27 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Persistence - HTTP - API</name>
 
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+        <!-- The root pom's 2.10 cannot read Java 17 class files -->
+        <maven.dependency.plugin.version>3.6.1</maven.dependency.plugin.version>
+    </properties>
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <configuration>
+                    <ignoredUnusedDeclaredDependencies>
+                        <!-- Reached only through ServiceLoader: it supplies the IdentityFactory
+                             that Identity.makeIdentity dispatches to. No compile-time reference. -->
+                        <ignoredUnusedDeclaredDependency>org.finos.legend.engine:legend-engine-xt-identity-pac4j</ignoredUnusedDeclaredDependency>
+                    </ignoredUnusedDeclaredDependencies>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -97,6 +116,10 @@
 
         <!-- ANNOTATIONS -->
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-identity-pac4j</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.pac4j.jax-rs</groupId>
             <artifactId>core</artifactId>
         </dependency>
@@ -112,14 +135,27 @@
             <artifactId>jackson-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
         </dependency>
         <!-- ANNOTATIONS -->
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST -->
 
     </dependencies>
 </project>

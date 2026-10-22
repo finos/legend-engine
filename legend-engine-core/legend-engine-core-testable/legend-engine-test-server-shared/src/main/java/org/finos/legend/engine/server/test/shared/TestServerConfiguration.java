@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.server.test.shared;
 
-import io.dropwizard.Configuration;
+import io.dropwizard.core.Configuration;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jConfiguration;
 

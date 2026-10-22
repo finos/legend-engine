@@ -15,16 +15,16 @@
 
 package org.finos.legend.engine.ide.api.debug;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.ide.session.PureSession;
 import org.finos.legend.engine.pure.ide.interpreted.debug.DebugState;
@@ -33,7 +33,7 @@ import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-@Api(tags = "Debug")
+@Tag(name = "Debug")
 @Path("/")
 public class Debugging
 {

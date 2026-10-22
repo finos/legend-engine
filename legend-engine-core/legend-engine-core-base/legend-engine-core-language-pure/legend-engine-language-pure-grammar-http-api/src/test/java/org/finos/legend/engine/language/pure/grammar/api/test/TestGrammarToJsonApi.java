@@ -20,7 +20,7 @@ import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.Transform
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Test;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;

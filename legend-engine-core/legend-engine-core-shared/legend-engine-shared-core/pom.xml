@@ -79,19 +79,14 @@
         </dependency>
         <!-- JACKSON -->
 
-        <!-- For Rest Result -->
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-        </dependency>
-        <!-- For Rest Result -->
+        <!-- No JAX-RS here: this module must stay Java 8. JAX-RS code goes in legend-engine-shared-core-http. -->
 
-        <!-- For ExceptionTools -->
+        <!-- For LogInfo and ExceptionError -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
-        <!-- For ExceptionTools -->
+        <!-- For LogInfo and ExceptionError -->
 
         <!-- LOGGING -->
         <dependency>
@@ -150,10 +145,6 @@
         <!-- Tracing HTTP implementation + SPNEGO Calls -->
 
         <!-- For ProfileManagerHelper - Extract Subject from ProfileManager -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
         <!-- For ProfileManagerHelper - Extract Subject from ProfileManager -->
 
         <!-- ECLIPSE COLLECTIONS -->
@@ -177,10 +168,6 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-identity-pac4j</artifactId>
         </dependency>
         <!-- TEST -->
     </dependencies>

@@ -11,7 +11,7 @@ Execution engine for Legend. It provides:
 
 ## Development setup
 
-- This application uses Maven 3.6+ and JDK 11. Run `mvn install` to compile.
+- This application uses Maven 3.6+ and JDK 17. Run `mvn install` to compile.
 - To start the server, please use the `Main` class `org.finos.legend.engine.server.Server` with the parameters: `server legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json`.
 - You can test by trying http://127.0.0.1:6300 on a web browser. The swagger page can be accessed at http://127.0.0.1:6300/api/swagger
 

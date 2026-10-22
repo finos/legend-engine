@@ -17,9 +17,9 @@ package org.finos.legend.engine.application.query.api;
 import com.mongodb.client.MongoClient;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.application.query.model.DataCubeQuery;
 import org.finos.legend.engine.application.query.model.Query;
@@ -30,15 +30,16 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.core.profile.UserProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.util.List;
 
-@Api(tags = "Application - Query")
+@Tag(name = "Application - Query")
 @Path("pure/v1/query")
 @Produces(MediaType.APPLICATION_JSON)
 public class ApplicationQuery
@@ -52,17 +53,17 @@ public class ApplicationQuery
         this.dataCubeQueryStoreManager = new DataCubeQueryStoreManager(mongoClient);
     }
 
-    private static String getCurrentUser(ProfileManager<CommonProfile> profileManager)
+    private static String getCurrentUser(ProfileManager profileManager)
     {
-        CommonProfile profile = profileManager.get(true).orElse(null);
+        UserProfile profile = profileManager.getProfile().orElse(null);
         return profile != null ? profile.getId() : null;
     }
 
     @POST
     @Path("search")
-    @ApiOperation(value = "Search queries")
+    @Operation(summary = "Search queries")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response searchQueries(QuerySearchSpecification searchSpecification, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response searchQueries(QuerySearchSpecification searchSpecification, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
     {
         try
         {
@@ -80,9 +81,9 @@ public class ApplicationQuery
 
     @GET
     @Path("batch")
-    @ApiOperation(value = "Get the queries with specified IDs")
+    @Operation(summary = "Get the queries with specified IDs")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response getQueries(@QueryParam("queryIds") @ApiParam("The list of query IDs to fetch (must contain no more than 50 items)") List<String> queryIds)
+    public Response getQueries(@QueryParam("queryIds") @Parameter(description = "The list of query IDs to fetch (must contain no more than 50 items)") List<String> queryIds)
     {
         try
         {
@@ -100,7 +101,7 @@ public class ApplicationQuery
 
     @GET
     @Path("{queryId}")
-    @ApiOperation(value = "Get the query with specified ID")
+    @Operation(summary = "Get the query with specified ID")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response getQuery(@PathParam("queryId") String queryId)
     {
@@ -120,10 +121,10 @@ public class ApplicationQuery
 
     @GET
     @Path("{queryId}/history")
-    @ApiOperation(value = "Get all previous versions of the query with the specified ID, or a specific version when the 'version' query parameter is provided")
+    @Operation(summary = "Get all previous versions of the query with the specified ID, or a specific version when the 'version' query parameter is provided")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response getQueryHistory(@PathParam("queryId") String queryId,
-                                    @QueryParam("version") @ApiParam("Optional specific version to retrieve; if omitted, all versions are returned") Integer version)
+                                    @QueryParam("version") @Parameter(description = "Optional specific version to retrieve; if omitted, all versions are returned") Integer version)
     {
         try
         {
@@ -141,7 +142,7 @@ public class ApplicationQuery
 
     @GET
     @Path("allQueries")
-    @ApiOperation(value = "Get all queries within the specified index range [from, to)")
+    @Operation(summary = "Get all queries within the specified index range [from, to)")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response getAllQueries(@QueryParam("from") int from, @QueryParam("to") int to)
     {
@@ -161,9 +162,9 @@ public class ApplicationQuery
 
 
     @POST
-    @ApiOperation(value = "Create a new query")
+    @Operation(summary = "Create a new query")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response createQuery(Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response createQuery(Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = Identity.makeIdentity(profiles);
@@ -183,9 +184,9 @@ public class ApplicationQuery
 
     @PUT
     @Path("{queryId}")
-    @ApiOperation(value = "Update query")
+    @Operation(summary = "Update query")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response updateQuery(@PathParam("queryId") String queryId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response updateQuery(@PathParam("queryId") String queryId, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = Identity.makeIdentity(profiles);
@@ -205,9 +206,9 @@ public class ApplicationQuery
 
     @PUT
     @Path("{queryId}/patchQuery")
-    @ApiOperation(value = "Patch Query - update selected query fields")
+    @Operation(summary = "Patch Query - update selected query fields")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response patchQuery(@PathParam("queryId") String queryId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response patchQuery(@PathParam("queryId") String queryId, Query query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = Identity.makeIdentity(profiles);
@@ -227,9 +228,9 @@ public class ApplicationQuery
 
     @DELETE
     @Path("{queryId}")
-    @ApiOperation(value = "Delete the query with specified ID")
+    @Operation(summary = "Delete the query with specified ID")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response deleteQuery(@PathParam("queryId") String queryId, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response deleteQuery(@PathParam("queryId") String queryId, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = Identity.makeIdentity(profiles);
@@ -250,14 +251,14 @@ public class ApplicationQuery
 
     @GET
     @Path("events")
-    @ApiOperation(value = "Get query events")
+    @Operation(summary = "Get query events")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response getQueryEvents(@QueryParam("queryId") @ApiParam("The query ID the event is associated with") String queryId,
-                                   @QueryParam("eventType") @ApiParam("The type of event") QueryEvent.QueryEventType eventType,
-                                   @QueryParam("since") @ApiParam("Lower limit on the UNIX timestamp for the event creation time") Long since,
-                                   @QueryParam("until") @ApiParam("Upper limit on the UNIX timestamp for the event creation time") Long until,
-                                   @QueryParam("limit") @ApiParam("Limit the number of events returned") Integer limit,
-                                   @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response getQueryEvents(@QueryParam("queryId") @Parameter(description = "The query ID the event is associated with") String queryId,
+                                   @QueryParam("eventType") @Parameter(description = "The type of event") QueryEvent.QueryEventType eventType,
+                                   @QueryParam("since") @Parameter(description = "Lower limit on the UNIX timestamp for the event creation time") Long since,
+                                   @QueryParam("until") @Parameter(description = "Upper limit on the UNIX timestamp for the event creation time") Long until,
+                                   @QueryParam("limit") @Parameter(description = "Limit the number of events returned") Integer limit,
+                                   @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
     {
         try
         {
@@ -275,7 +276,7 @@ public class ApplicationQuery
 
     @GET
     @Path("/stats")
-    @ApiOperation(value = "Get query store statistics")
+    @Operation(summary = "Get query store statistics")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response getQueryStoreStats()
     {
@@ -297,9 +298,9 @@ public class ApplicationQuery
 
     @POST
     @Path("dataCube/search")
-    @ApiOperation(value = "Search DataCube queries")
+    @Operation(summary = "Search DataCube queries")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response searchDataCubeQueries(QuerySearchSpecification searchSpecification, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response searchDataCubeQueries(QuerySearchSpecification searchSpecification, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
     {
         try
         {
@@ -317,9 +318,9 @@ public class ApplicationQuery
 
     @GET
     @Path("dataCube/batch")
-    @ApiOperation(value = "Get the DataCube queries with specified IDs")
+    @Operation(summary = "Get the DataCube queries with specified IDs")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response getDataCubeQueries(@QueryParam("queryIds") @ApiParam("The list of query IDs to fetch (must contain no more than 50 items)") List<String> queryIds)
+    public Response getDataCubeQueries(@QueryParam("queryIds") @Parameter(description = "The list of query IDs to fetch (must contain no more than 50 items)") List<String> queryIds)
     {
         try
         {
@@ -337,7 +338,7 @@ public class ApplicationQuery
 
     @GET
     @Path("dataCube/{queryId}")
-    @ApiOperation(value = "Get the DataCube query with specified ID")
+    @Operation(summary = "Get the DataCube query with specified ID")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response getDataCubeQuery(@PathParam("queryId") String queryId)
     {
@@ -357,9 +358,9 @@ public class ApplicationQuery
 
     @POST
     @Path("dataCube")
-    @ApiOperation(value = "Create a new DataCube query")
+    @Operation(summary = "Create a new DataCube query")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response createDataCubeQuery(DataCubeQuery query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response createDataCubeQuery(DataCubeQuery query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = Identity.makeIdentity(profiles);
@@ -379,9 +380,9 @@ public class ApplicationQuery
 
     @PUT
     @Path("dataCube/{queryId}")
-    @ApiOperation(value = "Update DataCube query")
+    @Operation(summary = "Update DataCube query")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response updateDataCubeQuery(@PathParam("queryId") String queryId, DataCubeQuery query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response updateDataCubeQuery(@PathParam("queryId") String queryId, DataCubeQuery query, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = Identity.makeIdentity(profiles);
@@ -401,9 +402,9 @@ public class ApplicationQuery
 
     @DELETE
     @Path("dataCube/{queryId}")
-    @ApiOperation(value = "Delete the DataCube query with specified ID")
+    @Operation(summary = "Delete the DataCube query with specified ID")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response deleteDataCubeQuery(@PathParam("queryId") String queryId, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response deleteDataCubeQuery(@PathParam("queryId") String queryId, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = Identity.makeIdentity(profiles);
@@ -424,14 +425,14 @@ public class ApplicationQuery
 
     @GET
     @Path("dataCube/events")
-    @ApiOperation(value = "Get DataCube query events")
+    @Operation(summary = "Get DataCube query events")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response getDataCubeQueryEvents(@QueryParam("queryId") @ApiParam("The query ID the event is associated with") String queryId,
-                                           @QueryParam("eventType") @ApiParam("The type of event") QueryEvent.QueryEventType eventType,
-                                           @QueryParam("since") @ApiParam("Lower limit on the UNIX timestamp for the event creation time") Long since,
-                                           @QueryParam("until") @ApiParam("Upper limit on the UNIX timestamp for the event creation time") Long until,
-                                           @QueryParam("limit") @ApiParam("Limit the number of events returned") Integer limit,
-                                           @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response getDataCubeQueryEvents(@QueryParam("queryId") @Parameter(description = "The query ID the event is associated with") String queryId,
+                                           @QueryParam("eventType") @Parameter(description = "The type of event") QueryEvent.QueryEventType eventType,
+                                           @QueryParam("since") @Parameter(description = "Lower limit on the UNIX timestamp for the event creation time") Long since,
+                                           @QueryParam("until") @Parameter(description = "Upper limit on the UNIX timestamp for the event creation time") Long until,
+                                           @QueryParam("limit") @Parameter(description = "Limit the number of events returned") Integer limit,
+                                           @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
     {
         try
         {
@@ -449,7 +450,7 @@ public class ApplicationQuery
 
     @GET
     @Path("dataCube/stats")
-    @ApiOperation(value = "Get DataCube query store statistics")
+    @Operation(summary = "Get DataCube query store statistics")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response getDataCubeQueryStoreStats()
     {

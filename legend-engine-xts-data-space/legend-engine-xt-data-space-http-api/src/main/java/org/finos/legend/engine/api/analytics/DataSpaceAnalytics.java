@@ -17,9 +17,9 @@ package org.finos.legend.engine.api.analytics;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.api.analytics.model.DataSpaceAnalysisInput;
@@ -45,16 +45,16 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.util.List;
 import java.util.ServiceLoader;
 
-@Api(tags = "Analytics - Model")
+@Tag(name = "Analytics - Model")
 @Path("pure/v1/analytics/dataSpace")
 public class DataSpaceAnalytics
 {
@@ -80,10 +80,10 @@ public class DataSpaceAnalytics
 
     @POST
     @Path("render")
-    @ApiOperation(value = "Analyze the data space to collect information needed to render the data space")
+    @Operation(summary = "Analyze the data space to collect information needed to render the data space")
     @Consumes({MediaType.APPLICATION_JSON, InflateInterceptor.APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response analyzeDataSpace(DataSpaceAnalysisInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response analyzeDataSpace(DataSpaceAnalysisInput input, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -108,10 +108,10 @@ public class DataSpaceAnalytics
 
     @POST
     @Path("coverage")
-    @ApiOperation(value = "Analyze the data space to get the model coverage")
+    @Operation(summary = "Analyze the data space to get the model coverage")
     @Consumes({MediaType.APPLICATION_JSON, InflateInterceptor.APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response analyzeDataSpaceCoverage(DataSpaceAnalysisInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response analyzeDataSpaceCoverage(DataSpaceAnalysisInput input, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);

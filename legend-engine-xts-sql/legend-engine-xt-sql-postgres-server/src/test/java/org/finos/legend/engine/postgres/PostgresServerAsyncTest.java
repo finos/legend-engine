@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.postgres;
 
-import io.dropwizard.testing.junit.ResourceTestRule;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import io.dropwizard.testing.junit5.ResourceExtension;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
@@ -24,11 +25,10 @@ import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.L
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsTestClient;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecuteTest;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.io.InputStream;
@@ -46,19 +46,18 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@org.junit.jupiter.api.extension.ExtendWith(DropwizardExtensionsSupport.class)
 public class PostgresServerAsyncTest
 {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PostgresServerAsyncTest.class);
-
-    @ClassRule
-    public static final ResourceTestRule resources = SqlExecuteTest.getResourceTestRule();
+    public static final ResourceExtension resources = SqlExecuteTest.getResourceTestRule();
     private static TestPostgresServer testPostgresServer;
 
     private static final int NUMBER_OF_EXECUTOR = 40;
     private static final int NUMBER_OF_CONCURRENT = 20;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp()
     {
         //limit postgres event thread pool to 2 threads
@@ -129,7 +128,7 @@ public class PostgresServerAsyncTest
             voidFuture.get();
         }
 
-        Assert.assertEquals(0, counter.get());
+        Assertions.assertEquals(0, counter.get());
     }
 
 
@@ -150,7 +149,7 @@ public class PostgresServerAsyncTest
                 {
                     rows++;
                 }
-                Assert.assertEquals(4, rows);
+                Assertions.assertEquals(4, rows);
             }
             return null;
         });
@@ -166,7 +165,7 @@ public class PostgresServerAsyncTest
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM pg_catalog.pg_tablespace");
 
             int numberOfColumns = statement.getMetaData().getColumnCount();
-            Assert.assertEquals(4, numberOfColumns);
+            Assertions.assertEquals(4, numberOfColumns);
 
             ResultSet resultSet = statement.executeQuery();
 
@@ -175,7 +174,7 @@ public class PostgresServerAsyncTest
             {
                 rows++;
             }
-            Assert.assertEquals(2, rows);
+            Assertions.assertEquals(2, rows);
             return null;
         });
     }
@@ -197,7 +196,7 @@ public class PostgresServerAsyncTest
                 {
                     rows++;
                 }
-                Assert.assertEquals(4, rows);
+                Assertions.assertEquals(4, rows);
             }
             return null;
         });
@@ -217,13 +216,13 @@ public class PostgresServerAsyncTest
                 {
                     rows++;
                 }
-                Assert.assertEquals(2, rows);
+                Assertions.assertEquals(2, rows);
             return null;
         });
     }
 
 
-    @AfterClass
+    @AfterAll
     public static void tearDown()
     {
         System.clearProperty("io.netty.eventLoopThreads");

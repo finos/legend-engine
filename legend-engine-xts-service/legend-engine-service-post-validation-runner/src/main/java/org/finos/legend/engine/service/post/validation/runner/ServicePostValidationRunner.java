@@ -53,7 +53,7 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.security.auth.Subject;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 abstract class ServicePostValidationRunner
 {

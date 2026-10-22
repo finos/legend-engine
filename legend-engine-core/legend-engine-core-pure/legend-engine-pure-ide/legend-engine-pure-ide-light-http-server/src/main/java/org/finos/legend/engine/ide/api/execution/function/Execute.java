@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.ide.api.execution.function;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.impl.utility.MapIterate;
 import org.finos.legend.engine.ide.api.execution.function.manager.ContentType;
@@ -26,17 +26,17 @@ import org.finos.legend.engine.ide.session.PureSession;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.util.Map;
 import java.util.Stack;
 
-@Api(tags = "Execute")
+@Tag(name = "Execute")
 @Path("/")
 public class Execute
 {

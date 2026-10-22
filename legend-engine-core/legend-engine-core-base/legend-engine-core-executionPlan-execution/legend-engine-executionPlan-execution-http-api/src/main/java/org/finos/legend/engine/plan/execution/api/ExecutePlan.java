@@ -16,12 +16,12 @@ package org.finos.legend.engine.plan.execution.api;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import io.swagger.annotations.ApiParam;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -68,7 +68,7 @@ public class ExecutePlan
         this.planExecutionAuthorizer = planExecutionAuthorizer;
     }
 
-    public Response doExecutePlan(@Context HttpServletRequest request, ExecutionRequest executionRequest, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response doExecutePlan(@Context HttpServletRequest request, ExecutionRequest executionRequest, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         /*
             planExecutionAuthorizer is used as a feature flag to gradually introduce middle tier authorization into the execution flow.

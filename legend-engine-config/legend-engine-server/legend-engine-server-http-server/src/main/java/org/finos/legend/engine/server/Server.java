@@ -15,14 +15,13 @@
 package org.finos.legend.engine.server;
 
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import io.dropwizard.Application;
+import io.dropwizard.core.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.forms.MultiPartBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import io.prometheus.client.CollectorRegistry;
 import org.eclipse.collections.api.RichIterable;
@@ -33,8 +32,8 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.eclipse.jetty.ee10.servlet.SessionHandler;
+import org.eclipse.jetty.ee10.servlets.CrossOriginFilter;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.authentication.credentialprovider.impl.PrivateKeyCredentialProvider;
 import org.finos.legend.authentication.intermediationrule.IntermediationRule;
@@ -150,6 +149,7 @@ import org.finos.legend.engine.server.core.session.SessionAttributeBundle;
 import org.finos.legend.engine.server.core.session.SessionTracker;
 import org.finos.legend.engine.server.core.session.StoreExecutableManagerSessionListener;
 import org.finos.legend.engine.server.core.session.api.SessionInfo;
+import org.finos.legend.engine.server.support.server.ServerUrlSwaggerBundle;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
@@ -166,9 +166,9 @@ import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.finos.legend.server.shared.bundles.HostnameHeaderBundle;
 import org.slf4j.Logger;
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
-import javax.ws.rs.container.DynamicFeature;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
+import jakarta.ws.rs.container.DynamicFeature;
 import java.io.FileInputStream;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -195,7 +195,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
     public void initialize(Bootstrap<T> bootstrap)
     {
         bootstrap.addBundle(new AssetsBundle("/web", "/", "legend_index.html"));
-        bootstrap.addBundle(new SwaggerBundle<T>()
+        bootstrap.addBundle(new ServerUrlSwaggerBundle<T>()
         {
             @Override
             protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(

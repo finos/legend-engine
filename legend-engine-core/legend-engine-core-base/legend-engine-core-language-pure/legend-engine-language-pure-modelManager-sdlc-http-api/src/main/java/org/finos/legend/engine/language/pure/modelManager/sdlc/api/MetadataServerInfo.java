@@ -14,19 +14,19 @@
 
 package org.finos.legend.engine.language.pure.modelManager.sdlc.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.PureServerConnectionConfiguration;
 import org.slf4j.Logger;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
-@Api(tags = "Server")
+@Tag(name = "Server")
 @Path("server/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class MetadataServerInfo
@@ -63,7 +63,7 @@ public class MetadataServerInfo
 
     @GET
     @Path("info/metadataServer")
-    @ApiOperation(value = "Provides metadataServer config for modelManager")
+    @Operation(summary = "Provides metadataServer config for modelManager")
     public Response executePureGet()
     {
         return Response.status(200).type(MediaType.APPLICATION_JSON).entity(message).build();

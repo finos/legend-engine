@@ -30,10 +30,10 @@ function <<test.Test>> meta::external::language::java::serialization::tests::cla
                   'import com.fasterxml.jackson.annotation.JsonIgnoreProperties;\n' +
                   'import com.fasterxml.jackson.annotation.JsonProperty;\n' +
                   'import com.fasterxml.jackson.annotation.JsonSubTypes;\n' +
+                  'import jakarta.validation.constraints.NotNull;\n' +
                   'import java.util.HashMap;\n' +
                   'import java.util.List;\n' +
                   'import java.util.Map;\n' +
-                  'import javax.validation.constraints.NotNull;\n' +
                   '\n' +
                   '/**\n' +
                   ' * This is the class level documentation for a test class that checks how classes are converted into string representations.\n' +
@@ -979,15 +979,15 @@ function <<test.Test>> meta::external::language::java::serialization::tests::int
 {
 
    let proto = javaClass(['public', 'interface'], 'meta.java.generation.tests.model.A');
-   let cls   = ^$proto(additionalImports = ['javax.annotation.Generated', 'java.time.*', 'java.util.*', 'javax.validation.*', 'javax.validation.constraints.*']);
+   let cls   = ^$proto(additionalImports = ['jakarta.annotation.Generated', 'java.time.*', 'java.util.*', 'jakarta.validation.*', 'jakarta.validation.constraints.*']);
    
    test('package meta.java.generation.tests.model;\n' +
         '\n' +
-        'import javax.annotation.Generated;\n' + 
+        'import jakarta.annotation.Generated;\n' + 
         'import java.time.*;\n' +
         'import java.util.*;\n' +
-        'import javax.validation.*;\n' +
-        'import javax.validation.constraints.*;\n' +
+        'import jakarta.validation.*;\n' +
+        'import jakarta.validation.constraints.*;\n' +
         '\n' +
         '@Generated("meta::java::generation::tests::model::1_0_0::A")\n' +
         'public interface A\n' +

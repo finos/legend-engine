@@ -361,7 +361,7 @@ function meta::external::language::java::generation::featureBased::utils::replac
 
 Class <<access.private>> 
 {
-  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'javax.annotation.Generated'
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'jakarta.annotation.Generated'
 } 
  meta::external::language::java::generation::featureBased::annotations::Generated extends meta::external::language::java::metamodel::Annotation
 {

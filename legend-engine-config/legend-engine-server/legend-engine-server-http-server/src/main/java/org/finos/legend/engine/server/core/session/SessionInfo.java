@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.server.core.session;
 
-import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.core.profile.UserProfile;
 
 import java.util.Date;
 
@@ -24,11 +24,11 @@ public class SessionInfo
     public String lastAccessTime;
     public String principal;
     public Integer requests;
-    public CommonProfile profile;
+    public UserProfile profile;
     public String sessionID;
 
 
-    public SessionInfo(long creationTime, long lastAccessedTime, String principal, Integer requests, CommonProfile profile, String sessionID)
+    public SessionInfo(long creationTime, long lastAccessedTime, String principal, Integer requests, UserProfile profile, String sessionID)
     {
         this.creationTime = new Date(creationTime).toString();
         this.lastAccessTime = new Date(lastAccessedTime).toString();

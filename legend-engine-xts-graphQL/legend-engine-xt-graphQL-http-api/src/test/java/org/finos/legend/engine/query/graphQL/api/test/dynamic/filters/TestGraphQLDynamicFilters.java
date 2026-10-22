@@ -21,9 +21,9 @@ import org.finos.legend.engine.query.graphQL.api.test.TestGraphQLApiAbstract;
 import org.junit.Assert;
 import org.mockito.Mockito;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.Response;
 import java.io.*;
 
 public abstract class TestGraphQLDynamicFilters extends TestGraphQLApiAbstract

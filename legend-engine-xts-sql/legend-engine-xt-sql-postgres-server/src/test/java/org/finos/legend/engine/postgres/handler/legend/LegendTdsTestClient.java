@@ -15,19 +15,19 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import io.dropwizard.testing.junit.ResourceTestRule;
+import io.dropwizard.testing.junit5.ResourceExtension;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendHttpClient;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.Response;
 import java.io.InputStream;
 
 public class LegendTdsTestClient extends LegendHttpClient
 {
-    private final ResourceTestRule resourceTestRule;
+    private final ResourceExtension resourceTestRule;
 
-    public LegendTdsTestClient(ResourceTestRule resourceTestRule)
+    public LegendTdsTestClient(ResourceExtension resourceTestRule)
     {
         super(null, null, null);
         this.resourceTestRule = resourceTestRule;

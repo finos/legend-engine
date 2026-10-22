@@ -26,6 +26,16 @@
     <name>Legend Engine - Execution Plan - Dependencies</name>
 
     <dependencies>
+        <!-- Used by Pure-generated code, which is compiled at runtime -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+
         <!-- PURE -->
         <!-- we should remove this dependency, right now, it's just required for `PureDate` -->
         <dependency>

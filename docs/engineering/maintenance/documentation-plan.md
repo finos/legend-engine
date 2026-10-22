@@ -48,7 +48,7 @@ The plan is organised around seven areas, deliberately mirroring the user's requ
 
 | Deliverable | File | Key tasks |
 |-------------|------|-----------|
-| Getting-Started Guide (v1) | `guides/getting-started.md` | Document JDK 11, Maven 3.6+, clone, `mvn install`, Server launch, Pure IDE launch |
+| Getting-Started Guide (v1) | `guides/getting-started.md` | Document JDK 17, Maven 3.6+, clone, `mvn install`, Server launch, Pure IDE launch |
 | Architecture Overview (v1) | `architecture/overview.md` | Hand-drawn or ASCII component diagram; identify the 5 core pipelines |
 | Module Reference (v1) | `reference/modules.md` | Tabular listing of every top-level module group with a one-line purpose; link to sub-module README stubs |
 

@@ -27,6 +27,14 @@
 
     <packaging>jar</packaging>
 
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+        <!-- The root pom's 2.10 cannot read Java 17 class files -->
+        <maven.dependency.plugin.version>3.6.1</maven.dependency.plugin.version>
+    </properties>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -36,7 +44,8 @@
                     <version>3.4.3</version>
                     <configuration>
                         <from>
-                            <image>eclipse-temurin:11.0.17_8-jdk-jammy</image>
+                            <!-- A -jdk- image, not -jre-: Pure's compiled runtime needs ToolProvider.getSystemJavaCompiler(). -->
+                            <image>eclipse-temurin:17.0.20_8-jdk-jammy</image>
                         </from>
                         <extraDirectories>
                             <paths>
@@ -568,6 +577,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-structures</artifactId>
         </dependency>
         <dependency>
@@ -687,6 +700,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-shared-http-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -1025,12 +1042,20 @@
             <artifactId>jetty-server</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-http</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-configuration</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlets</artifactId>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-servlets</artifactId>
         </dependency>
         <!-- DropWizard -->
 
@@ -1043,8 +1068,8 @@
 
         <!-- Servlet -->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
         <!-- Servlet -->
 
@@ -1060,6 +1085,10 @@
         <dependency>
             <groupId>org.pac4j</groupId>
             <artifactId>pac4j-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.pac4j</groupId>
+            <artifactId>pac4j-jakartaee</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.shared</groupId>
@@ -1141,12 +1170,12 @@
 
         <!-- ANNOTATIONS -->
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
         </dependency>
         <!-- ANNOTATIONS -->
 
@@ -1163,7 +1192,7 @@
         </dependency>
         <dependency>
             <groupId>org.pac4j</groupId>
-            <artifactId>jersey-pac4j</artifactId>
+            <artifactId>jersey3-pac4j</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -1383,6 +1412,18 @@
             <artifactId>legend-engine-xt-analytics-test-coverage-http-api</artifactId>
         </dependency>
         <!-- TEST -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication</artifactId>
+        </dependency>
     </dependencies>
     <profiles>
         <profile>

@@ -27,10 +27,21 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - GraphQL - Relational Extension</name>
 
+    <properties>
+        <!-- Main stays Java 8; only tests use jakarta.ws.rs, which needs Java 11+. -->
+        <maven.compiler.testRelease>17</maven.compiler.testRelease>
+        <maven.dependency.plugin.version>3.6.1</maven.dependency.plugin.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-graphQL-api-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-graphQL-http-api</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -111,15 +122,19 @@
         </dependency>
         <!-- ENGINE -->
 
+        <!-- Test scope only: jakarta.servlet-api 6.0 and jakarta.ws.rs-api 3.1 are Java 11 bytecode,
+             which enforce-bytecode-version rejects at compile scope in this Java 8 module. -->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- ANNOTATIONS -->
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- ANNOTATIONS -->
 
@@ -163,6 +178,11 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -226,5 +246,14 @@
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.pac4j</groupId>
+            <artifactId>pac4j-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -340,7 +340,7 @@ meta::external::language::java::metamodel::annotations::json::JsonTypeName exten
 }
 Class 
 {
-  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'javax.annotation.Generated'
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'jakarta.annotation.Generated'
 }
 meta::external::language::java::metamodel::annotations::generated::Generated extends meta::external::language::java::metamodel::Annotation
 {
@@ -371,7 +371,7 @@ Class meta::external::language::java::metamodel::annotations::jsi::ExposeInSlang
 
 Class
 {
-  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'javax.validation.constraints.NotNull'
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'jakarta.validation.constraints.NotNull'
 }
 meta::external::language::java::metamodel::annotations::java::validation::constraints::NotNull extends meta::external::language::java::metamodel::Annotation
 {

@@ -27,6 +27,11 @@
     <name>Legend Engine - Pure IDE Light - HTTP - Server</name>
 
     <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+        <!-- The root pom's 2.10 cannot read Java 17 class files -->
+        <maven.dependency.plugin.version>3.6.1</maven.dependency.plugin.version>
         <skip.yarn>false</skip.yarn>
         <pure-ide.web-application.version>${legend.web-application.version}</pure-ide.web-application.version>
         <pure-ide.web-application.url>${npm.registry.url}/@finos/legend-application-pure-ide-deployment/-/legend-application-pure-ide-deployment-${pure-ide.web-application.version}.tgz</pure-ide.web-application.url>
@@ -425,8 +430,8 @@
         <!-- DropWizard -->
 
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlets</artifactId>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-servlets</artifactId>
         </dependency>
 
         <!-- Swagger -->
@@ -438,19 +443,19 @@
 
         <!-- Servlet -->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
         <!-- Servlet -->
 
         <!-- ANNOTATIONS -->
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
         </dependency>
         <!-- ANNOTATIONS -->
 
@@ -521,6 +526,10 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+        </dependency>
     </dependencies>
 
     <profiles>

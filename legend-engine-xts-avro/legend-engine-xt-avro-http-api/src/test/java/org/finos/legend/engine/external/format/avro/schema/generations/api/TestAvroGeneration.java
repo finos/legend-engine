@@ -22,7 +22,7 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.Objects;
 

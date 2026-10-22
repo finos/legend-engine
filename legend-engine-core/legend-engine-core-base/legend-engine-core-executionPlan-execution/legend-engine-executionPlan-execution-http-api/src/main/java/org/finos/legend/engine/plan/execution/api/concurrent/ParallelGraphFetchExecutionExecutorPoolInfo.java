@@ -14,17 +14,17 @@
 
 package org.finos.legend.engine.plan.execution.api.concurrent;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
-@Api(tags = "Server")
+@Tag(name = "Server")
 @Path("server/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class ParallelGraphFetchExecutionExecutorPoolInfo
@@ -38,7 +38,7 @@ public class ParallelGraphFetchExecutionExecutorPoolInfo
 
     @GET
     @Path("parallelGraphFetchExecutionExecutorPoolInfo")
-    @ApiOperation(value = "current state of parallelGraphFetchExecutionExecutorPool")
+    @Operation(summary = "current state of parallelGraphFetchExecutionExecutorPool")
     public Response getPoolInfo()
     {
         if (executorPool != null)

@@ -55,33 +55,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-modelManager</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-identity-core</artifactId>
-        </dependency>
-
         <!-- ENGINE -->
 
-        <!-- ANNOTATIONS -->
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-        </dependency>
-        <!-- ANNOTATIONS -->
 
         <!-- JACKSON -->
         <dependency>
@@ -96,5 +73,11 @@
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
+
+        <!-- Java 8 bytecode despite the jakarta name, so safe in this client-reachable module -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
+        </dependency>
     </dependencies>
 </project>

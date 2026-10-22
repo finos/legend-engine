@@ -20,7 +20,7 @@ import org.finos.legend.engine.server.support.server.exception.ServerException;
 import org.finos.legend.engine.server.support.server.monitoring.ServerMetricsHandler;
 import org.finos.legend.engine.server.support.server.tools.StringTools;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;

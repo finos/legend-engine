@@ -16,9 +16,9 @@ package org.finos.legend.engine.external.language.morphir.api;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.MutableList;
@@ -41,16 +41,16 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "External - Generation - Code")
+@Tag(name = "External - Generation - Code")
 @Path("pure/v1/codeGeneration")
 @Produces(MediaType.APPLICATION_JSON)
 public class MorphirGenerationService
@@ -65,9 +65,9 @@ public class MorphirGenerationService
 
     @POST
     @Path("morphir")
-    @ApiOperation(value = "Generates Morphir IR from PureModel")
+    @Operation(summary = "Generates Morphir IR from PureModel")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generateMorphirIR(MorphirGenerationInput generateMorphirIRInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generateMorphirIR(MorphirGenerationInput generateMorphirIRInput, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);

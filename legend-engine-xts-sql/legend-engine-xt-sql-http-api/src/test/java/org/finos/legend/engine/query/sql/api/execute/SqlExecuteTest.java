@@ -17,7 +17,8 @@ package org.finos.legend.engine.query.sql.api.execute;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.testing.junit.ResourceTestRule;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import io.dropwizard.testing.junit5.ResourceExtension;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -43,14 +44,14 @@ import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.glassfish.jersey.test.TestProperties;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
-import org.junit.Assert;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Entity;
 import java.util.List;
 import java.util.ServiceLoader;
 
+@org.junit.jupiter.api.extension.ExtendWith(DropwizardExtensionsSupport.class)
 public class SqlExecuteTest
 {
     static
@@ -58,12 +59,11 @@ public class SqlExecuteTest
         System.setProperty(TestProperties.CONTAINER_PORT, "0");
     }
 
-    @ClassRule
-    public static final ResourceTestRule resources = getResourceTestRule();
+    public static final ResourceExtension resources = getResourceTestRule();
     private static final ObjectMapper OM = new ObjectMapper();
     private static final SQLGrammarParser PARSER = SQLGrammarParser.newInstance();
 
-    public static ResourceTestRule getResourceTestRule()
+    public static ResourceExtension getResourceTestRule()
     {
         DeploymentMode deploymentMode = DeploymentMode.TEST;
         ModelManager modelManager = new ModelManager(deploymentMode);
@@ -73,7 +73,7 @@ public class SqlExecuteTest
         TestSQLSourceProvider testSQLSourceProvider = new TestSQLSourceProvider();
         SqlExecute sqlExecute = new SqlExecute(modelManager, executor, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), FastList.newListWith(testSQLSourceProvider), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
 
-        ResourceTestRule resources = ResourceTestRule.builder()
+        ResourceExtension resources = ResourceExtension.builder()
                 .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
                 .addResource(sqlExecute)
                 .addResource(new MockPac4jFeature())
@@ -98,7 +98,7 @@ public class SqlExecuteTest
         LambdaFunction actual = new ObjectMapper().readValue(lambda, LambdaFunction.class);
         String actualGrammar = actual.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
 
-        Assert.assertEquals(expected, actualGrammar);
+        Assertions.assertEquals(expected, actualGrammar);
     }
 
     private void allLambdaTests(String sql, List<Object> arguments, String expected) throws JsonProcessingException
@@ -142,7 +142,7 @@ public class SqlExecuteTest
                 .request()
                 .post(entity).readEntity(String.class);
 
-        Assert.assertEquals(expected, OM.readValue(results, TDSExecuteResult.class));
+        Assertions.assertEquals(expected, OM.readValue(results, TDSExecuteResult.class));
     }
 
     private void allExecuteTests(String sql, List<Object> arguments, TDSExecuteResult expected) throws JsonProcessingException
@@ -262,7 +262,7 @@ public class SqlExecuteTest
                 .request()
                 .post(Entity.text("SELECT Name FROM service('/personServiceForNames') ORDER BY Name")).readEntity(String.class);
 
-        Assert.assertEquals("Name\r\nAlice\r\nBob\r\nCurtis\r\nDanielle\r\n", results);
+        Assertions.assertEquals("Name\r\nAlice\r\nBob\r\nCurtis\r\nDanielle\r\n", results);
     }
 
     private void allSchemaTests(List<String> sqls, List<Object> arguments, Schema expected) throws JsonProcessingException
@@ -282,7 +282,7 @@ public class SqlExecuteTest
                 .request()
                 .post(entity).readEntity(String.class);
 
-        Assert.assertEquals(new ObjectMapper().writeValueAsString(expected), schema);
+        Assertions.assertEquals(new ObjectMapper().writeValueAsString(expected), schema);
     }
 
     @Test

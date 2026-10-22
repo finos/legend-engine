@@ -24,7 +24,7 @@ import org.finos.legend.pure.generated.Root_meta_analytics_quality_model_Violati
 import org.finos.legend.pure.generated.core_analytics_quality_checksEngine;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 

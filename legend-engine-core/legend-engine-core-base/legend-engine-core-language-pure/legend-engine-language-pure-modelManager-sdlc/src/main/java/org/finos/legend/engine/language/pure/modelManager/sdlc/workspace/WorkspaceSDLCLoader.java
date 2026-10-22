@@ -21,15 +21,19 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import java.io.InputStream;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 import javax.security.auth.Subject;
 import org.apache.http.HttpEntity;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.finos.legend.engine.identity.extensions.pac4j.Pac4jUtils;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.shared.core.identity.factory.AuthenticationSourceProvider;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetadataServerPrivateAccessTokenConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.ServerConnectionConfiguration;
@@ -42,6 +46,7 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 
 public class WorkspaceSDLCLoader
@@ -49,6 +54,9 @@ public class WorkspaceSDLCLoader
     private static final TypeReference<List<SDLCProjectDependency>> SDLC_PROJECT_DEPENDENCY_TYPE = new TypeReference<List<SDLCProjectDependency>>()
     {
     };
+
+    private static final List<AuthenticationSourceProvider> AUTHENTICATION_SOURCE_PROVIDERS =
+            Collections.unmodifiableList(Iterate.addAllTo(ServiceLoader.load(AuthenticationSourceProvider.class), new ArrayList<AuthenticationSourceProvider>()));
 
     private final ServerConnectionConfiguration sdlcServerConnectionConfig;
     private final ObjectMapper mapper;
@@ -131,7 +139,7 @@ public class WorkspaceSDLCLoader
         return kerberosCredential == null ? action.run() : Subject.doAs(kerberosCredential, action);
     }
 
-    private HttpGet prepareHttpRequest(Identity identity, String url)
+    HttpGet prepareHttpRequest(Identity identity, String url)
     {
         HttpGet httpRequest = null;
 
@@ -141,7 +149,7 @@ public class WorkspaceSDLCLoader
             //MutableList<GitlabPersonalAccessTokenProfile> patProfiles = pm.selectInstancesOf(GitlabPersonalAccessTokenProfile.class);
             if (identity != null)
             {
-                httpRequest = new HttpGet(String.format("%s?client_name=%s", url, Pac4jUtils.getProfilesFromIdentity(identity).get(0).getClientName()));
+                httpRequest = new HttpGet(String.format("%s?client_name=%s", url, resolveClientName(identity)));
                 //httpRequest.addHeader(new BasicHeader(patHeaderName, patProfiles.getFirst().getPersonalAccessToken()));
             }
         }
@@ -185,5 +193,26 @@ public class WorkspaceSDLCLoader
         {
             return versionId;
         }
+    }
+
+    /**
+     * Throws rather than returning null: the result is interpolated into a query string, where null
+     * would be sent as the literal text "null".
+     */
+    static String resolveClientName(Identity identity)
+    {
+        for (AuthenticationSourceProvider provider : AUTHENTICATION_SOURCE_PROVIDERS)
+        {
+            String clientName = provider.clientName(identity);
+            if (clientName != null)
+            {
+                return clientName;
+            }
+        }
+        throw new EngineException("Could not determine the authentication client name for identity '" + identity.getName()
+                + "', which the SDLC server requires when the metadata server is configured with a private access token."
+                + (AUTHENTICATION_SOURCE_PROVIDERS.isEmpty()
+                        ? " No " + AuthenticationSourceProvider.class.getName() + " is registered; add legend-engine-xt-identity-pac4j to the runtime classpath."
+                        : " The identity carries no authentication profile."));
     }
 }

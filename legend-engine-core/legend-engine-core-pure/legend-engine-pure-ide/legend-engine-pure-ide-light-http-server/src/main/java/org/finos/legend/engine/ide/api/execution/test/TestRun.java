@@ -46,7 +46,7 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;

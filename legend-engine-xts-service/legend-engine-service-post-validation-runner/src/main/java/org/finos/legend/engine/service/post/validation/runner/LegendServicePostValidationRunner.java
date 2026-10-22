@@ -46,7 +46,7 @@ import java.security.PrivilegedActionException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import static org.finos.legend.pure.generated.core_service_service_validation.Root_meta_legend_service_validation_extractAssertMessage_FunctionDefinition_1__String_1_;
 import static org.finos.legend.pure.generated.core_service_service_validation.Root_meta_legend_service_validation_generateValidationQuery_FunctionDefinition_1__FunctionDefinition_1__FunctionDefinition_1_;

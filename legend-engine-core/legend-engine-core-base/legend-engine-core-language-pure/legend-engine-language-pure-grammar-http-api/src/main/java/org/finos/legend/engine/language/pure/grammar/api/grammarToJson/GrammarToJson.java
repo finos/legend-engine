@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.language.pure.grammar.api.grammarToJson;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
@@ -24,53 +24,55 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecific
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import java.util.Map;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "Pure - Grammar")
+@Tag(name = "Pure - Grammar")
 @Path("pure/v1/grammar/grammarToJson")
 public class GrammarToJson extends GrammarAPI
 {
     @POST
     @Path("model")
-    @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
+    @Operation(summary = "Generates Pure protocol JSON from Pure language text")
     @Consumes({MediaType.TEXT_PLAIN, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     @Prometheus(name = "GrammarToJson model", doc = "Grammar to Json duration summary")
     public Response model(String text,
-                          @DefaultValue("") @ApiParam("The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
-                          @DefaultValue("0") @ApiParam("The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
+                          @DefaultValue("") @Parameter(description = "The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
+                          @DefaultValue("0") @Parameter(description = "The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
                           @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
-                          @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm,
+                          @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm,
                           @Context UriInfo uriInfo)
     {
         long start = System.currentTimeMillis();
         PureGrammarParserExtensions.logExtensionList();
-        Response response = grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseModel(a, sourceId, lineOffset, 0, returnSourceInformation), pm, "Grammar to Json : Model");
+        Response response = grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseModel(a, sourceId, lineOffset, 0, returnSourceInformation), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Grammar to Json : Model");
         long end = System.currentTimeMillis();
         MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
         return response;
     }
 
     @Deprecated
-    public Response model(String text, String sourceId, int lineOffset, boolean returnSourceInformation, ProfileManager<CommonProfile> pm)
+    public Response model(String text, String sourceId, int lineOffset, boolean returnSourceInformation, ProfileManager pm)
     {
         return model(text, sourceId, lineOffset, returnSourceInformation, pm, null);
     }
@@ -78,18 +80,18 @@ public class GrammarToJson extends GrammarAPI
 
     @POST
     @Path("lambda")
-    @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
+    @Operation(summary = "Generates Pure protocol JSON from Pure language text")
     @Consumes({MediaType.TEXT_PLAIN, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response lambda(String text,
-                           @DefaultValue("") @ApiParam("The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
-                           @DefaultValue("0") @ApiParam("The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
-                           @DefaultValue("0") @ApiParam("The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
+                           @DefaultValue("") @Parameter(description = "The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
+                           @DefaultValue("0") @Parameter(description = "The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
+                           @DefaultValue("0") @Parameter(description = "The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
                            @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
-                           @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                           @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseLambda(a, sourceId, lineOffset, columnOffset, returnSourceInformation), pm, "Grammar to Json : Lambda");
+        return grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseLambda(a, sourceId, lineOffset, columnOffset, returnSourceInformation), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Grammar to Json : Lambda");
     }
 
     // Required so that Jackson properly includes _type for the top level element
@@ -102,29 +104,29 @@ public class GrammarToJson extends GrammarAPI
 
     @POST
     @Path("lambda/batch")
-    @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
+    @Operation(summary = "Generates Pure protocol JSON from Pure language text")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response lambdaBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response lambdaBatch(Map<String, ParserInput> input, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseLambda(a, b, c, d, e), new TypedMap(), pm, "Grammar to Json : Lambda Batch");
+        return grammarToJsonBatch(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseLambda(a, b, c, d, e), new TypedMap(), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Grammar to Json : Lambda Batch");
     }
 
     @POST
     @Path("graphFetch")
-    @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
+    @Operation(summary = "Generates Pure protocol JSON from Pure language text")
     @Consumes({MediaType.TEXT_PLAIN, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response graphFetch(String text,
-                               @DefaultValue("") @ApiParam("The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
-                               @DefaultValue("0") @ApiParam("The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
-                               @DefaultValue("0") @ApiParam("The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
+                               @DefaultValue("") @Parameter(description = "The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
+                               @DefaultValue("0") @Parameter(description = "The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
+                               @DefaultValue("0") @Parameter(description = "The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
                                @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
-                               @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                               @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseGraphFetch(a, sourceId, lineOffset, columnOffset, returnSourceInformation), pm, "Grammar to Json : GraphFetch");
+        return grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseGraphFetch(a, sourceId, lineOffset, columnOffset, returnSourceInformation), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Grammar to Json : GraphFetch");
     }
 
     // Required so that Jackson properly includes _type for the top level element
@@ -137,30 +139,30 @@ public class GrammarToJson extends GrammarAPI
 
     @POST
     @Path("graphFetch/batch")
-    @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
+    @Operation(summary = "Generates Pure protocol JSON from Pure language text")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response graphFetchBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response graphFetchBatch(Map<String, ParserInput> input, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseGraphFetch(a, b, c, d, e), new TypedMapGraph(), pm, "Grammar to Json : GraphFetch Batch");
+        return grammarToJsonBatch(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseGraphFetch(a, b, c, d, e), new TypedMapGraph(), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Grammar to Json : GraphFetch Batch");
     }
 
 
     @POST
     @Path("valueSpecification")
-    @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
+    @Operation(summary = "Generates Pure protocol JSON from Pure language text")
     @Consumes({MediaType.TEXT_PLAIN, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response valueSpecification(String text,
-                                       @DefaultValue("") @ApiParam("The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
-                                       @DefaultValue("0") @ApiParam("The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
-                                       @DefaultValue("0") @ApiParam("The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
+                                       @DefaultValue("") @Parameter(description = "The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
+                                       @DefaultValue("0") @Parameter(description = "The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
+                                       @DefaultValue("0") @Parameter(description = "The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
                                        @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
-                                       @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                                       @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseValueSpecification(a, sourceId, lineOffset, columnOffset, returnSourceInformation), pm, "Grammar to Json : Value Specification");
+        return grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseValueSpecification(a, sourceId, lineOffset, columnOffset, returnSourceInformation), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Grammar to Json : Value Specification");
     }
 
     // Required so that Jackson properly includes _type for the top level element
@@ -173,12 +175,12 @@ public class GrammarToJson extends GrammarAPI
 
     @POST
     @Path("valueSpecification/batch")
-    @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
+    @Operation(summary = "Generates Pure protocol JSON from Pure language text")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response valueSpecificationBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response valueSpecificationBatch(Map<String, ParserInput> input, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseValueSpecification(a, b, c, d, e), new TypedMapVS(), pm, "Grammar to Json : Value Specification Batch");
+        return grammarToJsonBatch(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseValueSpecification(a, b, c, d, e), new TypedMapVS(), Identity.makeIdentity(ProfileManagerHelper.extractProfiles(pm)), "Grammar to Json : Value Specification Batch");
     }
 }

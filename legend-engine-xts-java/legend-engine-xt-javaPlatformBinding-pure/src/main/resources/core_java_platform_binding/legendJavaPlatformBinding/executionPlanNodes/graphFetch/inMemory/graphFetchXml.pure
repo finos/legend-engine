@@ -630,7 +630,9 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
    $self->addMethod(javaMethod('public', javaVoid(), 'initReading', [],
       [
-         $parser->j_assign(xmlFactory()->j_invoke('builder', [], xmlBuilderFactory())->j_invoke('build', [], xmlFactory())->j_invoke('createParser', xmlInputFactory()->j_invoke('newInstance', [], xmlInputFactory())->j_invoke('createXMLStreamReader',$jThis->j_field('in'), xmlStreamReader()), jsonXmlParser())),
+         // Without EMPTY_ELEMENT_AS_NULL, Jackson 2.12+ reads <i/> as "" instead of null,
+         // which the generated primitive parsing rejects.
+         $parser->j_assign(xmlFactory()->j_invoke('builder', [], xmlBuilderFactory())->j_invoke('enable', [xmlParserFeature()->j_field('EMPTY_ELEMENT_AS_NULL', xmlParserFeature())], xmlBuilderFactory())->j_invoke('build', [], xmlFactory())->j_invoke('createParser', xmlInputFactory()->j_invoke('newInstance', [], xmlInputFactory())->j_invoke('createXMLStreamReader',$jThis->j_field('in'), xmlStreamReader()), jsonXmlParser())),
          $xmlTokenStreamF->j_declare($jThis->j_invoke('getField', [$parser->j_invoke('getClass', []),j_string('_xmlTokens')], javaClass('java.lang.reflect.Field'))),
          $xmlTokenStreamF->j_invoke('setAccessible', [j_boolean('true')], javaVoid()),
          $xmlTokenStream->j_assign($xmlTokenStreamF->j_invoke('get', [$parser], javaObject())->j_cast(xmlTokenStream()))
@@ -909,6 +911,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlTokenStream()     : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.deser.XmlTokenStream'); }
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlBuilderFactory()  : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.XmlFactoryBuilder'); }
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::jsonXmlParser()      : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser'); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlParserFeature()  : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser.Feature'); }
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlInputFactory()    : meta::external::language::java::metamodel::Class[1] { javaClass('javax.xml.stream.XMLInputFactory'); }
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlStreamReader()    : meta::external::language::java::metamodel::Class[1] { javaClass('javax.xml.stream.XMLStreamReader'); }
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlStreamWriter()    : meta::external::language::java::metamodel::Class[1] { javaClass('javax.xml.stream.XMLStreamWriter'); }

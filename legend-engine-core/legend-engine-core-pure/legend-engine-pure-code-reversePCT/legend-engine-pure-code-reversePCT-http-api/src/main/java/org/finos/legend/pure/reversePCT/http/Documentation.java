@@ -14,34 +14,34 @@
 
 package org.finos.legend.pure.reversePCT.http;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.core_reverse_pct_generateDocumentation;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
-@Api(tags = "PCT")
+@Tag(name = "PCT")
 @Path("pct")
 @Produces(MediaType.TEXT_HTML)
 public class Documentation
 {
     @GET
-    @ApiOperation(value = "")
+    @Operation(summary = "")
     @Path("reversePCTdocumentation")
     public Response reversePCTdocumentation(
             @QueryParam("file")
-            @ApiParam("The file path to generate a Doc for") String file,
+            @Parameter(description = "The file path to generate a Doc for") String file,
             @QueryParam("reverseFunction")
-            @ApiParam("The function that provides the reverse information for reverse PCT tests") String reverseFunction
+            @Parameter(description = "The function that provides the reverse information for reverse PCT tests") String reverseFunction
     )
     {
         PureModel pureModel = PureModel.getCorePureModel();
