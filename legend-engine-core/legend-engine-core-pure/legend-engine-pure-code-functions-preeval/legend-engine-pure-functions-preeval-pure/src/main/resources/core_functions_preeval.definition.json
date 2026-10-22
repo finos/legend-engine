@@ -1,0 +1,7 @@
+{
+  "name": "core_functions_preeval",
+  "pattern": "meta::pure::functions::preeval(::.*)?",
+  "dependencies": [
+    "platform"
+  ]
+}
