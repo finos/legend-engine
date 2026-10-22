@@ -54,14 +54,15 @@ Class meta::pure::lineage::scanProperties::ScanPropertiesState
    visitedFunctions:Map<String,ScanPropertiesState>[1];
 }
 
+// Keyed so identical instances built by separate scans compare equal and deduplicate.
 Class meta::pure::lineage::scanProperties::ConstructedPropertyAssignment
 {
-   propertyName : String[1];
-   path : List<PropertyPathNode>[1];
-   add : Boolean[1];
+   <<equality.Key>> propertyName : String[1];
+   <<equality.Key>> path : List<PropertyPathNode>[1];
+   <<equality.Key>> add : Boolean[1];
 }
 
-// Internal only: result paths holding one are dropped and the public entry points replace a current holding one with an empty path.
+// Never a physical source path: result paths holding one are dropped.
 Class meta::pure::lineage::scanProperties::ConstructedInstancePathNode extends PropertyPathNode
 {
    <<equality.Key>> assignments : ConstructedPropertyAssignment[*];
@@ -225,12 +226,17 @@ function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecificati
 function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], debug:DebugContext[1], config:ScanConfig[1]):ScanPropertiesState[0..1]
 {
    print(if($debug.debug,|$debug.space+'>>> ScanProperties in : ' +$vs->printValueSpecification(^GContext(space='')) + ' \n',|''));
-   internal_scanProperties($vs, [], noVars(), $config, ^Map<String,ScanPropertiesState>(), ^$debug(space=$debug.space+'    '))->map(s | $s->withoutConstructedInstances());
+   internal_scanProperties($vs, [], noVars(), $config, ^Map<String,ScanPropertiesState>(), ^$debug(space=$debug.space+'    '));
 }
 
 function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], debug:DebugContext[1], config:ScanConfig[1], visitedFunctions:Map<String,ScanPropertiesState>[1]):ScanPropertiesState[0..1]
 { 
-   internal_scanProperties($vs, [], noVars(), $config, $visitedFunctions, ^$debug(space=$debug.space+'    '))->map(s | $s->withoutConstructedInstances());
+   scanProperties($vs, $debug, $config, $visitedFunctions, noVars());
+}
+
+function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], debug:DebugContext[1], config:ScanConfig[1], visitedFunctions:Map<String,ScanPropertiesState>[1], vars:Map<String,List<PropertyPathNode>>[1]):ScanPropertiesState[0..1]
+{
+   internal_scanProperties($vs, [], $vars, $config, $visitedFunctions, ^$debug(space=$debug.space+'    '));
 }
 
 function <<access.private>> meta::pure::lineage::scanProperties::internal_scanProperties(vs:ValueSpecification[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1], config:ScanConfig[1], visitedFunctions:Map<String,ScanPropertiesState>[1], debug: meta::pure::tools::DebugContext[1]):ScanPropertiesState[0..1]
@@ -579,7 +585,37 @@ function <<access.private>> meta::pure::lineage::scanProperties::firstMeaningful
 {
    let nonEmpty    = $paths->removeEmptyPaths();
    let sourcePaths = $nonEmpty->filter(p | !$p->holdsConstructedInstance());
-   if($sourcePaths->isEmpty(), |$nonEmpty->first(), |$sourcePaths->first())->orElseEmptyPath();
+   if($sourcePaths->isNotEmpty(),
+      | $sourcePaths->first()->orElseEmptyPath(),
+      | let merged = $nonEmpty->mergeConstructedCurrents();
+        if($merged->isEmpty(), |$nonEmpty->first()->orElseEmptyPath(), |$merged->toOne());
+   );
+}
+
+function <<access.private>> meta::pure::lineage::scanProperties::constructedNodeOf(path:List<PropertyPathNode>[1]):ConstructedInstancePathNode[0..1]
+{
+   if($path.values->size() == 1,
+      | $path.values->filter(n | $n->instanceOf(ConstructedInstancePathNode))->cast(@ConstructedInstancePathNode)->first(),
+      | []
+   );
+}
+
+// The first branch wins a slot several branches fill: readProperty takes ->last(), so plain concatenation would
+// switch it to the last branch.
+function <<access.private>> meta::pure::lineage::scanProperties::mergeConstructedCurrents(paths:List<PropertyPathNode>[*]):List<PropertyPathNode>[0..1]
+{
+   let nodes = $paths->map(p | $p->constructedNodeOf());
+   // Pure's lazy evaluation can produce several objects for the same Class.
+   let classPaths = $nodes.class->map(c | $c->meta::pure::functions::meta::elementToPath())->removeDuplicates();
+   if($nodes->size() < 2 || $nodes->size() != $paths->size() || $classPaths->size() != 1 || $nodes.base->isNotEmpty(),
+      | [],
+      | list(^ConstructedInstancePathNode(
+               class       = $nodes->at(0).class,
+               property    = getDummyProperty(),
+               assignments = $nodes.assignments->removeDuplicatesBy(a | $a.propertyName),
+               base        = []
+            )->cast(@PropertyPathNode))
+   );
 }
 
 function <<access.private>> meta::pure::lineage::scanProperties::processFunction(fn:Function<Any>[0..1], paramPaths:ScanPropertiesState[*], vars:Map<String,List<PropertyPathNode>>[1], processed:Function<Any>[*], config:ScanConfig[1], visitedFunctions:Map<String,ScanPropertiesState>[1], debug:DebugContext[1]):ScanPropertiesState[1]
@@ -864,14 +900,6 @@ function <<access.private>> meta::pure::lineage::scanProperties::noVars():Map<St
 function <<access.private>> meta::pure::lineage::scanProperties::removeEmptyResults(res:ScanPropertiesState[0..1]):ScanPropertiesState[0..1]
 {
    $res->map(r| ^$r(result=$r.result->removeEmptyPaths()->filter(l | !$l->holdsConstructedInstance())));
-}
-
-function <<access.private>> meta::pure::lineage::scanProperties::withoutConstructedInstances(state:ScanPropertiesState[1]):ScanPropertiesState[1]
-{
-   ^$state(
-      current                  = if($state.current->holdsConstructedInstance(), |emptyPath(), |$state.current),
-      conditionalTerminalPaths = $state.conditionalTerminalPaths->map(t | ^$t(paths = $t.paths->map(p | if($p->holdsConstructedInstance(), |emptyPath(), |$p))))
-   );
 }
 
 function <<access.private>> meta::pure::lineage::scanProperties::removeEmptyPaths(paths:List<PropertyPathNode>[*]):List<PropertyPathNode>[*]

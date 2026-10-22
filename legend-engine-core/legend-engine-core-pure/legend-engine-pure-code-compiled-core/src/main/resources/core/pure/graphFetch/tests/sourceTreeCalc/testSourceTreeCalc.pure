@@ -3872,19 +3872,6 @@ import meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
 
-// Boundary case for the visited-set cycle guard. The guard makes the back-edge walk
-// terminate, but the walk is still greedy and does not backtrack, so it can take a wrong
-// turn into a cul-de-sac. Candidates returning McTx are McProfile.altTx and
-// McEvent.transaction; pickIntermediateProperty sorts by name so 'altTx' wins and the walk
-// steps into McProfile, whose only producer (McTx.profile) is already on the path. The
-// walk therefore fails - even though McEvent.transaction -> McPayload.event was a perfectly
-// good route. Before the guard this shape hung on the McTx <-> McProfile 2-cycle until the
-// depth backstop fired; now it fails immediately with an accurate diagnostic.
-//
-// If the DFS-with-backtracking alternative in
-// docs/engineering/architecture/source-tree-calculation.md section 11.6 is ever
-// implemented, this test flips from asserting an error to asserting the source tree
-// McPayload { event { transaction { txId } } }.
 Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McProfile
 {
   altTx : meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTx[0..1];
@@ -3917,20 +3904,23 @@ Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTxOut
 }
 
 function <<test.Test>>
-  meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::testMutualCycleGivesClearError():Boolean[1]
+  meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::testMutualCycleResolvesThroughConstructorAssignment():Boolean[1]
 {
   let tree = #{
     meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McOut {
       txInfo { txId }
     }
   }#;
-  assertError(
-    | meta::pure::graphFetch::calculateSourceTree(
-        $tree,
-        meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::MutualCycleMapping,
-        meta::pure::extension::defaultExtensions());,
-    'Could not build an acyclic path from meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McPayload back to meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McProfile: every property returning it is declared on a class already on the path. The back-edge search does not backtrack - see source-tree-calculation.md section 11.6.'
-  );
+  let actual = meta::pure::graphFetch::calculateSourceTree(
+                 $tree,
+                 meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::MutualCycleMapping,
+                 meta::pure::extension::defaultExtensions());
+  let expected = #{
+    meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McPayload {
+      event { transaction { txId } }
+    }
+  }#;
+  assertEquals($expected->sortTree()->treeToString(), $actual->sortTree()->treeToString());
 }
 
 ###Mapping

@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::m2m::newInstance::readInTransform::Leaf { id: String[1]; }
+Class demo::m2m::newInstance::readInTransform::Source { aDecoy: demo::m2m::newInstance::readInTransform::Leaf[1]; primary: demo::m2m::newInstance::readInTransform::Leaf[1]; }
+Class demo::m2m::newInstance::readInTransform::Box { ft: demo::m2m::newInstance::readInTransform::Leaf[1]; }
+Class demo::m2m::newInstance::readInTransform::Target { value: String[1]; }
+
+###Mapping
+Mapping demo::m2m::newInstance::readInTransform::Transform
+(
+  *demo::m2m::newInstance::readInTransform::Target: Pure
+  {
+    ~src demo::m2m::newInstance::readInTransform::Source
+    value: ^demo::m2m::newInstance::readInTransform::Box(ft=$src.primary).ft.id
+  }
+)
+
+###Runtime
+Runtime demo::m2m::newInstance::readInTransform::TransformRuntime
+{
+  mappings:
+  [
+    demo::m2m::newInstance::readInTransform::Transform
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      json:
+      #{
+        JsonModelConnection
+        {
+          class: demo::m2m::newInstance::readInTransform::Source;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}
+
+###Service
+Service demo::m2m::newInstance::readInTransform::TransformService
+{
+  pattern: '/m2m-new-read-in-transform';
+  documentation: 'M2M reads a property of an instance constructed in the same transform';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::newInstance::readInTransform::Target.all()->graphFetch(#{demo::m2m::newInstance::readInTransform::Target{value}}#)->serialize(#{demo::m2m::newInstance::readInTransform::Target{value}}#);
+    mapping: demo::m2m::newInstance::readInTransform::Transform;
+    runtime: demo::m2m::newInstance::readInTransform::TransformRuntime;
+  }
+  testSuites:
+  [
+    suite:
+    {
+      data:
+      [
+        connections:
+        [
+          json:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"aDecoy":{"id":"DECOY"},"primary":{"id":"PRIMARY"}}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"value":"PRIMARY"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
