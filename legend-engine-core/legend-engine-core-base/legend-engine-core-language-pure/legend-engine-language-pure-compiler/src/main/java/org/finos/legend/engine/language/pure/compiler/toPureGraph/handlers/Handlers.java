@@ -2040,6 +2040,11 @@ public class Handlers
         register(m(m(h("meta::pure::functions::collection::dropAt_T_MANY__Integer_1__T_MANY_", "dropAt", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 2)),
                 m(h("meta::pure::functions::collection::dropAt_T_MANY__Integer_1__Integer_1__T_MANY_", "dropAt", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))));
 
+        register(grp(LambdaInference, h("meta::pure::functions::collection::partition_I_MANY__Function_1__Pair_1_", "partition", false, ps ->
+        {
+            GenericType list = CompileContext.newGenericType(this.pureModel.getType(M3Paths.List), ps.get(0)._genericType(), this.pureModel);
+            return res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.Pair), Lists.fixedSize.of(list, list), this.pureModel), "one");
+        }, ps -> true)));
         register("meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_", "zip", true, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.Pair), Lists.fixedSize.ofAll(ps.stream().map(ValueSpecificationAccessor::_genericType).collect(Collectors.toList())), pureModel), "oneMany"));
         register(grp(RemoveDuplicatesByInference, h("meta::pure::functions::collection::removeDuplicatesBy_T_MANY__Function_1__T_MANY_", "removeDuplicatesBy", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> true)));
         register("meta::pure::functions::collection::containsAll_Any_MANY__Any_MANY__Boolean_1_", "containsAll", false, ps -> res("Boolean", "one"));
