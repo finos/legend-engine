@@ -69,6 +69,7 @@ public class ModelGenerationRunner
 
     private final PureModelContextData.Builder fullModelBuilder;
     private final PureModelContextData.Builder generatedModelBuilder;
+    private final MutableMap<String, String> generatedElementSources = Maps.mutable.empty();
     private PureModel pureModel;
     private boolean recompileNeeded;
 
@@ -289,7 +290,7 @@ public class ModelGenerationRunner
         }
     }
 
-    private void merge(String generationElement, PureModelContextData generated, MutableMap<String, String> elementSources)
+    private void merge(String generationElement, PureModelContextData generated, MutableMap<String, String> nodeElementSources)
     {
         if (generated.getElements().isEmpty())
         {
@@ -303,20 +304,25 @@ public class ModelGenerationRunner
             {
                 throw new EngineException("Generated element '" + path + "' of type " + element.getClass().getSimpleName() + " can't override existing element of type " + coreElement.getClass().getSimpleName(), EngineErrorType.COMPILATION);
             }
-            // PureModelContextData.Builder.distinct() keeps the first of two elements sharing a path, so a collision within a node has to be caught here
-            String otherGenerationElement = elementSources.put(path, generationElement);
-            if (otherGenerationElement == null)
+            // PureModelContextData.Builder.distinct() keeps the first of two elements sharing a path and reports nothing, so a path
+            // generated twice has to be caught here. Only a collision between two elements of one node fails: that needs the new
+            // group syntax, so no specification that exists today can hit it. The other two cases have always been deduped
+            // silently and projects build on that, so they warn, and a follow-up will turn them into failures.
+            String sameNodeGenerationElement = nodeElementSources.put(path, generationElement);
+            if (sameNodeGenerationElement != null)
             {
-                return;
-            }
-            if (otherGenerationElement.equals(generationElement))
-            {
-                // One generation emitting a path twice should be an error for the same reason, but distinct() has always
-                // dropped the repeat and projects depend on that. A follow-up will turn this warning into a failure.
+                if (!sameNodeGenerationElement.equals(generationElement))
+                {
+                    throw new EngineException("Generation elements '" + sameNodeGenerationElement + "' and '" + generationElement + "' of the same generation node both generated element '" + path + "'", EngineErrorType.COMPILATION);
+                }
                 LOGGER.warn("Generation element '{}' generated element '{}' more than once, keeping the first", generationElement, path);
                 return;
             }
-            throw new EngineException("Generation elements '" + otherGenerationElement + "' and '" + generationElement + "' of the same generation node both generated element '" + path + "'", EngineErrorType.COMPILATION);
+            String earlierGenerationElement = this.generatedElementSources.put(path, generationElement);
+            if (earlierGenerationElement != null)
+            {
+                LOGGER.warn("Generation element '{}' generated element '{}', which generation element '{}' already generated in an earlier node, keeping the first", generationElement, path, earlierGenerationElement);
+            }
         });
         this.fullModelBuilder.withPureModelContextData(generated).distinct().sorted();
         this.generatedModelBuilder.withPureModelContextData(generated).distinct().sorted();

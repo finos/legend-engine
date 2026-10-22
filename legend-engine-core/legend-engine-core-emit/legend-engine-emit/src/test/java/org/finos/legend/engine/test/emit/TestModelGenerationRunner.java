@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 public class TestModelGenerationRunner
@@ -115,6 +116,36 @@ public class TestModelGenerationRunner
         EngineException e = Assertions.assertThrows(EngineException.class, () -> newRunner(model).run());
 
         Assertions.assertEquals("Generated element '" + generatedPath("SourceA") + "' of type Class can't override existing element of type Class", e.getMessage());
+    }
+
+    @Test
+    void generationsInDifferentNodesProducingTheSameElementStayDeduped()
+    {
+        PureModelContextData model = parse(SOURCE_A
+                + "Class demo::modelgen::other::SourceA\n"
+                + "{\n"
+                + "  name: String[1];\n"
+                + "}\n"
+                + "###GenerationSpecification\n"
+                + "GenerationSpecification demo::modelgen::Spec\n"
+                + "{\n"
+                + "  generationNodes: [\n"
+                + "    {\n"
+                + "      generationElement: demo::modelgen::SourceA;\n"
+                + "    },\n"
+                + "    {\n"
+                + "      generationElement: demo::modelgen::other::SourceA;\n"
+                + "    }\n"
+                + "  ];\n"
+                + "}\n");
+
+        ModelGenerationRunner.Result result = newRunner(model).run();
+
+        Assertions.assertEquals(2, result.getGenerationCount());
+        Assertions.assertEquals(
+                Collections.singletonList(generatedPath("SourceA")),
+                result.getGeneratedModel().getElements().stream().map(PackageableElement::getPath).collect(Collectors.toList()),
+                "two nodes generating the same element was deduped before, and must stay so");
     }
 
     @Test
