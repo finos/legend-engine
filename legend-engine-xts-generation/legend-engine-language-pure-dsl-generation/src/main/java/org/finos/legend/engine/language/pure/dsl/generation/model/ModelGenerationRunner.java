@@ -68,6 +68,7 @@ public class ModelGenerationRunner
     private final MutableList<ModelGenerationExtension> extensions;
 
     private final PureModelContextData.Builder fullModelBuilder;
+    private final PureModelContextData.Builder generatedModelBuilder;
     private PureModel pureModel;
     private boolean recompileNeeded;
 
@@ -81,6 +82,7 @@ public class ModelGenerationRunner
         this.coreModelElementIndex = Iterate.groupByUniqueKey(coreModel.getElements(), PackageableElement::getPath);
         this.extensions = Iterate.addAllTo(ServiceLoader.load(ModelGenerationExtension.class), Lists.mutable.empty());
         this.fullModelBuilder = PureModelContextData.newBuilder().withPureModelContextData(coreModel);
+        this.generatedModelBuilder = PureModelContextData.newBuilder();
         this.pureModel = pureModel;
     }
 
@@ -132,7 +134,6 @@ public class ModelGenerationRunner
             throw new EngineException("Invalid generation specification, missing path '" + this.generationSpecification.name + "'", this.generationSpecification.sourceInformation, EngineErrorType.COMPILATION);
         }
         LOGGER.info("Running generation specification '{}'", this.generationSpecification.getPath());
-        PureModelContextData.Builder generatedModelBuilder = PureModelContextData.newBuilder();
         int generationCount = 0;
         ExecutorService executor = null;
         try
@@ -155,7 +156,7 @@ public class ModelGenerationRunner
                 {
                     generated = ListIterate.collect(generationElements, generationElement -> generate(node, generationElement, context));
                 }
-                this.recompileNeeded |= mergeNodeOutput(node, generationElements, generated, generatedModelBuilder);
+                mergeNodeOutput(generationElements, generated);
             }
         }
         finally
@@ -165,11 +166,35 @@ public class ModelGenerationRunner
                 executor.shutdownNow();
             }
         }
-        LOGGER.info("Validating generated elements");
-        PureModelContextData generatedModel = generatedModelBuilder.build();
-        validateGeneratedElements(generatedModel);
+        PureModelContextData generatedModel = this.generatedModelBuilder.build();
         LOGGER.info("Finished running generation specification '{}'. Generated {} elements", this.generationSpecification.getPath(), generatedModel.getElements().size());
         return new Result(this.fullModelBuilder.build(), generatedModel, generationCount);
+    }
+
+    /**
+     * Merges a model a host generated itself, outside of the specification's nodes, as one step:
+     * it may not override a core element and the graph recompiles before the next read.
+     */
+    public ModelGenerationRunner addGeneratedModel(String generationElement, PureModelContextData generated)
+    {
+        merge(generationElement, generated, Maps.mutable.empty());
+        return this;
+    }
+
+    /**
+     * The core elements together with everything generated so far.
+     */
+    public PureModelContextData getFullModel()
+    {
+        return this.fullModelBuilder.build();
+    }
+
+    /**
+     * Only the elements generated so far.
+     */
+    public PureModelContextData getGeneratedModel()
+    {
+        return this.generatedModelBuilder.build();
     }
 
     /**
@@ -255,37 +280,22 @@ public class ModelGenerationRunner
         }
     }
 
-    private boolean mergeNodeOutput(GenerationTreeNode node, List<String> generationElements, List<PureModelContextData> generated, PureModelContextData.Builder generatedModelBuilder)
+    private void mergeNodeOutput(List<String> generationElements, List<PureModelContextData> generated)
     {
         MutableMap<String, String> elementSources = Maps.mutable.empty();
-        boolean merged = false;
         for (int i = 0; i < generated.size(); i++)
         {
-            String generationElement = generationElements.get(i);
-            PureModelContextData generatedModel = generated.get(i);
-            if (generatedModel.getElements().isEmpty())
-            {
-                continue;
-            }
-            // PureModelContextData.Builder.distinct() keeps the first of two elements sharing a path, so a collision within a node has to be caught here
-            generatedModel.getElements().forEach(element ->
-            {
-                String otherGenerationElement = elementSources.put(element.getPath(), generationElement);
-                if (otherGenerationElement != null)
-                {
-                    throw new EngineException("Generation elements '" + otherGenerationElement + "' and '" + generationElement + "' of generation node '" + node.id + "' both generated element '" + element.getPath() + "'", node.sourceInformation, EngineErrorType.COMPILATION);
-                }
-            });
-            this.fullModelBuilder.withPureModelContextData(generatedModel).distinct().sorted();
-            generatedModelBuilder.withPureModelContextData(generatedModel).distinct().sorted();
-            merged = true;
+            merge(generationElements.get(i), generated.get(i), elementSources);
         }
-        return merged;
     }
 
-    private void validateGeneratedElements(PureModelContextData generatedModel)
+    private void merge(String generationElement, PureModelContextData generated, MutableMap<String, String> elementSources)
     {
-        generatedModel.getElements().forEach(element ->
+        if (generated.getElements().isEmpty())
+        {
+            return;
+        }
+        generated.getElements().forEach(element ->
         {
             String path = element.getPath();
             PackageableElement coreElement = this.coreModelElementIndex.get(path);
@@ -293,7 +303,16 @@ public class ModelGenerationRunner
             {
                 throw new EngineException("Generated element '" + path + "' of type " + element.getClass().getSimpleName() + " can't override existing element of type " + coreElement.getClass().getSimpleName(), EngineErrorType.COMPILATION);
             }
+            // PureModelContextData.Builder.distinct() keeps the first of two elements sharing a path, so a collision within a node has to be caught here
+            String otherGenerationElement = elementSources.put(path, generationElement);
+            if (otherGenerationElement != null)
+            {
+                throw new EngineException("Generation elements '" + otherGenerationElement + "' and '" + generationElement + "' of the same generation node both generated element '" + path + "'", EngineErrorType.COMPILATION);
+            }
         });
+        this.fullModelBuilder.withPureModelContextData(generated).distinct().sorted();
+        this.generatedModelBuilder.withPureModelContextData(generated).distinct().sorted();
+        this.recompileNeeded = true;
     }
 
     private ExecutorService newExecutor()
