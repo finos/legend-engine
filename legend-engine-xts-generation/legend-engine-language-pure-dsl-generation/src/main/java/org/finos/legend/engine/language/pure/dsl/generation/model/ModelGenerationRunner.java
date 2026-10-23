@@ -23,6 +23,7 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.GenerationCompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.HelperGenerationSpecificationBuilder;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ModelGenerationExtension;
@@ -42,10 +43,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -58,6 +57,9 @@ import java.util.function.Function;
  * instead of once per element.
  * <p>
  * The run ends by compiling, since nothing else proves that what was generated compiles.
+ * <p>
+ * Given a {@link ForkJoinPool}, the elements of a node are generated in it; without one they are
+ * generated one after another. Either way the order they are merged in is not a guarantee.
  */
 public class ModelGenerationRunner
 {
@@ -73,9 +75,9 @@ public class ModelGenerationRunner
     private PureModel pureModel;
     private boolean recompileNeeded;
 
-    private Function<PureModelContextData, PureModel> compiler = model -> new PureModel(model, null, null, DeploymentMode.PROD);
+    private Function<PureModelContextData, PureModel> compiler = this::compile;
     private String clientVersion = PureClientVersions.production;
-    private int parallelism = 1;
+    private ForkJoinPool forkJoinPool;
 
     private ModelGenerationRunner(GenerationSpecification generationSpecification, PureModelContextData coreModel, PureModel pureModel)
     {
@@ -114,18 +116,26 @@ public class ModelGenerationRunner
     }
 
     /**
-     * Number of generation elements of a single node generated at a time. Defaults to 1.
+     * Generates the elements of a node in the given pool, at whatever parallelism it has. Without
+     * one, a node's elements are generated one after another.
      * <p>
-     * Anything above 1 has the registered {@link ModelGenerationExtension}s run concurrently
-     * against one {@link PureModel}. Note that {@code PureModel} only indexes concurrently when it
-     * was compiled with a {@code ForkJoinPool} (see {@code PureModelProcessParameter}), and that
-     * generators reaching into the Pure graph are not known to be thread safe, so raise this only
-     * for generators that have been verified under contention.
+     * The pool is the caller's: it is never shut down here. It is also handed to the compilations
+     * between nodes, since {@link PureModel} indexes concurrently only when it was compiled with
+     * one - {@code getType_safe} caches into its type index on the read path - and a caller
+     * supplying its own compiler has to do the same. Generators reaching into the Pure graph are
+     * not otherwise known to be thread safe, so pass a pool only for generators verified under
+     * contention.
      */
-    public ModelGenerationRunner withParallelism(int parallelism)
+    public ModelGenerationRunner withForkJoinPool(ForkJoinPool forkJoinPool)
     {
-        this.parallelism = parallelism;
+        this.forkJoinPool = forkJoinPool;
         return this;
+    }
+
+    private PureModel compile(PureModelContextData model)
+    {
+        return new PureModel(model, null, DeploymentMode.PROD,
+                PureModelProcessParameter.newBuilder().withForkJoinPool(this.forkJoinPool).build(), null);
     }
 
     public Result run()
@@ -136,36 +146,15 @@ public class ModelGenerationRunner
         }
         LOGGER.info("Running generation specification '{}'", this.generationSpecification.getPath());
         int generationCount = 0;
-        ExecutorService executor = null;
-        try
+        for (GenerationTreeNode node : this.generationSpecification.generationNodes)
         {
-            for (GenerationTreeNode node : this.generationSpecification.generationNodes)
-            {
-                List<String> generationElements = GenerationTreeNodeHelper.generationElements(node);
-                generationCount += generationElements.size();
-                CompileContext context = currentPureModel().getContext();
-                List<PureModelContextData> generated;
-                if ((generationElements.size() > 1) && (this.parallelism > 1))
-                {
-                    if (executor == null)
-                    {
-                        executor = newExecutor();
-                    }
-                    generated = generateConcurrently(node, generationElements, context, executor);
-                }
-                else
-                {
-                    generated = ListIterate.collect(generationElements, generationElement -> generate(node, generationElement, context));
-                }
-                mergeNodeOutput(generationElements, generated);
-            }
-        }
-        finally
-        {
-            if (executor != null)
-            {
-                executor.shutdownNow();
-            }
+            List<String> generationElements = GenerationTreeNodeHelper.generationElements(node);
+            generationCount += generationElements.size();
+            CompileContext context = currentPureModel().getContext();
+            List<PureModelContextData> generated = ((generationElements.size() > 1) && (this.forkJoinPool != null))
+                    ? generateConcurrently(node, generationElements, context)
+                    : ListIterate.collect(generationElements, generationElement -> generate(node, generationElement, context));
+            mergeNodeOutput(generationElements, generated);
         }
         // the last node's output would otherwise never be compiled, and compiling is the only check that what was generated is valid
         currentPureModel();
@@ -252,9 +241,9 @@ public class ModelGenerationRunner
         }
     }
 
-    private List<PureModelContextData> generateConcurrently(GenerationTreeNode node, List<String> generationElements, CompileContext context, ExecutorService executor)
+    private List<PureModelContextData> generateConcurrently(GenerationTreeNode node, List<String> generationElements, CompileContext context)
     {
-        MutableList<Future<PureModelContextData>> futures = ListIterate.collect(generationElements, generationElement -> executor.submit(() -> generate(node, generationElement, context)));
+        MutableList<Future<PureModelContextData>> futures = ListIterate.collect(generationElements, generationElement -> this.forkJoinPool.submit(() -> generate(node, generationElement, context)));
         return futures.collect(future -> get(future, node));
     }
 
@@ -341,17 +330,6 @@ public class ModelGenerationRunner
         this.fullModelBuilder.withPureModelContextData(generated);
         this.generatedModelBuilder.withPureModelContextData(generated);
         this.recompileNeeded = true;
-    }
-
-    private ExecutorService newExecutor()
-    {
-        AtomicInteger threadCount = new AtomicInteger();
-        return Executors.newFixedThreadPool(this.parallelism, runnable ->
-        {
-            Thread thread = new Thread(runnable, "legend-model-generation-" + threadCount.incrementAndGet());
-            thread.setDaemon(true);
-            return thread;
-        });
     }
 
     public static final class Result

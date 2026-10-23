@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
+import java.util.concurrent.ForkJoinPool;
 
 public class TestModelGenerationRunner
 {
@@ -58,7 +59,7 @@ public class TestModelGenerationRunner
                 + "  ];\n"
                 + "}\n");
 
-        ModelGenerationRunner runner = newRunner(model).withParallelism(2);
+        ModelGenerationRunner runner = newRunner(model).withForkJoinPool(new ForkJoinPool(2));
         ModelGenerationRunner.Result result = runner.run();
 
         Assertions.assertEquals(2, result.getGenerationCount());
