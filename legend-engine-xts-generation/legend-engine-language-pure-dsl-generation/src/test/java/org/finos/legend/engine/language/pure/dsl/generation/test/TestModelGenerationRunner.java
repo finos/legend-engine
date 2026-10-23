@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.dsl.generation.test;
 
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.model.ModelGenerationRunner;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -180,11 +181,23 @@ public class TestModelGenerationRunner
         return generated;
     }
 
+    /**
+     * Compiles the domain without the generation specification, and hands the runner the
+     * specification itself. A generation specification is compiled after its generation elements
+     * because of its prerequisite on AbstractGenerationSpecification, which covers anything
+     * extending ModelGenerationSpecification. The generation elements here are plain classes,
+     * which that does not cover, so compiling the two together resolves them or not depending on
+     * the order the compiler processes its dependency groups in, and that order varies from one
+     * JVM to the next. Compiling a specification is covered by
+     * TestGenerationSpecificationCompilationFromGrammar; these tests are about running one.
+     */
     private static ModelGenerationRunner newRunner(PureModelContextData model)
     {
-        PureModel pureModel = new PureModel(model, null, null, DeploymentMode.PROD);
         GenerationSpecification spec = model.getElementsOfType(GenerationSpecification.class).get(0);
-        return ModelGenerationRunner.newRunner(spec, model, pureModel);
+        PureModelContextData domain = PureModelContextData.newBuilder()
+                .withElements(ListIterate.reject(model.getElements(), element -> element instanceof GenerationSpecification))
+                .build();
+        return ModelGenerationRunner.newRunner(spec, domain, new PureModel(domain, null, null, DeploymentMode.PROD));
     }
 
     private static String generatedPath(String sourceName)

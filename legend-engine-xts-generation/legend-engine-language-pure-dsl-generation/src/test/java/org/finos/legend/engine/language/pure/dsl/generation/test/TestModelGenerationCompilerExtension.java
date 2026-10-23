@@ -57,14 +57,7 @@ public class TestModelGenerationCompilerExtension implements GenerationCompilerE
             {
                 return null;
             }
-            try
-            {
-                return context.resolveClass(path, sourceInformation);
-            }
-            catch (Exception notFound)
-            {
-                return null;
-            }
+            return context.resolveClass(path, sourceInformation);
         });
     }
 }
