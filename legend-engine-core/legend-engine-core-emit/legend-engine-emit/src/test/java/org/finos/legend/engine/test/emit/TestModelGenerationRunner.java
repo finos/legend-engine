@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.test.emit;
 
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.model.ModelGenerationRunner;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -25,7 +27,6 @@ import org.finos.legend.engine.test.emit.extensions.EmitDemoModelGenerationExten
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
