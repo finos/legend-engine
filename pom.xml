@@ -4855,9 +4855,11 @@
                 <version>1.7.3</version>
             </dependency>
             <dependency>
-                <!-- Version comes from jackson-bom. -->
+                <!-- Explicit even though jackson-bom manages it: Maven Central rejects published poms with a
+                     versionless dependencyManagement entry. -->
                 <groupId>com.fasterxml.jackson.module</groupId>
                 <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
+                <version>${jackson.bom.version}</version>
             </dependency>
             <dependency>
                 <!-- Imported last so the explicit pins above (jackson, jetty, jersey) win. -->
