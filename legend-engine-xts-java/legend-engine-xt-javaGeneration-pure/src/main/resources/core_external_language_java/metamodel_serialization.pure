@@ -576,6 +576,7 @@ function <<access.private>> meta::external::language::java::serialization::prece
    $code->resolveDeferred()->match([
       post:PostfixExpression[1]                                 | 14,     // 14 postfix                expr++ expr--
       pre :PrefixExpression[1]                                  | 13,     // 13 unary                  ++expr --expr +expr -expr ~ !
+      cp  :CastProxy[1]                                         | $cp.proxy->precedence(),  // prints as its proxy
       pre :Cast[1]                                              | 13,     // 13 unary                  (type)
       {in:InfixExpression[1]|
          if($in.op->in(['*', '/', '%']),                        | 12, |   // 12 multiplicative         * / %

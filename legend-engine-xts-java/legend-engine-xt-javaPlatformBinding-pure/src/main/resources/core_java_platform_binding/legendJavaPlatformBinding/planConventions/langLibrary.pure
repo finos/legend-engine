@@ -146,12 +146,18 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
                                                               | $mainTemp); 
 
                                                    let mainReturnType = $main.type->cast(@meta::external::language::java::metamodel::FunctionType).returnType;
-                                                 
+
                                                    let andMain = $adaptInput->j_invoke('andThen', $main, javaFunction($type, $mainReturnType));
-                                                   let mp = j_parameter($mainReturnType->toBoxed(), '$m');                                           
-         
+                                                   let mp = j_parameter($mainReturnType->toBoxed(), '$m');
+
                                                    if ($ctx.returnType->isJavaList(),
-                                                           | $andMain->j_invoke('andThen', j_lambda($mp, $mp->j_listOf($ctx.returnType)), javaFunction($mainReturnType, $ctx.returnType));,
+                                                           // mainReturnType can equal ctx.returnType by Pure's own label even when the
+                                                           // arm constructs _Impl instances; a wildcard parameter avoids that equality check.
+                                                           | if($mainReturnType->isJavaList(),
+                                                               | let wmp = j_parameter(javaList(javaWildcard()), '$m');
+                                                                 $andMain->j_invoke('andThen', j_lambda($wmp, $wmp->j_streamOf()->j_cast(javaStream($ctx.returnType->elementType()))->js_resolve($ctx.returnType)), javaFunction($mainReturnType, $ctx.returnType));,
+                                                               | $andMain->j_invoke('andThen', j_lambda($mp, $mp->j_listOf($ctx.returnType)), javaFunction($mainReturnType, $ctx.returnType));
+                                                             );,
                                                            | assert(!$mainReturnType->isJavaList(), 'None of functions return can have multiplicity multiple if the match one is single');
                                                              $andMain->j_invoke('andThen', j_lambda($mp, $mp->j_cast($ctx.returnType)), javaFunction($mainReturnType, $ctx.returnType));););
    
