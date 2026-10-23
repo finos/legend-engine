@@ -70,6 +70,28 @@ public class TestGenerationSpecificationGrammarRoundtrip extends TestGrammarRoun
     }
 
     @Test
+    public void testGenerationSpecificationWithKeywordPaths()
+    {
+        test("###GenerationSpecification\n" +
+                "GenerationSpecification test::x\n" +
+                "{\n" +
+                "  generationNodes: [\n" +
+                "    {\n" +
+                "      generationElement: generationElements::generationElement;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      generationElements: [\n" +
+                "        model::generationElements\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  fileGenerations: [\n" +
+                "    model::generationElements\n" +
+                "  ];\n" +
+                "}\n");
+    }
+
+    @Test
     public void testGenerationSpecificationWithImport()
     {
         testWithSectionInfoPreserved("###GenerationSpecification\n" +

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.test.emit;
+package org.finos.legend.engine.language.pure.dsl.generation.test;
 
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.utility.Iterate;
@@ -22,18 +22,17 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
+import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.engine.test.emit.extensions.EmitDemoModelGenerationExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
-import java.util.stream.Collectors;
 
 public class TestModelGenerationRunner
 {
     private static final String SOURCE_A = "###Pure\n"
-            + "Class demo::modelgen::SourceA\n"
+            + "Class test::modelgen::SourceA\n"
             + "{\n"
             + "  name: String[1];\n"
             + "}\n";
@@ -42,18 +41,18 @@ public class TestModelGenerationRunner
     void parallelGroupGeneratesEveryElement()
     {
         PureModelContextData model = parse(SOURCE_A
-                + "Class demo::modelgen::SourceB\n"
+                + "Class test::modelgen::SourceB\n"
                 + "{\n"
                 + "  name: String[1];\n"
                 + "}\n"
                 + "###GenerationSpecification\n"
-                + "GenerationSpecification demo::modelgen::Spec\n"
+                + "GenerationSpecification test::modelgen::Spec\n"
                 + "{\n"
                 + "  generationNodes: [\n"
                 + "    {\n"
                 + "      generationElements: [\n"
-                + "        demo::modelgen::SourceA,\n"
-                + "        demo::modelgen::SourceB\n"
+                + "        test::modelgen::SourceA,\n"
+                + "        test::modelgen::SourceB\n"
                 + "      ];\n"
                 + "    }\n"
                 + "  ];\n"
@@ -66,25 +65,78 @@ public class TestModelGenerationRunner
         Assertions.assertEquals(
                 Sets.mutable.with(generatedPath("SourceA"), generatedPath("SourceB")),
                 Iterate.collect(result.getGeneratedModel().getElements(), PackageableElement::getPath, Sets.mutable.empty()));
-        Assertions.assertNotNull(runner.getPureModel().getClass(generatedPath("SourceA")), "deferred recompile must pick up the generated elements");
+        Assertions.assertNotNull(runner.getPureModel().getClass(generatedPath("SourceA")), "the run must leave a graph holding the generated elements");
+    }
+
+    @Test
+    void generationsInDifferentNodesProducingTheSameElementStayDeduped()
+    {
+        PureModelContextData model = parse(SOURCE_A
+                + "Class test::modelgen::other::SourceA\n"
+                + "{\n"
+                + "  name: String[1];\n"
+                + "}\n"
+                + "###GenerationSpecification\n"
+                + "GenerationSpecification test::modelgen::Spec\n"
+                + "{\n"
+                + "  generationNodes: [\n"
+                + "    {\n"
+                + "      generationElement: test::modelgen::SourceA;\n"
+                + "    },\n"
+                + "    {\n"
+                + "      generationElement: test::modelgen::other::SourceA;\n"
+                + "    }\n"
+                + "  ];\n"
+                + "}\n");
+
+        ModelGenerationRunner.Result result = newRunner(model).run();
+
+        Assertions.assertEquals(2, result.getGenerationCount());
+        Assertions.assertEquals(
+                Collections.singletonList(generatedPath("SourceA")),
+                Iterate.collect(result.getGeneratedModel().getElements(), PackageableElement::getPath),
+                "two nodes generating the same element was deduped before, and must stay so");
+    }
+
+    @Test
+    void oneGenerationProducingAPathTwiceStaysDeduped()
+    {
+        PureModelContextData model = parse(SOURCE_A
+                + "###GenerationSpecification\n"
+                + "GenerationSpecification test::modelgen::Spec\n"
+                + "{\n"
+                + "  generationNodes: [\n"
+                + "    {\n"
+                + "      generationElement: test::modelgen::SourceA;\n"
+                + "    }\n"
+                + "  ];\n"
+                + "}\n");
+
+        ModelGenerationRunner runner = newRunner(model);
+        runner.addGeneratedModel("test::modelgen::SourceA", PureModelContextData.newBuilder()
+                .withElement(generatedClass())
+                .withElement(generatedClass())
+                .build());
+
+        Assertions.assertEquals(1, runner.getGeneratedModel().getElements().size(), "a generation repeating a path within its own output was deduped before, and must stay so");
     }
 
     @Test
     void generationElementsOfANodeCannotGenerateTheSameElement()
     {
         PureModelContextData model = parse(SOURCE_A
-                + "Class demo::modelgen::other::SourceA\n"
+                + "Class test::modelgen::other::SourceA\n"
                 + "{\n"
                 + "  name: String[1];\n"
                 + "}\n"
                 + "###GenerationSpecification\n"
-                + "GenerationSpecification demo::modelgen::Spec\n"
+                + "GenerationSpecification test::modelgen::Spec\n"
                 + "{\n"
                 + "  generationNodes: [\n"
                 + "    {\n"
                 + "      generationElements: [\n"
-                + "        demo::modelgen::SourceA,\n"
-                + "        demo::modelgen::other::SourceA\n"
+                + "        test::modelgen::SourceA,\n"
+                + "        test::modelgen::other::SourceA\n"
                 + "      ];\n"
                 + "    }\n"
                 + "  ];\n"
@@ -105,11 +157,11 @@ public class TestModelGenerationRunner
                 + "  name: String[1];\n"
                 + "}\n"
                 + "###GenerationSpecification\n"
-                + "GenerationSpecification demo::modelgen::Spec\n"
+                + "GenerationSpecification test::modelgen::Spec\n"
                 + "{\n"
                 + "  generationNodes: [\n"
                 + "    {\n"
-                + "      generationElement: demo::modelgen::SourceA;\n"
+                + "      generationElement: test::modelgen::SourceA;\n"
                 + "    }\n"
                 + "  ];\n"
                 + "}\n");
@@ -119,77 +171,24 @@ public class TestModelGenerationRunner
         Assertions.assertEquals("Generated element '" + generatedPath("SourceA") + "' of type Class can't override existing element of type Class", e.getMessage());
     }
 
-    @Test
-    void generationsInDifferentNodesProducingTheSameElementStayDeduped()
-    {
-        PureModelContextData model = parse(SOURCE_A
-                + "Class demo::modelgen::other::SourceA\n"
-                + "{\n"
-                + "  name: String[1];\n"
-                + "}\n"
-                + "###GenerationSpecification\n"
-                + "GenerationSpecification demo::modelgen::Spec\n"
-                + "{\n"
-                + "  generationNodes: [\n"
-                + "    {\n"
-                + "      generationElement: demo::modelgen::SourceA;\n"
-                + "    },\n"
-                + "    {\n"
-                + "      generationElement: demo::modelgen::other::SourceA;\n"
-                + "    }\n"
-                + "  ];\n"
-                + "}\n");
-
-        ModelGenerationRunner.Result result = newRunner(model).run();
-
-        Assertions.assertEquals(2, result.getGenerationCount());
-        Assertions.assertEquals(
-                Collections.singletonList(generatedPath("SourceA")),
-                result.getGeneratedModel().getElements().stream().map(PackageableElement::getPath).collect(Collectors.toList()),
-                "two nodes generating the same element was deduped before, and must stay so");
-    }
-
-    @Test
-    void oneGenerationProducingAPathTwiceStaysDeduped()
-    {
-        PureModelContextData model = parse(SOURCE_A
-                + "###GenerationSpecification\n"
-                + "GenerationSpecification demo::modelgen::Spec\n"
-                + "{\n"
-                + "  generationNodes: [\n"
-                + "    {\n"
-                + "      generationElement: demo::modelgen::SourceA;\n"
-                + "    }\n"
-                + "  ];\n"
-                + "}\n");
-
-        ModelGenerationRunner runner = newRunner(model);
-        runner.addGeneratedModel("demo::modelgen::SourceA", PureModelContextData.newBuilder()
-                .withElement(generatedClass())
-                .withElement(generatedClass())
-                .build());
-
-        Assertions.assertEquals(1, runner.getGeneratedModel().getElements().size(), "a generation repeating a path within its own output was deduped before, and must stay so");
-    }
-
     private static org.finos.legend.engine.protocol.pure.m3.type.Class generatedClass()
     {
         org.finos.legend.engine.protocol.pure.m3.type.Class generated = new org.finos.legend.engine.protocol.pure.m3.type.Class();
-        generated.name = "SourceA" + EmitDemoModelGenerationExtension.GENERATED_SUFFIX;
-        generated._package = EmitDemoModelGenerationExtension.GENERATED_PACKAGE;
+        generated.name = "SourceA" + TestModelGenerationExtension.GENERATED_SUFFIX;
+        generated._package = TestModelGenerationExtension.GENERATED_PACKAGE;
         return generated;
     }
 
     private static ModelGenerationRunner newRunner(PureModelContextData model)
     {
-        PureModel pureModel = EMITTasks.compile(model);
+        PureModel pureModel = new PureModel(model, null, null, DeploymentMode.PROD);
         GenerationSpecification spec = model.getElementsOfType(GenerationSpecification.class).get(0);
-        return ModelGenerationRunner.newRunner(spec, model, pureModel).withCompiler(EMITTasks::compile);
+        return ModelGenerationRunner.newRunner(spec, model, pureModel);
     }
 
     private static String generatedPath(String sourceName)
     {
-        return EmitDemoModelGenerationExtension.GENERATED_PACKAGE + "::" + sourceName + EmitDemoModelGenerationExtension.GENERATED_SUFFIX;
+        return TestModelGenerationExtension.GENERATED_PACKAGE + "::" + sourceName + TestModelGenerationExtension.GENERATED_SUFFIX;
     }
 
     private static PureModelContextData parse(String grammar)

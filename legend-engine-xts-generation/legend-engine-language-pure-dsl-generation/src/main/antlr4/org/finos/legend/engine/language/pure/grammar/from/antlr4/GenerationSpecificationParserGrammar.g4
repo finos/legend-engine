@@ -48,14 +48,14 @@ generationNodesValues:                  BRACKET_OPEN
 ;
 generationNode:                         BRACE_OPEN
                                             (nodeId)?
-                                            (generationElement | generationElements)
+                                            (generationElement | generationElements)*
                                         BRACE_CLOSE
 ;
 generationElement:                      GENERATION_ELEMENT COLON qualifiedName SEMI_COLON
 ;
 generationElements:                     GENERATION_ELEMENTS COLON
                                             BRACKET_OPEN
-                                                qualifiedName (COMMA qualifiedName)*
+                                                (qualifiedName (COMMA qualifiedName)*)?
                                             BRACKET_CLOSE
                                         SEMI_COLON
 ;

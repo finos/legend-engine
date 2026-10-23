@@ -71,7 +71,7 @@ public class TestGenerationSpecificationGrammarParser extends TestGrammarParser.
                 "      generationElements: [model::MyElement2];\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n\n", "PARSER error at [7:7-24]: Unexpected token 'generationElements'");
+                "}\n\n", "PARSER error at [5:5-8:5]: Generation node must specify either 'generationElement' or 'generationElements', not both");
         // empty group
         test("###GenerationSpecification\n" +
                 "GenerationSpecification model::GenerationSpecification\n" +
@@ -81,6 +81,17 @@ public class TestGenerationSpecificationGrammarParser extends TestGrammarParser.
                 "      generationElements: [];\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n\n", "PARSER error at [6:28]: Unexpected token ']'");
+                "}\n\n", "PARSER error at [5:5-7:5]: Generation node 'generationElements' can't be empty");
+
+        // neither form
+        test("###GenerationSpecification\n" +
+                "GenerationSpecification model::GenerationSpecification\n" +
+                "{\n" +
+                "  generationNodes: [\n" +
+                "    {\n" +
+                "      id: 'orphan';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n", "PARSER error at [5:5-7:5]: Generation node must specify either 'generationElement' or 'generationElements'");
     }
 }

@@ -18,9 +18,11 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.GenerationSpecificationParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationTreeNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationTreeNodeHelper;
@@ -70,16 +72,30 @@ public class GenerationSpecificationParseTreeWalker
     private GenerationTreeNode visitGenerationTreeNode(GenerationSpecificationParserGrammar.GenerationNodeContext ctx)
     {
         GenerationTreeNode generationTreeNode = new GenerationTreeNode();
-        if (ctx.generationElement() != null)
+        generationTreeNode.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        GenerationSpecificationParserGrammar.GenerationElementContext generationElementContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.generationElement(), "generationElement", generationTreeNode.sourceInformation);
+        GenerationSpecificationParserGrammar.GenerationElementsContext generationElementsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.generationElements(), "generationElements", generationTreeNode.sourceInformation);
+        if ((generationElementContext != null) && (generationElementsContext != null))
         {
-            generationTreeNode.generationElement = visitGenerationElement(ctx.generationElement().qualifiedName());
+            throw new EngineException("Generation node must specify either 'generationElement' or 'generationElements', not both", generationTreeNode.sourceInformation, EngineErrorType.PARSER);
+        }
+        if (generationElementContext != null)
+        {
+            generationTreeNode.generationElement = visitGenerationElement(generationElementContext.qualifiedName());
+        }
+        else if (generationElementsContext != null)
+        {
+            if (generationElementsContext.qualifiedName().isEmpty())
+            {
+                throw new EngineException("Generation node 'generationElements' can't be empty", generationTreeNode.sourceInformation, EngineErrorType.PARSER);
+            }
+            generationTreeNode.generationElements = ListIterate.collect(generationElementsContext.qualifiedName(), this::visitGenerationElement);
         }
         else
         {
-            generationTreeNode.generationElements = ListIterate.collect(ctx.generationElements().qualifiedName(), this::visitGenerationElement);
+            throw new EngineException("Generation node must specify either 'generationElement' or 'generationElements'", generationTreeNode.sourceInformation, EngineErrorType.PARSER);
         }
         generationTreeNode.id = ctx.nodeId() != null ? PureGrammarParserUtility.fromGrammarString(ctx.nodeId().STRING().getText(), true) : GenerationTreeNodeHelper.defaultId(generationTreeNode);
-        generationTreeNode.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return generationTreeNode;
     }
 
