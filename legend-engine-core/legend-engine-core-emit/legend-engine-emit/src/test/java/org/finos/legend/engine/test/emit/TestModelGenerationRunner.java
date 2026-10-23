@@ -63,8 +63,8 @@ public class TestModelGenerationRunner
 
         Assertions.assertEquals(2, result.getGenerationCount());
         Assertions.assertEquals(
-                Arrays.asList(generatedPath("SourceA"), generatedPath("SourceB")),
-                result.getGeneratedModel().getElements().stream().map(PackageableElement::getPath).collect(Collectors.toList()));
+                Sets.mutable.with(generatedPath("SourceA"), generatedPath("SourceB")),
+                Iterate.collect(result.getGeneratedModel().getElements(), PackageableElement::getPath, Sets.mutable.empty()));
         Assertions.assertNotNull(runner.getPureModel().getClass(generatedPath("SourceA")), "deferred recompile must pick up the generated elements");
     }
 
