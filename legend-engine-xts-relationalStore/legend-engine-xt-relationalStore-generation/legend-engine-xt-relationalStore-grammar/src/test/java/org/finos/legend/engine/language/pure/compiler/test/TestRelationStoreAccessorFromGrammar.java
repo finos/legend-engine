@@ -41,6 +41,28 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
     }
 
     @Test
+    public void testCompilationOfRelationStoreAccessorWithQuotedTableNameContainingDot()
+    {
+        test("###Relational\n" +
+                "Database my::Store" +
+                "(" +
+                "   Schema S1" +
+                "   (" +
+                "      Table \"a.b\"" +
+                "      (" +
+                "          id INT," +
+                "          name VARCHAR(200)" +
+                "      )" +
+                "   )" +
+                ")\n" +
+                "###Pure\n" +
+                "function my::func():Any[*]" +
+                "{" +
+                "   #>{my::Store.S1.\"a.b\"}#->filter(c|$c.name == 'ok');" +
+                "}");
+    }
+
+    @Test
     public void testCompilationOfRelationStoreAccessorWithTypes()
     {
         test("###Relational\n" +

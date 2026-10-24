@@ -14,6 +14,12 @@
 
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance.RelationStoreAccessor;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestLambdaRoundtrip.testLambda;
@@ -25,6 +31,21 @@ public class TestRelation
     public void testRelationStoreAccessor()
     {
         testLambda("|#>{XX.OK}#");
+    }
+
+    @Test
+    public void testRelationStoreAccessorWithQuotedNamesContainingDots()
+    {
+        assertRelationStoreAccessorPath("#>{test::Db.S1.\"a.b\"}#", "test::Db", "S1", "\"a.b\"");
+        assertRelationStoreAccessorPath("#>{test::Db.\"my.schema\".\"a.b.c\"}#", "test::Db", "\"my.schema\"", "\"a.b.c\"");
+        testLambda("|#>{test::Db.S1.\"a.b\"}#");
+    }
+
+    private static void assertRelationStoreAccessorPath(String accessor, String... expectedPath)
+    {
+        ValueSpecification valueSpecification = PureGrammarParser.newInstance().parseValueSpecification(accessor, "", 1, 1, false);
+        RelationStoreAccessor relationStoreAccessor = (RelationStoreAccessor) ((ClassInstance) valueSpecification).value;
+        Assert.assertEquals(Lists.mutable.with(expectedPath), relationStoreAccessor.path);
     }
 
     @Test
