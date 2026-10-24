@@ -1195,7 +1195,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   3,\'[9,8,7]\',\'[7,8,9]\'\n'+
                 '   4,\'[10,11,12]\',\'[10,11,12]\'\n'+
                 '   5,\'[15,13,14]\',\'[13,14,15]\'\n'+
-                '#', $res->toString());
+                '#', $res->sort(~id->ascending())->toString());
 }
 
 '''
@@ -1225,7 +1225,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   3,\'[7,8,9]\',\'[9,8,7]\'\n'+
                 '   4,\'[10,11,12]\',\'[12,11,10]\'\n'+
                 '   5,\'[13,14,15]\',\'[15,14,13]\'\n'+
-                '#', $res->toString());
+                '#', $res->sort(~id->ascending())->toString());
 }
 
 '''
@@ -1281,7 +1281,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   id,payload\n'+
                 '   2,\'[4,5,6]\'\n'+
                 '   4,\'[10,11,12]\'\n'+
-                '#', $res->toString());
+                '#', $res->sort(~id->ascending())->toString());
 }
 
 function meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_filterValues(val: Integer[*]):Boolean[1]
@@ -1614,7 +1614,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   3,\'[9,8,7]\',\'[-9,-8,-7]\',\'[-9,-8,-7]\'\n'+
                 '   4,\'[10,11,12]\',\'[-10,-11,-12]\',\'[10,11,12]\'\n'+
                 '   5,\'[15,13,14]\',\'[-15,-13,-14]\',\'[-15,-13,-14]\'\n'+
-                '#', $res->toString());
+                '#', $res->sort(~id->ascending())->toString());
 }
 
 '''
@@ -1641,7 +1641,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   1,\'[1]\',false\n'+
                 '   2,\'[2,3,4]\',false\n'+
                 '   3,\'null\',true\n'+
-                '#', $res->toString());
+                '#', $res->sort(~id->ascending())->toString());
 }
 
 '''
@@ -1667,7 +1667,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   1,\'[1]\',true\n'+
                 '   2,\'[2,3,4]\',true\n'+
                 '   3,\'null\',false\n'+
-                '#', $res->toString());
+                '#', $res->sort(~id->ascending())->toString());
 }
 
 '''
@@ -1693,7 +1693,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   3,\'[1,2,3]\',2\n'+
                 '   4,\'[1,2,3]\',-1\n'+
                 '   5,\'null\',-1\n'+
-                '#', $res->toString());
+                '#', $res->sort(~val->ascending())->toString());
 }
 
 '''
@@ -1719,7 +1719,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   1,\'[1,2,3,4,5,6]\',2,3,\'[3]\'\n'+
                 '   2,\'[1,2,3,4,5,6]\',0,4,\'[1,2,3,4]\'\n'+
                 '   3,\'[1,2,3,4,5,6]\',-3,-1,\'[]\'\n'+
-                '#', $res->toString());
+                '#', $res->sort(~id->ascending())->toString());
 }
 
 '''
@@ -1773,7 +1773,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   1,\'[1,2,3]\',1,true\n' +
                 '   2,\'[1,2,3]\',4,false\n' +
                 '   3,\'null\',0,false\n' +
-                '#', $res->toString());
+                '#', $res->sort(~id->ascending())->toString());
 }
 
 '''
@@ -1798,7 +1798,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   1,\'[1,2,3]\',\'[1,2,3]\',\'[1,2,3]\'\n'+
                 '   2,\'[1,2,3,4,4,3,2,3,4,1,2]\',\'[1,2,3,4]\',\'[1,2,3,4]\'\n'+
                 '   3,\'null\',\'null\',\'null\'\n'+
-                '#', $res->toString());
+                '#', $res->sort(~id->ascending())->toString());
 }
 
 '''
@@ -2624,7 +2624,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   2,\'[4,5,6]\',4,5,6\n'+
                 '   3,\'[7,8,9]\',7,8,9\n'+
                 '   4,\'null\',\n'+
-                '#', $res->toString());
+                '#', $res->sort(~id->ascending())->toString());
 }
 '''
 A `concatenate` whose left arm is a join and whose right arm is not, so the two arms reach the

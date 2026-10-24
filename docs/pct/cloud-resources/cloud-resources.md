@@ -1,6 +1,6 @@
 # Cloud Resources
 
-Currently, the Snowflake and Databricks PCT tests require connectivity to external cloud resources.
+Currently, the Snowflake, Databricks and BigQuery PCT tests require connectivity to external cloud resources.
 
 These resources require secrets to be able to establish a connection.
 
@@ -40,6 +40,20 @@ databricks.spec.httpPath={}
 databricks.auth.apiToken={}
 ```
 
+## BigQuery
+
+BigQuery does not use the properties file. Its service account key lives in AWS Secret Manager under
+`bigquery.integration-bq-sa1`, in a `service_account_json` entry holding the key file verbatim, so the
+only thing to supply locally is AWS access:
+
+```
+AWS_ACCESS_KEY_ID={}
+AWS_SECRET_ACCESS_KEY={}
+```
+
+The fixture dataset, `leSchema`, is created when the Java suite starts, never by the adapter, so against
+a fresh project run the suite once before running BigQuery PCT tests from the Pure IDE.
+
 ## Running on PURE IDE Light
 
 When starting the PURE IDE Light process, pass the following system property with the location of the file created above:
@@ -60,6 +74,6 @@ When executing the cloud resource maven module, you will need to set the resourc
 
 `PCT_EXTERNAL_RESOURCES_PROPERTIES={location of file}`
 
-Then, you will need to enable the `pct-test` maven profile.
+Then, you will need to enable the `pct-cloud-test` maven profile.
 
 After this, the cloud resources PCT test cases should execute using Maven Surefire. 

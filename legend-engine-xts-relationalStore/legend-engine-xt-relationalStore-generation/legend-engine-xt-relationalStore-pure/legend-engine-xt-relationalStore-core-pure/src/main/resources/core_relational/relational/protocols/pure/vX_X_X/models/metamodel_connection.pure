@@ -64,6 +64,11 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
     additionalGcpScopes: String[*];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::GCPServiceAccountKeyAuthenticationStrategy extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+    serviceAccountKeyVaultReference : String[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::OAuthAuthenticationStrategy extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
 {
    oauthKey:String[1];

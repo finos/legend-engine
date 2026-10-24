@@ -18,7 +18,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 
 public class BigQueryDriver extends DriverWrapper
 {
-    public static String DRIVER_CLASSNAME = "com.simba.googlebigquery.jdbc.Driver";
+    public static String DRIVER_CLASSNAME = "com.google.cloud.bigquery.jdbc.BigQueryDriver";
 
     @Override
     protected String getClassName()

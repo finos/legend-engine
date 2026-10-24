@@ -24,7 +24,7 @@ public class CoreRelationalDatabricksCodeRepositoryProvider implements CodeRepos
     public static final Adapter databricksAdapter = new Adapter(
             "Databricks",
             "Store_Relational",
-            "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_"
+            "meta::relational::tests::pct::databricks::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_"
     );
 
     @Override

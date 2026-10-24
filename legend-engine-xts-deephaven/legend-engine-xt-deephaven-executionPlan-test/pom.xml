@@ -272,6 +272,11 @@
             <artifactId>deephaven-engine-table</artifactId>
             <version>${deephaven.version}</version>
             <exclusions>
+                <!-- Python bridge, unused here and built past the bytecode level the enforcer allows -->
+                <exclusion>
+                    <groupId>org.jpyconsortium</groupId>
+                    <artifactId>jpy</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>net.java.dev.jna</groupId>
                     <artifactId>jna</artifactId>

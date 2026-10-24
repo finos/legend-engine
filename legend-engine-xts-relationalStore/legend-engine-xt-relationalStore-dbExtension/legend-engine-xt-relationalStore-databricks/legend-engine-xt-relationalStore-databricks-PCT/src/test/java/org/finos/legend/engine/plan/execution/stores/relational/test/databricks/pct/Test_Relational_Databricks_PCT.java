@@ -86,9 +86,9 @@ public class Test_Relational_Databricks_PCT
     private static MutableList<TestServerResource> databricksTestServerResources()
     {
         TestConnectionIntegration databricks = TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.Databricks).getFirst();
-        // The sweep must follow the integration: ServersState.start() runs the resources in order,
-        // and it needs the connection the integration builds in start().
-        return Lists.mutable.with((TestServerResource) databricks, new DatabricksLeakedTableSweep(databricks));
+        // The fixture schema and the sweep must follow the integration: ServersState.start() runs the
+        // resources in order, and they need the connection the integration builds in start().
+        return Lists.mutable.with((TestServerResource) databricks, new DatabricksFixtureSchema(databricks), new DatabricksLeakedTableSweep(databricks));
     }
 
     private abstract static class DatabricksPCTReportConfiguration extends PCTReportConfiguration

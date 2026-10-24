@@ -783,6 +783,35 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     ]);)->makeString(', ');
 }
 
+// A CTAS here cannot declare its columns, so each takes its type from the expression that reads it
+// out of the VALUES rows and its name from an alias
+function meta::relational::functions::sqlQueryToString::databricks::createTableAsSelectForDatabricks(loadTableSQL:LoadTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+  let t = $loadTableSQL.table;
+  let columns = $t.columns->cast(@meta::relational::metamodel::Column);
+  let loaded = $loadTableSQL.columnsToLoad.name;
+  let positions = range($columns->size());
+  let rows = $loadTableSQL.parsedData.values->map(r |
+    '(' + $columns->map(c | let i = $loaded->indexOf($c.name);
+                            if($i < 0, | 'null', | $r.values->at($i)->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($c.type));
+                       )->joinStrings(', ') + ')');
+  'Create Table ' + if($t.schema.name == 'default', |'', |$dbConfig.identifierProcessor($t.schema.name) + '.') + $dbConfig.identifierProcessor($t.name)
+    + columnMappingTablePropertiesForDatabricks()
+    + ' AS SELECT ' + $positions->map(i | let c = $columns->at($i);
+                                         $c.type->typedValueForDatabricks('c' + $i->toString(), $dbConfig) + ' AS ' + $c.name->processColumnName($dbConfig);
+                                  )->joinStrings(', ')
+    + ' FROM VALUES ' + $rows->joinStrings(', ')
+    + ' AS v(' + $positions->map(i | 'c' + $i->toString())->joinStrings(', ') + ');';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::typedValueForDatabricks(type:meta::relational::metamodel::datatype::DataType[1], value:String[1], dbConfig:DbConfig[1]) : String[1]
+{
+  $type->match([
+    s:meta::relational::metamodel::datatype::SemiStructured[1] | 'PARSE_JSON(' + $value + ')',
+    a:meta::relational::metamodel::datatype::DataType[1] | 'CAST(' + $value + ' AS ' + $dbConfig.dataTypeToSqlText($a) + ')'
+  ]);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processWindowColumnForDatabricks(w:WindowColumn[1], sgc:SqlGenerationContext[1]):String[1]
 {
    let partitionTranslation = if($w.window.partition->isNotEmpty(),
@@ -1174,14 +1203,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
        | 'Create Schema if not exists ' + $createSchemaSQL.schema.name + ';';);
 }
 
+// Enable column mapping on tables to allow whitespace characters in column names
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::columnMappingTablePropertiesForDatabricks() : String[1]
+{
+  ' TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' )';
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::translateCreateTableStatementForDatabricks(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   // pct databricks does not support constraint on tables until we get unity catalog enabled...
   let createStatement = translateCreateTableStatementDefault(^$createTableSQL(applyConstraints = false), $dbConfig);
   let updatedCreateStatement = $createStatement->replace(';', '');
 
-  // Enable column mapping on tables to allow whitespace characters in column names
-  let tableProps = ' TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );';
+  let tableProps = columnMappingTablePropertiesForDatabricks() + ';';
 
   // Concat the original create table statement with the column mapping table properties
   let combinedStatement = $updatedCreateStatement + $tableProps;

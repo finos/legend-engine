@@ -93,6 +93,12 @@
       ]
     },
     {
+      "name": "bigquery",
+      "modules": [
+        "legend-engine-xt-relationalStore-bigquery-PCT"
+      ]
+    },
+    {
       "name": "spanner",
       "modules": [
         "legend-engine-xt-relationalStore-spanner-PCT"
