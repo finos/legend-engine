@@ -12,7 +12,8 @@ options
 
 identifier:                             VALID_STRING | STRING
                                         | IMPORT
-                                        | GENERATION_ELEMENT | GENERATION_NODES | FILE_GENERATIONS
+                                        | GENERATION_ELEMENT | GENERATION_ELEMENTS
+                                        | GENERATION_NODES | FILE_GENERATIONS
                                         | GENERATION_SPECIFICATION | NODE_ID
 ;
 
@@ -47,10 +48,16 @@ generationNodesValues:                  BRACKET_OPEN
 ;
 generationNode:                         BRACE_OPEN
                                             (nodeId)?
-                                            generationElement
+                                            (generationElement | generationElements)*
                                         BRACE_CLOSE
 ;
 generationElement:                      GENERATION_ELEMENT COLON qualifiedName SEMI_COLON
+;
+generationElements:                     GENERATION_ELEMENTS COLON
+                                            BRACKET_OPEN
+                                                (qualifiedName (COMMA qualifiedName)*)?
+                                            BRACKET_CLOSE
+                                        SEMI_COLON
 ;
 nodeId:                                 NODE_ID COLON STRING SEMI_COLON
 ;
