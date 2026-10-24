@@ -1,0 +1,21 @@
+name: model-generation-parallel
+title: "Model generation with a parallel generation node"
+description: |
+  Exercises Phase 3 (MODEL_GENERATION) with a GenerationSpecification whose
+  single generationNode holds two generationElements. Both elements are
+  generated against the same compiled graph and the graph is recompiled once
+  for the whole node, so both generated classes must appear in the merged
+  model.
+
+modelSources:
+  model:
+    root: model-generation-parallel
+    files:
+      - model.pure
+
+features:
+  - scaffolding:class
+  - execution:model-generation
+complexity: basic
+tags:
+  - model-generation
