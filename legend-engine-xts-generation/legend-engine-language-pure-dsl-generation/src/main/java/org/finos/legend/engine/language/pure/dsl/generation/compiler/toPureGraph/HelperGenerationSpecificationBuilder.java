@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationTreeNodeHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
@@ -37,6 +38,8 @@ public class HelperGenerationSpecificationBuilder
 
     public static void processGenerationSpecification(GenerationSpecification generationSpecification, CompileContext context)
     {
+        // TODO? maybe we should think of a way to inform the users when the element is found but not supported by any of the plugins
+        List<Function3<String, SourceInformation, CompileContext, PackageableElement>> extraModelGenerationSpecificationResolvers = ListIterate.flatCollect(getGenerationCompilerExtensions(context), GenerationCompilerExtension::getExtraModelGenerationSpecificationResolvers);
         Set<String> ids = Sets.mutable.empty();
         generationSpecification.generationNodes.forEach(node ->
         {
@@ -44,12 +47,30 @@ public class HelperGenerationSpecificationBuilder
             {
                 throw new EngineException("Duplicate generation node id '" + node.id + "'", node.sourceInformation, EngineErrorType.COMPILATION);
             }
-            // TODO? maybe we should think of a way to inform the users when the element is found but not supported by any of the plugins
-            List<Function3<String, SourceInformation, CompileContext, PackageableElement>> extraModelGenerationSpecificationResolvers = ListIterate.flatCollect(getGenerationCompilerExtensions(context), GenerationCompilerExtension::getExtraModelGenerationSpecificationResolvers);
-            if (extraModelGenerationSpecificationResolvers.stream().map(resolver -> resolver.value(node.generationElement, node.sourceInformation, context)).noneMatch(Objects::nonNull))
+            if ((node.generationElement != null) && !node.generationElements.isEmpty())
             {
-                throw new EngineException("Can't find generation element '" + node.generationElement + "'", node.sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Generation node must specify either 'generationElement' or 'generationElements', not both", node.sourceInformation, EngineErrorType.COMPILATION);
             }
+            List<String> generationElements = GenerationTreeNodeHelper.generationElements(node);
+            if (generationElements.isEmpty())
+            {
+                throw new EngineException("Generation node must specify at least one generation element", node.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            Set<String> nodeGenerationElements = Sets.mutable.empty();
+            generationElements.forEach(generationElement ->
+            {
+                if (!nodeGenerationElements.add(generationElement))
+                {
+                    throw new EngineException("Duplicate generation element '" + generationElement + "' in generation node '" + node.id + "'", node.sourceInformation, EngineErrorType.COMPILATION);
+                }
+            });
+            generationElements.forEach(generationElement ->
+            {
+                if (extraModelGenerationSpecificationResolvers.stream().map(resolver -> resolver.value(generationElement, node.sourceInformation, context)).noneMatch(Objects::nonNull))
+                {
+                    throw new EngineException("Can't find generation element '" + generationElement + "'", node.sourceInformation, EngineErrorType.COMPILATION);
+                }
+            });
         });
         Set<String> fileGenerations = Sets.mutable.empty();
         generationSpecification.fileGenerations.forEach(fileGeneration ->

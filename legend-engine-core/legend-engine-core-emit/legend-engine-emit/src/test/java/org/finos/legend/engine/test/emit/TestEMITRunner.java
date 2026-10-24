@@ -193,6 +193,30 @@ public class TestEMITRunner
     }
 
     @Test
+    void parallelGenerationNodeGeneratesEveryElement()
+    {
+        Path emitYaml = resource("emit-models/basic/model-generation-parallel.emit.yaml");
+
+        EMITResult result = new EMITRunner().runFromYaml(emitYaml);
+
+        Assertions.assertTrue(result.isSuccess(), () -> "Expected EMIT run to succeed but got:\n" + result.getSummary());
+
+        EMITPhaseResult modelGenPhase = result.getPhase(EMITPhase.MODEL_GENERATION);
+        Assertions.assertEquals(Status.SUCCESS, modelGenPhase.getStatus(), () -> "Expected MODEL_GENERATION SUCCESS but got:\n" + result.getSummary());
+        Assertions.assertTrue(modelGenPhase.getMessage() != null && modelGenPhase.getMessage().contains("from 2 extension calls"),
+                () -> "Expected both generation elements of the node to run, got: " + modelGenPhase.getMessage());
+
+        PureModelContextData enriched = (PureModelContextData) modelGenPhase.getOutputs().get(0);
+        for (String source : new String[]{"SourceA", "SourceB"})
+        {
+            String generatedPath = EmitDemoModelGenerationExtension.GENERATED_PACKAGE + "::" + source + EmitDemoModelGenerationExtension.GENERATED_SUFFIX;
+            Assertions.assertTrue(enriched.getElements().stream().anyMatch(e -> generatedPath.equals(e.getPath())),
+                    () -> "Generated element '" + generatedPath + "' missing from enriched PMCD; elements: "
+                            + enriched.getElements().stream().map(PackageableElement::getPath).reduce("", (l, r) -> l + " " + r));
+        }
+    }
+
+    @Test
     void fileGenerationProducesExpectedOutput()
     {
         Path emitYaml = resource("emit-models/basic/file-generation.emit.yaml");

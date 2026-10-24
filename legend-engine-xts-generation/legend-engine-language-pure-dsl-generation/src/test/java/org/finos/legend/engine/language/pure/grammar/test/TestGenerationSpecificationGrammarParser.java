@@ -57,4 +57,41 @@ public class TestGenerationSpecificationGrammarParser extends TestGrammarParser.
                 "}\n\n", "PARSER error at [2:1-4:93]: Field 'fileGenerations' should be specified only once");
 
     }
+
+    @Test
+    public void testGenerationSpecificationParallelGenerationElements()
+    {
+        // both forms in one node
+        test("###GenerationSpecification\n" +
+                "GenerationSpecification model::GenerationSpecification\n" +
+                "{\n" +
+                "  generationNodes: [\n" +
+                "    {\n" +
+                "      generationElement: model::MyElement1;\n" +
+                "      generationElements: [model::MyElement2];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n", "PARSER error at [5:5-8:5]: Generation node must specify either 'generationElement' or 'generationElements', not both");
+        // empty group
+        test("###GenerationSpecification\n" +
+                "GenerationSpecification model::GenerationSpecification\n" +
+                "{\n" +
+                "  generationNodes: [\n" +
+                "    {\n" +
+                "      generationElements: [];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n", "PARSER error at [5:5-7:5]: Generation node 'generationElements' can't be empty");
+
+        // neither form
+        test("###GenerationSpecification\n" +
+                "GenerationSpecification model::GenerationSpecification\n" +
+                "{\n" +
+                "  generationNodes: [\n" +
+                "    {\n" +
+                "      id: 'orphan';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n", "PARSER error at [5:5-7:5]: Generation node must specify either 'generationElement' or 'generationElements'");
+    }
 }

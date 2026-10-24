@@ -18,21 +18,16 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.Iterate;
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.GenerationCompilerExtension;
-import org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.HelperGenerationSpecificationBuilder;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtensionLoader;
-import org.finos.legend.engine.language.pure.dsl.generation.extension.ModelGenerationExtension;
+import org.finos.legend.engine.language.pure.dsl.generation.model.ModelGenerationRunner;
 import org.finos.legend.engine.language.pure.dsl.service.generation.ServicePlanGenerator;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -169,19 +164,9 @@ public final class EMITTasks
     // ----- Phase 3: Model Generation (node-ordered, incremental recompile) -----
 
     /**
-     * Runs model generation aligned with the SDLC {@code ModelGenerationFactory}:
-     * <ol>
-     *   <li>Finds the (first) {@link GenerationSpecification} in the PMCD.</li>
-     *   <li>Iterates over {@code generationNodes} in declared order.</li>
-     *   <li>For each node, resolves the generation element via the
-     *       {@link GenerationCompilerExtension} resolver chain.</li>
-     *   <li>Finds the matching {@link ModelGenerationExtension} SPI generator
-     *       and invokes it.</li>
-     *   <li>After each node, merges generated elements and <b>recompiles</b>
-     *       so that subsequent nodes can reference newly generated elements.</li>
-     *   <li>After all nodes, validates that no generated element overwrites a
-     *       core (original) element.</li>
-     * </ol>
+     * Runs the model generations of the (single) {@link GenerationSpecification} of the model,
+     * delegating the node ordering, the parallel groups and the recompilation to
+     * {@link ModelGenerationRunner}, which SDLC's model generation shares.
      */
     public static ModelGenResult runModelGeneration(EMITModel model)
     {
@@ -197,70 +182,27 @@ public final class EMITTasks
         }
 
         GenerationSpecification genSpec = genSpecs.get(0);
-        if (genSpec.generationNodes == null || genSpec.generationNodes.isEmpty())
+        if ((genSpec.generationNodes == null) || genSpec.generationNodes.isEmpty())
         {
             return ModelGenResult.applicableButNoOutput();
         }
 
-        // Index core element paths for overwrite validation
-        MutableMap<String, PackageableElement> coreElementIndex = Iterate.groupByUniqueKey(corePmcd.getElements(), PackageableElement::getPath);
-
-        // Load all model generation extensions once
-        MutableList<ModelGenerationExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(ModelGenerationExtension.class));
-
-        PureModelContextData.Builder fullModelBuilder = PureModelContextData.newBuilder().withPureModelContextData(corePmcd);
-        PureModelContextData.Builder generatedModelBuilder = PureModelContextData.newBuilder();
-        PureModel pureModel = ListIterate.injectInto(model.getPureModel(), genSpec.generationNodes, (pm, node) ->
+        ModelGenerationRunner runner = ModelGenerationRunner.newRunner(genSpec, corePmcd, model.getPureModel())
+                .withClientVersion(CLIENT_VERSION)
+                .withCompiler(EMITTasks::compile);
+        ModelGenerationRunner.Result result;
+        try
         {
-            // Resolve the generation element using the standard resolver chain
-            CompileContext compileContext = pm.getContext();
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement generationElement = LazyIterate.flatCollect(
-                            HelperGenerationSpecificationBuilder.getGenerationCompilerExtensions(compileContext),
-                            GenerationCompilerExtension::getExtraModelGenerationSpecificationResolvers)
-                    .collect(resolver -> resolver.value(node.generationElement, node.sourceInformation, compileContext))
-                    .detect(Objects::nonNull);
-            if (generationElement == null)
-            {
-                throw new EngineException("Can't find generation element '" + node.generationElement + "'", node.sourceInformation, EngineErrorType.COMPILATION);
-            }
-
-            // Find matching generator from extensions
-            PureModelContextData genOutput = extensions.asLazy()
-                    .flatCollect(ModelGenerationExtension::getPureModelContextDataGenerators)
-                    .collect(g -> g.value(generationElement, compileContext, CLIENT_VERSION))
-                    .detect(Objects::nonNull);
-            if (genOutput == null)
-            {
-                throw new EngineException(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.writeUserPathForPackageableElement(new StringBuilder("No model generator found for element '"), generationElement).append("'").toString(), EngineErrorType.COMPILATION);
-            }
-
-            if (genOutput.getElements().isEmpty())
-            {
-                return pm;
-            }
-
-            fullModelBuilder.withPureModelContextData(genOutput).distinct().sorted();
-            generatedModelBuilder.withPureModelContextData(genOutput).distinct().sorted();
-            // Incremental recompile so next node can reference newly generated elements
-            return compile(fullModelBuilder.build());
-        });
-
-        // Validate that generated elements don't overwrite core elements
-        PureModelContextData generatedPmcd = generatedModelBuilder.build();
-        generatedPmcd.getElements().forEach(generated ->
+            result = runner.run();
+        }
+        catch (EngineException e)
         {
-            String path = generated.getPath();
-            PackageableElement coreElement = coreElementIndex.get(path);
-            if (coreElement != null)
-            {
-                throw new EMITAssertionError(EMITPhase.MODEL_GENERATION, "Generated element '" + path + "' of type " + generated.getClass().getSimpleName() + " can't override existing element of type " + coreElement.getClass().getSimpleName());
-            }
-        });
+            throw new EMITAssertionError(EMITPhase.MODEL_GENERATION, buildEngineExceptionMessage(e), e);
+        }
 
-
-        PureModelContextData enriched = fullModelBuilder.build();
+        PureModelContextData enriched = result.getFullModel();
         int newElements = enriched.getElements().size() - corePmcd.getElements().size();
-        return ModelGenResult.generated(model.withModel(enriched, pureModel), newElements, genSpec.generationNodes.size());
+        return ModelGenResult.generated(model.withModel(enriched, runner.getPureModel()), newElements, result.getGenerationCount());
     }
 
     // ----- Phase 4a: per-spec file generation -----
