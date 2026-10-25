@@ -66,8 +66,9 @@ import java.util.stream.Collectors;
  *       names another snapshot directory, that snapshot's {@code pmcd.json} deserialized,
  *       re-serialized and compiled by this engine</li>
  *   <li>{@code plans/service/<service>.json} and {@code plans/test/<testable>/<suite>/<test>.json}:
- *       the execution plan of each service and of each test whose runner supports debug, or the
- *       error that prevented it</li>
+ *       the execution plan of each service and of each test its runner can debug (for a test that
+ *       runs no plan, such as persistence, the statements it would issue), or the error that
+ *       prevented it</li>
  * </ul>
  * Errors are recorded without stack frames, so that line numbers do not differ between revisions.
  */
@@ -214,10 +215,6 @@ public final class EMITSnapshot
     {
         Testable testable = (Testable) pureModel.getPackageableElement(testablePath);
         TestRunner runner = TestableRunnerExtensionLoader.forTestable(testable);
-        if (!runner.supportsDebug())
-        {
-            return;
-        }
         List<TestDebug> debugs = new ArrayList<>();
         try
         {
@@ -255,9 +252,20 @@ public final class EMITSnapshot
         {
             return error("error", withoutStackFrames(debug.error));
         }
-        if ((debug instanceof TestExecutionPlanDebug) && (((TestExecutionPlanDebug) debug).executionPlan != null))
+        if (debug instanceof TestExecutionPlanDebug)
         {
-            return planEntry(((TestExecutionPlanDebug) debug).executionPlan);
+            TestExecutionPlanDebug planDebug = (TestExecutionPlanDebug) debug;
+            if (planDebug.executionPlan != null)
+            {
+                return planEntry(planDebug.executionPlan);
+            }
+            if ((planDebug.debug != null) && !planDebug.debug.isEmpty())
+            {
+                Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("status", "ok");
+                entry.put("statements", planDebug.debug);
+                return entry;
+            }
         }
         return error("unsupported", debug.getClass().getName());
     }

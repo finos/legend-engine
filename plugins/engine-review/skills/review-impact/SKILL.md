@@ -63,9 +63,10 @@ Tell the user the cost before starting:
 Requirements: JDK 17 (found with `/usr/libexec/java_home -v 17`, or set `ENGINE_REVIEW_JAVA_HOME`)
 and Maven 3.9 or later, which the chained local repositories need.
 
-The run copies the EMIT framework and corpus **from this checkout** onto both revisions, so new
-corpus models measure old commits too. `run.json` records what was copied and rebuilt, plus the
-caveats.
+The run copies the snapshot hook (`EMITSnapshot` and the JUnit builder) and the corpus **from this
+checkout** onto both revisions, so new corpus models measure old commits too. The rest of the EMIT
+framework stays each revision's own, because it calls product APIs that change between revisions.
+`run.json` records what was copied and rebuilt, plus the caveats.
 
 If a Maven step fails, read the named log under `<run>/logs/` before anything else. A failed
 product build means the comparison never happened. Do not review from a partial report.

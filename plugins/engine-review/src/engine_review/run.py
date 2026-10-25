@@ -13,8 +13,8 @@
 # limitations under the License.
 """Build two engine revisions and snapshot the EMIT corpus on each.
 
-The measuring instrument - the EMIT framework and the corpus - is copied from the checkout this tool
-runs in onto both revisions, so the two snapshots differ only by product code. Each revision builds
+The measuring instrument - the snapshot hook in the EMIT framework, and the corpus - is copied from the
+checkout this tool runs in onto both revisions, so the two snapshots differ only by product code. Each revision builds
 into its own local repository under a fixed `review-SNAPSHOT` version: the base builds the corpus
 modules' whole closure once and is cached by commit; the head rebuilds only the modules the change
 touches and reads everything else through the base repository. Nothing is written to ~/.m2.
@@ -90,6 +90,7 @@ def prepare_tree(repo, sha):
         git(repo, "worktree", "add", "--detach", "--force", tree, sha)
     else:
         git(tree, "checkout", "--detach", "--force", sha)
+        git(tree, "clean", "-fdq", "--", FRAMEWORK_ROOT)
     local_mvn = os.path.join(repo, ".mvn")
     if os.path.isdir(local_mvn):
         shutil.copytree(local_mvn, os.path.join(tree, ".mvn"), dirs_exist_ok=True)
@@ -102,12 +103,17 @@ def _replace_tree(source, target):
     shutil.copytree(source, target, ignore=shutil.ignore_patterns("target"))
 
 
-def overlay(tool_root, tree, suite_modules):
-    """Copy the EMIT framework and each suite's src/test from the tool checkout onto a revision."""
+def overlay(tool_root, tree, suite_modules, instrument_files):
+    """Copy the snapshot hook and each suite's src/test from the tool checkout onto a revision. The rest of the EMIT
+    framework stays the revision's own: EMITTasks calls product APIs that move between revisions."""
     if os.path.realpath(tool_root) == os.path.realpath(tree):
         return []
-    copied = [FRAMEWORK_ROOT]
-    _replace_tree(os.path.join(tool_root, FRAMEWORK_ROOT), os.path.join(tree, FRAMEWORK_ROOT))
+    copied = []
+    for path in instrument_files:
+        target = os.path.join(tree, path)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        shutil.copy(os.path.join(tool_root, path), target)
+        copied.append(path)
     for module in suite_modules:
         source = os.path.join(tool_root, module, "src", "test")
         if os.path.isdir(source) and os.path.isdir(os.path.join(tree, module)):
@@ -162,7 +168,7 @@ def run(tool_root, base_rev, head_rev, suites=None, rebuild="changed", jobs=4, o
     manifest = {"base": base, "head": head, "suites": suite_names, "tool_root": tool_root, "rebuild": rebuild, "caveats": []}
 
     base_tree = prepare_tree(tool_root, base)
-    manifest["base_overlay"] = overlay(tool_root, base_tree, suite_modules)
+    manifest["base_overlay"] = overlay(tool_root, base_tree, suite_modules, config["instrument_files"])
     base_repo = os.path.join(CACHE, "m2", base[:SHORT])
     base_maven = Maven(base_tree, base_repo, [M2], logs, jobs)
     if _product_built(base_repo, suite_modules):
@@ -174,7 +180,7 @@ def run(tool_root, base_rev, head_rev, suites=None, rebuild="changed", jobs=4, o
     base_maven.run("base-instrument", ["clean", "install", "-DskipTests", "-pl", ",".join(instrument)], parallel=False)
 
     head_tree = tool_root if head == WORKTREE else prepare_tree(tool_root, head)
-    manifest["head_overlay"] = overlay(tool_root, head_tree, suite_modules)
+    manifest["head_overlay"] = overlay(tool_root, head_tree, suite_modules, config["instrument_files"])
     head_repo = os.path.join(CACHE, "m2", "worktree" if head == WORKTREE else head[:SHORT] + "-on-" + base[:SHORT])
     head_maven = Maven(head_tree, head_repo, [base_repo, M2], logs, jobs)
     changed = {m.artifact_id for m in (reactor.module_of(f) for f in changed_files(tool_root, base, head)) if m is not None}

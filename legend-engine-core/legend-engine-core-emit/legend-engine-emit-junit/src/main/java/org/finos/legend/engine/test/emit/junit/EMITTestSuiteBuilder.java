@@ -75,7 +75,7 @@ import java.util.stream.StreamSupport;
  *
  * <p>When {@link EMITSnapshot} is enabled, each model ends with a Snapshot
  * group recording its parsed protocol and the execution plan of every
- * service and debuggable test, for comparing two engine revisions.
+ * service and test, for comparing two engine revisions.
  *
  * <p>Each dynamic test calls into {@link EMITTasks} for its body, so that
  * the standalone {@code EMITRunner} and this JUnit integration share a single

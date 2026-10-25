@@ -81,7 +81,7 @@ def cmd_snapshot(args):
     modules = [config["suites"][n]["module"] for n in suites]
     sha = scopelib.resolve(repo, args.rev)
     tree = repo if sha == scopelib.WORKTREE else runlib.prepare_tree(repo, sha)
-    runlib.overlay(repo, tree, modules)
+    runlib.overlay(repo, tree, modules, config["instrument_files"])
     key = "worktree" if sha == scopelib.WORKTREE else sha[:runlib.SHORT]
     maven = runlib.Maven(tree, os.path.join(runlib.CACHE, "m2", args.repo_key or key), [runlib.M2], os.path.join(args.out, "logs"), args.jobs)
     if not runlib._product_built(maven.repo, modules):

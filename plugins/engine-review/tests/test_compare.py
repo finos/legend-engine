@@ -118,3 +118,12 @@ def test_protocol_reports_crossread_failures_and_subtype_changes(tmp_path):
     assert result["protocol"]["subtypes"]["new_collisions"][0]["type"] == "new"
     rendered = report.render(result)
     assert "backward deserialize" in rendered and "collision" in rendered
+
+
+def test_statement_entries_compare_like_plans():
+    base = {"status": "ok", "statements": ['INSERT INTO "MAIN" (SELECT "s"."A" FROM "STAGING" as "s")']}
+    same_aliases_renamed = {"status": "ok", "statements": ['INSERT INTO "MAIN" (SELECT "t"."A" FROM "STAGING" as "t")']}
+    more = {"status": "ok", "statements": base["statements"] + ['DELETE FROM "STAGING"']}
+    assert compare.compare_plan_item(base, base)["status"] == "identical"
+    assert compare.compare_plan_item(base, same_aliases_renamed)["status"] == "alias-only"
+    assert compare.compare_plan_item(base, more)["sql_delta"]["statements"] == [1, 2]

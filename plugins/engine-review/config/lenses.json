@@ -62,6 +62,10 @@
         "legend-engine-core/legend-engine-core-emit/legend-engine-emit",
         "legend-engine-core/legend-engine-core-emit/legend-engine-emit-junit"
     ],
+    "instrument_files": [
+        "legend-engine-core/legend-engine-core-emit/legend-engine-emit/src/main/java/org/finos/legend/engine/test/emit/EMITSnapshot.java",
+        "legend-engine-core/legend-engine-core-emit/legend-engine-emit-junit/src/main/java/org/finos/legend/engine/test/emit/junit/EMITTestSuiteBuilder.java"
+    ],
     "rules": [
         {
             "lens": "sql",

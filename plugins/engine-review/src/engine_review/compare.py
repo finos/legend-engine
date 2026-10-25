@@ -114,6 +114,11 @@ def _statements(plan):
     return [s for _, _, s in sqllib.extract_sql(plan)]
 
 
+def _entry_statements(entry):
+    """A plan's SQL, or for a test that issues statements without a plan (persistence), those statements."""
+    return _statements(entry["plan"]) if "plan" in entry else list(entry.get("statements", []))
+
+
 def _sql_metrics(statements):
     total = {"tables": {}}
     for statement in statements:
@@ -153,8 +158,8 @@ def compare_plan_item(base_entry, head_entry):
         return {"status": "error-new", "severity": "high", "head_error": _message(head_entry)}
     if not base_ok:
         return {"status": "error-fixed", "severity": "medium", "base_error": _message(base_entry)}
-    base_sql, head_sql = _statements(base_entry["plan"]), _statements(head_entry["plan"])
-    plan_changes = json_changes(_strip(base_entry["plan"], PLAN_NOISE_KEYS), _strip(head_entry["plan"], PLAN_NOISE_KEYS))
+    base_sql, head_sql = _entry_statements(base_entry), _entry_statements(head_entry)
+    plan_changes = json_changes(_strip(base_entry.get("plan"), PLAN_NOISE_KEYS), _strip(head_entry.get("plan"), PLAN_NOISE_KEYS))
     if base_sql == head_sql and not plan_changes:
         return {"status": "identical", "severity": "none"}
     if [sqllib.normalize(s) for s in base_sql] == [sqllib.normalize(s) for s in head_sql] and not plan_changes:

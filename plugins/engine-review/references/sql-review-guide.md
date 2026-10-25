@@ -92,8 +92,10 @@ If nothing matches, say so in the review as a coverage gap and propose (or write
   `sqlDialectTranslation`) is not compared. Run that dialect's PCT module, or capture SQL from a PCT
   run (JDBC logging), and compare by hand.
 - **Not in the corpus.** The SQL-to-Pure transpiler (`legend-engine-xts-sql`) has its own corpus
-  (`TestPostgresParity`, skill `pure-lsp-sql-e2e`). Function tests and service tests have no debug
-  path, so only services and mapping tests contribute plans.
+  (`TestPostgresParity`, skill `pure-lsp-sql-e2e`).
+- **Plans come from each test runner's debug path.** Every runner implements it once #5423 is in a
+  revision. On older revisions, only services and mapping tests contribute plans, and the other
+  tests' plans show up as "only in head" or "only in base".
 - **Head built with `--rebuild changed`.** Modules downstream of the change were not recompiled. A
   signature change shows up as `error-new` with linkage errors such as `NoSuchMethodError` or
   `ClassNotFoundException`. Re-run with `--rebuild dependents` before believing such an error.

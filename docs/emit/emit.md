@@ -739,7 +739,7 @@ model with a **Snapshot** group, and `EMITSnapshot` writes what the engine produ
 | `pmcd.json` | the parsed `PureModelContextData`, serialized by the standard protocol mapper |
 | `pmcd.roundtrip.json` | `pmcd.json` read back and re-serialized by the same engine |
 | `plans/service/<service>.json` | the execution plan of each primary-scope service, or its error |
-| `plans/test/<testable>/<suite>/<test>.json` | the execution plan of each test whose runner supports debug (`TestRunner.supportsDebug`, today the mapping test runner), or its error |
+| `plans/test/<testable>/<suite>/<test>.json` | what each test runs, from its runner's debug (`TestRunner.debugTestSuite` / `debugAtomicTest`): the execution plan, or for a test that runs none (persistence) its `statements`; or the error |
 | `../_subtypes.json` | once per suite: every `_type` each polymorphic protocol base resolves |
 
 With `legend.emit.snapshot.crossRead=<other snapshot dir>` set as well, the group also deserializes
