@@ -26,7 +26,7 @@ from collections import OrderedDict, defaultdict
 from engine_review import sql as sqllib
 
 PLAN_NOISE_KEYS = {"implementation", "globalImplementationSupport", "sqlQuery"}
-HIGH_SQL_METRICS = ("duplicate_joins", "joins", "join.", "table.", "distinct", "union", "group_by", "exists", "in_subquery", "having", "lateral", "window", "limit", "offset", "top")
+HIGH_SQL_METRICS = ("duplicate_joins", "null_safe_compare", "joins", "join.", "table.", "distinct", "union", "group_by", "exists", "in_subquery", "having", "lateral", "window", "limit", "offset", "top")
 _HASH = re.compile(r"@[0-9a-f]{5,}")
 
 

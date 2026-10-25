@@ -108,3 +108,20 @@ def test_self_joins_on_different_columns_are_not_duplicates():
                  'left outer join P as "p_1" on ("p_1".b = "root".id)')
     assert sql.metrics(two_paths)["duplicate_joins"] == 0
     assert sql.metrics(two_paths.replace('("p_1".b', '("p_1".a'))["duplicate_joins"] == 1
+
+
+def test_from_inside_a_comparison_or_call_is_not_a_table():
+    m = sql.metrics('select "r".A from T as "r" where "x".B is not distinct from "r"."ID" and extract(year from "r".D) = 2020')
+    assert m["tables"] == {"t": 1}
+    assert m["null_safe_compare"] == 1
+
+
+def test_null_safe_to_plain_equality_is_its_own_delta():
+    before = sql.metrics('select 1 from T as "t" where "t".A is not distinct from "t".B')
+    after = sql.metrics('select 1 from T as "t" where "t".A = "t".B')
+    assert sql.metric_delta(before, after) == {"null_safe_compare": (1, 0)}
+
+
+def test_pretty_keeps_window_order_by_and_call_keywords_on_their_line():
+    lines = sql.pretty('select rank() over (partition by "t".A order by "t".B) as "r", trim(both from "t".C) as "c" from T as "t" order by "r"')
+    assert lines == ['select rank () over (partition by "t".a order by "t".b) as "r", trim (both from "t".c) as "c"', 'from t as "t"', 'order by "r"']

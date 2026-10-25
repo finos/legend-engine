@@ -74,6 +74,26 @@ def extract_sql(plan, path="$"):
     return found
 
 
+def clause_positions(tokens):
+    """Indexes of the clause keywords (from, where, joins, ...) that belong to a select at their own
+    paren depth, as opposed to keywords inside a call: extract(x from y), trim(... from ...), the
+    order by of an over(...) window, or the from of 'is [not] distinct from'."""
+    positions, select_depths, depth = set(), [], 0
+    for index, (kind, text) in enumerate(tokens):
+        if text == "(":
+            depth += 1
+        elif text == ")":
+            depth -= 1
+            while select_depths and select_depths[-1] > depth:
+                select_depths.pop()
+        elif kind == "word":
+            if text == "select":
+                select_depths.append(depth)
+            elif select_depths and select_depths[-1] == depth and not (text == "from" and index > 0 and tokens[index - 1] == ("word", "distinct")):
+                positions.add(index)
+    return positions
+
+
 def table_aliases(tokens):
     """Quoted identifiers used as a qualifier ("alias".column), in order of first use."""
     aliases = []
@@ -93,6 +113,7 @@ def normalize(sql):
 def metrics(sql):
     tokens = tokenize(sql)
     words = [text if kind == "word" else None for kind, text in tokens]
+    clauses = clause_positions(tokens)
     counts = Counter()
     tables = Counter()
     depth = max_depth = 0
@@ -114,7 +135,7 @@ def metrics(sql):
                     index += len(sequence) - 1
                     matched = True
                     break
-            if matched or text == "from":
+            if matched or (text == "from" and index in clauses):
                 table = _table_after(tokens, index + 1)
                 if table:
                     tables[table] += 1
@@ -126,6 +147,8 @@ def metrics(sql):
                 counts["union"] += 1
             elif text == "exists":
                 counts["exists"] += 1
+            elif text == "distinct" and index + 1 < len(tokens) and tokens[index + 1] == ("word", "from") and index > 0 and tokens[index - 1][1] in ("is", "not"):
+                counts["null_safe_compare"] += 1
             elif text in ("group", "order") and index + 1 < len(tokens) and tokens[index + 1] == ("word", "by"):
                 counts[text + "_by"] += 1
             elif text in ("having", "lateral", "limit", "offset", "top"):
@@ -222,11 +245,12 @@ def pretty(sql):
     out, line, depth, line_depth = [], [], 0, 0
     tokens = tokenize(sql)
     words = [text if kind == "word" else None for kind, text in tokens]
+    clauses = clause_positions(tokens)
     index = 0
     while index < len(tokens):
         kind, text = tokens[index]
         breaker = None
-        if kind == "word":
+        if kind == "word" and (index in clauses or text == "select"):
             for phrase in _PRETTY_BREAKS:
                 parts = tuple(phrase.split())
                 if tuple(words[index:index + len(parts)]) == parts:
