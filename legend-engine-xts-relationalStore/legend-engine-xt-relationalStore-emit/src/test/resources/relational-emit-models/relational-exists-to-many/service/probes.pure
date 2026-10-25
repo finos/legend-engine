@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::sqlshapes::service::TwoExistsOnSamePropertyAndProbe
+{
+  pattern: '/probe/twoExistsAnd';
+  documentation: 'Plan-only probe: master keeps only the first of several exists() on the same to-many property (meta::relational::tests::query::filter::exists::testMultipleExistsOnSameProperty is ToFix), so the rows are wrong and the shape is planned, not asserted.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter') && $f.employees->exists(e|$e.lastName == 'Smith'))->project([f|$f.legalName], ['name']);
+    mapping: demo::sqlshapes::ExistsMapping;
+    runtime: demo::sqlshapes::runtime::FirmRuntime;
+  }
+}
+
+Service demo::sqlshapes::service::TwoExistsOnSamePropertyOrProbe
+{
+  pattern: '/probe/twoExistsOr';
+  documentation: 'Plan-only probe: master keeps only the first of several exists() on the same to-many property (meta::relational::tests::query::filter::exists::testMultipleExistsOnSameProperty is ToFix), so the rows are wrong and the shape is planned, not asserted.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter') || $f.employees->exists(e|$e.lastName == 'Brown'))->project([f|$f.legalName], ['name']);
+    mapping: demo::sqlshapes::ExistsMapping;
+    runtime: demo::sqlshapes::runtime::FirmRuntime;
+  }
+}
+
+Service demo::sqlshapes::service::NegatedAndPositiveExistsOnSamePropertyProbe
+{
+  pattern: '/probe/negatedAndPositiveExists';
+  documentation: 'Plan-only probe: master keeps only the first of several exists() on the same to-many property (meta::relational::tests::query::filter::exists::testMultipleExistsOnSameProperty is ToFix), so the rows are wrong and the shape is planned, not asserted.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Firm.all()->filter(f|!$f.employees->exists(e|$e.firstName == 'Peter') && $f.employees->exists(e|$e.lastName == 'Brown'))->project([f|$f.legalName], ['name']);
+    mapping: demo::sqlshapes::ExistsMapping;
+    runtime: demo::sqlshapes::runtime::FirmRuntime;
+  }
+}
+
+Service demo::sqlshapes::service::ChainedExistsFiltersOnSamePropertyProbe
+{
+  pattern: '/probe/chainedExistsFilters';
+  documentation: 'Plan-only probe: master keeps only the first of several exists() on the same to-many property (meta::relational::tests::query::filter::exists::testMultipleExistsOnSameProperty is ToFix), so the rows are wrong and the shape is planned, not asserted.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter'))->filter(f|$f.employees->exists(e|$e.lastName == 'Smith'))->project([f|$f.legalName], ['name']);
+    mapping: demo::sqlshapes::ExistsMapping;
+    runtime: demo::sqlshapes::runtime::FirmRuntime;
+  }
+}
+
+Service demo::sqlshapes::service::SizeOfToManyInProjectionProbe
+{
+  pattern: '/probe/sizeOfToManyInProjection';
+  documentation: 'Plan-only probe: on master, size() of a to-many property in a project emits count(*) over the outer join with no GROUP BY, which H2 rejects (column must be in the GROUP BY list), so the shape is planned, not asserted.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Firm.all()->project([f|$f.legalName, f|$f.employees->size()], ['name', 'employees']);
+    mapping: demo::sqlshapes::ExistsMapping;
+    runtime: demo::sqlshapes::runtime::FirmRuntime;
+  }
+}

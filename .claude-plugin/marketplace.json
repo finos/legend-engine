@@ -4,7 +4,7 @@
   "owner": {
     "name": "FINOS Legend"
   },
-  "description": "FINOS Legend Engine - Claude Code plugins for Legend/Pure development. Ships pure-dev, a fast AI dev loop built on a warm Pure LSP daemon.",
+  "description": "FINOS Legend Engine - Claude Code plugins for Legend/Pure development. Ships pure-dev, a fast AI dev loop built on a warm Pure LSP daemon, and engine-review, targeted impact review of engine changes.",
   "version": "1.0.0",
   "plugins": [
     {
@@ -34,6 +34,24 @@
         "./plugins/pure-dev/skills/pure-lsp-sql-e2e",
         "./plugins/pure-dev/skills/trim-comments",
         "./plugins/pure-dev/skills/pure-code-style"
+      ]
+    },
+    {
+      "name": "engine-review",
+      "version": "1.0.0",
+      "source": "./plugins/engine-review",
+      "description": "Targeted impact review for legend-engine changes: EMIT-corpus SQL/plan and protocol-JSON comparison of base vs head, plus a static auth/JDBC-connectivity checklist.",
+      "author": {
+        "name": "FINOS Legend"
+      },
+      "homepage": "https://github.com/finos/legend-engine",
+      "repository": "https://github.com/finos/legend-engine",
+      "license": "Apache-2.0",
+      "skills": [
+        "./plugins/engine-review/skills/review-impact",
+        "./plugins/engine-review/skills/review-sql-impact",
+        "./plugins/engine-review/skills/review-protocol-impact",
+        "./plugins/engine-review/skills/review-auth"
       ]
     }
   ]

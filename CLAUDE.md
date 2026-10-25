@@ -108,6 +108,15 @@ scoped to this repo, backend engine Server included), and `pure-chain-update` (r
 legend-pure + legend-engine checkout). Deep internals and operating rules live in
 `plugins/pure-dev/references/lsp-devloop-internals.md` and `lsp-devloop-usage-rules.md`.
 
+### Claude Code review plugin (`engine-review`)
+
+`plugins/engine-review/` reviews a change for impact in the hot areas: SQL generation, protocol JSON,
+and auth/JDBC connectivity. It builds base and head, runs the EMIT corpus on both with
+`legend.emit.snapshot.dir` set (`docs/emit/emit.md` §5.5), and reports how the generated SQL, the
+plans and the PMCD JSON changed. Install it with `bash .claude-plugin/install-engine-review`, then use
+the `review-impact` skill. The first run on a base commit costs one closure build of about 15 min,
+cached under `~/.cache/legend-engine-review`.
+
 ## Tests
 
 JUnit 5 for new tests (JUnit 4 exists but is legacy — don't add more). Typical patterns:
