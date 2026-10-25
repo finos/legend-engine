@@ -154,12 +154,6 @@ public class MappingTestRunner implements TestRunner
     }
 
     @Override
-    public boolean supportsDebug()
-    {
-        return true;
-    }
-
-    @Override
     public TestSuiteSession<TestDebug> openTestSuiteDebugSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
     {
         return new MappingTestSuiteDebugSession(testSuite, getProtocolSuite(testSuite, pureModel, data), pureModel, data);

@@ -59,7 +59,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAsserti
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionPlanDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -93,6 +95,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 
 import java.io.Closeable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -124,6 +127,12 @@ public class ServiceTestRunner implements TestRunner
         throw new UnsupportedOperationException("Service Test should be executed in context of Service Test Suite only");
     }
 
+    @Override
+    public TestDebug debugAtomicTest(Root_meta_pure_test_AtomicTest atomicTest, PureModel pureModel, PureModelContextData data)
+    {
+        throw new UnsupportedOperationException("Service Test should be executed in context of Service Test Suite only");
+    }
+
     /**
      * Open a per-suite session that caches the execution plan and any
      * runtime closeables across {@link TestSuiteSession#runAtomicTest}
@@ -141,6 +150,17 @@ public class ServiceTestRunner implements TestRunner
     @Override
     public TestSuiteSession<TestResult> openTestSuiteSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
     {
+        return openSession(testSuite, pureModel, data, this.execute);
+    }
+
+    @Override
+    public TestSuiteSession<TestDebug> openTestSuiteDebugSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
+    {
+        return openSession(testSuite, pureModel, data, this.debug);
+    }
+
+    private <R> TestSuiteSession<R> openSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data, Outcome<R> outcome)
+    {
         Service protocolService = ListIterate.detect(data.getElementsOfType(Service.class), ele -> ele.getPath().equals(HelperModelBuilder.getElementFullPath(this.pureService, pureModel.getExecutionSupport())));
         if (protocolService == null)
         {
@@ -153,16 +173,16 @@ public class ServiceTestRunner implements TestRunner
         }
         if (protocolService.execution instanceof PureSingleExecution)
         {
-            return new SingleExecutionTestSuiteSession(testSuite, protocolSuite, pureModel, data, (PureSingleExecution) protocolService.execution);
+            return new SingleExecutionTestSuiteSession<>(testSuite, protocolSuite, pureModel, data, (PureSingleExecution) protocolService.execution, outcome);
         }
         if (protocolService.execution instanceof PureMultiExecution)
         {
             PureMultiExecution multiExecution = (PureMultiExecution) protocolService.execution;
             if (multiExecution.executionParameters != null && !multiExecution.executionParameters.isEmpty())
             {
-                return new MultiExecutionParametersTestSuiteSession(testSuite, protocolSuite, pureModel, data, multiExecution);
+                return new MultiExecutionParametersTestSuiteSession<>(testSuite, protocolSuite, pureModel, data, multiExecution, outcome);
             }
-            return new MultiExecutionEnvironmentTestSuiteSession(testSuite, protocolSuite, pureModel, data, multiExecution);
+            return new MultiExecutionEnvironmentTestSuiteSession<>(testSuite, protocolSuite, pureModel, data, multiExecution, outcome);
         }
         throw new UnsupportedOperationException("Execution type : " + protocolService.execution.getClass().getSimpleName() + " not supported with ServiceTestRunner");
     }
@@ -298,14 +318,89 @@ public class ServiceTestRunner implements TestRunner
         return HelperModelBuilder.getElementFullPath(this.pureService, pureModel.getExecutionSupport());
     }
 
-    private abstract class ServiceTestSuiteSession extends AbstractTestSuiteSessionWithResources<ServiceTestSuite, ServiceTest, TestResult>
+    /**
+     * What a session does with the plans it built for one atomic test: execute and assert them, or
+     * return them for debug.
+     */
+    private interface Outcome<R>
+    {
+        R ofPlan(ServiceTestSuiteSession<R> session, ServiceTest test, SingleExecutionPlan plan);
+
+        R ofKeyedPlans(ServiceTestSuiteSession<R> session, ServiceTest test, String executionKeyName, Map<String, SingleExecutionPlan> plansByKey);
+
+        R ofError(ServiceTestSuiteSession<R> session, String atomicTestId, Throwable t);
+    }
+
+    private final Outcome<TestResult> execute = new Outcome<TestResult>()
+    {
+        @Override
+        public TestResult ofPlan(ServiceTestSuiteSession<TestResult> session, ServiceTest test, SingleExecutionPlan plan)
+        {
+            TestResult testResult = executeServiceTest(test, plan, session.relationAssertionColumnTypes);
+            testResult.testable = session.servicePath();
+            testResult.testSuiteId = session.getTestSuiteId();
+            return testResult;
+        }
+
+        @Override
+        public TestResult ofKeyedPlans(ServiceTestSuiteSession<TestResult> session, ServiceTest test, String executionKeyName, Map<String, SingleExecutionPlan> plansByKey)
+        {
+            MultiExecutionServiceTestResult multiResult = new MultiExecutionServiceTestResult();
+            multiResult.testable = session.servicePath();
+            multiResult.atomicTestId = test.id;
+            multiResult.testSuiteId = session.getTestSuiteId();
+            plansByKey.forEach((key, plan) -> multiResult.addTestResult(key, ofPlan(session, test, plan)));
+            return multiResult;
+        }
+
+        @Override
+        public TestResult ofError(ServiceTestSuiteSession<TestResult> session, String atomicTestId, Throwable t)
+        {
+            return TestResultHelper.newTestError(session.servicePath(), session.getTestSuiteId(), atomicTestId, t);
+        }
+    };
+
+    private final Outcome<TestDebug> debug = new Outcome<TestDebug>()
+    {
+        @Override
+        public TestDebug ofPlan(ServiceTestSuiteSession<TestDebug> session, ServiceTest test, SingleExecutionPlan plan)
+        {
+            return planDebug(session, test, plan);
+        }
+
+        @Override
+        public TestDebug ofKeyedPlans(ServiceTestSuiteSession<TestDebug> session, ServiceTest test, String executionKeyName, Map<String, SingleExecutionPlan> plansByKey)
+        {
+            return planDebug(session, test, new CompositeExecutionPlan(plansByKey, executionKeyName, Lists.mutable.withAll(plansByKey.keySet())));
+        }
+
+        @Override
+        public TestDebug ofError(ServiceTestSuiteSession<TestDebug> session, String atomicTestId, Throwable t)
+        {
+            return TestResultHelper.newTestExecutionPlanDebugError(session.servicePath(), session.getTestSuiteId(), atomicTestId, t);
+        }
+
+        private TestDebug planDebug(ServiceTestSuiteSession<TestDebug> session, ServiceTest test, ExecutionPlan plan)
+        {
+            TestExecutionPlanDebug planDebug = new TestExecutionPlanDebug();
+            planDebug.testable = session.servicePath();
+            planDebug.testSuiteId = session.getTestSuiteId();
+            planDebug.atomicTestId = test.id;
+            planDebug.executionPlan = plan;
+            return planDebug;
+        }
+    };
+
+    private abstract class ServiceTestSuiteSession<R> extends AbstractTestSuiteSessionWithResources<ServiceTestSuite, ServiceTest, R>
     {
         protected final RelationAssertionColumnTypes relationAssertionColumnTypes;
         protected final TestConnectionBuildParameters hints;
+        protected final Outcome<R> outcome;
 
-        private ServiceTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, ServiceTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd)
+        private ServiceTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, ServiceTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, Outcome<R> outcome)
         {
             super(pureSuite, protocolSuite, pureModel, pmcd, ServiceTestSuiteSession::getTestSuiteTests, ServiceTestSuiteSession::getAtomicTestId);
+            this.outcome = outcome;
             TestConnectionBuildParameters computedHints = TestConnectionBuildParameters.NONE;
             RelationAssertionColumnTypes computedColumnTypes = RelationAssertionColumnTypes.NONE;
             try
@@ -327,17 +422,14 @@ public class ServiceTestRunner implements TestRunner
         }
 
         @Override
-        protected TestResult buildErrorResult(String atomicTestId, Throwable t)
+        protected R buildErrorResult(String atomicTestId, Throwable t)
         {
-            return TestResultHelper.newTestError(testablePath(this.pureModel), getTestSuiteId(), atomicTestId, t);
+            return this.outcome.ofError(this, atomicTestId, t);
         }
 
-        protected TestResult runSingleExecTest(ServiceTest atomicTest, SingleExecutionPlan executionPlan)
+        protected String servicePath()
         {
-            TestResult testResult = executeServiceTest(atomicTest, executionPlan, this.relationAssertionColumnTypes);
-            testResult.testable = testablePath(this.pureModel);
-            testResult.testSuiteId = getTestSuiteId();
-            return testResult;
+            return ServiceTestRunner.this.testablePath(this.pureModel);
         }
     }
 
@@ -348,14 +440,14 @@ public class ServiceTestRunner implements TestRunner
      * plus the existing {@code executeServiceTest} call against the cached
      * plan.
      */
-    private class SingleExecutionTestSuiteSession extends ServiceTestSuiteSession
+    private class SingleExecutionTestSuiteSession<R> extends ServiceTestSuiteSession<R>
     {
         private final PureSingleExecution execution;
         private SingleExecutionPlan plan;
 
-        SingleExecutionTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, ServiceTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, PureSingleExecution execution)
+        SingleExecutionTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, ServiceTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, PureSingleExecution execution, Outcome<R> outcome)
         {
-            super(pureSuite, protocolSuite, pureModel, pmcd);
+            super(pureSuite, protocolSuite, pureModel, pmcd, outcome);
             this.execution = execution;
         }
 
@@ -437,9 +529,9 @@ public class ServiceTestRunner implements TestRunner
         }
 
         @Override
-        protected TestResult runAtomicTest(ServiceTest atomicTest)
+        protected R runAtomicTest(ServiceTest atomicTest)
         {
-            return runSingleExecTest(atomicTest, this.plan);
+            return this.outcome.ofPlan(this, atomicTest, this.plan);
         }
     }
 
@@ -450,14 +542,14 @@ public class ServiceTestRunner implements TestRunner
      * caller picks). Each atomic test runs once per applicable env;
      * results are bundled into a {@link MultiExecutionServiceTestResult}.
      */
-    private class MultiExecutionParametersTestSuiteSession extends ServiceTestSuiteSession
+    private class MultiExecutionParametersTestSuiteSession<R> extends ServiceTestSuiteSession<R>
     {
         private final PureMultiExecution execution;
         private final MutableMap<String, SingleExecutionPlan> plansByKey = Maps.mutable.empty();
 
-        MultiExecutionParametersTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, ServiceTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, PureMultiExecution execution)
+        MultiExecutionParametersTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, ServiceTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, PureMultiExecution execution, Outcome<R> outcome)
         {
-            super(pureSuite, protocolSuite, pureModel, pmcd);
+            super(pureSuite, protocolSuite, pureModel, pmcd, outcome);
             this.execution = execution;
         }
 
@@ -557,13 +649,10 @@ public class ServiceTestRunner implements TestRunner
         }
 
         @Override
-        protected TestResult runAtomicTest(ServiceTest atomicTest)
+        protected R runAtomicTest(ServiceTest atomicTest)
         {
-            MultiExecutionServiceTestResult multiResult = new MultiExecutionServiceTestResult();
-            multiResult.testable = testablePath(this.pureModel);
-            multiResult.atomicTestId = atomicTest.id;
-            multiResult.testSuiteId = getTestSuiteId();
             SetIterable<String> testKeys = ((atomicTest.keys == null) || atomicTest.keys.isEmpty()) ? Sets.immutable.empty() : Sets.mutable.withAll(atomicTest.keys);
+            Map<String, SingleExecutionPlan> plans = new LinkedHashMap<>();
             this.execution.executionParameters.forEach(param ->
             {
                 if (testKeys.isEmpty() || testKeys.contains(param.key))
@@ -571,11 +660,11 @@ public class ServiceTestRunner implements TestRunner
                     SingleExecutionPlan plan = this.plansByKey.get(param.key);
                     if (plan != null)
                     {
-                        multiResult.addTestResult(param.key, runSingleExecTest(atomicTest, plan));
+                        plans.put(param.key, plan);
                     }
                 }
             });
-            return multiResult;
+            return this.outcome.ofKeyedPlans(this, atomicTest, this.execution.executionKey, plans);
         }
     }
 
@@ -585,15 +674,15 @@ public class ServiceTestRunner implements TestRunner
      * key resolved from the suite's tests; each atomic test picks its own
      * plan from the composite by the key carried in its parameters.
      */
-    private class MultiExecutionEnvironmentTestSuiteSession extends ServiceTestSuiteSession
+    private class MultiExecutionEnvironmentTestSuiteSession<R> extends ServiceTestSuiteSession<R>
     {
         private final PureMultiExecution execution;
         private CompositeExecutionPlan compositePlan;
         private Map<String, String> validKeyMap;
 
-        MultiExecutionEnvironmentTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, ServiceTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, PureMultiExecution execution)
+        MultiExecutionEnvironmentTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, ServiceTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, PureMultiExecution execution, Outcome<R> outcome)
         {
-            super(pureSuite, protocolSuite, pureModel, pmcd);
+            super(pureSuite, protocolSuite, pureModel, pmcd, outcome);
             this.execution = execution;
         }
 
@@ -669,15 +758,12 @@ public class ServiceTestRunner implements TestRunner
         }
 
         @Override
-        protected TestResult runAtomicTest(ServiceTest atomicTest)
+        protected R runAtomicTest(ServiceTest atomicTest)
         {
-            MultiExecutionServiceTestResult multiResult = new MultiExecutionServiceTestResult();
-            multiResult.testable = testablePath(this.pureModel);
-            multiResult.atomicTestId = atomicTest.id;
-            multiResult.testSuiteId = getTestSuiteId();
             String key = this.validKeyMap.get(atomicTest.id);
-            multiResult.addTestResult(key, runSingleExecTest(atomicTest, this.compositePlan.executionPlans.get(key)));
-            return multiResult;
+            Map<String, SingleExecutionPlan> plans = new LinkedHashMap<>();
+            plans.put(key, this.compositePlan.executionPlans.get(key));
+            return this.outcome.ofKeyedPlans(this, atomicTest, this.compositePlan.executionKeyName, plans);
         }
     }
 
