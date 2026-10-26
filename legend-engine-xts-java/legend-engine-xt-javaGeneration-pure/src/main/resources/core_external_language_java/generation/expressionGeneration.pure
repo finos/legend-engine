@@ -82,15 +82,29 @@ function <<access.private>> meta::external::language::java::transform::statement
 
 function <<access.private>> meta::external::language::java::transform::prepareMethodReturnExpression(expression: Code[1], valueSpecification: ValueSpecification[1], returnType: meta::external::language::java::metamodel::Type[0..1]): Code[1]
 {
-   if($returnType->isEmpty() || !$valueSpecification->isNil(), 
-      | $expression, 
-      {
-         |let type = $returnType->toOne();
-         if($type->isJavaList(),
-            | $expression->j_listOf($type),
-            | if($expression.type->isJavaList() && !$expression->isCollectionsEmptyList(),
-                 | $expression->j_streamOf()->js_resolve(javaObject())->j_cast($type),
-                 | $expression->j_cast($type)
+   if($returnType->isEmpty(),
+      | $expression,
+      {|
+         let type = $returnType->toOne();
+         if($valueSpecification->isNil(),
+            | if($type->isJavaList(),
+                 | if($expression.type->isJavaList(),
+                      | $expression->j_retypeListElements($type),
+                      | $expression->j_listOf($type)
+                   ),
+                 | if($expression.type->isJavaList() && !$expression->isCollectionsEmptyList(),
+                      | $expression->j_streamOf()->js_resolve(javaObject())->j_cast($type),
+                      | $expression->j_cast($type)
+                   )
+              ),
+            | if($type->isJavaList() && !$expression.type->isJavaStream(),
+                 // The returned list's element type can be a strict subtype (e.g. a
+                 // constructed _Impl, or a cast) - retype rather than only wrapping non-lists.
+                 | if($expression.type->isJavaList(),
+                      | $expression->j_retypeListElements($type),
+                      | $expression->j_listOf($type)
+                   ),
+                 | $expression
               )
          );
       }
