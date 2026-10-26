@@ -184,6 +184,34 @@ public class TestDataCubeQueryStoreManager
         DataCubeQuery queryWithInvalidContent = _createTestQuery.get();
         queryWithInvalidContent.content = null;
         Assert.assertEquals("Query content is missing", Assert.assertThrows(ApplicationQueryException.class, () -> DataCubeQueryStoreManager.validateQuery(queryWithInvalidContent)).getMessage());
+
+        // Content size
+        DataCubeQuery queryWithOversizedContent = _createTestQuery.get();
+        Map<String, Object> oversizedContent = Maps.mutable.empty();
+        char[] chars = new char[6 * 1024 * 1024];
+        Arrays.fill(chars, 'a');
+        oversizedContent.put("query", new String(chars));
+        queryWithOversizedContent.content = oversizedContent;
+        Assert.assertTrue(Assert.assertThrows(ApplicationQueryException.class, () -> DataCubeQueryStoreManager.validateQuery(queryWithOversizedContent)).getMessage().startsWith("Query content exceeds maximum allowed size"));
+    }
+
+    @Test
+    public void testContentIsPassedThroughUnmodified() throws Exception
+    {
+        // DataCubeQuery.content is stored and retrieved as an opaque blob -- the engine never inspects
+        // or strips keys from it. This locks in that contract, which the DataCube frontend relies on to
+        // persist a "relationType" key without any engine-side schema change.
+        String currentUser = "testUser";
+        Map<String, Object> relationType = Maps.mutable.empty();
+        relationType.put("columns", Lists.mutable.of(Maps.mutable.of("name", "a", "type", "Integer")));
+        TestQueryBuilder queryBuilder = TestQueryBuilder.create("1", "query1", currentUser);
+        queryBuilder.content.put("query", "select(~[a])");
+        queryBuilder.content.put("relationType", relationType);
+        DataCubeQuery newQuery = queryBuilder.build();
+
+        store.createQuery(newQuery, currentUser);
+        DataCubeQuery fetchedQuery = store.getQuery("1");
+        Assert.assertEquals(newQuery.content, fetchedQuery.content);
     }
 
     @Test
