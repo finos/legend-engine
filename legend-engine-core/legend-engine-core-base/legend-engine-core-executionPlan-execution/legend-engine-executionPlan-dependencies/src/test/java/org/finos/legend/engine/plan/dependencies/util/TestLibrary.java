@@ -14,15 +14,41 @@
 
 package org.finos.legend.engine.plan.dependencies.util;
 
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class TestLibrary
 {
+    @Test
+    public void testPartition()
+    {
+        Pair<List<Integer>, List<Integer>> result = Library.partition(Stream.of(1, 2, 3, 4), i -> i > 2);
+        Assert.assertEquals(Arrays.asList(3, 4), result.getOne());
+        Assert.assertEquals(Arrays.asList(1, 2), result.getTwo());
+    }
+
+    @Test
+    public void testPartitionAllMatch()
+    {
+        Pair<List<Integer>, List<Integer>> result = Library.partition(Stream.of(1, 2), i -> i > 0);
+        Assert.assertEquals(Arrays.asList(1, 2), result.getOne());
+        Assert.assertEquals(Arrays.asList(), result.getTwo());
+    }
+
+    @Test
+    public void testPartitionNoneMatch()
+    {
+        Pair<List<Integer>, List<Integer>> result = Library.partition(Stream.of(1, 2), i -> i > 5);
+        Assert.assertEquals(Arrays.asList(), result.getOne());
+        Assert.assertEquals(Arrays.asList(1, 2), result.getTwo());
+    }
+
     @Test
     public void testSplitEmptyToken()
     {

@@ -399,7 +399,8 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                                'removeDuplicates_T_MANY__Function_1__T_MANY_',
                                                                                                'removeDuplicatesBy_T_MANY__Function_1__T_MANY_',
                                                                                                'sortByReversed_T_m__Function_$0_1$__T_m_',
-                                                                                               'sortBy_T_m__Function_$0_1$__T_m_']),
+                                                                                               'sortBy_T_m__Function_$0_1$__T_m_',
+                                                                                               'partition_I_MANY__Function_1__Pair_1_']),
                                                                             {|
                                                                                // Unary function, return is same as collection in
                                                                                let collectionPath = $params->at(0)->internal_scanProperties($processed, $vars, $config,  $visitedFunctions, ^$debug(space=$debug.space+'    '))->orElseEmptyPath();
