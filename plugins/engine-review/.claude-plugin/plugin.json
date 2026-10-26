@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../plugin-schema.json",
+  "name": "engine-review",
+  "displayName": "Engine Review",
+  "description": "Targeted impact review for legend-engine changes: classifies a diff into hot-area lenses, runs the EMIT corpus on base and head to show how generated SQL, execution plans and protocol JSON actually change (alias-normalized, clustered, cross-read in both directions), and applies a static auth/JDBC-connectivity checklist - so reviewers see transitive impact, not just the diff.",
+  "version": "1.0.0",
+  "author": {
+    "name": "FINOS Legend"
+  },
+  "homepage": "https://github.com/finos/legend-engine",
+  "repository": "https://github.com/finos/legend-engine",
+  "license": "Apache-2.0",
+  "keywords": [
+    "legend",
+    "finos",
+    "code-review",
+    "impact-analysis",
+    "emit",
+    "pure-to-sql",
+    "protocol",
+    "authentication"
+  ],
+  "skills": [
+    "./skills/review-impact",
+    "./skills/review-sql-impact",
+    "./skills/review-protocol-impact",
+    "./skills/review-auth"
+  ]
+}

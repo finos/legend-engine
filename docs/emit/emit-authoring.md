@@ -557,6 +557,28 @@ extend the taxonomy in `emit.md` §6.2 in the same PR and tag the new
 descriptor with it. This is how the catalog converges on full coverage over
 time.
 
+### 10.1 Data that tells the wrong answers apart
+
+A passing assertion proves nothing if the data cannot tell the right answer
+from the plausible wrong ones. For each query shape, write down how it could
+go wrong (a filter branch dropped, two joins merged into one, a join
+duplicated, the null side of an outer join lost), and add rows so that each of
+those wrong answers returns different rows. `relational-exists-to-many` is an
+example. Its first draft asserted `exists(A) && exists(B)` and passed on
+master. The captured SQL then showed master drops the second `exists()`: every
+firm in the data that matched A also matched B. One extra firm, matching A
+but not B, made the bug visible.
+
+### 10.2 Shapes that are wrong today: probe services
+
+Do not assert a wrong result, and do not add a failing test. If master
+returns wrong rows for a shape you want covered, add it as a **probe**: a
+`Service` with no `testSuites`. Plan generation still runs on it (and
+`EMITSnapshot` captures its SQL, see `emit.md` §5.5), but nothing asserts on
+its rows. Say in the service's `documentation` why it is a probe, and name
+the `ToFix` test or issue that tracks the bug. Move it into a test suite in
+the PR that fixes the bug.
+
 ---
 
 ## 11. Classification and Deduplication Guidelines

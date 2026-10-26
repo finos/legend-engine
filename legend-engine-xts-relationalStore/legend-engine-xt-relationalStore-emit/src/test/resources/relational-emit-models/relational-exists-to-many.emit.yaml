@@ -1,0 +1,60 @@
+name: relational-exists-to-many
+title: "exists() and Filters Across a To-Many Association"
+description: |
+  The query shapes the relational router rewrites when a filter crosses the
+  to-many side of an association: exists() alone, with a conjunction inside
+  one lambda, negated, nested through the association, reached from the
+  to-one side, followed by a projection over the same to-many property,
+  isEmpty(), and the same exists() used twice in one query - in the filter
+  and again in a projection - which must stay a single join (#5266 made it
+  one join per use and was reverted). Each asserted shape runs as a mapping
+  test suite over data chosen so that the plausible wrong answers differ
+  from the right one: one firm has a Peter and a Smith who are different
+  people, one has a single Peter Smith, one has a Peter and no Smith, and
+  one has no employees. Shapes whose rows are wrong on master - several
+  exists() on the same property combined with && or || or chained filters,
+  and size() of a to-many property in a projection - are kept as plan-only
+  probe services, so their SQL is still captured for review; move each into
+  a mapping test suite once fixed.
+
+modelSources:
+  model:
+    root: relational-exists-to-many
+    files:
+      - data/firmData.pure
+      - mapping/existsMapping.pure
+      - connection/h2Connection.pure
+      - runtime/firmRuntime.pure
+      - service/probes.pure
+  dependencies:
+    - source: relational-shared-domain.emit.yaml
+    - source: relational-shared-firm-db.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:plan-generation
+  - execution:service
+  - execution:test-data
+  - grammar:association
+  - query:exists-to-many
+  - query:exists-nested
+  - query:exists-negated
+  - query:multiple-exists-same-property
+  - query:to-many-aggregation
+  - query:to-many-projection
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - exists
+  - h2
+  - mapping-test
+  - shared-domain
+  - shared-store
+  - sql-review
