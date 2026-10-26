@@ -21,6 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.test.emit.EMITModel;
 import org.finos.legend.engine.test.emit.EMITModelDiscovery;
 import org.finos.legend.engine.test.emit.EMITModelLoader;
+import org.finos.legend.engine.test.emit.EMITSnapshot;
 import org.finos.legend.engine.test.emit.EMITSourceSet;
 import org.finos.legend.engine.test.emit.EMITTasks;
 import org.finos.legend.engine.test.emit.EMITTasks.ParseResult;
@@ -71,6 +72,10 @@ import java.util.stream.StreamSupport;
  * task out of context, e.g. an IDE re-running one atomic test) triggers the
  * same work on demand and sees the same tasks; the tasks then simply replay
  * the memoized outcome.
+ *
+ * <p>When {@link EMITSnapshot} is enabled, each model ends with a Snapshot
+ * group recording its parsed protocol and the execution plan of every
+ * service and test, for comparing two engine revisions.
  *
  * <p>Each dynamic test calls into {@link EMITTasks} for its body, so that
  * the standalone {@code EMITRunner} and this JUnit integration share a single
@@ -281,7 +286,7 @@ public final class EMITTestSuiteBuilder
         List<Path> yamls = EMITModelDiscovery.findEmitYamls(classpathRoot);
         yamls.sort(null);
         EMITModelLoader loader = new EMITModelLoader();
-        return yamls.stream().map(yaml -> containerFor(yaml, loader, verboseNames));
+        return yamls.stream().map(yaml -> containerFor(classpathRoot, yaml, loader, verboseNames));
     }
 
     private static Stream<DynamicContainer> testContainers(String classpathRoot, Stream<? extends String> names, boolean verboseNames)
@@ -300,7 +305,7 @@ public final class EMITTestSuiteBuilder
         Path yaml = EMITModelDiscovery.findEmitYaml(classpathRoot, name);
         if (yaml != null)
         {
-            return containerFor(yaml, loader, verboseNames);
+            return containerFor(classpathRoot, yaml, loader, verboseNames);
         }
         if (errorIfNotFound)
         {
@@ -319,7 +324,7 @@ public final class EMITTestSuiteBuilder
         return container.getChildren().flatMap(EMITTestSuiteBuilder::toTests);
     }
 
-    private static DynamicContainer containerFor(Path yaml, EMITModelLoader loader, boolean verboseNames)
+    private static DynamicContainer containerFor(String classpathRoot, Path yaml, EMITModelLoader loader, boolean verboseNames)
     {
         String fallbackLabel = stripExtension(yaml.getFileName().toString());
         EMITSourceSet sourceSet;
@@ -337,7 +342,43 @@ public final class EMITTestSuiteBuilder
         Stream<DynamicNode> children = Stream.concat(
                 Stream.of(passingTask(verboseNames, label, "Load Model Descriptor"), initializationContainer(verboseNames, label, state)),
                 deferred(() -> downstreamNodes(verboseNames, label, state)));
+        EMITSnapshot snapshot = EMITSnapshot.forModel(classpathRoot, label);
+        if (snapshot != null)
+        {
+            children = Stream.concat(children, deferred(() -> Stream.of(snapshotContainer(verboseNames, label, state, snapshot))));
+        }
         return DynamicContainer.dynamicContainer(label, children);
+    }
+
+    private static DynamicContainer snapshotContainer(boolean verboseNames, String label, ModelState state, EMITSnapshot snapshot)
+    {
+        String containerName = "Snapshot";
+        Stream.Builder<DynamicNode> tasks = Stream.builder();
+        tasks.add(test(() ->
+        {
+            state.writeSnapshot(snapshot);
+            snapshot.writeProtocolSubtypes();
+        }, verboseNames, label, containerName, "Protocol"));
+        EMITModel model = state.modelForDownstreamDiscovery();
+        if (model != null)
+        {
+            EMITTasks.findServices(model).forEach(service ->
+                    tasks.add(test(() -> snapshot.writeServicePlan(service, model.getPureModel()), verboseNames, label, containerName, "Plan", service.getPath())));
+            EMITTasks.findTestCandidates(model).stream()
+                    .collect(Collectors.groupingBy(candidate -> candidate.testablePath + "\0" + candidate.suiteId, LinkedHashMap::new, Collectors.toList()))
+                    .values()
+                    .forEach(group ->
+                    {
+                        TestCandidate head = group.get(0);
+                        List<String> atomicTestIds = group.stream().map(candidate -> candidate.atomicTestId).collect(Collectors.toList());
+                        tasks.add(test(() -> snapshot.writeTestPlans(head.testablePath, head.suiteId, atomicTestIds, model.getPmcd(), model.getPureModel()), verboseNames, label, containerName, "Test Plans", head.testablePath + " / " + head.suiteId));
+                    });
+        }
+        if (snapshot.hasCrossRead())
+        {
+            tasks.add(test(snapshot::crossRead, verboseNames, label, containerName, "Protocol Cross-Read"));
+        }
+        return DynamicContainer.dynamicContainer(containerName, tasks.build());
     }
 
     private static DynamicContainer initializationContainer(boolean verboseNames, String label, ModelState state)
@@ -519,6 +560,12 @@ public final class EMITTestSuiteBuilder
         {
             ensureModelGenerated();
             return this.model;
+        }
+
+        synchronized void writeSnapshot(EMITSnapshot snapshot)
+        {
+            ensureCompiled();
+            snapshot.writeModel(this.parseResult, this.parseFailure, this.compileFailure);
         }
     }
 

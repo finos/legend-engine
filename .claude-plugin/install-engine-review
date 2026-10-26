@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#
+# install-engine-review - install the engine-review plugin into the local coding-agent config.
+#
+# Symlinks the engine-review CLI into ~/.local/bin, links the plugin's skills into ~/.claude/skills,
+# and registers this repo as a marketplace with the plugin enabled in ~/.claude/settings.json.
+# As with install-pure-dev, the skill links are the default because a managed install can refuse a
+# directory marketplace; pass --no-link-skills when the plugin comes from an allowed marketplace.
+#
+# Idempotent. Safe to re-run any time.
+set -euo pipefail
+
+MARKET_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PLUGIN_ROOT="$MARKET_ROOT/plugins/engine-review"
+CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+BIN_TARGET="${ENGINE_REVIEW_BIN_DIR:-$HOME/.local/bin}"
+LINK_SKILLS=1
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-link-skills) LINK_SKILLS=0; shift ;;
+    -h|--help) sed -n '15,22p' "$0"; exit 0 ;;
+    *) echo "[install-engine-review] unknown argument: $1" >&2; exit 1 ;;
+  esac
+done
+
+mkdir -p "$BIN_TARGET"
+ln -sf "$PLUGIN_ROOT/bin/engine-review" "$BIN_TARGET/engine-review"
+echo "[install-engine-review] linked engine-review into $BIN_TARGET"
+case ":$PATH:" in
+  *":$BIN_TARGET:"*) ;;
+  *) echo "[install-engine-review] note: $BIN_TARGET is not on PATH" ;;
+esac
+
+SETTINGS="$CLAUDE_DIR/settings.json"
+mkdir -p "$CLAUDE_DIR"
+[[ -f "$SETTINGS" ]] || echo '{}' > "$SETTINGS"
+python3 - "$SETTINGS" "$MARKET_ROOT" <<'PY'
+import json, os, sys, tempfile
+settings_path, market_root = sys.argv[1], sys.argv[2]
+try:
+    s = json.load(open(settings_path))
+except Exception:
+    s = {}
+mk = s.setdefault("extraKnownMarketplaces", {})
+if isinstance(mk, dict):
+    mk["finos-legend-engine"] = {"source": {"source": "directory", "path": market_root}}
+ep = s.setdefault("enabledPlugins", {})
+if isinstance(ep, dict):
+    ep["engine-review@finos-legend-engine"] = True
+fd, tmp = tempfile.mkstemp(dir=os.path.dirname(settings_path) or ".", prefix=".settings-", suffix=".json")
+try:
+    with os.fdopen(fd, "w") as f:
+        json.dump(s, f, indent=2)
+    os.replace(tmp, settings_path)
+except Exception:
+    os.path.exists(tmp) and os.unlink(tmp)
+    raise
+print("[install-engine-review] wrote extraKnownMarketplaces + enabledPlugins to", settings_path)
+PY
+
+SKILLS_DST="$CLAUDE_DIR/skills"
+mkdir -p "$SKILLS_DST"
+for dest in "$SKILLS_DST"/*; do
+  [[ -L "$dest" ]] || continue
+  case "$(readlink "$dest")" in
+    "$PLUGIN_ROOT"/skills/*) [[ ! -e "$dest" || "$LINK_SKILLS" != "1" ]] && rm -f "$dest" ;;
+  esac
+done
+if [[ "$LINK_SKILLS" == "1" ]]; then
+  for skill_dir in "$PLUGIN_ROOT"/skills/*/; do
+    dest="$SKILLS_DST/$(basename "$skill_dir")"
+    [[ -e "$dest" && ! -L "$dest" ]] && rm -rf "$dest"
+    ln -sfn "$skill_dir" "$dest"
+  done
+  echo "[install-engine-review] linked skills into $SKILLS_DST"
+fi
+echo "[install-engine-review] done. Restart the agent to pick up the engine-review skills."

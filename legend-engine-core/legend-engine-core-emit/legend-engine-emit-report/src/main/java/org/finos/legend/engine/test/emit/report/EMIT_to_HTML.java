@@ -85,6 +85,10 @@ public class EMIT_to_HTML
             "execution:plan-generation", "execution:post-validation",
             "execution:schema-set", "execution:service", "execution:service-test",
             "execution:shared-test-data", "execution:snowflake-app", "execution:test-data",
+            // query
+            "query:exists-negated", "query:exists-nested", "query:exists-to-many",
+            "query:multiple-exists-same-property", "query:to-many-aggregation",
+            "query:to-many-projection",
             // scaffolding
             "scaffolding:class", "scaffolding:m2m-mapping", "scaffolding:model-chain-connection",
             "scaffolding:model-connection",
@@ -98,6 +102,7 @@ public class EMIT_to_HTML
             "store", "#27AE60",
             "milestoning", "#8E44AD")
             .withKeyValue("execution", "#C0392B")
+            .withKeyValue("query", "#16A085")
             .withKeyValue("scaffolding", "#95A5A6")
             .toImmutable();
 

@@ -1,0 +1,178 @@
+{
+    "ignore": [
+        "plugins/**",
+        "docs/**",
+        ".claude/**",
+        ".claude-plugin/**",
+        "**/*.md",
+        "**/src/test/**"
+    ],
+    "suites": {
+        "relational": {
+            "module": "legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit",
+            "tests": [
+                "RelationalEMITTests",
+                "RelationEMITTests"
+            ],
+            "lenses": [
+                "sql",
+                "protocol"
+            ]
+        },
+        "service": {
+            "module": "legend-engine-xts-service/legend-engine-xt-service-emit",
+            "tests": [
+                "ServiceEMITTests"
+            ],
+            "lenses": [
+                "sql",
+                "protocol"
+            ]
+        },
+        "persistence": {
+            "module": "legend-engine-xts-persistence/legend-engine-xt-persistence-emit",
+            "tests": [
+                "PersistenceEMITTests"
+            ],
+            "lenses": [
+                "sql",
+                "protocol"
+            ]
+        },
+        "core": {
+            "module": "legend-engine-core/legend-engine-core-emit-tests",
+            "tests": [
+                "GrammarEMITTests",
+                "M2MEMITTests"
+            ],
+            "lenses": [
+                "protocol"
+            ]
+        },
+        "crossfeature": {
+            "module": "legend-engine-config/legend-engine-emit-tests",
+            "tests": [
+                "CrossFeatureEMITTests"
+            ],
+            "lenses": [],
+            "note": "Needs nearly the whole reactor built; request it explicitly with --suites."
+        }
+    },
+    "framework": [
+        "legend-engine-core/legend-engine-core-emit/legend-engine-emit",
+        "legend-engine-core/legend-engine-core-emit/legend-engine-emit-junit"
+    ],
+    "instrument_files": [
+        "legend-engine-core/legend-engine-core-emit/legend-engine-emit/src/main/java/org/finos/legend/engine/test/emit/EMITSnapshot.java",
+        "legend-engine-core/legend-engine-core-emit/legend-engine-emit-junit/src/main/java/org/finos/legend/engine/test/emit/junit/EMITTestSuiteBuilder.java"
+    ],
+    "rules": [
+        {
+            "lens": "sql",
+            "paths": [
+                "legend-engine-xts-relationalStore/**/*.pure",
+                "legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-execution/**",
+                "legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/router/**",
+                "legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/executionPlan/**",
+                "legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/milestoning/**",
+                "legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/graphFetch/**",
+                "legend-engine-core/legend-engine-core-base/legend-engine-core-executionPlan-generation/**",
+                "legend-engine-xts-*/**/relational*/**/*.pure"
+            ],
+            "why": "Router, pure-to-SQL and plan generation decide the SQL every relational query emits."
+        },
+        {
+            "lens": "sql",
+            "paths": [
+                "legend-engine-core/legend-engine-core-pure/**/*.pure"
+            ],
+            "why": "Core Pure functions are inlined into routed queries; a body change can alter generated SQL."
+        },
+        {
+            "lens": "protocol",
+            "paths": [
+                "**/*-protocol/**",
+                "**/*-protocol-*/**",
+                "**/legend-engine-protocol-pure/**",
+                "**/*grammar*/src/main/**",
+                "**/*compiler*/src/main/**",
+                "**/protocols/pure/**",
+                "**/core/pure/protocol/**",
+                "**/*.protocol.json",
+                "**/META-INF/services/*PureProtocolExtension",
+                "**/ObjectMapperFactory.java",
+                "**/PureProtocolObjectMapperFactory.java"
+            ],
+            "why": "Protocol POJOs, subtype registration, parser/composer and the Pure-side protocol define the JSON SDLC stores and Studio sends."
+        },
+        {
+            "lens": "auth",
+            "paths": [
+                "legend-engine-xts-authentication/**",
+                "legend-engine-xts-identity/**",
+                "legend-engine-core/legend-engine-core-identity/**",
+                "legend-engine-core/legend-engine-core-shared/legend-engine-shared-vault/**",
+                "legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-execution/legend-engine-xt-relationalStore-executionPlan-connection*/**",
+                "legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-execution/legend-engine-xt-relationalStore-executionPlan-authorizer/**",
+                "legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-execution/legend-engine-xt-relationalStore-executionPlan/src/main/java/org/finos/legend/engine/plan/execution/stores/relational/connection/**",
+                "legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/**/connection/**",
+                "legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/**/driver/**",
+                "legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/**/authentication/**",
+                "legend-engine-xts-serviceStore/**/auth/**",
+                "legend-engine-xts-mongodb/**/auth/**",
+                "legend-engine-xts-elasticsearch/**/connection/**",
+                "legend-engine-xts-sql/legend-engine-xt-sql-postgres-server/**/auth/**",
+                "legend-engine-xts-sql/legend-engine-xt-sql-postgres-server/**/identity/**",
+                "legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/main/java/org/finos/legend/engine/server/Server.java",
+                "legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/main/java/org/finos/legend/engine/server/ServerConfiguration.java",
+                "legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/main/java/org/finos/legend/engine/server/core/session/**",
+                "**/config/*.json",
+                "**/PlanExecutor.java",
+                "**/ExecutionState.java",
+                "**/*DeploymentManager.java",
+                "**/kerberos/**"
+            ],
+            "content": [
+                "\\bIdentity\\b",
+                "\\bSubject\\b",
+                "doAs\\(",
+                "Credential",
+                "AuthenticationStrategy",
+                "DataSourceSpecification",
+                "ConnectionKey",
+                "ConnectionStateManager",
+                "ProfileManager",
+                "pac4j",
+                "Vault",
+                "password",
+                "[Tt]oken",
+                "authId",
+                "kerberos"
+            ],
+            "why": "Identity, credential, vault, pool keying and session code decide who a query runs as."
+        }
+    ],
+    "blind_spots": [
+        {
+            "paths": [
+                "legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/**"
+            ],
+            "exclude": [
+                "**/legend-engine-xt-relationalStore-h2/**"
+            ],
+            "note": "EMIT executes on H2 only. Dialect-specific SQL rendering here is not exercised by the corpus; run that dialect's PCT module."
+        },
+        {
+            "paths": [
+                "legend-engine-xts-sql/**"
+            ],
+            "note": "SQL-to-Pure translation is not exercised by EMIT; use TestPostgresParity (legend-engine-xt-sql-e2e-tests) or the pure-lsp-sql-e2e skill."
+        },
+        {
+            "paths": [
+                "**/src/test/**"
+            ],
+            "note": "Test-only change (EMIT corpus included): no product impact by itself; check that no assertion was weakened, and for new corpus models that the data tells the wrong answers apart."
+        }
+    ]
+}

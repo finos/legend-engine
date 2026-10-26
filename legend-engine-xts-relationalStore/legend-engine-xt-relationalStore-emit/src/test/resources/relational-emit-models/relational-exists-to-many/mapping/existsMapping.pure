@@ -1,0 +1,354 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::sqlshapes::ExistsMapping
+(
+  *demo::Person: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::FirmDB]PersonTable.id
+    )
+    ~mainTable [demo::store::FirmDB]PersonTable
+    firstName: [demo::store::FirmDB]PersonTable.firstName,
+    lastName: [demo::store::FirmDB]PersonTable.lastName,
+    firm: [demo::store::FirmDB]@PersonFirm
+  }
+
+  *demo::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::FirmDB]FirmTable.id
+    )
+    ~mainTable [demo::store::FirmDB]FirmTable
+    legalName: [demo::store::FirmDB]FirmTable.legalName,
+    employees: [demo::store::FirmDB]@PersonFirm
+  }
+
+  testSuites:
+  [
+    singleExists:
+    {
+      function: |demo::Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter'))->project([f|$f.legalName], ['name'])->sort([asc('name')]);
+      tests:
+      [
+        matches:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::sqlshapes::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Finos"},{"name":"Goldman"},{"name":"Hooli"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    conjunctionInsideOneExists:
+    {
+      function: |demo::Firm.all()->filter(f|$f.employees->exists(e|($e.firstName == 'Peter') && ($e.lastName == 'Smith')))->project([f|$f.legalName], ['name'])->sort([asc('name')]);
+      tests:
+      [
+        matches:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::sqlshapes::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Goldman"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    negatedExists:
+    {
+      function: |demo::Firm.all()->filter(f|!$f.employees->exists(e|$e.firstName == 'Peter'))->project([f|$f.legalName], ['name'])->sort([asc('name')]);
+      tests:
+      [
+        matches:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::sqlshapes::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Acme"},{"name":"Initech"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    nestedExistsThroughAssociation:
+    {
+      function: |demo::Firm.all()->filter(f|$f.employees->exists(e|$e.firm.employees->exists(c|$c.lastName == 'Brown')))->project([f|$f.legalName], ['name'])->sort([asc('name')]);
+      tests:
+      [
+        matches:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::sqlshapes::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Acme"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    existsFromToOneSide:
+    {
+      function: |demo::Person.all()->filter(p|$p.firm.employees->exists(c|$c.lastName == 'Smith'))->project([p|$p.firstName, p|$p.lastName], ['first', 'last'])->sort([asc('first'), asc('last')]);
+      tests:
+      [
+        matches:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::sqlshapes::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"first":"Jane","last":"Smith"},{"first":"John","last":"Doe"},{"first":"Peter","last":"Jones"},{"first":"Peter","last":"Smith"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    existsThenProjectSameToMany:
+    {
+      function: |demo::Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter'))->project([f|$f.legalName, f|$f.employees.lastName], ['name', 'employee'])->sort([asc('name'), asc('employee')]);
+      tests:
+      [
+        matches:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::sqlshapes::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Finos","employee":"Doe"},{"name":"Finos","employee":"Jones"},{"name":"Finos","employee":"Smith"},{"name":"Goldman","employee":"Smith"},{"name":"Hooli","employee":"Gregory"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    existsWithRelationProjection:
+    {
+      function: |demo::Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Smith'))->project(~[name: f|$f.legalName])->sort(~name->ascending());
+      tests:
+      [
+        matches:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::sqlshapes::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Finos"},{"name":"Goldman"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    isEmptyToMany:
+    {
+      function: |demo::Firm.all()->filter(f|$f.employees->isEmpty())->project([f|$f.legalName], ['name']);
+      tests:
+      [
+        matches:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::sqlshapes::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Initech"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sameExistsInFilterAndProjection:
+    {
+      function: |demo::Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter'))->project([f|$f.legalName, f|$f.employees->exists(e|$e.firstName == 'Peter')], ['name', 'hasPeter'])->sort([asc('name')]);
+      tests:
+      [
+        matches:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::sqlshapes::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Finos","hasPeter":true},{"name":"Goldman","hasPeter":true},{"name":"Hooli","hasPeter":true}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sameExistsReachedTwiceFromToOneSide:
+    {
+      function: |demo::Person.all()->filter(p|$p.firm.employees->exists(c|$c.lastName == 'Smith'))->project([p|$p.firstName, p|$p.lastName, p|$p.firm.employees->exists(c|$c.lastName == 'Smith')], ['first', 'last', 'colleagueSmith'])->sort([asc('first'), asc('last')]);
+      tests:
+      [
+        matches:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::sqlshapes::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"first":"Jane","last":"Smith","colleagueSmith":true},{"first":"John","last":"Doe","colleagueSmith":true},{"first":"Peter","last":"Jones","colleagueSmith":true},{"first":"Peter","last":"Smith","colleagueSmith":true}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
