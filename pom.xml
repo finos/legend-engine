@@ -165,12 +165,15 @@
         <snowflake.version>4.3.2</snowflake.version>
         <duckdb.version>1.3.0.0</duckdb.version>
         <clickhouse.version>0.9.6</clickhouse.version>
+        <bigqueryJDBC.version>1.0.0</bigqueryJDBC.version>
         <db2jcc.version>11.5.9.0</db2jcc.version>
+        <googleCloudLibraries.version>26.86.0</googleCloudLibraries.version>
+        <httpcore5.version>5.3.4</httpcore5.version>
 
         <!-- Dependency versions -->
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
         <antlr.version>4.8-1</antlr.version>
-        <arrow.version>18.0.0</arrow.version>
+        <arrow.version>19.0.0</arrow.version>
         <bouncycastle.version>1.67</bouncycastle.version>
         <bouncycastle.jdk18on.version>1.85</bouncycastle.jdk18on.version>
         <byte-buddy.version>1.17.5</byte-buddy.version>
@@ -180,7 +183,7 @@
         <commons-io.version>2.7</commons-io.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <commons-text.version>1.10.0</commons-text.version>
-        <deephaven.version>0.40.7</deephaven.version>
+        <deephaven.version>42.4</deephaven.version>
         <deephaven-csv.version>0.19.0</deephaven-csv.version>
         <dropwizard-swagger.version>4.0.5-1</dropwizard-swagger.version>
         <!-- Must match the metrics version dropwizard-dependencies pins for ${dropwizard.version}. -->
@@ -188,11 +191,11 @@
         <dropwizard.version>5.0.2</dropwizard.version>
         <eclipsecollections.version>10.2.0</eclipsecollections.version>
         <error-prone-annotations.version>2.48.0</error-prone-annotations.version>
-        <flatbuffers-java.version>24.3.25</flatbuffers-java.version>
+        <flatbuffers-java.version>25.2.10</flatbuffers-java.version>
         <freemarker.version>2.3.34</freemarker.version>
         <github.classgraph.version>4.8.25</github.classgraph.version>
         <google.api.grpc.version>2.21.0</google.api.grpc.version>
-        <grpc.version>1.65.1</grpc.version>
+        <grpc.version>1.76.2</grpc.version>
         <gson.version>2.14.0</gson.version>
         <guava.version>33.4.6-jre</guava.version>
         <hamcrest.core.version>1.3</hamcrest.core.version>
@@ -237,7 +240,7 @@
         <pac4j.jersey.version>7.0.1</pac4j.jersey.version>
         <pac4j.version>6.5.8</pac4j.version>
         <prometheus.version>0.8.1</prometheus.version>
-        <protobuf.java.version>3.25.3</protobuf.java.version>
+        <protobuf.java.version>4.33.6</protobuf.java.version>
         <slf4j.version>2.0.17</slf4j.version>
         <snakeyaml.version>2.5</snakeyaml.version>
         <!-- Use swagger-annotations-jakarta only, as dropwizard-swagger does: the plain artifact carries
@@ -270,7 +273,7 @@
         <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
         <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
         <maven.extra.enforcer.rules.version>1.12.0</maven.extra.enforcer.rules.version>
-        <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
+        <maven.shade.plugin.version>3.6.2</maven.shade.plugin.version>
         <maven.source.plugin.version>3.2.0</maven.source.plugin.version>
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
@@ -618,6 +621,8 @@
                                          the rest of the jar is Java 8. -->
                                     <ignoreClasses>
                                         <ignoreClass>wiremock.org.eclipse.jetty.alpn.java.**</ignoreClass>
+                                        <!-- Tink as relocated into the shaded Spanner driver -->
+                                        <ignoreClass>org.finos.legend.engine.spanner.jdbc.shaded.com.google.crypto.tink.*</ignoreClass>
                                     </ignoreClasses>
                                     <excludes>
 <!--                                        <exclude>io.deephaven:deephaven-proto-backplane-grpc-flight</exclude>-->
@@ -697,6 +702,7 @@
                                         <exclude>com.databricks:databricks-jdbc</exclude>
                                         <exclude>org.mongodb:bson-record-codec</exclude>
                                         <exclude>com.oracle.database.jdbc:ojdbc11</exclude>
+                                        <exclude>com.google.crypto.tink:tink</exclude>
 
                                         <exclude>org.eclipse.lsp4j:*</exclude>
                                     </excludes>
@@ -1648,6 +1654,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-bigquery-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-bigquery-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -4163,6 +4174,13 @@
                 <version>3.6.1.Final</version>
             </dependency>
             <dependency>
+                <!-- Needed to resolve dependency convergence issue: Dropwizard's jetty-setuid-jna brings 5.14.0,
+                     Deephaven's oshi-core 5.19.0. -->
+                <groupId>net.java.dev.jna</groupId>
+                <artifactId>jna-jpms</artifactId>
+                <version>5.19.0</version>
+            </dependency>
+            <dependency>
                 <!-- jakarta.annotation.Generated, emitted by the Pure Java generators. Needed at runtime: that
                      code is compiled at runtime. -->
                 <groupId>jakarta.annotation</groupId>
@@ -4401,6 +4419,11 @@
                 <version>${snowflake.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>google-cloud-bigquery-jdbc</artifactId>
+                <version>${bigqueryJDBC.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.duckdb</groupId>
                 <artifactId>duckdb_jdbc</artifactId>
                 <version>${duckdb.version}</version>
@@ -4576,6 +4599,53 @@
             </dependency>
 
             <!-- GRPC -->
+            <!-- Declared before libraries-bom so this governs gRPC: the first import wins, and
+                 Deephaven's client is built against this line -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-bom</artifactId>
+                <version>${grpc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Aligns the whole Google Cloud stack - bigquery, the Storage API, gax, api-common,
+                 iam - so the BigQuery client library and the JDBC driver agree on it -->
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>${googleCloudLibraries.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>1.62.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Not covered by any of the imported BOMs -->
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5</artifactId>
+                <version>${httpcore5.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5-h2</artifactId>
+                <version>${httpcore5.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-annotations</artifactId>
+                <version>1.27</version>
+            </dependency>
+            <!-- Not covered by libraries-bom; the driver and the client library pin different revs -->
+            <dependency>
+                <groupId>com.google.apis</groupId>
+                <artifactId>google-api-services-bigquery</artifactId>
+                <version>v2-rev20260612-2.0.0</version>
+            </dependency>
             <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-api</artifactId>

@@ -28,6 +28,9 @@ GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH:                   'GCPApplicationDefau
 API_TOKEN_AUTH:                             'ApiToken';
 API_TOKEN_AUTH_TOKEN:                       'apiToken';
 
+GCP_SERVICE_ACCOUNT_KEY_AUTH:                               'GCPServiceAccountKey';
+SERVICE_ACCOUNT_KEY_VAULT_REFERENCE:                        'serviceAccountKeyVaultReference';
+
 GCP_WORKLOAD_IDENTITY_FEDERATION_AUTH:                      'GCPWorkloadIdentityFederation';
 SERVICE_ACCOUNT_EMAIL:                                      'serviceAccountEmail';
 ADDITIONAL_GCP_SCOPES:                                                  'additionalGcpScopes';
