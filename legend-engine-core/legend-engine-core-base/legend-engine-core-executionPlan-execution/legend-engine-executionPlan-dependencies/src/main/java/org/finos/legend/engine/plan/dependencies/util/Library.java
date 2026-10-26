@@ -554,7 +554,7 @@ public class Library
         }
     }
 
-    public static Number minus(List<Number> col)
+    public static Number minus(List<? extends Number> col)
     {
         int size = col.size();
         if (size == 0)
