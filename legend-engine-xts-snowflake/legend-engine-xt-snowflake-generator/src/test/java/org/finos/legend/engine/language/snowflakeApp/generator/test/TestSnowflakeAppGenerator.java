@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifactPostProcessor;
 import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppGenerator;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
@@ -103,6 +104,17 @@ public class TestSnowflakeAppGenerator
         String expectedGrant = "GRANT USAGE ON FUNCTION %S.LEGEND_NATIVE_APPS.APP1_REVISED() to role PUBLIC;";
         Assert.assertEquals(expected, ((SnowflakeAppContent)artifact.content).createStatement);
         Assert.assertEquals(expectedGrant, ((SnowflakeAppContent) artifact.content).grantStatement);
+    }
+
+    @Test
+    public void testArtifactProcessorsAreAppliedToGeneratedArtifact()
+    {
+        Root_meta_external_function_activator_snowflakeApp_SnowflakeApp app = (Root_meta_external_function_activator_snowflakeApp_SnowflakeApp) Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_("demo::activators::snowflakeApp::App1", this.pureModel.getExecutionSupport());
+        SnowflakeAppArtifactPostProcessor processor = artifact -> ((SnowflakeAppContent) artifact.content).createStatement = ((SnowflakeAppContent) artifact.content).createStatement.replace("LEGEND_GOVERNANCE.BUSINESS_OBJECTS", "RESOLVED.BUSINESS_OBJECTS");
+        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(this.pureModel, app, this.contextData, routerExtensions, Lists.mutable.with(processor));
+        String createStatement = ((SnowflakeAppContent) artifact.content).createStatement;
+        Assert.assertTrue(createStatement, createStatement.contains("from RESOLVED.BUSINESS_OBJECTS as \"root\""));
+        Assert.assertFalse(createStatement, createStatement.contains("LEGEND_GOVERNANCE.BUSINESS_OBJECTS"));
     }
 
     @Test
