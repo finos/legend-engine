@@ -26,6 +26,17 @@ public class ServerConfig
     private IdentityType identityType;
     private GSSConfig gss;
     private OpenTelemetryConfig otelConfig;
+    private SSLConfig ssl;
+
+    public SSLConfig getSsl()
+    {
+        return ssl;
+    }
+
+    public void setSsl(SSLConfig ssl)
+    {
+        this.ssl = ssl;
+    }
 
     public Integer getMetricsPort()
     {
