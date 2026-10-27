@@ -254,6 +254,38 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
       |$withQualifiedPropertyGetters->implements($iReferencedObject)->addMethod(javaMethod(javaString(), $iReferencedObject.methods->toOne().name, [])));
 }
 
+function meta::pure::executionPlan::platformBinding::legendJava::shared::generateDefaultGettersInterfaceForClass(typeInfo: ClassTypeInfo[1], declaredProperties: AbstractProperty<Any>[*], conventions: Conventions[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let proto = $conventions->className($typeInfo.type)
+      ->addModifiers(['public', 'interface'])
+      ->imports($conventions->standardDataTypeImports());
+
+   let withPropertyGetters = $typeInfo.properties->filter(p | !$declaredProperties->contains($p))->fold(
+      {p, c|
+         $c->addMethod(javaMethod(['default'], $conventions->pureTypeToJavaType($p), $conventions->getterName($p), [], $p->throwNotProvidedByPlan()))
+      },
+      $proto
+   );
+
+   $typeInfo.qualifiedProperties->filter(q | !$declaredProperties->contains($q))->fold(
+      {q, c|
+         $c->addMethod(javaMethod(
+            ['default'],
+            $conventions->pureTypeToJavaType($q),
+            $conventions->getterName($q),
+            $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name)),
+            $q->throwNotProvidedByPlan()
+         ))
+      },
+      $withPropertyGetters
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::throwNotProvidedByPlan(p: AbstractProperty<Any>[1]): Code[1]
+{
+   j_throw(javaUnsupportedOperationException()->j_new(j_string('Property \'' + $p.name->toOne() + '\' is not provided by this plan')))
+}
+
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfacePropertyGetter(p: AbstractProperty<Any>[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Method[1]
 {
    javaMethod($conventions->pureTypeToJavaType($p), $conventions->getterName($p), []);
