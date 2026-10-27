@@ -1,0 +1,19 @@
+name: m2m-new-child-filter
+title: "M2M child mapping filters on the instance its parent constructs"
+description: |
+  The parent maps each element to Box(ft=element). The child mapping with
+  ~src Box has ~filter $src.ft.rank > 1, and rank is read nowhere else.
+  One element passes the filter and one does not, so the service must
+  return only the element with rank 2.
+modelSources:
+  model:
+    root: m2m-new-child-filter
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - new-operator

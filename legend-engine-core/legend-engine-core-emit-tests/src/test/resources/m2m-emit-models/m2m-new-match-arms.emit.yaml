@@ -1,0 +1,19 @@
+name: m2m-new-match-arms
+title: "M2M child mappings read slots filled by different arms of one match"
+description: |
+  A helper function builds the child mappings' source with a two-arm match, and each arm
+  fills a different slot of it. Each child is filtered to one arm's subtype and reads that
+  arm's slot. Both rows must carry their own leg value.
+modelSources:
+  model:
+    root: m2m-new-match-arms
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - new-operator
+  - match

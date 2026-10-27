@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::m2m::newInstance::childFilter::Leaf { id: String[1]; rank: Integer[1]; }
+Class demo::m2m::newInstance::childFilter::Detail { somevalue: String[1]; }
+Class demo::m2m::newInstance::childFilter::Special extends demo::m2m::newInstance::childFilter::Leaf { somevalue: demo::m2m::newInstance::childFilter::Detail[1]; }
+Class demo::m2m::newInstance::childFilter::Source { aDecoy: demo::m2m::newInstance::childFilter::Leaf[1]; elements: demo::m2m::newInstance::childFilter::Leaf[*]; }
+Class demo::m2m::newInstance::childFilter::Box { ft: demo::m2m::newInstance::childFilter::Leaf[1]; }
+Class demo::m2m::newInstance::childFilter::Target2 { targets: demo::m2m::newInstance::childFilter::Target[*]; }
+Class demo::m2m::newInstance::childFilter::Target { id: String[1]; val1: String[1]; }
+
+###Mapping
+Mapping demo::m2m::newInstance::childFilter::Transform
+(
+  *demo::m2m::newInstance::childFilter::Target2: Pure
+  {
+    ~src demo::m2m::newInstance::childFilter::Source
+    targets[target]: $src.elements->map(e | ^demo::m2m::newInstance::childFilter::Box(ft=$e))
+  }
+  demo::m2m::newInstance::childFilter::Target[target]: Pure
+  {
+    ~src demo::m2m::newInstance::childFilter::Box
+    ~filter $src.ft.rank > 1
+    id: $src.ft.id,
+    val1: $src.ft->cast(@demo::m2m::newInstance::childFilter::Special).somevalue.somevalue
+  }
+)
+
+###Runtime
+Runtime demo::m2m::newInstance::childFilter::TransformRuntime
+{
+  mappings:
+  [
+    demo::m2m::newInstance::childFilter::Transform
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      json:
+      #{
+        JsonModelConnection
+        {
+          class: demo::m2m::newInstance::childFilter::Source;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}
+
+###Service
+Service demo::m2m::newInstance::childFilter::TransformService
+{
+  pattern: '/m2m-new-child-filter';
+  documentation: 'M2M child mapping filters on the instance its parent constructs';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::newInstance::childFilter::Target2.all()->graphFetch(#{demo::m2m::newInstance::childFilter::Target2{targets{id,val1}}}#)->serialize(#{demo::m2m::newInstance::childFilter::Target2{targets{id,val1}}}#);
+    mapping: demo::m2m::newInstance::childFilter::Transform;
+    runtime: demo::m2m::newInstance::childFilter::TransformRuntime;
+  }
+  testSuites:
+  [
+    suite:
+    {
+      data:
+      [
+        connections:
+        [
+          json:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"aDecoy":{"@type":"Special","id":"DECOY","rank":9,"somevalue":{"somevalue":"wrong"}},"elements":[{"@type":"Special","id":"E1","rank":1,"somevalue":{"somevalue":"first"}},{"@type":"Special","id":"E2","rank":2,"somevalue":{"somevalue":"second"}}]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"targets":[{"id":"E2","val1":"second"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

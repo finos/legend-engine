@@ -33,14 +33,30 @@ Class meta::pure::lineage::scanProperties::test::constructed::Opt
   x : String[0..1];
 }
 
+Class meta::pure::lineage::scanProperties::test::constructed::Sub1 extends Data
+{
+  one : String[1];
+}
+
+Class meta::pure::lineage::scanProperties::test::constructed::Sub2 extends Data
+{
+  two : String[1];
+}
+
 Class meta::pure::lineage::scanProperties::test::constructed::Box
 {
   a : String[1];
   b : String[0..1];
+  c : String[0..1];
   inner : Inner[0..1];
   data : Data[0..1];
   aTwice() { $this.a + $this.a } : String[1];
   heldData() { $this.data } : Data[0..1];
+}
+
+Class meta::pure::lineage::scanProperties::test::constructed::OtherBox
+{
+  a : String[1];
 }
 
 function meta::pure::lineage::scanProperties::test::constructed::resolvingConfig():ScanConfig[1]
@@ -53,11 +69,11 @@ function meta::pure::lineage::scanProperties::test::constructed::scanResolving(f
   $f.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(resolvingConfig())->toOne();
 }
 
-function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testKeyExpressionSourcesAreRecordedAndInstanceIsNotExposed():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testKeyExpressionSourcesAreRecordedAndInstanceIsReturned():Boolean[1]
 {
   let res = scanResolving({data:Data[*] | $data->map(d | ^Box(a=$d.a))});
   assertEquals('Data->a', $res.result->printPropertyNodeLists());
-  assertEquals('', $res.current->printPropertyNodeLists());
+  assert($res.current.values->toOne()->instanceOf(ConstructedInstancePathNode));
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testReadingAssignedPropertyResolvesToItsSource():Boolean[1]
@@ -128,13 +144,13 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties
   assertEquals('Data->a\nData->b', $res.result->printPropertyNodeLists());
 }
 
-function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testConditionalTerminalsNeverExposeConstructedInstance():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testConditionalTerminalsReturnConstructedInstances():Boolean[1]
 {
   let config = ^ScanConfig(scanClasses=false, explodeMilestonedProperties=true, captureConditionalTerminals=true, resolveConstructedInstances=true);
   let res = {d:Data[1] | if($d.a == 'x', |^Box(a=$d.a), |^Box(a=$d.b))}.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties($config)->toOne();
   assert($res.conditionalTerminalPaths->isNotEmpty());
-  assert($res.conditionalTerminalPaths.paths->forAll(p | $p.values->isEmpty()));
-  assert($res.current.values->isEmpty());
+  assert($res.conditionalTerminalPaths.paths->forAll(p | $p.values->toOne()->instanceOf(ConstructedInstancePathNode)));
+  assert($res.current.values->toOne()->instanceOf(ConstructedInstancePathNode));
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testDefaultConfigLeavesConstructedInstancesUnresolved():Boolean[1]
@@ -225,5 +241,52 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties
   let res = scanResolving({d:Data[1] | $d.child->map(c | ^$c(tags += 'k').tags)});
   assertEquals('Data->child\nData->child, Data->tags', $res.result->printPropertyNodeLists());
   assertEquals('Data->child, Data->tags', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testMatchArmsMergeTheirAssignments():Boolean[1]
+{
+  let res = scanResolving({data:Data[*] | $data->map(d | $d->match([
+                                                            s1:Sub1[1] | ^Box(a=$d.a, b=$s1.one),
+                                                            s2:Sub2[1] | ^Box(a=$d.a, c=$s2.two)
+                                                         ]))->map(bx | $bx.c)});
+  assertEquals('Data->a\nSub1->one\nSub2->two', $res.result->printPropertyNodeLists());
+  assertEquals('Sub2->two', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testMergingArmsKeepsTheFirstArmsAssignments():Boolean[1]
+{
+  let res = scanResolving({data:Data[*] | $data->map(d | $d->match([
+                                                            s1:Sub1[1] | ^Box(a=$d.a, b=$s1.one),
+                                                            s2:Sub2[1] | ^Box(a=$d.a, c=$s2.two)
+                                                         ]))->map(bx | $bx.b)});
+  assertEquals('Data->a\nSub1->one\nSub2->two', $res.result->printPropertyNodeLists());
+  assertEquals('Sub1->one', $res.current->printPropertyNodeLists());
+}
+
+// The slot resolves to the first arm's path although readProperty takes ->last().
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testArmsFillingOneSlotFromDifferentPathsKeepTheFirst():Boolean[1]
+{
+  let res = scanResolving({data:Data[*] | $data->map(d | $d->match([
+                                                            s1:Sub1[1] | ^Box(a=$s1.one),
+                                                            s2:Sub2[1] | ^Box(a=$s2.two)
+                                                         ]))->map(bx | $bx.a)});
+  assertEquals('Sub1->one\nSub2->two', $res.result->printPropertyNodeLists());
+  assertEquals('Sub1->one', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testConditionalBranchesMergeTheirAssignments():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | if($d.a == 'k', |^Box(a=$d.a), |^Box(a=$d.a, b=$d.b)).b});
+  assertEquals('Data->a\nData->b', $res.result->printPropertyNodeLists());
+  assertEquals('Data->b', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testArmsBuildingDifferentClassesKeepTheFirstArm():Boolean[1]
+{
+  let res = scanResolving({data:Data[*] | $data->map(d | $d->match([
+                                                            s1:Sub1[1] | ^Box(a=$s1.one),
+                                                            s2:Sub2[1] | ^OtherBox(a=$s2.two)
+                                                         ]))});
+  assertEquals('Box', $res.current.values->toOne()->cast(@ConstructedInstancePathNode).class.name->toOne());
 }
 

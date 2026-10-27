@@ -1,0 +1,19 @@
+name: m2m-new-child-source
+title: "M2M child mapping reads through the instance its parent constructs"
+description: |
+  The parent maps each element to Box(ft=element). A separate child mapping
+  with ~src Box reads ft.id and, after a cast to Special, a nested value.
+  aDecoy has the same class as the elements but different values, so each
+  child must read from its own element.
+modelSources:
+  model:
+    root: m2m-new-child-source
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - new-operator

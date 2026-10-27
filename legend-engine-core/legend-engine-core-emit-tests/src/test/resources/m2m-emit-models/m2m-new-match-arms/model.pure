@@ -1,0 +1,141 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::m2m::newInstance::matchArms::Leg { value: String[1]; }
+Class demo::m2m::newInstance::matchArms::Item { id: String[1]; }
+Class demo::m2m::newInstance::matchArms::A extends demo::m2m::newInstance::matchArms::Item { aLegs: demo::m2m::newInstance::matchArms::Leg[*]; }
+Class demo::m2m::newInstance::matchArms::B extends demo::m2m::newInstance::matchArms::Item { bLegs: demo::m2m::newInstance::matchArms::Leg[*]; }
+Class demo::m2m::newInstance::matchArms::Source { items: demo::m2m::newInstance::matchArms::Item[*]; }
+Class demo::m2m::newInstance::matchArms::Box { common: demo::m2m::newInstance::matchArms::Item[1]; aLeg: demo::m2m::newInstance::matchArms::Leg[0..1]; bLeg: demo::m2m::newInstance::matchArms::Leg[0..1]; }
+Class demo::m2m::newInstance::matchArms::Row { id: String[1]; leg: String[0..1]; }
+Class demo::m2m::newInstance::matchArms::Out { rows: demo::m2m::newInstance::matchArms::Row[*]; }
+
+function demo::m2m::newInstance::matchArms::boxes(src: demo::m2m::newInstance::matchArms::Source[1]): demo::m2m::newInstance::matchArms::Box[*]
+{
+  $src.items->map(i |
+     $i->match([
+        a: demo::m2m::newInstance::matchArms::A[1] | $a.aLegs->map(l | ^demo::m2m::newInstance::matchArms::Box(common = $a, aLeg = $l)),
+        b: demo::m2m::newInstance::matchArms::B[1] | $b.bLegs->map(l | ^demo::m2m::newInstance::matchArms::Box(common = $b, bLeg = $l))
+     ]))
+}
+
+###Mapping
+Mapping demo::m2m::newInstance::matchArms::Transform
+(
+  *demo::m2m::newInstance::matchArms::Out: Pure
+  {
+    ~src demo::m2m::newInstance::matchArms::Source
+    rows[aRow]: $src->demo::m2m::newInstance::matchArms::boxes(),
+    rows[bRow]: $src->demo::m2m::newInstance::matchArms::boxes()
+  }
+
+  *demo::m2m::newInstance::matchArms::Row: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(aRow, bRow)
+  }
+
+  demo::m2m::newInstance::matchArms::Row[aRow]: Pure
+  {
+    ~src demo::m2m::newInstance::matchArms::Box
+    ~filter $src.common->instanceOf(demo::m2m::newInstance::matchArms::A)
+
+    id: $src.common.id,
+    leg: $src.aLeg.value
+  }
+
+  demo::m2m::newInstance::matchArms::Row[bRow]: Pure
+  {
+    ~src demo::m2m::newInstance::matchArms::Box
+    ~filter $src.common->instanceOf(demo::m2m::newInstance::matchArms::B)
+
+    id: $src.common.id,
+    leg: $src.bLeg.value
+  }
+)
+
+###Runtime
+Runtime demo::m2m::newInstance::matchArms::TransformRuntime
+{
+  mappings:
+  [
+    demo::m2m::newInstance::matchArms::Transform
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      json:
+      #{
+        JsonModelConnection
+        {
+          class: demo::m2m::newInstance::matchArms::Source;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}
+
+###Service
+Service demo::m2m::newInstance::matchArms::TransformService
+{
+  pattern: '/m2m-new-match-arms';
+  documentation: 'M2M child mappings read slots filled by different arms of one match';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::newInstance::matchArms::Out.all()->graphFetch(#{demo::m2m::newInstance::matchArms::Out{rows{id,leg}}}#)->serialize(#{demo::m2m::newInstance::matchArms::Out{rows{id,leg}}}#);
+    mapping: demo::m2m::newInstance::matchArms::Transform;
+    runtime: demo::m2m::newInstance::matchArms::TransformRuntime;
+  }
+  testSuites:
+  [
+    suite:
+    {
+      data:
+      [
+        connections:
+        [
+          json:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"items":[{"@type":"A","id":"a1","aLegs":[{"value":"A-LEG"}]},{"@type":"B","id":"b1","bLegs":[{"value":"B-LEG"}]}]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"rows":[{"id":"a1","leg":"A-LEG"},{"id":"b1","leg":"B-LEG"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
