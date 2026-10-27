@@ -23,16 +23,24 @@ package org.finos.legend.engine.postgres.protocol.wire.serialization;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslHandler;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLSession;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.Certificate;
 import java.util.List;
 import java.util.function.Supplier;
 
 public class PgDecoder extends ByteToMessageDecoder
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PgDecoder.class);
 
     static final int CANCEL_CODE = 80877102;
     static final int SSL_REQUEST_CODE = 80877103;
@@ -76,6 +84,7 @@ public class PgDecoder extends ByteToMessageDecoder
     }
 
     private final Supplier<SslContext> getSslContext;
+    private final boolean requireSsl;
 
     private State state = State.STARTUP;
     private byte msgType;
@@ -84,7 +93,13 @@ public class PgDecoder extends ByteToMessageDecoder
 
     public PgDecoder(Supplier<SslContext> getSslContext)
     {
+        this(getSslContext, false);
+    }
+
+    public PgDecoder(Supplier<SslContext> getSslContext, boolean requireSsl)
+    {
         this.getSslContext = getSslContext;
+        this.requireSsl = requireSsl;
     }
 
     @Override
@@ -124,7 +139,19 @@ public class PgDecoder extends ByteToMessageDecoder
                     else
                     {
                         channel.writeAndFlush(out.writeByte('S'));
-                        ctx.pipeline().addFirst(sslContext.newHandler(ctx.alloc()));
+                        SslHandler sslHandler = sslContext.newHandler(ctx.alloc());
+                        sslHandler.handshakeFuture().addListener(future ->
+                        {
+                            if (future.isSuccess())
+                            {
+                                logConnectionSecurity(sslHandler.engine().getSession());
+                            }
+                            else
+                            {
+                                LOGGER.info("TLS handshake failed for client {}", channel.remoteAddress(), future.cause());
+                            }
+                        });
+                        ctx.pipeline().addFirst(sslHandler);
                     }
                     in.markReaderIndex();
                     return decode(ctx, in);
@@ -134,6 +161,13 @@ public class PgDecoder extends ByteToMessageDecoder
                     if (in.readableBytes() < payloadLength)
                     {
                         in.resetReaderIndex();
+                        return null;
+                    }
+                    // A CancelRequest carries no query/result data and is commonly sent on a fresh
+                    // plaintext connection, so it is exempt from the requireSsl check.
+                    if (requireSsl && requestCode != CANCEL_CODE && ctx.pipeline().get(SslHandler.class) == null)
+                    {
+                        rejectPlaintext(ctx);
                         return null;
                     }
                     state = requestCode == CANCEL_CODE ? State.CANCEL : State.STARTUP_PARAMETERS;
@@ -167,6 +201,46 @@ public class PgDecoder extends ByteToMessageDecoder
             default:
                 throw new IllegalStateException("Invalid state " + state);
         }
+    }
+
+    private static void logConnectionSecurity(SSLSession session)
+    {
+        Certificate[] peerCertificates;
+        try
+        {
+            peerCertificates = session.getPeerCertificates();
+        }
+        catch (javax.net.ssl.SSLPeerUnverifiedException e)
+        {
+            peerCertificates = null;
+        }
+        boolean mtls = peerCertificates != null && peerCertificates.length > 0;
+        LOGGER.info("Client connected using SSL (protocol={}, cipher={}), mTLS={}", session.getProtocol(), session.getCipherSuite(), mtls);
+    }
+
+    private static void rejectPlaintext(ChannelHandlerContext ctx)
+    {
+        // Postgres ErrorResponse: 'E', int32 length, then null-terminated (code, value) fields,
+        // terminated by a trailing zero byte. SQLSTATE 08P01 == protocol_violation.
+        byte[] severity = "FATAL".getBytes(StandardCharsets.UTF_8);
+        byte[] sqlState = "08P01".getBytes(StandardCharsets.UTF_8);
+        byte[] message = "SSL connection is required".getBytes(StandardCharsets.UTF_8);
+
+        int length = 4
+                + (1 + severity.length + 1)
+                + (1 + sqlState.length + 1)
+                + (1 + message.length + 1)
+                + 1;
+
+        ByteBuf out = ctx.alloc().buffer(1 + length);
+        out.writeByte('E');
+        out.writeInt(length);
+        out.writeByte('S').writeBytes(severity).writeByte(0);
+        out.writeByte('C').writeBytes(sqlState).writeByte(0);
+        out.writeByte('M').writeBytes(message).writeByte(0);
+        out.writeByte(0);
+
+        ctx.channel().writeAndFlush(out).addListener(ChannelFutureListener.CLOSE);
     }
 
     public void startupDone()

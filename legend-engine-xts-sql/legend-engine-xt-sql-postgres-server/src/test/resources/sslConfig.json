@@ -1,0 +1,29 @@
+{
+  "port": 9998,
+  "httpPort": 8080,
+  "authenticationMethod": "NO_PASSWORD",
+  "identityType": "ANONYMOUS",
+  "ssl": {
+    "keyStorePath": "keystore.p12",
+    "keyStorePassword": "${KEYSTORE_PASSWORD}",
+    "keyStoreType": "PKCS12",
+    "trustStorePath": "truststore.p12",
+    "trustStorePassword": "${TRUSTSTORE_PASSWORD}",
+    "trustStoreType": "PKCS12",
+    "needClientAuth": false,
+    "requireSsl": true,
+    "supportedProtocols": ["TLSv1.3", "TLSv1.2"],
+    "supportedCipherSuites": [
+      "TLS_AES_256_GCM_SHA384",
+      "TLS_AES_128_GCM_SHA256"
+    ]
+  },
+  "handler": {
+    "className": "org.finos.legend.engine.postgres.config.LegendHandlerConfig",
+    "protocol": "http",
+    "host": "localhost",
+    "port": "6300",
+    "type": "LEGEND"
+  }
+}
+

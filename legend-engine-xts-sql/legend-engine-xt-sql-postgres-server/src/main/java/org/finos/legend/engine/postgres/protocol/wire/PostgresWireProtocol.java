@@ -230,13 +230,14 @@ public class PostgresWireProtocol
                                 SQLManager sqlManager,
                                 Function2<String, ConnectionProperties, AuthenticationMethod> authService,
                                 GSSConfig gssConfig, Supplier<SslContext> getSslContext,
+                                boolean requireSsl,
                                 Messages messages)
     {
         this.server = server;
         this.sessionStats = new SessionStats(server.getUserMetrics());
         this.sqlManager = sqlManager;
         this.authService = authService;
-        this.decoder = new PgDecoder(getSslContext);
+        this.decoder = new PgDecoder(getSslContext, requireSsl);
         this.handler = new MessageHandler();
         this.gssConfig = gssConfig;
         this.messages = messages;

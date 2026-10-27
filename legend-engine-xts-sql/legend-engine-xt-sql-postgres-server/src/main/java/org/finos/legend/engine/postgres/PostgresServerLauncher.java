@@ -44,6 +44,7 @@ import org.finos.legend.engine.postgres.protocol.wire.auth.method.UsernamePasswo
 import org.finos.legend.engine.postgres.config.LegendHandlerConfig;
 import org.finos.legend.engine.postgres.config.OpenTelemetryConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
+import org.finos.legend.engine.postgres.config.SSLConfig;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendExecutionService;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendHttpClient;
@@ -68,6 +69,7 @@ public class PostgresServerLauncher
         //TODO ADD CLI
         ObjectMapper objectMapper = new ObjectMapper();
         ServerConfig serverConfig = objectMapper.readValue(new File(configPath), ServerConfig.class);
+        resolveSslSecrets(serverConfig.getSsl());
         /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           System property must be set before any logger instance is created.
           Do NOT create static logger in this class.
@@ -110,6 +112,32 @@ public class PostgresServerLauncher
     private ErrorMessageFormatter buildErrorMessageFormatter(ServerConfig serverConfig)
     {
         return new ErrorMessageFormatterImpl(serverConfig);
+    }
+
+    public static void resolveSslSecrets(SSLConfig ssl)
+    {
+        if (ssl == null)
+        {
+            return;
+        }
+        ssl.setKeyStorePassword(resolveEnv(ssl.getKeyStorePassword()));
+        ssl.setKeyManagerPassword(resolveEnv(ssl.getKeyManagerPassword()));
+        ssl.setTrustStorePassword(resolveEnv(ssl.getTrustStorePassword()));
+    }
+
+    public static String resolveEnv(String value)
+    {
+        if (value != null && value.startsWith("${") && value.endsWith("}"))
+        {
+            String var = value.substring(2, value.length() - 1);
+            String resolved = System.getenv(var);
+            if (resolved == null)
+            {
+                throw new IllegalStateException("Environment variable '" + var + "' referenced by ssl config is not set");
+            }
+            return resolved;
+        }
+        return value;
     }
 
     private void setupOpenTelemetry(OpenTelemetryConfig otelConfig)
