@@ -79,7 +79,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 
    let initialContext  = ^GenerationContext(typeInfos=newTypeInfoSet(), conventions=$pathAdjusted, suppliedClassesForGeneration=$legendJavaConfig.suppliedClassesForGeneration, pureM2MRuntime=$pureM2MRuntime);
 
-   let preparedContext = $plan.rootExecutionNode->prepareForLegendJavaPlatformBinding('root', $initialContext, $extensions, $debug)->fillNewFunctionProhibitedList();
+   let preparedContext = $plan.rootExecutionNode->prepareForLegendJavaPlatformBinding('root', $initialContext, $extensions, $debug)->fillNewFunctionProhibitedList()->fillPlanInterfaceClasses();
    
    // TODO Move Interface/Enum/Unit generation to here
    ^$preparedContext(baseProject=$preparedContext.conventions->fundamentals($debug));

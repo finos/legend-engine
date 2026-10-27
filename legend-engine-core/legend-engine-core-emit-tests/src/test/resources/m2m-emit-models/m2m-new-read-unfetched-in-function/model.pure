@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Pure
+Class demo::m2m::newInstance::unfetched::Source
+{
+  fetched: String[0..1];
+  unfetched: String[0..1];
+}
+
+Class demo::m2m::newInstance::unfetched::Target
+{
+  fetched: String[0..1];
+  unfetched: String[0..1];
+}
+
+function demo::m2m::newInstance::unfetched::readUnfetched(s: demo::m2m::newInstance::unfetched::Source[1]): String[0..1]
+{
+  $s.unfetched
+}
+
+###Mapping
+Mapping demo::m2m::newInstance::unfetched::Transform
+(
+  *demo::m2m::newInstance::unfetched::Target: Pure
+  {
+    ~src demo::m2m::newInstance::unfetched::Source
+    fetched: $src.fetched,
+    unfetched: ^demo::m2m::newInstance::unfetched::Source(unfetched = 'constructed')->demo::m2m::newInstance::unfetched::readUnfetched()
+  }
+)
+
+###Runtime
+Runtime demo::m2m::newInstance::unfetched::TransformRuntime
+{
+  mappings:
+  [
+    demo::m2m::newInstance::unfetched::Transform
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      json:
+      #{
+        JsonModelConnection
+        {
+          class: demo::m2m::newInstance::unfetched::Source;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}
+
+###Service
+Service demo::m2m::newInstance::unfetched::TransformService
+{
+  pattern: '/m2m-new-read-unfetched-in-function';
+  documentation: 'M2M reads, inside a function, a property of a constructed source-class instance that the source tree does not fetch';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::newInstance::unfetched::Target.all()->graphFetch(#{demo::m2m::newInstance::unfetched::Target{fetched,unfetched}}#)->serialize(#{demo::m2m::newInstance::unfetched::Target{fetched,unfetched}}#);
+    mapping: demo::m2m::newInstance::unfetched::Transform;
+    runtime: demo::m2m::newInstance::unfetched::TransformRuntime;
+  }
+  testSuites:
+  [
+    suite:
+    {
+      data:
+      [
+        connections:
+        [
+          json:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"fetched":"from source","unfetched":"ignored"}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"fetched":"from source","unfetched":"constructed"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

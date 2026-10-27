@@ -1,0 +1,20 @@
+name: m2m-new-read-unfetched-in-function
+title: "M2M reads, inside a function, a property of a constructed source-class instance that no tree fetches"
+description: |
+  Source is the M2M source class, so the plan generates its Java interface
+  from the source tree, which fetches only Source.fetched. The mapping also
+  constructs a Source and passes it to readUnfetched, whose generated Java
+  calls getUnfetched(). That interface must still declare every getter the
+  function bodies call, even when the source tree does not fetch it.
+modelSources:
+  model:
+    root: m2m-new-read-unfetched-in-function
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - new-operator

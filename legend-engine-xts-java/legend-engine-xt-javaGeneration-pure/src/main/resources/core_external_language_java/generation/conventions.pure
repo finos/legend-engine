@@ -54,6 +54,8 @@ Class meta::external::language::java::transform::Conventions
 
    libraries                   : ConventionsLibrary[*];
    newFunctionProhibitedList   : meta::pure::metamodel::type::Class<Any>[*];
+   planInterfaceClasses        : meta::pure::metamodel::type::Class<Any>[*];
+   planInterfaceProperties     : Pair<meta::pure::metamodel::type::Class<Any>, AbstractProperty<Any>>[*];
    providedVariables           : Map<String, Code>[1];
    variablesInScope            : String[*];
    visitedFunctions            : FunctionExpression[*];
