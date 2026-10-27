@@ -150,6 +150,7 @@ import org.finos.legend.engine.server.core.session.SessionTracker;
 import org.finos.legend.engine.server.core.session.StoreExecutableManagerSessionListener;
 import org.finos.legend.engine.server.core.session.api.SessionInfo;
 import org.finos.legend.engine.server.support.server.ServerUrlSwaggerBundle;
+import org.finos.legend.engine.server.support.server.UnlimitedStreamConstraints;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
@@ -194,6 +195,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
     @Override
     public void initialize(Bootstrap<T> bootstrap)
     {
+        UnlimitedStreamConstraints.install(bootstrap.getObjectMapper());
         bootstrap.addBundle(new AssetsBundle("/web", "/", "legend_index.html"));
         bootstrap.addBundle(new ServerUrlSwaggerBundle<T>()
         {

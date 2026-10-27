@@ -22,4 +22,5 @@ CMD java -cp /app/bin/*-shaded.jar \
 -XX:MaxRAMPercentage=60 \
 -Xss4M \
 -Dfile.encoding=UTF8 \
+--add-opens=java.base/java.nio=ALL-UNNAMED \
 org.finos.legend.engine.ide.PureIDELight_NoExtension server /config/config.json

@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.server.test.shared;
 
+import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.StreamWriteConstraints;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
@@ -43,6 +46,7 @@ public class TestServer<T extends TestServerConfiguration> extends Application<T
     @Override
     public void initialize(Bootstrap<T> bootstrap)
     {
+        liftJacksonStreamConstraints(bootstrap.getObjectMapper());
         bootstrap.addBundle(new LegendPac4jBundle<>(serverConfiguration -> serverConfiguration.pac4j));
         PureProtocolObjectMapperFactory.withPureProtocolExtensions(bootstrap.getObjectMapper());
         VaultFactory.withVaultConfigurationExtensions(bootstrap.getObjectMapper());
@@ -56,6 +60,26 @@ public class TestServer<T extends TestServerConfiguration> extends Application<T
         this.environment = environment;
         DeploymentStateAndVersions.DEPLOYMENT_MODE = DeploymentMode.DEV;
         environment.jersey().setUrlPattern("/api/*");
+    }
+
+    // Same limits as UnlimitedStreamConstraints in legend-engine-server-support-core, which this core module cannot depend on
+    private static void liftJacksonStreamConstraints(ObjectMapper bootstrapMapper)
+    {
+        StreamReadConstraints read = StreamReadConstraints.builder()
+                .maxNestingDepth(Integer.MAX_VALUE)
+                .maxDocumentLength(-1L)
+                .maxTokenCount(-1L)
+                .maxNumberLength(Integer.MAX_VALUE)
+                .maxStringLength(Integer.MAX_VALUE)
+                .maxNameLength(Integer.MAX_VALUE)
+                .build();
+        StreamWriteConstraints write = StreamWriteConstraints.builder()
+                .maxNestingDepth(Integer.MAX_VALUE)
+                .build();
+        StreamReadConstraints.overrideDefaultStreamReadConstraints(read);
+        StreamWriteConstraints.overrideDefaultStreamWriteConstraints(write);
+        bootstrapMapper.getFactory().setStreamReadConstraints(read);
+        bootstrapMapper.getFactory().setStreamWriteConstraints(write);
     }
 
     private void loadVaults(List<VaultConfiguration> vaultConfigurations)

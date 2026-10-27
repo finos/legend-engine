@@ -17,6 +17,7 @@ package org.finos.legend.engine.server.support.server;
 import io.dropwizard.core.Configuration;
 import io.dropwizard.core.server.DefaultServerFactory;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
 import io.swagger.v3.oas.models.servers.Server;
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,6 +52,19 @@ public class TestServerUrlSwaggerBundle
     {
         Assert.assertTrue(serverUrls(new Configuration(), swagger()).isEmpty());
         Assert.assertTrue(serverUrls(configuration("/", "/*"), swagger()).isEmpty());
+    }
+
+    @Test
+    public void aConfigurationTheCallerBuiltKeepsItsSettings()
+    {
+        SwaggerBundleConfiguration swagger = swagger();
+        SwaggerConfiguration built = swagger.build().filterClass("a.Filter");
+
+        SwaggerConfiguration result = ServerUrlSwaggerBundle.withServerUrl(built, configuration("/", "/api/*"), swagger);
+
+        Assert.assertSame(built, result);
+        Assert.assertEquals("a.Filter", result.getFilterClass());
+        Assert.assertEquals(List.of("/api"), result.getOpenAPI().getServers().stream().map(Server::getUrl).collect(Collectors.toList()));
     }
 
     private static SwaggerBundleConfiguration swagger()

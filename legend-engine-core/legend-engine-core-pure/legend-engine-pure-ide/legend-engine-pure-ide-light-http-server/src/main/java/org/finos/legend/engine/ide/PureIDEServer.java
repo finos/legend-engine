@@ -81,6 +81,7 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
     @Override
     public void run(ServerConfiguration configuration, Environment environment) throws Exception
     {
+        EmptyPathSegments.allow(configuration.getServerFactory(), environment);
         environment.jersey().setUrlPattern("/*");
         environment.jersey().register(new SwaggerResource(
                 "",

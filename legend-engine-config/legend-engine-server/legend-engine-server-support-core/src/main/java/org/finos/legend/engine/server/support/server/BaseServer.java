@@ -53,6 +53,8 @@ public abstract class BaseServer<C extends BaseServerConfiguration> extends Appl
     @Override
     public void initialize(Bootstrap<C> bootstrap)
     {
+        UnlimitedStreamConstraints.install(bootstrap.getObjectMapper());
+
         // initialize server info
         String initTime = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.ofInstant(Instant.now(), ZoneOffset.UTC));
         String hostName = tryGetValue(BaseServer::getLocalHostName);
