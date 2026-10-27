@@ -26,6 +26,7 @@ import org.pac4j.core.profile.UserProfile;
 import javax.security.auth.Subject;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ProfileManagerHelper
 {
@@ -56,13 +57,27 @@ public class ProfileManagerHelper
         MutableList<CommonProfile> narrowed = Lists.mutable.ofAll(LazyIterate.selectInstancesOf(profiles, CommonProfile.class));
         if (narrowed.size() != profiles.size())
         {
-            // Throw rather than drop: dropping can leave an empty list, and Identity.makeIdentity
-            // then treats an authenticated request as the unknown user. Class names only, never contents.
-            MutableList<String> discarded = LazyIterate.reject(profiles, CommonProfile.class::isInstance)
-                    .collect(p -> p.getClass().getName()).toSortedList().distinct();
-            throw new EngineException("Authenticated profile(s) of an unsupported type: " + discarded,
-                    ExceptionCategory.USER_CREDENTIALS_ERROR);
+            throw unsupportedProfileTypes(LazyIterate.reject(profiles, CommonProfile.class::isInstance)
+                    .collect(p -> p.getClass().getName()).toSortedList().distinct());
         }
         return narrowed;
+    }
+
+    public static Optional<CommonProfile> extractPrimaryProfile(ProfileManager pm)
+    {
+        Optional<UserProfile> profile = (pm == null) ? Optional.empty() : pm.getProfile();
+        if (profile.isPresent() && !(profile.get() instanceof CommonProfile))
+        {
+            throw unsupportedProfileTypes(Lists.fixedSize.of(profile.get().getClass().getName()));
+        }
+        return profile.map(CommonProfile.class::cast);
+    }
+
+    private static EngineException unsupportedProfileTypes(List<String> classNames)
+    {
+        // Throw rather than drop: dropping can leave no profile, and Identity.makeIdentity
+        // then treats an authenticated request as the unknown user. Class names only, never contents.
+        return new EngineException("Authenticated profile(s) of an unsupported type: " + classNames,
+                ExceptionCategory.USER_CREDENTIALS_ERROR);
     }
 }

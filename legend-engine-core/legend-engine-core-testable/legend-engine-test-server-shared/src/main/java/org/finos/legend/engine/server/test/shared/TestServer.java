@@ -43,6 +43,7 @@ public class TestServer<T extends TestServerConfiguration> extends Application<T
     @Override
     public void initialize(Bootstrap<T> bootstrap)
     {
+        ObjectMapperFactory.useUnlimitedStreamConstraintsByDefault();
         bootstrap.addBundle(new LegendPac4jBundle<>(serverConfiguration -> serverConfiguration.pac4j));
         PureProtocolObjectMapperFactory.withPureProtocolExtensions(bootstrap.getObjectMapper());
         VaultFactory.withVaultConfigurationExtensions(bootstrap.getObjectMapper());

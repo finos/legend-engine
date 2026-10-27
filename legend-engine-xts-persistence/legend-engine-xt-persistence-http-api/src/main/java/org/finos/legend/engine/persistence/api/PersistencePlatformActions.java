@@ -32,7 +32,6 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
@@ -88,11 +87,9 @@ public class PersistencePlatformActions
 
     private void action(PersistencePlatformActionPayload payload, ProfileManager pm, Procedure2<PersistencePlatformActionsExtension, PersistencePlatformActionRequest> action)
     {
-        // getProfile(), not ProfileManagerHelper.extractProfiles(): it yields the one real profile
-        // and skips AnonymousProfile, as the sibling resources do.
-        Identity identity = Identity.makeIdentity(pm == null
-                ? Lists.fixedSize.<CommonProfile>empty()
-                : pm.getProfile().map(p -> Lists.fixedSize.of((CommonProfile) p)).orElse(Lists.fixedSize.empty()));
+        Identity identity = Identity.makeIdentity(ProfileManagerHelper.extractPrimaryProfile(pm)
+                .map(p -> Lists.fixedSize.of(p))
+                .orElse(Lists.fixedSize.empty()));
         Pair<PureModelContextData, PureModel> pureModelContextDataPureModelPair = this.modelManager.loadModelAndData(payload.model, payload.clientVersion, identity, null);
         PureModel model = pureModelContextDataPureModelPair.getTwo();
         PackageableElement packageableElement = model.getPackageableElement(payload.persistenceContextPath);

@@ -21,14 +21,10 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import java.io.InputStream;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.function.Function;
 import javax.security.auth.Subject;
 import org.apache.http.HttpEntity;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -54,9 +50,6 @@ public class WorkspaceSDLCLoader
     private static final TypeReference<List<SDLCProjectDependency>> SDLC_PROJECT_DEPENDENCY_TYPE = new TypeReference<List<SDLCProjectDependency>>()
     {
     };
-
-    private static final List<AuthenticationSourceProvider> AUTHENTICATION_SOURCE_PROVIDERS =
-            Collections.unmodifiableList(Iterate.addAllTo(ServiceLoader.load(AuthenticationSourceProvider.class), new ArrayList<AuthenticationSourceProvider>()));
 
     private final ServerConnectionConfiguration sdlcServerConnectionConfig;
     private final ObjectMapper mapper;
@@ -201,7 +194,8 @@ public class WorkspaceSDLCLoader
      */
     static String resolveClientName(Identity identity)
     {
-        for (AuthenticationSourceProvider provider : AUTHENTICATION_SOURCE_PROVIDERS)
+        List<AuthenticationSourceProvider> providers = AuthenticationSourceProvider.providers();
+        for (AuthenticationSourceProvider provider : providers)
         {
             String clientName = provider.clientName(identity);
             if (clientName != null)
@@ -211,8 +205,8 @@ public class WorkspaceSDLCLoader
         }
         throw new EngineException("Could not determine the authentication client name for identity '" + identity.getName()
                 + "', which the SDLC server requires when the metadata server is configured with a private access token."
-                + (AUTHENTICATION_SOURCE_PROVIDERS.isEmpty()
-                        ? " No " + AuthenticationSourceProvider.class.getName() + " is registered; add legend-engine-xt-identity-pac4j to the runtime classpath."
+                + (providers.isEmpty()
+                        ? " No " + AuthenticationSourceProvider.class.getName() + " is loaded; add legend-engine-xt-identity-pac4j to the runtime classpath, or check the log for a provider that failed to load."
                         : " The identity carries no authentication profile."));
     }
 }

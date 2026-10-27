@@ -123,7 +123,7 @@
 
         <!-- Legend -->
         <legend.pure.version>5.108.0</legend.pure.version>
-        <legend.shared.version>1.0.0</legend.shared.version>
+        <legend.shared.version>1.0.2</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
         <legend.pylegend.version>0.21.0</legend.pylegend.version>
 
@@ -702,6 +702,8 @@
                                         <exclude>com.databricks:databricks-jdbc</exclude>
                                         <exclude>org.mongodb:bson-record-codec</exclude>
                                         <exclude>com.oracle.database.jdbc:ojdbc11</exclude>
+                                        <!-- Meant only for the shaded Spanner driver (see its ignoreClass above), but it exempts
+                                             Tink in every module. -->
                                         <exclude>com.google.crypto.tink:tink</exclude>
 
                                         <exclude>org.eclipse.lsp4j:*</exclude>
