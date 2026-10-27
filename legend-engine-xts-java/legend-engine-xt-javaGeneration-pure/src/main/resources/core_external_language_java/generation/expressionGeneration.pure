@@ -191,7 +191,7 @@ function <<access.private>> meta::external::language::java::transform::processVa
 {
    print(if($debug.debug,|$debug.space+'processVariableExpressionAsParameter: \''+($v.name)+'\'\n',|''));
    let c        = $v.genericType.rawType->toOne();
-   let typeArgs = if($c == meta::pure::functions::collection::Pair && $v.genericType.typeArguments->isNotEmpty(),
+   let typeArgs = if($c->in([meta::pure::functions::collection::Pair, meta::pure::functions::collection::List]) && $v.genericType.typeArguments->isNotEmpty(),
                     {|
                        let multArgs = if($v.genericType.multiplicityArguments->isEmpty(),
                                         |ZeroOne->repeat($v.genericType.typeArguments->size()),
@@ -302,11 +302,13 @@ function <<access.private>> meta::external::language::java::transform::processFu
          if ($p.owner == meta::pure::functions::collection::Pair,
             | let methodName = if($p.name->toOne() == 'first', |'getOne', |'getTwo');
               $src->j_invoke($methodName, [], $conventions->pureTypeToJavaType($p));,
+         |if ($p.owner == meta::pure::functions::collection::List,
+            | $src->j_cast($conventions->pureTypeToJavaType($fe.genericType, $fe.multiplicity)),
             | if ($conventions.useGetterForPropertyAccess,
                  | $src->j_invoke($conventions->getterName($p), [], $conventions->pureTypeToJavaType($p)),
                  | $src->j_field($p.name->toOne(), $conventions->pureTypeToJavaType($p))
               );
-         );
+         ));
       },
       {q:QualifiedProperty<Any>[1] |
          print(if($debug.debug,|$debug.space+'QualifiedProperty: \''+($fe.func.name->toOne())+'\'\n',|''));

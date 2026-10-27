@@ -87,7 +87,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
                                                                                                                  let bElem = if($b.type->isJavaList(), | $b.type->elementTypeOfJavaList(), | $b.type)->toBoxed();
                                                                                                                  if($aElem->instanceOf(meta::external::language::java::metamodel::WildcardType) || $bElem->instanceOf(meta::external::language::java::metamodel::WildcardType),
                                                                                                                     | $library->j_invoke('zip', [$a, $b], $ctx.returnType()),
-                                                                                                                    | $library->j_invoke([$aElem, $bElem], 'zip', [$a, $b], javaList(javaPair($aElem, $bElem))));})
+                                                                                                                    | $library->j_invoke([$aElem, $bElem], 'zip', [$a, $b], javaList(javaPair($aElem, $bElem))));}),
+        fc2(partition_I_MANY__Function_1__Pair_1_,                              {ctx,collection,func          | $library->j_invoke('partition', [$collection->j_streamOf(), $func], $ctx.returnType())})
       ]);
 
    $conventions->registerLibrary($lib);
