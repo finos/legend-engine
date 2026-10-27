@@ -767,20 +767,26 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
      * {@link LocalDate} hands that day over as it stands. Reading it as a {@link java.sql.Date}
      * instead gives an instant, which yields a day only once a zone is chosen to read it in, and
      * drivers do not agree on the zone they built that instant in. A driver need not answer the
-     * first call, and is asked once rather than once a row.
+     * first call, and one that answers may still fail it: the DB2 driver throws a
+     * NullPointerException for a null column. Any failure falls back, and the driver is asked
+     * once rather than once a row.
      */
     private PureDate readDay(int columnIndex) throws SQLException
     {
         if (this.readsLocalDate)
         {
+            LocalDate day = null;
             try
             {
-                LocalDate day = this.resultSet.getObject(columnIndex, LocalDate.class);
-                return (day == null) ? null : toPureDate(day);
+                day = this.resultSet.getObject(columnIndex, LocalDate.class);
             }
-            catch (SQLException | UnsupportedOperationException | AbstractMethodError unsupported)
+            catch (Exception | AbstractMethodError unreliable)
             {
                 this.readsLocalDate = false;
+            }
+            if (this.readsLocalDate)
+            {
+                return (day == null) ? null : toPureDate(day);
             }
         }
         java.sql.Date date = this.resultSet.getDate(columnIndex);
@@ -801,14 +807,18 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         Calendar calendar = getCalendar();
         if (this.readsLocalDateTime)
         {
+            LocalDateTime wallClock = null;
             try
             {
-                LocalDateTime wallClock = this.resultSet.getObject(columnIndex, LocalDateTime.class);
-                return (wallClock == null) ? null : toPureDate(wallClock.atZone(calendar.getTimeZone().toZoneId()));
+                wallClock = this.resultSet.getObject(columnIndex, LocalDateTime.class);
             }
-            catch (SQLException | UnsupportedOperationException | AbstractMethodError unsupported)
+            catch (Exception | AbstractMethodError unreliable)
             {
                 this.readsLocalDateTime = false;
+            }
+            if (this.readsLocalDateTime)
+            {
+                return (wallClock == null) ? null : toPureDate(wallClock.atZone(calendar.getTimeZone().toZoneId()));
             }
         }
         Timestamp timestamp = this.resultSet.getTimestamp(columnIndex, calendar);

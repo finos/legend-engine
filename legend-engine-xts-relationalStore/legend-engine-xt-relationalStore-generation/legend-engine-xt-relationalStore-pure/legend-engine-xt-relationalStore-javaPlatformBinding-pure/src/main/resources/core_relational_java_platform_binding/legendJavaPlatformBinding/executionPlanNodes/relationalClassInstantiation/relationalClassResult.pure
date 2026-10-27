@@ -1015,6 +1015,9 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
    );
 }
 
+// A driver that answers getObject for a java.time class may still fail it (the DB2 driver throws a
+// NullPointerException for a null column), so any failure falls back to java.sql for the rest of
+// the result set.
 function meta::relational::executionPlan::platformBinding::legendJava::classResult::readStrictDateMethod():meta::external::language::java::metamodel::Method[1]
 {
    javaMethod(
@@ -1023,14 +1026,18 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '{\n'+
       '    if (this.readsLocalDate)\n'+
       '    {\n'+
+      '        LocalDate localDate = null;\n'+
       '        try\n'+
       '        {\n'+
-      '            LocalDate date = resultSet.getObject(columnIndex, LocalDate.class);\n'+
-      '            return (date == null) ? null : PureDate.fromLocalDate(date);\n'+
+      '            localDate = resultSet.getObject(columnIndex, LocalDate.class);\n'+
       '        }\n'+
-      '        catch (java.sql.SQLException | UnsupportedOperationException | AbstractMethodError unsupported)\n'+
+      '        catch (Exception | AbstractMethodError unreliable)\n'+
       '        {\n'+
       '            this.readsLocalDate = false;\n'+
+      '        }\n'+
+      '        if (this.readsLocalDate)\n'+
+      '        {\n'+
+      '            return (localDate == null) ? null : PureDate.fromLocalDate(localDate);\n'+
       '        }\n'+
       '    }\n'+
       '    java.sql.Date date = resultSet.getDate(columnIndex);\n'+
@@ -1055,14 +1062,18 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '{\n'+
       '    if (this.readsLocalDateTime)\n'+
       '    {\n'+
+      '        LocalDateTime dateTime = null;\n'+
       '        try\n'+
       '        {\n'+
-      '            LocalDateTime dateTime = resultSet.getObject(columnIndex, LocalDateTime.class);\n'+
-      '            return (dateTime == null) ? null : PureDate.fromLocalDateTime(dateTime, this.zoneId);\n'+
+      '            dateTime = resultSet.getObject(columnIndex, LocalDateTime.class);\n'+
       '        }\n'+
-      '        catch (java.sql.SQLException | UnsupportedOperationException | AbstractMethodError unsupported)\n'+
+      '        catch (Exception | AbstractMethodError unreliable)\n'+
       '        {\n'+
       '            this.readsLocalDateTime = false;\n'+
+      '        }\n'+
+      '        if (this.readsLocalDateTime)\n'+
+      '        {\n'+
+      '            return (dateTime == null) ? null : PureDate.fromLocalDateTime(dateTime, this.zoneId);\n'+
       '        }\n'+
       '    }\n'+
       '    java.sql.Timestamp timestamp = resultSet.getTimestamp(columnIndex, this.calendar());\n'+
@@ -1087,14 +1098,18 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '{\n'+
       '    if (this.readsOffsetDateTime)\n'+
       '    {\n'+
+      '        OffsetDateTime dateTime = null;\n'+
       '        try\n'+
       '        {\n'+
-      '            OffsetDateTime dateTime = resultSet.getObject(columnIndex, OffsetDateTime.class);\n'+
-      '            return (dateTime == null) ? null : PureDate.fromOffsetDateTime(dateTime);\n'+
+      '            dateTime = resultSet.getObject(columnIndex, OffsetDateTime.class);\n'+
       '        }\n'+
-      '        catch (java.sql.SQLException | UnsupportedOperationException | AbstractMethodError unsupported)\n'+
+      '        catch (Exception | AbstractMethodError unreliable)\n'+
       '        {\n'+
       '            this.readsOffsetDateTime = false;\n'+
+      '        }\n'+
+      '        if (this.readsOffsetDateTime)\n'+
+      '        {\n'+
+      '            return (dateTime == null) ? null : PureDate.fromOffsetDateTime(dateTime);\n'+
       '        }\n'+
       '    }\n'+
       '    java.sql.Timestamp timestamp = resultSet.getTimestamp(columnIndex, this.calendar());\n'+
