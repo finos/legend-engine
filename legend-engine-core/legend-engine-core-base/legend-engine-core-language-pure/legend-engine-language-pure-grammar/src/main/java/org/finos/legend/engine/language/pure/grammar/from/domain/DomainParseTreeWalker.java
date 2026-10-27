@@ -1034,7 +1034,7 @@ public class DomainParseTreeWalker
         ValueSpecification ctx = null;
         if (rightside.expressionInstanceAtomicRightSide().combinedExpression() != null)
         {
-            ctx = expressionOrExpressionGroup(rightside.expressionInstanceAtomicRightSide().combinedExpression().expression(), null, typeParametersNames, lambdaContext, space, false, addLines);
+            ctx = this.combinedExpression(rightside.expressionInstanceAtomicRightSide().combinedExpression(), null, typeParametersNames, lambdaContext, space, false, addLines);
         }
         return ctx;
 

@@ -1329,6 +1329,21 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testInstancePropertyAssignedFromOperatorExpression()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "  integerProperty: Integer[1];\n" +
+                "  booleanProperty: Boolean[1];\n" +
+                "}\n\n" +
+                "function f(x: Integer[1]): Any[1]\n" +
+                "{\n" +
+                "  ^test::A(integerProperty=$x + 1 , booleanProperty=($x > 0) && ($x < 10))\n" +
+                "}\n"
+        );
+    }
+
+    @Test
     public void testUnderscores()
     {
         test("function my::under_score::function_example(): Any[1]\n" +
