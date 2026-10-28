@@ -4,7 +4,7 @@ description: |
   A table with BINARY and VARBINARY columns, read directly through a relation
   accessor in a service query that names its runtime with from(). Compiling the
   accessor must give the binary columns a Pure type, and a test suite that gives
-  the query its data runs it on DuckDB, where the binary values come back as
+  the query its data runs it on H2, where the binary values come back as
   lowercase hex strings.
 
 modelSources:
@@ -29,6 +29,6 @@ stores:
   - relational
 complexity: basic
 tags:
-  - duckdb
+  - h2
   - relation
   - service-test

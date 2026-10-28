@@ -14,7 +14,9 @@
 
 ###Service
 // The binary columns read from the table itself. The query returns a Relation,
-// so its test suite runs it on DuckDB.
+// but unlike a query that reaches a Relation through a mapping with
+// project(~[...]), reading the table directly and naming the runtime with
+// from() here does not get routed to DuckDB; its test suite runs on H2.
 Service demo::relation::binary::service::BinaryRowsDirect
 {
   pattern: '/api/relation/binary/direct';
