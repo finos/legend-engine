@@ -22,7 +22,6 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
@@ -93,12 +92,10 @@ import org.finos.legend.engine.shared.core.identity.factory.AuthenticationSource
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -111,9 +108,6 @@ import java.util.stream.StreamSupport;
 
 public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    private static final List<AuthenticationSourceProvider> AUTHENTICATION_SOURCE_PROVIDERS =
-            Collections.unmodifiableList(Iterate.addAllTo(ServiceLoader.load(AuthenticationSourceProvider.class), Lists.mutable.<AuthenticationSourceProvider>empty()));
-
     private final ExecutionState executionState;
     private final Identity identity;
 
@@ -377,14 +371,15 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
                     // No fallback signature: the generated method always takes the authentication
                     // argument, so a missing provider is a packaging fault, not an unauthenticated call.
-                    if (AUTHENTICATION_SOURCE_PROVIDERS.isEmpty())
+                    List<AuthenticationSourceProvider> providers = AuthenticationSourceProvider.providers();
+                    if (providers.isEmpty())
                     {
-                        throw new RuntimeException("No " + AuthenticationSourceProvider.class.getName() + " is registered. "
+                        throw new RuntimeException("No " + AuthenticationSourceProvider.class.getName() + " is loaded. "
                                 + "Graph fetch needs one to supply the authentication argument of " + executionClassName + "." + executionMethodName + "; "
-                                + "add legend-engine-xt-identity-pac4j to the runtime classpath.");
+                                + "add legend-engine-xt-identity-pac4j to the runtime classpath, or check the log for a provider that failed to load.");
                     }
                     List<Pair<List<Class<?>>, List<Object>>> alternatives = Lists.mutable.empty();
-                    for (AuthenticationSourceProvider provider : AUTHENTICATION_SOURCE_PROVIDERS)
+                    for (AuthenticationSourceProvider provider : providers)
                     {
                         alternatives.add(Tuples.pair(
                                 Arrays.asList(StreamingObjectResult.class, ExecutionNode.class, ExecutionState.class, provider.parameterType()),

@@ -17,8 +17,6 @@ package org.finos.legend.engine.server.test;
 import org.finos.legend.engine.shared.core.identity.factory.AuthenticationSourceProvider;
 import org.junit.Test;
 
-import java.util.ServiceLoader;
-
 import static org.junit.Assert.assertTrue;
 
 public class TestAuthenticationSourceProviderIsOnTheClasspath
@@ -28,6 +26,6 @@ public class TestAuthenticationSourceProviderIsOnTheClasspath
     {
         assertTrue("ExecutionNodeExecutor throws on the first platform-bound graph fetch without "
                         + "one; add legend-engine-xt-identity-pac4j to this assembly's runtime classpath",
-                ServiceLoader.load(AuthenticationSourceProvider.class).iterator().hasNext());
+                !AuthenticationSourceProvider.providers().isEmpty());
     }
 }

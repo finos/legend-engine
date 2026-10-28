@@ -18,18 +18,17 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.AuthenticationSourceProvider;
 import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
 
 public class Pac4jAuthenticationSourceProvider implements AuthenticationSourceProvider
 {
     @Override
     public Class<?> parameterType()
     {
-        return ProfileManager.class;
+        return MutableList.class;
     }
 
     @Override
-    public Object valueFor(Identity identity)
+    public MutableList<CommonProfile> valueFor(Identity identity)
     {
         return Pac4jUtils.getProfilesFromIdentity(identity);
     }

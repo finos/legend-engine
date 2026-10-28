@@ -16,6 +16,8 @@ package org.finos.legend.engine.shared.core.identity.factory;
 
 import org.finos.legend.engine.shared.core.identity.Identity;
 
+import java.util.List;
+
 /**
  * Supplies the authentication argument that some Pure-generated graph-fetch methods declare.
  *
@@ -25,6 +27,15 @@ import org.finos.legend.engine.shared.core.identity.Identity;
  */
 public interface AuthenticationSourceProvider
 {
+    /**
+     * The registered providers, loaded on first call. A provider that fails to load is logged and
+     * skipped, so one packaging fault cannot break callers that never need it.
+     */
+    static List<AuthenticationSourceProvider> providers()
+    {
+        return AuthenticationSourceProviderLoader.PROVIDERS;
+    }
+
     /**
      * The declared parameter type on the generated method, used for reflective lookup.
      */
