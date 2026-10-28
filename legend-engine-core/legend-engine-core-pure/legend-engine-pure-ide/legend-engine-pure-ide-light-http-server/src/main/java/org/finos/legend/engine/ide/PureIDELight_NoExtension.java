@@ -84,6 +84,7 @@ public class PureIDELight_NoExtension extends Application<ServerConfiguration>
 
     public void run(ServerConfiguration configuration, Environment environment) throws Exception
     {
+        EmptyPathSegments.allow(configuration.getServerFactory(), environment);
         environment.jersey().setUrlPattern("/*");
         environment.jersey().register(new SwaggerResource("", configuration.swagger.getSwaggerViewConfiguration(), configuration.swagger.getSwaggerOAuth2Configuration(), configuration.swagger.getContextRoot() + (configuration.swagger.getContextRoot().endsWith("/") ? "" : "/") + "api"));
         this.pureSession = new PureSession(configuration.sourceLocationConfiguration, configuration.debugMode != null && configuration.debugMode, this.getRepositories(configuration.sourceLocationConfiguration));

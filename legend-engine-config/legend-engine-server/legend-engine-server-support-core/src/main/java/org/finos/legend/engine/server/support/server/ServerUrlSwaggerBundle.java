@@ -29,7 +29,8 @@ import java.util.Collections;
  * {@code SwaggerBundleConfiguration.build()} sets no OpenAPI {@code servers}, so Swagger UI sends
  * "Try it out" requests to {@code /} and they 404 under a non-root mount such as {@code /api}.
  *
- * <p>The context must be registered before {@code super.run}, which then reuses it.
+ * <p>The context must be registered before {@code super.run}, which then reuses it. Bundles that
+ * build their own OpenAPI configuration can call {@link #withServerUrl} instead.
  */
 public abstract class ServerUrlSwaggerBundle<T extends Configuration> extends SwaggerBundle<T>
 {
@@ -48,8 +49,17 @@ public abstract class ServerUrlSwaggerBundle<T extends Configuration> extends Sw
 
     static SwaggerConfiguration buildOpenApiConfiguration(Configuration configuration, SwaggerBundleConfiguration swaggerBundleConfiguration)
     {
-        SwaggerConfiguration oasConfiguration = swaggerBundleConfiguration.build();
+        return withServerUrl(swaggerBundleConfiguration.build(), configuration, swaggerBundleConfiguration);
+    }
+
+    /**
+     * Names the Jersey URL pattern as the only server of {@code oasConfiguration}'s OpenAPI, unless
+     * Jersey is mounted at the root, where Swagger UI's default server is already right.
+     */
+    public static SwaggerConfiguration withServerUrl(SwaggerConfiguration oasConfiguration, Configuration configuration, SwaggerBundleConfiguration swaggerBundleConfiguration)
+    {
         String urlPattern = new ConfigurationHelper(configuration, swaggerBundleConfiguration).getUrlPattern();
+        // ConfigurationHelper reports a root mount as "" or "/"
         if (!urlPattern.isEmpty() && !"/".equals(urlPattern))
         {
             oasConfiguration.getOpenAPI().setServers(Collections.singletonList(new Server().url(urlPattern)));

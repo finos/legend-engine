@@ -62,6 +62,8 @@
                                 <jvmFlag>-XX:MaxRAMPercentage=60</jvmFlag>
                                 <jvmFlag>-Xss4M</jvmFlag>
                                 <jvmFlag>-Dfile.encoding=UTF8</jvmFlag>
+                                <!-- Arrow (and the copy shaded into the Snowflake driver) needs it on Java 17 -->
+                                <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
                             </jvmFlags>
                             <args>
                                 <arg>server</arg>
@@ -1392,6 +1394,24 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Direct, not transitive: Surefire 2.22.2 uses the JUnit Platform provider only when
+             junit-platform-engine is a project artifact, and otherwise silently skips every Jupiter
+             test. junit-vintage-engine keeps the JUnit 4 tests running under that provider. -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
