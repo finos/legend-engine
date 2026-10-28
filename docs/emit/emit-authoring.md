@@ -261,7 +261,10 @@ The fields are documented in `emit.md` §6.1. Notes from experience:
   3–4 domains → `intermediate`, 5+ domains → `advanced`.
 - **`tags`** is free-form. Use it for the things you would type into a
   hypothetical search box — `h2`, `multi-execution`, `derived-property`,
-  `failure-mode`.
+  `failure-mode`. For connection-dialect tags (`h2`, `duckdb`, `snowflake`, ...), tag
+  every dialect the model's declared connections actually drive Plan Generation with,
+  plus every engine (`h2`/`duckdb`) its test suites actually execute on — these can
+  differ for the same fixture; see §11.4.
 
 ### Step 5 — Run it
 
@@ -653,3 +656,119 @@ This is not an argument against parse-and-compile fixtures generally. A fixture 
 subject *is* the language construct — everything under `grammar-emit-models/` — proves
 exactly what it claims, because there is nothing to execute. The rule is about matching
 the claim to what the fixture actually demonstrates.
+
+### 11.4 Declare Connections to Match What Each EMIT Phase Actually Uses
+
+A relational connection does two unrelated jobs in an EMIT model, and a fixture's
+`type:`/`tags:` must account for both separately.
+
+**Plan Generation (Phase 6) uses the connection exactly as declared.**
+`EMITTasks` calls `ServicePlanGenerator.generateServiceExecutionPlan` directly on the
+compiled `Service`, with no connection substitution — whatever `type:` the model
+declares (`H2`, `DuckDB`, `Snowflake`, `Postgres`, `Databricks`, `BigQuery`, ...) is the
+dialect the generated `ExecutionPlan`'s SQL is actually rendered in. This is how you
+prove a feature generates correct dialect-specific SQL for a given store: declare that
+store's real type and assert on the plan's SQL text.
+
+**Test Execution (Phase 5) ignores the declared type and picks purely off the query's
+return type.** `ServiceTestRunner`/`MappingTestRunner` check
+`TestReturnTypeHelper.isRelationReturnType` on the compiled query function. If it's a
+subtype of `meta::pure::metamodel::relation::Relation` — covering both
+`->project(~[...])` over a mapped class and a raw relation/table accessor chained with
+`->from(runtime)` — `RelationalConnectionFactory.buildRelationalTestConnection` rebuilds
+the connection from scratch as DuckDB; otherwise it rebuilds it as H2. This happens for
+*any* declared type, including cloud dialects — there is no "build a real Snowflake test
+connection" path, because EMIT cannot execute against a live warehouse. If the model has
+no test suite/test data for that store at all, this swap never runs, and Plan Generation
+is the only phase that touches the connection. See the comment in
+`TestExecutionContextHelper` ("Relation-returning tests execute against DuckDB rather
+than H2").
+
+**So there are two different fixture shapes, and each needs its own tagging rule:**
+
+- **A fixture that only exercises Plan Generation** (no test data for that store) can
+  freely declare any real dialect — `Snowflake`, `Postgres`, `Databricks`, `BigQuery`,
+  etc. — to prove that dialect's SQL rendering. Tag it with that dialect alone; Phase 5
+  never runs, so there is nothing else to tag. `legend-engine-xts-snowflake`'s
+  `snowflakeAppTestModels.pure` shows the proven, credential-free grammar for a
+  compile-only Snowflake connection:
+  ```
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'account';
+    warehouse: 'warehouse';
+    region: 'region';
+  };
+  auth: DefaultH2;
+  ```
+- **A fixture whose only store-backed queries are H2-vs-DuckDB — no cloud dialect
+  claim at stake — should declare the type that Phase 5 will actually force,** so the
+  declaration isn't silently contradicted by the swap:
+  ```
+  ###Connection
+  RelationalDatabaseConnection demo::relation::binary::connection::BinaryConnection
+  {
+    store: demo::relation::binary::store::BinaryDB;
+    type: DuckDB;
+    specification: DuckDB
+    {
+      path: '';
+    };
+    auth: Test;
+  }
+  ```
+  A real example: `relational-semistructured-model-chain.emit.yaml`'s only service
+  returns a `Relation` via `project(~[...])`, so its connection is declared `type:
+  DuckDB` (it used to be declared `H2`, named `FirmH2Connection`, while already correctly
+  tagged `duckdb` — the declaration was the thing that was wrong, not the tag; fixed
+  alongside this guidance).
+- **A fixture that wants both** — asserting a cloud dialect's Plan Generation SQL *and*
+  running real Phase 5 assertions against the same query — should declare the cloud
+  dialect (for Plan Generation) and tag **both** that dialect and whichever of
+  `h2`/`duckdb` Phase 5 actually exercises for that query's return type. These are two
+  independently true, independently verified claims about the same fixture, not a
+  contradiction: the plan's SQL text is genuinely `Snowflake`-dialect, and the Phase 5
+  result-value assertions genuinely only ever ran against DuckDB or H2 — never against
+  real Snowflake. Say so in the fixture's `description` so a reviewer doesn't mistake a
+  passing Phase 5 assertion for validated Snowflake behavior.
+- **A single connection shared by multiple services with *different* return-type
+  outcomes cannot be declared to match all of them** — the swap is computed per query,
+  not per connection, so one connection backing both a TDS-returning service (forced to
+  H2) and a `Relation`-returning one (forced to DuckDB) will legitimately run on both
+  engines no matter what it declares. Tag every engine actually exercised.
+  `relation-service-dates.emit.yaml` is this case: one `H2`-declared connection backs
+  both kinds of service, so it's correctly tagged both `h2` and `duckdb` — there's no
+  single declared type that would make that fixture need only one tag.
+
+A declared-vs-actual mismatch also breaks any Phase 5 expected value whose
+representation is dialect-specific. DuckDB's `typeConversion.pure` maps both `Binary`
+and `Varbinary` straight to `BLOB` — a variable-length type with no fixed-length
+padding — while H2's `BINARY(n)` is fixed-length and zero-pads short values. A fixture
+backing a relation-returning query over a `BINARY(16)` column must derive its expected
+hex from DuckDB's unpadded `BLOB`, not from H2's zero-padded form, because that is what
+Phase 5 will actually execute against regardless of the declared type.
+
+**A new dialect's `###Connection` grammar needs its own grammar module on the EMIT
+module's test classpath**, separately from the execution/pure modules already needed
+for Phase 5's swap. Parsing `specification: DuckDB { ... }` is handled by a pluggable
+`PureGrammarParserExtension` (`DuckDBParserGrammar`, shipped in
+`legend-engine-xt-relationalStore-duckdb-grammar`) — it is not part of the core
+relational connection grammar. `legend-engine-xt-relationalStore-emit`'s `pom.xml`
+needed this dependency added before any fixture here could declare `type: DuckDB`
+literally; declaring `type: Snowflake` (or any other dialect) in a fixture under a given
+`-emit` module needs that dialect's own `*-grammar` module added to that module's
+`pom.xml` the same way, if it isn't already a transitive dependency.
+
+Relevant code: `TestReturnTypeHelper.isRelationReturnType`
+(`legend-engine-core-testable`), the `ServiceTestRunner.ServiceTestSuiteSession` /
+`MappingTestRunner` hint computation (`legend-engine-test-runner-service` /
+`legend-engine-test-runner-mapping`),
+`RelationalConnectionFactory.buildRelationalTestConnection` /
+`buildDuckDBTestConnection` / `buildH2TestConnection`
+(`legend-engine-xt-relationalStore-executionPlan`), `EMITTasks`'s Plan Generation phase
+calling `ServicePlanGenerator.generateServiceExecutionPlan` directly on the declared
+connection (`legend-engine-core-emit`), and the comment in `TestExecutionContextHelper`.
+The `###Connection` grammar for `type: DuckDB` is exercised in
+`TestDuckDBConnectionGrammarRoundtrip`.

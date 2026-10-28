@@ -90,9 +90,12 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- DuckDB: driver/DatabaseManager plus the Pure dbExtension. A mapping test whose query
-             returns a Relation is routed to DuckDB rather than H2 (RelationalConnectionFactory),
-             and resolving that connection needs both halves on the classpath. -->
+        <!-- DuckDB: driver/DatabaseManager plus the Pure dbExtension. A mapping or service test whose
+             query returns a Relation is routed to DuckDB rather than H2 (RelationalConnectionFactory),
+             and resolving that connection needs both halves on the classpath. The grammar module is
+             needed too: a fixture that declares `type: DuckDB` directly (see emit-authoring.md §11.4)
+             parses `specification: DuckDB { ... }` through this module's PureGrammarParserExtension,
+             not through the Java-only test-connection swap. -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-duckdb-execution</artifactId>
@@ -101,6 +104,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-duckdb-pure</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-duckdb-grammar</artifactId>
             <scope>test</scope>
         </dependency>
 
