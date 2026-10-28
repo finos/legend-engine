@@ -28,6 +28,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Concre
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.KeyExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
@@ -35,8 +36,12 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionTy
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -3374,5 +3379,70 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "{\n" +
                         "}\n",
                 "PARSER error at [4:8-63]: Element has both documentation and an explicit doc.doc tagged value. Use one.");
+    }
+
+    @Test
+    public void testConstructorPropertyOperatorExpressionsAreCompiled()
+    {
+        PureModel pureModel = test("Class test::A\n" +
+                "{\n" +
+                "  index: Integer[1];\n" +
+                "  scaled: Integer[1];\n" +
+                "  label: String[1];\n" +
+                "  inRange: Boolean[1];\n" +
+                "}\n" +
+                "\n" +
+                "function test::build(position: Integer[1], name: String[1]): test::A[1]\n" +
+                "{\n" +
+                "  ^test::A(index = $position + 1, scaled = $position * 10 + 2, label = 'item-' + $name, inRange = ($position > 0) && ($position < 10))\n" +
+                "}\n").getTwo();
+        ConcreteFunctionDefinition<?> build = pureModel.getConcreteFunctionDefinition("test::build_Integer_1__String_1__A_1_", null);
+        SimpleFunctionExpression newInstance = (SimpleFunctionExpression) build._expressionSequence().toList().get(0);
+        Assert.assertEquals("new", newInstance._functionName());
+        Map<String, String> assigned = new TreeMap<>();
+        for (Object value : ((InstanceValue) newInstance._parametersValues().toList().get(2))._values())
+        {
+            KeyExpression keyExpression = (KeyExpression) (value instanceof InstanceValue ? ((InstanceValue) value)._values().getAny() : value);
+            assigned.put((String) keyExpression._key()._values().getAny(), describe(keyExpression._expression()));
+        }
+        Assert.assertEquals("plus([$position, 1])", assigned.get("index"));
+        Assert.assertEquals("plus([times([$position, 10]), 2])", assigned.get("scaled"));
+        Assert.assertEquals("plus(['item-', $name])", assigned.get("label"));
+        Assert.assertEquals("and(greaterThan($position, 0), lessThan($position, 10))", assigned.get("inRange"));
+    }
+
+    private static String describe(Object value)
+    {
+        if (value instanceof SimpleFunctionExpression)
+        {
+            SimpleFunctionExpression function = (SimpleFunctionExpression) value;
+            return function._functionName() + function._parametersValues().collect(TestDomainCompilationFromGrammar::describe).makeString("(", ", ", ")");
+        }
+        if (value instanceof VariableExpression)
+        {
+            return "$" + ((VariableExpression) value)._name();
+        }
+        if (value instanceof InstanceValue)
+        {
+            RichIterable<?> values = ((InstanceValue) value)._values();
+            return values.size() == 1 ? describe(values.getAny()) : values.collect(TestDomainCompilationFromGrammar::describe).makeString("[", ", ", "]");
+        }
+        return value instanceof String ? "'" + value + "'" : String.valueOf(value);
+    }
+
+    @Test
+    public void testConstructorPropertyArithmeticOperandIsTypeChecked()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "  stringProperty: String[1];\n" +
+                "  booleanProperty: Boolean[1];\n" +
+                "}\n" +
+                "\n" +
+                "function test::f(x: Integer[1]): test::A[1]\n" +
+                "{\n" +
+                "  ^test::A(stringProperty = 'id-' + $x, booleanProperty = true)\n" +
+                "}\n",
+                "COMPILATION error at [9:35-38]: Can't find a match for function 'plus(Any[2])'");
     }
 }
