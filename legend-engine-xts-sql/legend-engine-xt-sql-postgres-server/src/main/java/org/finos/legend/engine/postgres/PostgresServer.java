@@ -24,6 +24,7 @@ package org.finos.legend.engine.postgres;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.prometheus.metrics.core.metrics.Gauge;
 import io.prometheus.metrics.exporter.servlet.jakarta.PrometheusMetricsServlet;
+import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Handler;
@@ -138,6 +139,7 @@ public class PostgresServer
     private final List<SessionStats> connectionsHistory = Collections.synchronizedList(new ArrayList<>());
     // Prometheus state ---------
     private PrometheusRegistry registry;
+    private PrometheusRegistry jvmRegistry;
     private Gauge connectionCount;
     private PrometheusUserMetrics userMetrics;
     // Prometheus state ---------
@@ -342,9 +344,13 @@ public class PostgresServer
         // Register HikariCP metrics
         sqlManager.registerHikariMetrics(this.registry);
 
+        this.jvmRegistry = new PrometheusRegistry();
+        JvmMetrics.builder().register(this.jvmRegistry);
+
         ServletContextHandler prometheusServletContext = new ServletContextHandler();
         prometheusServletContext.setContextPath("/");
-        prometheusServletContext.addServlet(new ServletHolder(new PrometheusMetricsServlet(this.registry)), "/prometheus");
+        prometheusServletContext.addServlet(new ServletHolder(new PrometheusMetricsServlet(this.registry)), "/metrics/application");
+        prometheusServletContext.addServlet(new ServletHolder(new PrometheusMetricsServlet(this.jvmRegistry)), "/metrics/jvm");
 
         // Manage collections
         server.setHandler(new Handler.Sequence(staticResourceHandler, dynamicContentHandler, prometheusServletContext));
