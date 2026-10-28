@@ -1090,6 +1090,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         {
             return convertTypes(M3Paths.Variant, compileContext);
         }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Binary || c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Varbinary)
+        {
+            return convertTypes(M3Paths.Byte, compileContext);
+        }
         // Fallback to platform function if precise primitive not available
         return (GenericType) compileContext.pureModel.getExecutionSupport().getProcessorSupport().type_wrapGenericType(
                 platform_store_relational_functions.Root_meta_relational_metamodel_datatype_dataTypeToCompatiblePureType_DataType_1__Type_1_(

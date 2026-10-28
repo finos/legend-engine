@@ -74,6 +74,54 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
     }
 
     @Test
+    public void testCompilationOfRelationStoreAccessorWithBinaryTypes()
+    {
+        test("###Relational\n" +
+                "Database test::myDB\n" +
+                "(\n" +
+                "    Table dataTable\n" +
+                "    (\n" +
+                "        pk INTEGER PRIMARY KEY,\n" +
+                "        bin BINARY(16),\n" +
+                "        vbin VARBINARY(256)\n" +
+                "    )\n" +
+                ")\n" +
+                "###Pure\n" +
+                "function my::func():Any[*]" +
+                "{" +
+                "   #>{test::myDB.dataTable}#->filter(c|$c.pk == 1)->select(~[pk, bin, vbin]);" +
+                "}");
+    }
+
+    @Test
+    public void testRelationStoreAccessorBinaryColumnTypes()
+    {
+        try
+        {
+            test("###Relational\n" +
+                    "Database my::Store" +
+                    "(" +
+                    "   Table myTable" +
+                    "   (" +
+                    "       id INT," +
+                    "       bin BINARY(16)," +
+                    "       vbin VARBINARY(256)" +
+                    "   )" +
+                    ")\n" +
+                    "###Pure\n" +
+                    "function my::func():Any[*]" +
+                    "{" +
+                    "   #>{my::Store.myTable}#->filter(c|$c.naeme == 'ok');" +
+                    "}");
+            Assert.fail();
+        }
+        catch (EngineException e)
+        {
+            Assert.assertEquals("COMPILATION error at [4:67-71]: The column 'naeme' can't be found in the relation (id:Int, bin:Byte, vbin:Byte)", e.toPretty());
+        }
+    }
+
+    @Test
     public void testCompilationWithSchema()
     {
         test("###Relational\n" +
