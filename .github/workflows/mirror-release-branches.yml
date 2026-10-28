@@ -34,7 +34,9 @@ jobs:
     env:
       UPSTREAM_URL: https://github.com/finos/legend-engine.git
       MIRROR_URL: https://github.com/${{ github.repository }}.git
-      BRANCH_PREFIX: release-legend-release-
+      # release-legend-release- is the prefix used by older releases; keep it while
+      # those branches are still receiving backports.
+      BRANCH_PREFIXES: legend-release- release-legend-release-
       MIN_RELEASE_VERSION: "4.99"
       # GITHUB_TOKEN cannot push commits that add or change files under
       # .github/workflows; set MIRROR_PUSH_TOKEN (with workflow scope) if that
@@ -57,12 +59,14 @@ jobs:
 
           release_heads() {
             git ls-remote --heads "$1" \
-              | awk -v prefix="refs/heads/${BRANCH_PREFIX}" \
-                  'index($2, prefix) == 1 { sub("refs/heads/", "", $2); print $2, $1 }' \
-              | while read -r branch sha; do
-                  if at_least_min_version "${branch#"${BRANCH_PREFIX}"}"; then
-                    echo "${branch} ${sha}"
-                  fi
+              | while read -r sha ref; do
+                  branch=${ref#refs/heads/}
+                  for prefix in ${BRANCH_PREFIXES}; do
+                    version=${branch#"${prefix}"}
+                    if [ "${version}" != "${branch}" ] && at_least_min_version "${version}"; then
+                      echo "${branch} ${sha}"
+                    fi
+                  done
                 done \
               | sort
           }
