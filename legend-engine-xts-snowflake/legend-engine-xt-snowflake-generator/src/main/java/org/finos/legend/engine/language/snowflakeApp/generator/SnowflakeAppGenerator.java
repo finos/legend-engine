@@ -41,11 +41,24 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Functi
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 
 import java.util.List;
+import java.util.ServiceLoader;
 
 public class SnowflakeAppGenerator
 {
 
     public static SnowflakeAppArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        return generateArtifact(pureModel, activator, inputModel, routerExtensions, Lists.mutable.withAll(ServiceLoader.load(SnowflakeAppArtifactPostProcessor.class)));
+    }
+
+    public static SnowflakeAppArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions, List<SnowflakeAppArtifactPostProcessor> processors)
+    {
+        SnowflakeAppArtifact artifact = buildArtifact(pureModel, activator, inputModel, routerExtensions);
+        processors.forEach(processor -> processor.postProcess(artifact));
+        return artifact;
+    }
+
+    private static SnowflakeAppArtifact buildArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         Root_meta_external_function_activator_snowflakeApp_generation_Artifact fullArtifact = core_snowflake_core_snowflakeapp_generation_generation.Root_meta_external_function_activator_snowflakeApp_generation_generateFullArtifact_SnowflakeApp_1__Extension_MANY__Artifact_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
         RelationalDatabaseConnection connection;
