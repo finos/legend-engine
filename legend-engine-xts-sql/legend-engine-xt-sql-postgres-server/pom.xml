@@ -320,9 +320,9 @@
             <version>1.3.5</version>
         </dependency>
         <dependency>
-            <groupId>io.prometheus.jmx</groupId>
-            <artifactId>jmx_prometheus_javaagent</artifactId>
-            <scope>runtime</scope>
+            <groupId>io.prometheus</groupId>
+            <artifactId>prometheus-metrics-instrumentation-jvm</artifactId>
+            <version>1.3.5</version>
         </dependency>
 
         <dependency>
