@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       releaseVersion:
-        description: "Release version (used to create branch release-legend-release-<version>)"
+        description: "Release version (used to create branch legend-release-<version>)"
         required: true
       gitRef:
         description: "Git ref to branch from (commit hash, tag, or branch). Defaults to head of master if not provided."
@@ -36,7 +36,7 @@ jobs:
     # that names it can never drift apart. Mapping the input through env also
     # keeps it out of the shell command lines below.
     env:
-      BRANCH_NAME: release-legend-release-${{ github.event.inputs.releaseVersion }}
+      BRANCH_NAME: legend-release-${{ github.event.inputs.releaseVersion }}
     steps:
       - name: Determine base ref
         id: base
