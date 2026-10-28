@@ -1,0 +1,36 @@
+name: m2m-diamond-inheritance
+title: "M2M Target Class Inheriting the Same Property from Two Unrelated Supertypes"
+description: |
+  Classes extending two unrelated supertypes that declare the same property. Every
+  generated Java interface extends the interfaces of all its supertypes, and getters on
+  those interfaces are throwing default methods, so a getter declared on both parents
+  must be re-declared on the child or javac rejects it ("inherits unrelated defaults").
+    - prerefundedSuite: a simple property declared on both parents.
+    - regionalSuite: a grandchild extending the diamond class and a second subclass of
+      one of its parents.
+    - bundleSuite: a qualified property declared on both parents and fetched through
+      each of them, so both parent interfaces carry its getter.
+    - locatedSuite: a property declared on both parents whose type the query never
+      fetches, so the plan generates no interface for it and the child must not
+      re-declare its getter.
+
+modelSources:
+  model:
+    root: m2m-diamond-inheritance
+    files:
+      - model.pure
+
+features:
+  - execution:test-data
+  - grammar:class-inheritance
+  - grammar:qualified-property
+  - mapping:mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - inheritance
+  - java-generation
+  - mapping-test

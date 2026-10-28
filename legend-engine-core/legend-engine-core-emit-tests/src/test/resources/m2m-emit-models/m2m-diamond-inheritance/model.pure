@@ -1,0 +1,264 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::m2m::diamond::BaseFeature
+{
+  id: String[1];
+  processingDate: StrictDate[0..1];
+  label(prefix: String[1]) {$prefix + $this.id}: String[1];
+}
+
+Class demo::m2m::diamond::BaseFeatureSelectionMethod
+{
+  selectionMethod: String[0..1];
+  processingDate: StrictDate[0..1];
+  label(prefix: String[1]) {$prefix + $this.selectionMethod->toOne()}: String[1];
+}
+
+Class demo::m2m::diamond::PrerefundedFeature extends demo::m2m::diamond::BaseFeature, demo::m2m::diamond::BaseFeatureSelectionMethod
+{
+  name: String[1];
+}
+
+Class demo::m2m::diamond::RegionalFeature extends demo::m2m::diamond::BaseFeature
+{
+  region: String[0..1];
+}
+
+Class demo::m2m::diamond::RegionalPrerefundedFeature extends demo::m2m::diamond::PrerefundedFeature, demo::m2m::diamond::RegionalFeature
+{
+}
+
+Class demo::m2m::diamond::FeatureBundle
+{
+  primary: demo::m2m::diamond::BaseFeature[1];
+  selection: demo::m2m::diamond::BaseFeatureSelectionMethod[1];
+}
+
+Class demo::m2m::diamond::Location
+{
+  city: String[0..1];
+}
+
+Class demo::m2m::diamond::LocatedFeature
+{
+  id: String[1];
+  location: demo::m2m::diamond::Location[0..1];
+}
+
+Class demo::m2m::diamond::LocatedSelectionMethod
+{
+  location: demo::m2m::diamond::Location[0..1];
+}
+
+Class demo::m2m::diamond::LocatedPrerefundedFeature extends demo::m2m::diamond::LocatedFeature, demo::m2m::diamond::LocatedSelectionMethod
+{
+}
+
+Class demo::m2m::diamond::source::SrcFeature
+{
+  id: String[1];
+  name: String[1];
+  selectionMethod: String[0..1];
+  region: String[0..1];
+  processingDate: StrictDate[0..1];
+}
+
+###Mapping
+Mapping demo::m2m::diamond::FeatureMapping
+(
+  *demo::m2m::diamond::PrerefundedFeature: Pure
+  {
+    ~src demo::m2m::diamond::source::SrcFeature
+    id: $src.id,
+    name: $src.name,
+    selectionMethod: $src.selectionMethod,
+    processingDate: $src.processingDate
+  }
+  *demo::m2m::diamond::RegionalPrerefundedFeature: Pure
+  {
+    ~src demo::m2m::diamond::source::SrcFeature
+    id: $src.id,
+    name: $src.name,
+    selectionMethod: $src.selectionMethod,
+    region: $src.region,
+    processingDate: $src.processingDate
+  }
+  *demo::m2m::diamond::FeatureBundle: Pure
+  {
+    ~src demo::m2m::diamond::source::SrcFeature
+    primary[base]: $src,
+    selection[selection]: $src
+  }
+  demo::m2m::diamond::BaseFeature[base]: Pure
+  {
+    ~src demo::m2m::diamond::source::SrcFeature
+    id: $src.id
+  }
+  demo::m2m::diamond::BaseFeatureSelectionMethod[selection]: Pure
+  {
+    ~src demo::m2m::diamond::source::SrcFeature
+    selectionMethod: $src.selectionMethod
+  }
+  *demo::m2m::diamond::LocatedPrerefundedFeature: Pure
+  {
+    ~src demo::m2m::diamond::source::SrcFeature
+    id: $src.id
+  }
+
+  testSuites:
+  [
+    prerefundedSuite:
+    {
+      function: |demo::m2m::diamond::PrerefundedFeature.all()->graphFetch(#{demo::m2m::diamond::PrerefundedFeature{id, name, selectionMethod, processingDate}}#)->serialize(#{demo::m2m::diamond::PrerefundedFeature{id, name, selectionMethod, processingDate}}#);
+      tests:
+      [
+        prerefunded:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::diamond::source::SrcFeature:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id":"F1","name":"Prerefunded","selectionMethod":"manual","processingDate":"2026-10-01"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id":"F1","name":"Prerefunded","selectionMethod":"manual","processingDate":"2026-10-01"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    regionalSuite:
+    {
+      function: |demo::m2m::diamond::RegionalPrerefundedFeature.all()->graphFetch(#{demo::m2m::diamond::RegionalPrerefundedFeature{id, name, region, processingDate}}#)->serialize(#{demo::m2m::diamond::RegionalPrerefundedFeature{id, name, region, processingDate}}#);
+      tests:
+      [
+        regional:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::diamond::source::SrcFeature:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id":"F2","name":"Regional","region":"EMEA","processingDate":"2026-10-02"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id":"F2","name":"Regional","region":"EMEA","processingDate":"2026-10-02"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    bundleSuite:
+    {
+      function: |demo::m2m::diamond::FeatureBundle.all()->graphFetch(#{demo::m2m::diamond::FeatureBundle{primary{id, label('P-')}, selection{selectionMethod, label('S-')}}}#)->serialize(#{demo::m2m::diamond::FeatureBundle{primary{id, label('P-')}, selection{selectionMethod, label('S-')}}}#);
+      tests:
+      [
+        bundle:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::diamond::source::SrcFeature:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id":"F3","name":"Bundle","selectionMethod":"manual"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"primary":{"id":"F3","label(\'P-\')":"P-F3"},"selection":{"selectionMethod":"manual","label(\'S-\')":"S-manual"}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    locatedSuite:
+    {
+      function: |demo::m2m::diamond::LocatedPrerefundedFeature.all()->graphFetch(#{demo::m2m::diamond::LocatedPrerefundedFeature{id}}#)->serialize(#{demo::m2m::diamond::LocatedPrerefundedFeature{id}}#);
+      tests:
+      [
+        located:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::diamond::source::SrcFeature:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id":"F5","name":"Located"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id":"F5"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
