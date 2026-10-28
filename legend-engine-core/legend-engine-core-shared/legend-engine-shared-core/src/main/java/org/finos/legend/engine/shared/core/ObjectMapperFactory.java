@@ -29,8 +29,14 @@ import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 
 public class ObjectMapperFactory
 {
+    public static void useUnlimitedStreamConstraintsByDefault()
+    {
+        UnlimitedStreamConstraints.applyAsJvmDefaults();
+    }
+
     public static <T extends ObjectMapper> T withStandardConfigurations(T objectMapper)
     {
+        UnlimitedStreamConstraints.applyTo(objectMapper.getFactory());
         objectMapper
                 .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
                 .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)

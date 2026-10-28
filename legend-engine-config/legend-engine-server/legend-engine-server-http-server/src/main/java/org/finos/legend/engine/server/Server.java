@@ -194,6 +194,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
     @Override
     public void initialize(Bootstrap<T> bootstrap)
     {
+        ObjectMapperFactory.useUnlimitedStreamConstraintsByDefault();
         bootstrap.addBundle(new AssetsBundle("/web", "/", "legend_index.html"));
         bootstrap.addBundle(new ServerUrlSwaggerBundle<T>()
         {
