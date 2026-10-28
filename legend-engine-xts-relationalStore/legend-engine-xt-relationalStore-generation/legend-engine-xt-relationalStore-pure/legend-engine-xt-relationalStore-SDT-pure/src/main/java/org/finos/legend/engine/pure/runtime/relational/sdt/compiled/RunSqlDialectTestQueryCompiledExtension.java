@@ -20,7 +20,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.pure.runtime.relational.sdt.RunSqlDialectTestQueryHelper;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_SQLNull_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_execute_ResultSet;
@@ -30,6 +29,7 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_execute_Ro
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.SQLNull;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.m4.tools.time.TimeZoneResolution;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.extension.BaseCompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
@@ -40,8 +40,6 @@ import org.finos.legend.pure.runtime.java.extension.store.relational.compiled.na
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
 public class RunSqlDialectTestQueryCompiledExtension extends BaseCompiledExtension
 {
@@ -81,10 +79,9 @@ public class RunSqlDialectTestQueryCompiledExtension extends BaseCompiledExtensi
                 {
                     ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
                     Root_meta_relational_metamodel_execute_ResultSet pureResult = new Root_meta_relational_metamodel_execute_ResultSet_Impl("");
-                    SQLNull sqlNull = new Root_meta_relational_metamodel_SQLNull_Impl("SQLNull");
 
                     int count = resultSetMetaData.getColumnCount();
-                    MutableList<String> columns = FastList.newList(count);
+                    MutableList<String> columns = Lists.mutable.ofInitialCapacity(count);
                     for (int i = 1; i <= count; i++)
                     {
                         String column = resultSetMetaData.getColumnLabel(i);
@@ -92,19 +89,20 @@ public class RunSqlDialectTestQueryCompiledExtension extends BaseCompiledExtensi
                     }
                     pureResult._columnNames(columns);
 
-                    ListIterable<ResultSetValueHandlers.ResultSetValueHandler> handlers = ResultSetValueHandlers.getHandlers(resultSetMetaData);
-                    MutableList<Root_meta_relational_metamodel_execute_Row> rows = FastList.newList();
+                    ListIterable<ResultSetValueHandlers.ResultSetValueHandler> handlers = ResultSetValueHandlers.getHandlers(resultSetMetaData, "UTC", TimeZoneResolution.STRICT);
+                    SQLNull sqlNull = new Root_meta_relational_metamodel_SQLNull_Impl("SQLNull");
+                    MutableList<Root_meta_relational_metamodel_execute_Row> rows = Lists.mutable.empty();
                     while (resultSet.next())
                     {
-                        MutableList<Object> rowValues = RelationalNativeImplementation.processRow(resultSet, handlers, sqlNull, new GregorianCalendar(TimeZone.getTimeZone("UTC")));
+                        MutableList<Object> rowValues = RelationalNativeImplementation.processRow(resultSet, handlers, sqlNull);
                         rows.add((new Root_meta_relational_metamodel_execute_Row_Impl(""))._valuesAddAll(rowValues)._parent(pureResult));
                     }
                     pureResult._rows(rows);
-                    return  pureResult;
+                    return pureResult;
                 }
                 catch (SQLException e)
                 {
-                    throw new PureExecutionException(e, Stacks.mutable.empty());
+                    throw new PureExecutionException(e);
                 }
             };
 
@@ -114,7 +112,7 @@ public class RunSqlDialectTestQueryCompiledExtension extends BaseCompiledExtensi
             }
             catch (SQLException e)
             {
-                throw new PureExecutionException(e, Stacks.mutable.empty());
+                throw new PureExecutionException(e);
             }
         }
     }
