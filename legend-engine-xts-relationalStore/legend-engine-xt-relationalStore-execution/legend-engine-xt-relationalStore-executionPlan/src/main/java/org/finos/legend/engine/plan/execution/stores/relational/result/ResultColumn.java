@@ -250,20 +250,26 @@ public class ResultColumn
      * {@link LocalDate} hands that day over as it stands. Reading it as a {@link java.sql.Date}
      * instead gives an instant, which yields a day only once a zone is chosen to read it in, and
      * drivers do not agree on the zone they built that instant in. A driver need not answer the
-     * first call, and is asked once rather than once a row.
+     * first call, and one that answers may still fail it: the DB2 driver throws a
+     * NullPointerException for a null column. Any failure falls back, and the driver is asked
+     * once rather than once a row.
      */
     private PureDate readDay(ResultSet resultSet) throws SQLException
     {
         if (this.readsLocalDate)
         {
+            LocalDate day = null;
             try
             {
-                LocalDate day = resultSet.getObject(this.columnIndex, LocalDate.class);
-                return (day == null) ? null : toPureDate(day);
+                day = resultSet.getObject(this.columnIndex, LocalDate.class);
             }
-            catch (SQLException | UnsupportedOperationException | AbstractMethodError unsupported)
+            catch (Exception | AbstractMethodError unreliable)
             {
                 this.readsLocalDate = false;
+            }
+            if (this.readsLocalDate)
+            {
+                return (day == null) ? null : toPureDate(day);
             }
         }
         java.sql.Date date = resultSet.getDate(this.columnIndex);
@@ -283,14 +289,18 @@ public class ResultColumn
     {
         if (this.readsLocalDateTime)
         {
+            LocalDateTime wallClock = null;
             try
             {
-                LocalDateTime wallClock = resultSet.getObject(this.columnIndex, LocalDateTime.class);
-                return (wallClock == null) ? null : toPureDate(wallClock.atZone(calendar.getTimeZone().toZoneId()));
+                wallClock = resultSet.getObject(this.columnIndex, LocalDateTime.class);
             }
-            catch (SQLException | UnsupportedOperationException | AbstractMethodError unsupported)
+            catch (Exception | AbstractMethodError unreliable)
             {
                 this.readsLocalDateTime = false;
+            }
+            if (this.readsLocalDateTime)
+            {
+                return (wallClock == null) ? null : toPureDate(wallClock.atZone(calendar.getTimeZone().toZoneId()));
             }
         }
         java.sql.Timestamp timestamp = resultSet.getTimestamp(this.columnIndex, calendar);

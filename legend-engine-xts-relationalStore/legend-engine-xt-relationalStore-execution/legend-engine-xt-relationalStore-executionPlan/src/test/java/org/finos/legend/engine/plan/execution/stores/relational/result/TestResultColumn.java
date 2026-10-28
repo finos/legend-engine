@@ -17,6 +17,8 @@ package org.finos.legend.engine.plan.execution.stores.relational.result;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,10 +30,12 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Tests for how {@link ResultColumn} reads a date or timestamp column, against a database rather
@@ -99,6 +103,87 @@ public class TestResultColumn
         {
             TimeZone.setDefault(defaultTimeZone);
         }
+    }
+
+    /**
+     * A driver can answer getObject for a java.time class and still fail it: the DB2 driver throws a
+     * NullPointerException for a null column. Such a driver is read through java.sql instead, and
+     * fails once at most, whether its first null comes before any value or after one.
+     */
+    @Test
+    public void testDriverThatFailsOnANullIsReadThroughJavaSql() throws SQLException
+    {
+        List<String> days = Arrays.asList("2014-03-10", null, "2015-07-21", null);
+        assertReadThroughDriverFailingOnNull(days, "DATE", Types.DATE, "GMT", days);
+
+        String connectionZoneId = "Asia/Tokyo";
+        List<String> moments = Arrays.asList("2014-03-10 13:07:44", null, "2015-07-21 09:30:00", null);
+        List<String> want = new ArrayList<>(moments.size());
+        for (String moment : moments)
+        {
+            want.add((moment == null) ? null : inUtc(moment, connectionZoneId));
+        }
+        assertReadThroughDriverFailingOnNull(moments, "TIMESTAMP", Types.TIMESTAMP, connectionZoneId, want);
+    }
+
+    private static void assertReadThroughDriverFailingOnNull(List<String> stored, String type, int columnType,
+                                                             String calendarZoneId, List<String> want) throws SQLException
+    {
+        try (Connection connection = connect();
+             Statement statement = connection.createStatement())
+        {
+            statement.execute("CREATE TABLE t (id INTEGER, v " + type + ")");
+            for (int id = 0; id < stored.size(); id++)
+            {
+                String value = stored.get(id);
+                statement.execute("INSERT INTO t VALUES (" + id + ", " + ((value == null) ? "NULL" : (type + " '" + value + "'")) + ")");
+            }
+
+            for (String order : Arrays.asList("ASC", "DESC"))
+            {
+                ResultColumn resultColumn = new ResultColumn(1, "v", type, columnType);
+                Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone(calendarZoneId));
+                AtomicInteger failures = new AtomicInteger();
+                List<String> read = new ArrayList<>(stored.size());
+                try (ResultSet resultSet = failingOnNull(statement.executeQuery("SELECT v FROM t ORDER BY id " + order), failures))
+                {
+                    while (resultSet.next())
+                    {
+                        Object value = resultColumn.getTransformedValue(resultSet, calendar);
+                        read.add((value == null) ? null : value.toString());
+                    }
+                }
+                List<String> expected = new ArrayList<>(want);
+                if ("DESC".equals(order))
+                {
+                    Collections.reverse(expected);
+                }
+                Assert.assertEquals(type + " " + order, expected, read);
+                Assert.assertEquals(type + " " + order + ", exceptions", 1, failures.get());
+            }
+        }
+    }
+
+    private static ResultSet failingOnNull(ResultSet resultSet, AtomicInteger failures)
+    {
+        return (ResultSet) Proxy.newProxyInstance(TestResultColumn.class.getClassLoader(), new Class<?>[]{ResultSet.class}, (proxy, method, args) ->
+        {
+            Object value;
+            try
+            {
+                value = method.invoke(resultSet, args);
+            }
+            catch (InvocationTargetException e)
+            {
+                throw e.getCause();
+            }
+            if ((value == null) && "getObject".equals(method.getName()) && (args.length == 2) && (args[1] instanceof Class))
+            {
+                failures.incrementAndGet();
+                throw new NullPointerException();
+            }
+            return value;
+        });
     }
 
     private static String inUtc(String moment, String connectionZoneId)
