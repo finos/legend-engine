@@ -16,11 +16,10 @@
 // the chain lives in the runtime: MappingTestRunner builds its runtime purely from the test's
 // store-test-data bindings, so a mapping testSuites block cannot name a ModelChainConnection.
 //
-// One route over the model and fixture: the relation projection, which is also the only form that
-// reaches DuckDB here (RelationalConnectionFactory picks DuckDB when the query returns a Relation
-// and H2 otherwise). Why the other two routes are not services is explained at the foot of this
-// file. Wider coverage lives in meta::relational::tests::semistructured::modelChain, which injects
-// the dialect connection directly.
+// One route over the model and fixture: the relation projection, declared and executed on DuckDB
+// (see connection/connections.pure). Why the other two routes are not services is explained at the
+// foot of this file. Wider coverage lives in meta::relational::tests::semistructured::modelChain,
+// which injects the dialect connection directly.
 
 ###Service
 // The reported shape in the relation form: project(~[...]) onto a to-many whose source array is
@@ -48,7 +47,7 @@ Service chain::service::FirmHoldingsRelationService
       [
         connections:
         [
-          h2:
+          duckdb:
             Reference
             #{
               chain::data::FirmData

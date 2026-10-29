@@ -27,7 +27,7 @@ Runtime chain::runtime::FirmRuntime
     ],
     chain::store::DB:
     [
-      h2: chain::connection::FirmH2Connection
+      duckdb: chain::connection::FirmDuckDBConnection
     ]
   ];
 }

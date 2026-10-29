@@ -817,6 +817,11 @@ stores:
 complexity: advanced
 
 # Optional: free-form tags for additional discoverability.
+# Connection-dialect tags (h2, duckdb, snowflake, ...) cover two independent things:
+# the dialect Plan Generation renders SQL in (whatever's declared) and the engine Test
+# Execution actually runs on (h2 or duckdb, forced by the query's return type,
+# regardless of what's declared) — a fixture can need tags for both. See
+# `emit-authoring.md` §11.4.
 tags:
   - avro
   - h2
