@@ -433,3 +433,160 @@ function <<test.Test>> meta::pure::functions::meta::tests::testResolveResolvedTy
     );
   true;
 }
+
+Class meta::pure::functions::meta::tests::allNestedProperties::DenseBase
+{
+  base : String[1];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense0 extends meta::pure::functions::meta::tests::allNestedProperties::DenseBase
+{
+  v0 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense1[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense2[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense3[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense1
+{
+  v1 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense2[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense3[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense4[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense2
+{
+  v2 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense3[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense4[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense5[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense3
+{
+  v3 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense4[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense5[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense6[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense4
+{
+  v4 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense5[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense6[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense7[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense5
+{
+  v5 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense6[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense7[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense8[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense6
+{
+  v6 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense7[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense8[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense9[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense7
+{
+  v7 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense8[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense9[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense10[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense8
+{
+  v8 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense9[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense10[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense11[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense9
+{
+  v9 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense10[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense11[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense12[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense10
+{
+  v10 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense11[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense12[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense13[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense11
+{
+  v11 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense12[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense13[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense14[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense12
+{
+  v12 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense13[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense14[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense15[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense13
+{
+  v13 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense14[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense15[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense16[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense14
+{
+  v14 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense15[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense16[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense17[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense15
+{
+  v15 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense16[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense17[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense0[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense16
+{
+  v16 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense17[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense0[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense1[*];
+}
+
+Class meta::pure::functions::meta::tests::allNestedProperties::Dense17
+{
+  v17 : String[1];
+  n1 : meta::pure::functions::meta::tests::allNestedProperties::Dense0[0..1];
+  n2 : meta::pure::functions::meta::tests::allNestedProperties::Dense1[*];
+  n3 : meta::pure::functions::meta::tests::allNestedProperties::Dense2[*];
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::allNestedProperties::testAllNestedPropertiesOnDenselyConnectedModel():Boolean[1]
+{
+  let props = meta::pure::functions::meta::tests::allNestedProperties::Dense0->meta::pure::functions::meta::allNestedProperties();
+  assertEquals(73, $props->size());
+  assertEquals(['base', 'n1', 'n2', 'n3']->concatenate(range(18)->map(i | 'v' + $i->toString()))->sort(),
+               $props.name->removeDuplicates()->sort());
+}
