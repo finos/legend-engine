@@ -604,107 +604,12 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
 
          let inlinedPropertyTree = $propertyPaths.result->buildPropertyTree()->inlineQualifiedPropertyNodes();
 
-         // Owner-reachability precondition. Both downstream branches (intermediate-walk
-         // and legacy fallback) can silently produce degenerate output when the property
-         // tree references classes that owner cannot reach via class-typed property
-         // navigation (nor share hierarchy with). Compute the owner-belonging-subtree
-         // set up-front and use it both as a diagnostic gate and as a shared input for
-         // the dispatch below. Mirrors the error message that buildPropertyPathUptoOwner
-         // would have raised had the dispatch reached it.
-         //
-         // Restricted to the case where the current set implementation's srcClass equals
-         // the current owner: during union/operation processing the algorithm dispatches
-         // one branch's set impl into a sibling subtree, where srcClass != owner is the
-         // normal cross-branch shape and the legacy fallback's empty output is correct.
-         // Exclude qualified properties: they are functions (potentially with parameters),
-         // not stored slots, so they must never be synthesized into the source tree as
-         // back-edges - the query/mapping never asked for them and downstream serialize
-         // code generation would call them with no arguments.
-         // Keyed on element path: Pure's lazy evaluation can produce several Class objects for one class.
-         let ownerPath = $owner->elementToPath();
-         let cachedNestedProperties = $nestedPropertiesCache->get($ownerPath);
-         let ownerNestedProperties = if($cachedNestedProperties->isNotEmpty(),
-                                        | $cachedNestedProperties->toOne().values,
-                                        | $owner->meta::pure::functions::meta::allNestedProperties()
-                                     );
-         let cacheForSubTrees = if($cachedNestedProperties->isNotEmpty(),
-                                   | $nestedPropertiesCache,
-                                   | $nestedPropertiesCache->put($ownerPath, list($ownerNestedProperties))
-                                );
-         let childProperties = $ownerNestedProperties
-                                       ->filter(p | !$p->instanceOf(QualifiedProperty)
-                                                    && $p->functionReturnType().rawType->isNotEmpty()
-                                                    && $p->functionReturnType().rawType->toOne()->instanceOf(Class));
-         let childPropertiesMap = $childProperties->groupBy(p | $p.genericType.rawType->toOne());
-         let propertyTreesBelongingToOwner = meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner($inlinedPropertyTree, $owner, $childPropertiesMap);
-         let treeClasses = $inlinedPropertyTree->meta::pure::graphFetch::collectPropertyTreeClasses()->removeDuplicates();
-         // Compare classes by element path, not object identity: Pure's lazy evaluation can
-         // produce multiple objects for the same Class. The existing isStrictSubType helper
-         // in this file uses the same path-based form for the same reason. Without this, a
-         // tree containing a supertype-of-owner reference (e.g. _S_Person seen under owner
-         // _S_PersonC, where PersonC extends Person) slips through the hierarchy filter and
-         // the precondition fires for an inheritance-reachable class.
-         let ownerGenPaths      = $owner->getAllTypeGeneralisations()->map(t | $t->elementToPath());
-         let nonTrivialTreeClasses = $treeClasses->filter(c | let cPath = $c->elementToPath();
-                                                              $cPath != $ownerPath
-                                                              && !$ownerGenPaths->contains($cPath)
-                                                              && !$c->getAllTypeGeneralisations()->map(t | $t->elementToPath())->contains($ownerPath););
-         let setImplSrcClassMatchesOwner = $setImplementation.srcClass->isNotEmpty()
-                                              && $setImplementation.srcClass->toOne()->elementToPath() == $ownerPath;
-         // Only needed when the cheaper disjuncts of the assert below do not already hold.
-         let needsOwnerReachabilityCheck = $setImplSrcClassMatchesOwner
-                                              && $propertyTreesBelongingToOwner->isEmpty()
-                                              && $nonTrivialTreeClasses->isNotEmpty();
-         // Owner can also reach a tree class through inheritance: if any of owner's class-typed
-         // properties returns a class that shares a hierarchy with a non-trivial tree class
-         // (in either direction), the tree is not truly disjoint. For example, when a mapping
-         // constructs a `^PersonB(...)` literal from owner Firm where Firm.employees: Person[*],
-         // PersonB shares hierarchy with Person via inheritance — the legacy fallback's empty
-         // source tree is the correct output and the precondition must stay inert.
-         let hasReachableTreeClass = if(!$needsOwnerReachabilityCheck,
-            | false,
-            | let ownerClassTypedReturnTypes = $ownerNestedProperties
-                                                     ->map(p | $p.genericType.rawType)
-                                                     ->filter(t | $t->isNotEmpty() && $t->toOne()->instanceOf(Class))
-                                                     ->map(t | $t->toOne()->cast(@Class<Any>))
-                                                     ->removeDuplicates();
-              $nonTrivialTreeClasses->exists(c | let cPath = $c->elementToPath();
-                                                 let cGenPaths = $c->getAllTypeGeneralisations()->map(t | $t->elementToPath());
-                                                 $ownerClassTypedReturnTypes->exists(r | let rPath = $r->elementToPath();
-                                                                                         $rPath == $cPath
-                                                                                         || $cGenPaths->contains($rPath)
-                                                                                         || $r->getAllTypeGeneralisations()->map(t | $t->elementToPath())->contains($cPath););
-                                                );
-         );
-         // A transform that never references its source parameter reads only constant
-         // reference data (instances built by functions from literals). The navigated
-         // classes hold no source-derived state, so nothing needs fetching - the legacy
-         // fallback's empty contribution is correct and the diagnostic must stay inert.
-         // The property tree cannot make this distinction (both shapes scan to the same
-         // unreachable chains), so it is read off the transform expressions directly.
-         let transformsReferenceSource = $propertyMappings->exists(pm | let paramNames = $pm.transform->functionType().parameters->evaluateAndDeactivate().name;
-                                                                        $pm.transform.expressionSequence->evaluateAndDeactivate()->exists(e | $e->meta::pure::graphFetch::referencesAnyVariable($paramNames)););
-         assert(!$setImplSrcClassMatchesOwner || $propertyTreesBelongingToOwner->isNotEmpty() || $nonTrivialTreeClasses->isEmpty() || $hasReachableTreeClass || !$transformsReferenceSource,
-                |'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $nonTrivialTreeClasses->at(0)->elementToPath() + ' - cannot build path back to owner.');
-
-         // Property tree root node may not start at owner (e.g. when the source of a mapping is wrapped in a new class and passed to a property mapping).
-         // Here we try and find the parts of the tree that could be child trees of the owner and then construct a property tree starting at the owner.
-         let inlinedGraphTree = if(!isTreeRootOwner($inlinedPropertyTree, $owner),
-            |  if($propertyTreesBelongingToOwner->isEmpty(),
-                  | $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties(),
-                  | let propertyTreesUptoOwner = $propertyTreesBelongingToOwner->map(t | $t->buildPropertyPathUptoOwner($owner, $childPropertiesMap));
-                    let newInlinedPropertyTree = ^PropertyPathTree(
-                                                    display  = 'root',
-                                                    value    = 'root',
-                                                    children = ^PropertyPathTree(
-                                                                  display  = $owner.name->toOne(),
-                                                                  value    = $owner,
-                                                                  children = $propertyTreesUptoOwner
-                                                               )
-                                                 );
-                    $newInlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties();
-               );,
-            | $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties()
+         // A tree of shape root -> owner needs no owner analysis: it already starts where the source tree does.
+         let rootedAtOwner = meta::pure::lineage::scanProperties::getRootClass($inlinedPropertyTree)->isNotEmpty() && isTreeRootOwner($inlinedPropertyTree, $owner);
+         let cacheForSubTrees = if($rootedAtOwner, | $nestedPropertiesCache, | $nestedPropertiesCache->withNestedPropertiesOf($owner));
+         let inlinedGraphTree = if($rootedAtOwner,
+            | $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties(),
+            | $inlinedPropertyTree->unrootedPropertyTreeToGraphFetchTree($owner, $cacheForSubTrees->get($owner->elementToPath())->toOne().values, $setImplementation, $propertyMappings)
          );
 
          // copy common properties from base type tree to subtype trees at property level
@@ -771,6 +676,82 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
       },
       | pair($srcNode, $visitedFunctions)
    );
+}
+
+// The property tree may not start at owner, e.g. when the transform wraps the source in a new
+// intermediate instance. Find the parts of the tree owner can reach and rebuild the paths back to it.
+// Keyed on element path: Pure's lazy evaluation can produce several Class objects for one class.
+function <<access.private>> meta::pure::graphFetch::withNestedPropertiesOf(cache:Map<String, List<AbstractProperty<Any>>>[1], owner:Class<Any>[1]): Map<String, List<AbstractProperty<Any>>>[1]
+{
+   let ownerPath = $owner->elementToPath();
+   if($cache->get($ownerPath)->isNotEmpty(),
+      | $cache,
+      | $cache->put($ownerPath, list($owner->meta::pure::functions::meta::allNestedProperties()))
+   );
+}
+
+function <<access.private>> meta::pure::graphFetch::unrootedPropertyTreeToGraphFetchTree(pTree:PropertyPathTree[1], owner:Class<Any>[1], nestedProperties:AbstractProperty<Any>[*], setImplementation:PureInstanceSetImplementation[1], propertyMappings:PurePropertyMapping[*]): GraphFetchTree[0..1]
+{
+   // Qualified properties are functions, not stored slots: they must never be synthesized into
+   // the source tree as back-edges, or serialization would call them with no arguments.
+   let childPropertiesMap = $nestedProperties->filter(p | !$p->instanceOf(QualifiedProperty)
+                                                           && $p->functionReturnType().rawType->isNotEmpty()
+                                                           && $p->functionReturnType().rawType->toOne()->instanceOf(Class))
+                                             ->groupBy(p | $p.genericType.rawType->toOne());
+   let ownerSubTrees = meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner($pTree, $owner, $childPropertiesMap);
+   meta::pure::graphFetch::assertOwnerReachesPropertyTree($pTree, $owner, $nestedProperties, $ownerSubTrees, $setImplementation, $propertyMappings);
+
+   if(!isTreeRootOwner($pTree, $owner) && $ownerSubTrees->isNotEmpty(),
+      | let propertyTreesUptoOwner = $ownerSubTrees->map(t | $t->buildPropertyPathUptoOwner($owner, $childPropertiesMap));
+        ^PropertyPathTree(
+           display  = 'root',
+           value    = 'root',
+           children = ^PropertyPathTree(display = $owner.name->toOne(), value = $owner, children = $propertyTreesUptoOwner)
+        )->propertyTreeToGraphFetchTree($owner)->removeDummyProperties();,
+      | $pTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties()
+   );
+}
+
+// Without this diagnostic both dispatch branches silently produce a degenerate source tree when
+// the property tree references classes owner cannot reach. It only applies when srcClass is owner:
+// during union processing one branch's set implementation is dispatched into a sibling subtree,
+// where srcClass != owner is the normal shape and the empty contribution is correct.
+function <<access.private>> meta::pure::graphFetch::assertOwnerReachesPropertyTree(pTree:PropertyPathTree[1], owner:Class<Any>[1], nestedProperties:AbstractProperty<Any>[*], ownerSubTrees:PropertyPathTree[*], setImplementation:PureInstanceSetImplementation[1], propertyMappings:PurePropertyMapping[*]): Boolean[1]
+{
+   // Classes are compared by element path: lazy evaluation can produce several objects for one Class.
+   let ownerPath = $owner->elementToPath();
+   let applies   = $ownerSubTrees->isEmpty()
+                     && $setImplementation.srcClass->isNotEmpty()
+                     && $setImplementation.srcClass->toOne()->elementToPath() == $ownerPath;
+   let unreachable = if(!$applies,
+      | []->cast(@Class<Any>),
+      | let ownerGenPaths = $owner->getAllTypeGeneralisations()->map(t | $t->elementToPath());
+        let nonTrivialTreeClasses = $pTree->meta::pure::graphFetch::collectPropertyTreeClasses()->removeDuplicates()
+                                          ->filter(c | let cPath = $c->elementToPath();
+                                                       $cPath != $ownerPath
+                                                       && !$ownerGenPaths->contains($cPath)
+                                                       && !$c->getAllTypeGeneralisations()->map(t | $t->elementToPath())->contains($ownerPath););
+        // A class sharing a hierarchy with one owner can navigate to counts as reachable, e.g. a
+        // ^PersonB(...) literal built from owner Firm where Firm.employees : Person[*].
+        let ownerClassTypedReturnTypes = $nestedProperties->map(p | $p.genericType.rawType)
+                                                          ->filter(t | $t->isNotEmpty() && $t->toOne()->instanceOf(Class))
+                                                          ->map(t | $t->toOne()->cast(@Class<Any>))
+                                                          ->removeDuplicates();
+        let hasReachableTreeClass = $nonTrivialTreeClasses->exists(c | let cPath = $c->elementToPath();
+                                                                       let cGenPaths = $c->getAllTypeGeneralisations()->map(t | $t->elementToPath());
+                                                                       $ownerClassTypedReturnTypes->exists(r | let rPath = $r->elementToPath();
+                                                                                                               $rPath == $cPath
+                                                                                                               || $cGenPaths->contains($rPath)
+                                                                                                               || $r->getAllTypeGeneralisations()->map(t | $t->elementToPath())->contains($cPath););
+                                                                      );
+        if($hasReachableTreeClass, | [], | $nonTrivialTreeClasses);
+   );
+   // A transform that never references its source parameter reads only constant reference data,
+   // so nothing needs fetching. The property tree cannot tell the two shapes apart.
+   let transformsReferenceSource = | $propertyMappings->exists(pm | let paramNames = $pm.transform->functionType().parameters->evaluateAndDeactivate().name;
+                                                                    $pm.transform.expressionSequence->evaluateAndDeactivate()->exists(e | $e->meta::pure::graphFetch::referencesAnyVariable($paramNames)););
+   assert($unreachable->isEmpty() || !$transformsReferenceSource->eval(),
+          | 'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $unreachable->at(0)->elementToPath() + ' - cannot build path back to owner.');
 }
 
 function <<access.private>> meta::pure::graphFetch::getSubTreeNodesAtPath(srcNode:PropertyGraphFetchTree[1], path:List<PropertyPathNode>[1], setClasses: Class<Any>[*], extensions:meta::pure::extension::Extension[*]): PropertyGraphFetchTree[*]
