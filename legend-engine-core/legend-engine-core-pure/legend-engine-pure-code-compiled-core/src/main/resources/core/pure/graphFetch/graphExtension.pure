@@ -100,7 +100,7 @@ function <<access.private>> meta::pure::graphFetch::addSubTypeTree(onto:GraphFet
    let treeWithSubTypeTrees= $existingSubTrees->match([
       stree0: SubTypeGraphFetchTree[0] | ^$onto(subTypeTrees = $onto.subTypeTrees->concatenate($subTree)),
       stree : SubTypeGraphFetchTree[1] | ^$onto(subTypeTrees = $onto.subTypeTrees->cast(@SubTypeGraphFetchTree)->filter(st|!$st->forSameSubTypeClass($stree))
-                                                              ->concatenate($stree->addSubTypeTrees($subTree.subTypeTrees->cast(@SubTypeGraphFetchTree))->cast(@SubTypeGraphFetchTree)))        // recursively add subtype trees if already existing subtype tree found
+                                                              ->concatenate($stree->addSubTrees($subTree.subTrees->cast(@PropertyGraphFetchTree))->addSubTypeTrees($subTree.subTypeTrees->cast(@SubTypeGraphFetchTree))->cast(@SubTypeGraphFetchTree)))        // recursively add subtype trees if already existing subtype tree found
 
    ]);
    let treeWithBasePropertiesCopiedToSubTypeTrees = $treeWithSubTypeTrees->meta::pure::graphFetch::copyPropertiesFromBaseTreeToSubTypeTrees();
@@ -892,10 +892,18 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeAtPath(s
    )
 }
 
-// A property node in a source tree cannot hold subtype trees, so each one becomes a ->subType() sibling of the property.
+// A property node in a source tree cannot hold subtype trees, so each one becomes a ->subType() sibling of the property,
+// including subtypes nested inside another subtype's tree.
 function <<access.private>> meta::pure::graphFetch::liftSubTypeTrees(pgft:PropertyGraphFetchTree[1]): PropertyGraphFetchTree[*]
 {
-   ^$pgft(subTypeTrees = [])->concatenate($pgft.subTypeTrees->map(st | ^$pgft(subType = $st.subTypeClass, subTrees = $st.subTrees, subTypeTrees = [])))
+   ^$pgft(subTypeTrees = [])->concatenate($pgft.subTypeTrees->map(st | $pgft->liftSubTypeTree($st)))
+}
+
+function <<access.private>> meta::pure::graphFetch::liftSubTypeTree(pgft:PropertyGraphFetchTree[1], st:SubTypeGraphFetchTree[1]): PropertyGraphFetchTree[*]
+{
+   let lifted = ^$pgft(subType = $st.subTypeClass, subTrees = $st.subTrees, subTypeTrees = [])
+                  ->addSubTrees($pgft.subTrees->cast(@PropertyGraphFetchTree))->cast(@PropertyGraphFetchTree);
+   $lifted->concatenate($st.subTypeTrees->map(nested | $lifted->liftSubTypeTree($nested)));
 }
 
 function <<access.private>> meta::pure::graphFetch::addPassThroughSubTrees(srcNode:GraphFetchTree[1], tgtNode:GraphFetchTree[1], extensions:meta::pure::extension::Extension[*]): GraphFetchTree[1]
