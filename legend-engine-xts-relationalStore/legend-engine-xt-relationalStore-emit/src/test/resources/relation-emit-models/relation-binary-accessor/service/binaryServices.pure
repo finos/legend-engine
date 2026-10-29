@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+// The binary columns read from the table itself. The query returns a Relation,
+// but unlike a query that reaches a Relation through a mapping with
+// project(~[...]), reading the table directly and naming the runtime with
+// from() here does not get routed to DuckDB; its test suite runs on H2.
+Service demo::relation::binary::service::BinaryRowsDirect
+{
+  pattern: '/api/relation/binary/direct';
+  documentation: 'Binary columns read from the table directly through a relation accessor.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |#>{demo::relation::binary::store::BinaryDB.T}#->select(~[ID, PAYLOAD, VPAYLOAD])->sort(ascending(~ID))->from(demo::relation::binary::runtime::BinaryRuntime);
+  }
+  testSuites:
+  [
+    binarySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::binary::data::BinaryData
+            }#
+        ]
+      ]
+      tests:
+      [
+        readsHex:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReturnBinaryAsHex:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ID":1,"PAYLOAD":"0a0b0000000000000000000000000000","VPAYLOAD":"deadbeef"},{"ID":2,"PAYLOAD":"cafebabe000000000000000000000000","VPAYLOAD":"0102030405"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

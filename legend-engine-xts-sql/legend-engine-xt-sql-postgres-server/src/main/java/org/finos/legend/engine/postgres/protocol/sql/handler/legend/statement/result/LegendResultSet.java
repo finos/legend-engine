@@ -15,6 +15,7 @@
 package org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result;
 
 import com.google.common.base.Function;
+import io.netty.buffer.ByteBufUtil;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -213,6 +214,12 @@ public class LegendResultSet implements PostgresResultSet
         registerProcessor(
                 Lists.mutable.with(STRING, VARCHAR),
                 (column, value) -> extractValue(value, column, String.class, "STRING", f -> value),
+                processors
+        );
+
+        registerProcessor(
+                BYTE,
+                (column, value) -> extractValue(value, column, String.class, "Hexadecimal binary", f -> ByteBufUtil.decodeHexDump((String) value)),
                 processors
         );
 

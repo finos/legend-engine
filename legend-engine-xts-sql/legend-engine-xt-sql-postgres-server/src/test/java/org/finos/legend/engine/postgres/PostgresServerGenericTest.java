@@ -119,6 +119,74 @@ public class PostgresServerGenericTest
     }
 
 
+    @Test
+    public void testQueryProjectWithBinaryColumns() throws Exception
+    {
+        loader.setData(Maps.mutable.with(
+                buildPointer("t_group", "t_bin", "t_version"),
+                PureGrammarParser.newInstance().parseModel("###Relational\n" +
+                        "Database pack::BinDB\n" +
+                        "(\n" +
+                        "    Table binTab(id INT, bin BINARY(2), vbin VARBINARY(64))\n" +
+                        ")\n")));
+
+        updateDB(Lists.mutable.with(
+                "drop table if exists binTab",
+                "CREATE Table binTab(id INT, bin BINARY(2), vbin VARBINARY(64))",
+                "insert into binTab (id, bin, vbin) values (1, X'0A0B', X'CAFEBABE')"), h2TestServer.getPort());
+
+        Assert.assertEquals("oid,typbasetype\n", execute(ODBC_CONNECT_QUERY, "projects|t_group:t_bin:t_version"));
+        Assert.assertEquals(
+                "id,bin,vbin\n" +
+                        "1,\\x0a0b,\\xcafebabe\n", execute("select id, bin, vbin from tb('pack::BinDB.binTab') as t", "projects|t_group:t_bin:t_version"));
+        Assert.assertEquals(
+                "id,bin,vbin\n" +
+                        "1,\\x0a0b,\\xcafebabe\n", executePrepared("select id, bin, vbin from tb('pack::BinDB.binTab') as t", "projects|t_group:t_bin:t_version"));
+
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/projects|t_group:t_bin:t_version?options='--compute=test'", new Properties());
+                PreparedStatement statement = connection.prepareStatement("select bin, vbin from tb('pack::BinDB.binTab') as t");
+                ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            Assert.assertEquals("bytea", resultSet.getMetaData().getColumnTypeName(1));
+            Assert.assertEquals("bytea", resultSet.getMetaData().getColumnTypeName(2));
+            Assert.assertTrue(resultSet.next());
+            Assert.assertArrayEquals(new byte[]{0x0A, 0x0B}, resultSet.getBytes(1));
+            Assert.assertArrayEquals(new byte[]{(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE}, resultSet.getBytes(2));
+        }
+    }
+
+    @Test
+    public void testQueryProjectWithBinaryColumnInDependency() throws Exception
+    {
+        loader.setData(Maps.mutable.with(
+                buildPointer("t_group", "t_clean", "t_version"),
+                PureGrammarParser.newInstance().parseModel("###Relational\n" +
+                        "Database pack::CleanDB\n" +
+                        "(\n" +
+                        "    Table cleanTab(id INT, name VARCHAR(200))\n" +
+                        ")\n"),
+                buildPointer("t_group", "t_dep", "t_version"),
+                PureGrammarParser.newInstance().parseModel("###Relational\n" +
+                        "Database pack::DepDB\n" +
+                        "(\n" +
+                        "    Table depTab(id INT, payload BINARY(16))\n" +
+                        ")\n")));
+
+        updateDB(Lists.mutable.with(
+                "drop table if exists cleanTab",
+                "CREATE Table cleanTab(id INT, name VARCHAR(200))",
+                "insert into cleanTab (id, name) values (1, 'value')"), h2TestServer.getPort());
+
+        Assert.assertEquals("oid,typbasetype\n", execute(ODBC_CONNECT_QUERY, "projects|t_group:t_clean:t_version|t_group:t_dep:t_version"));
+        Assert.assertEquals(
+                "name\n" +
+                        "value\n", execute("select name from tb('pack::CleanDB.cleanTab') as t", "projects|t_group:t_clean:t_version|t_group:t_dep:t_version"));
+    }
+
+    private static final String ODBC_CONNECT_QUERY = "select oid, typbasetype from pg_type where typname = 'lo'";
+
     private static ObjectMapper MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     private static TestPostgresServer testPostgresServer;

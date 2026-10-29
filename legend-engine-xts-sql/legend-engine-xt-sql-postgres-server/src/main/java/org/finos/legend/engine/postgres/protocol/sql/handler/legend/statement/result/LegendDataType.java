@@ -25,6 +25,7 @@ public class LegendDataType
     public static final String DECIMAL = "Decimal";
     public static final String BOOLEAN = "Boolean";
     public static final String STRING = "String";
+    public static final String BYTE = "Byte";
     public static final String TINY_INT = "meta::pure::precisePrimitives::TinyInt";
     public static final String U_TINY_INT = "meta::pure::precisePrimitives::UTinyInt";
     public static final String SMALL_INT = "meta::pure::precisePrimitives::SmallInt";

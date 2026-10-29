@@ -27,6 +27,24 @@ function <<test.Test>> meta::external::query::sql::server::schema::testTransform
   assertEquals($expected->meta::json::toJSON(100), $res->meta::json::toJSON(100));
 }
 
+function <<test.Test>> meta::external::query::sql::server::schema::testTransformDatabaseWithBinaryColumns():Boolean[1]
+{
+  let res = meta::external::query::sql::server::schema::transform(meta::external::query::sql::server::schema::BinaryTestDB);
+
+  let expected = ^AddressableRelationCollection(
+                    addressableRelations = [
+                      ^AddressableRelation(
+                        tableFunctionName = 'tb',
+                        packageableElement = meta::external::query::sql::server::schema::BinaryTestDB->elementToPath(),
+                        pathWithinElement = 'binTable',
+                        relationType = @(name:Varchar(200), bin:Byte, vbin:Byte)->genericType().rawType->cast(@RelationType<Any>)->toOne()->transformRelationType()
+                      )
+                    ]
+                 );
+
+  assertEquals($expected->meta::json::toJSON(100), $res->meta::json::toJSON(100));
+}
+
 function <<test.Test>> meta::external::query::sql::server::schema::testTransformEmptyDatabase():Boolean[1]
 {
   let res = meta::external::query::sql::server::schema::transform(meta::external::query::sql::server::schema::EmptyTestDB);
@@ -78,4 +96,15 @@ Database meta::external::query::sql::server::schema::TestDB
 ###Relational
 Database meta::external::query::sql::server::schema::EmptyTestDB
 (
+)
+
+###Relational
+Database meta::external::query::sql::server::schema::BinaryTestDB
+(
+  Table binTable
+  (
+    name Varchar(200),
+    bin BINARY(16),
+    vbin VARBINARY(256)
+  )
 )

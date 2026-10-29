@@ -57,6 +57,8 @@ public class PGTypes
             //.put(Types.TIMESTAMP, TimestampZType.INSTANCE)
             .put(Types.TIMESTAMP, TimestampType.INSTANCE)
             .put(Types.DATE, DateType.INSTANCE)
+            .put(Types.VARBINARY, ByteaType.INSTANCE)
+            .put(Types.BINARY, ByteaType.INSTANCE)
             .build();
      /*   .put(DataTypes.IP, VarCharType.INSTANCE) // postgres has no IP type, so map it to varchar - it matches the client representation
         .put(DataTypes.UNDEFINED, VarCharType.INSTANCE)

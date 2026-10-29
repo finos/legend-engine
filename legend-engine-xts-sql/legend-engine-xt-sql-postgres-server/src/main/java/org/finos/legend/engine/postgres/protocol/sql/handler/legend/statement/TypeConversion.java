@@ -21,6 +21,7 @@ import java.sql.Types;
 
 import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendDataType.*;
 import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendDataType.BIG_INT;
+import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendDataType.BYTE;
 import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendDataType.DATE;
 import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendDataType.DATE_TIME;
 import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendDataType.DECIMAL;
@@ -55,6 +56,7 @@ public class TypeConversion
         registerDBType(FLOAT, Types.DOUBLE, typeConversions);
         registerDBType(NUMBER, Types.DECIMAL, typeConversions);
         registerDBType(STRING, Types.VARCHAR, typeConversions);
+        registerDBType(BYTE, Types.VARBINARY, typeConversions);
         registerDBType(DATE_TIME, Types.TIMESTAMP, typeConversions);
         registerDBType(DATE, Types.TIMESTAMP, typeConversions);
         registerDBType(STRICT_DATE, Types.DATE, typeConversions);
