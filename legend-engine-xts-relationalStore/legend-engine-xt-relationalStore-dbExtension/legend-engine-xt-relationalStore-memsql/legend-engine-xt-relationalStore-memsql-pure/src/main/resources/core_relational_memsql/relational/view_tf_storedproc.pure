@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::extension::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+
+function meta::relational::functions::sqlQueryToString::memsql::createView(createViewSQL:CreateViewSQL[1], dbConfig:DbConfig[1], extensions:Extension[*]):String[1]
+{
+    // MemSQL (SingleStore) has no SECURE view concept.
+    if($createViewSQL.secure, |fail('For MemSQL we dont support SECURE views yet.'), |[]);
+
+    let schemaPart = if($createViewSQL.schemaName->isEmpty(),|'',|$dbConfig.identifierProcessor($createViewSQL.schemaName->toOne()) + '.');
+    let viewName = $schemaPart + $dbConfig.identifierProcessor($createViewSQL.name);
+
+    // CREATE OR REPLACE VIEW drops and recreates the view object on MemSQL, losing any GRANTs
+    // attached to it. CREATE VIEW IF NOT EXISTS + ALTER VIEW preserves the existing object's
+    // entitlements instead -- same workaround used for Databricks.
+    if($createViewSQL.copyGrants,
+       |'CREATE VIEW IF NOT EXISTS ' + $viewName + ' as ' + $createViewSQL.generatedSQL + '; \n' +
+        'ALTER VIEW ' + $viewName + ' as ' + $createViewSQL.generatedSQL + ';',
+       |'CREATE OR REPLACE VIEW ' + $viewName + ' as ' + $createViewSQL.generatedSQL + ';'
+    );
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::createFunction(createFunc:CreateFunctionSQL[1], dbConfig:DbConfig[1], extensions:Extension[*]):String[1]
+{
+    // Unlike CREATE OR REPLACE VIEW, CREATE OR REPLACE FUNCTION does not drop the function
+    // object's GRANTs on MemSQL, so copyGrants needs no workaround here -- same as Databricks.
+    // MemSQL also has no SECURE function concept, so that flag is ignored too.
+    assert($createFunc.typedParameters->isNotEmpty(), 'MemSQL createFunction requires typedParameters (SQLParameter[*]). The deprecated string-based parameters field is not supported.');
+
+    let paramString = $createFunc.typedParameters->map(p | $p.name + ' ' + meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSqlTextMemSQL($p.type))->joinStrings(', ');
+
+    'CREATE OR REPLACE FUNCTION ' +
+    if($createFunc.schemaName->isEmpty(),|'',|$dbConfig.identifierProcessor($createFunc.schemaName->toOne()) + '.') +
+    $dbConfig.identifierProcessor($createFunc.name) +
+    '(' + $paramString + ') ' +
+    // MemSQL table-valued functions infer their result columns from the query, so RETURNS TABLE
+    // takes no explicit column list here (unlike e.g. Databricks/Snowflake).
+    'RETURNS TABLE AS RETURN ' +
+    $createFunc.generatedSQL +
+    ';';
+}
