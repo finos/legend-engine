@@ -466,8 +466,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistru
     'Peter\n' +
     'John\n' +
     'John\n' +
-    'Anthony\n',
-    true
+    'Anthony\n'
   );
 }
 
@@ -511,8 +510,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistru
     'Anthony,D3\n' +
     'Fabrice,NULL\n' +
     'Oliver,NULL\n' +
-    'David,NULL\n',
-    true
+    'David,NULL\n'
   );
 }
 
@@ -592,8 +590,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistru
     'Anthony,D1,D2,D3,\n' +
     'Fabrice,D4,D5,,\n' +
     'Oliver,D5,D6,,\n' +
-    'David,D5,D6,,\n',
-    true
+    'David,D5,D6,,\n'
   );
 }
 
