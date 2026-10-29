@@ -287,7 +287,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     // modulo 64 when it's BIGINT (matching Java/Scala '<<' truncation rules). A bare integer literal
     // operand infers as 32-bit INT, so e.g. shiftleft(1, 46) silently computes 1 << (46 mod 32) = 1
     // << 14 instead of the correct 64-bit 1 << 46. Casting to bigint forces 64-bit shift semantics
-    // regardless of whether the operand renders as a literal or a DECIMAL(19,0)-typed column.
+    // regardless of whether the operand renders as a literal or an INT/DECIMAL(19,0)-typed column.
     // Spark's shiftleft/shiftright silently wrap the shift amount modulo 64 instead of erroring for
     // out-of-range values, so Pure's expected "max bits allowed is 62" validation is added explicitly.
     // The shift-amount parameter is reused three times (bounds check, twice) and the value parameter
@@ -437,12 +437,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         // instead, which Databricks does support for constructing a VARIANT from a MAP.
         if($func.name == 'toVariant' && $func.parameters->size() == 1 && $func.parameters->at(0)->isMapOperandForDatabricks(),
            | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='parse_json(to_json(%s))')),
-           | // Databricks represents Pure Integer as DECIMAL(19,0) for a genuine stored/declared
-             // column, but as BIGINT in computed/array contexts (parseInteger, range(), etc. - see
-             // the comments on those elsewhere in this file). array_position(ARRAY<BIGINT>, ...)
-             // then fails Spark's strict same-element-type check when the scalar search value is a
-             // real Integer column (DECIMAL(19,0)). Only cast the scalar operand when it is actually
-             // Integer-typed, so ARRAY<STRING>/ARRAY<DOUBLE> callers are untouched.
+           | // A relational Integer-typed column renders as Databricks INT, but as BIGINT in
+             // computed/array contexts (parseInteger, range(), etc. - see the comments on those
+             // elsewhere in this file). array_position(ARRAY<BIGINT>, ...) then fails Spark's
+             // strict same-element-type check when the scalar search value is a real Integer
+             // column (INT). Only cast the scalar operand when it is actually Integer-typed, so
+             // ARRAY<STRING>/ARRAY<DOUBLE> callers are untouched.
              if($func.name == 'array_position' && $func.parameters->size() == 2
                   && meta::relational::functions::typeInference::inferRelationalType($func.parameters->at(1), false)->isNotEmpty()
                   && meta::relational::functions::typeInference::inferRelationalType($func.parameters->at(1), false)->toOne()->instanceOf(meta::relational::metamodel::datatype::Integer),
@@ -495,13 +495,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 }
 
 // True when the operand's inferred relational type is Integer-like (Integer, BigInt, or a
-// zero-scale Decimal - Databricks represents Pure Integer as DECIMAL(19,0) for a genuine
-// stored/declared column, but as BIGINT in computed/array contexts - see the comments on
-// array_position above). The computed-array form (e.g. range(10)->map(x|x+1)) renders the operand
-// as a MapRelationalLambda wrapping the per-element mapping lambda; the shared inferRelationalType
-// has no case for the lambda's own bound-parameter node (RelationalLambdaParameter) and throws
-// ('Not supported yet') if asked to infer through it, so the lambda body is walked directly here
-// instead of delegating to inferRelationalType for that shape.
+// zero-scale Decimal - a relational Integer-typed column renders as Databricks INT, Pure's
+// Integer primitive auto-converts to a zero-scale Decimal (DECIMAL(19,0)) for a genuine
+// stored/declared column, and both render as BIGINT in computed/array contexts - see the
+// comments on array_position above). The computed-array form (e.g. range(10)->map(x|x+1))
+// renders the operand as a MapRelationalLambda wrapping the per-element mapping lambda; the
+// shared inferRelationalType has no case for the lambda's own bound-parameter node
+// (RelationalLambdaParameter) and throws ('Not supported yet') if asked to infer through it,
+// so the lambda body is walked directly here instead of delegating to inferRelationalType
+// for that shape.
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isIntegerLikeForDatabricksPercentile(op:RelationalOperationElement[1]):Boolean[1]
 {
    if($op->instanceOf(meta::relational::metamodel::RelationalLambda),
