@@ -1,0 +1,23 @@
+name: m2m-subtype-cast-child-and-filter
+title: "M2M reads a subtype property through an explicit cast in a child set and in a root filter"
+description: |
+  ChildService: the child mapping with ~src Base is reached through
+  $src.items and reads a nested property only Sub declares, through
+  $src->cast(@Sub).extra.value, so the source tree must carry
+  items->subType(Sub) with that subtype branch.
+  FilterService: the root mapping with ~src Base keeps only the rows whose
+  ~filter $src->instanceOf(Sub) && $src->cast(@Sub).tag == 'keep' holds, and
+  tag is read nowhere else, so the filter alone must bring it into the
+  source tree.
+modelSources:
+  model:
+    root: m2m-subtype-cast-child-and-filter
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - subtype
