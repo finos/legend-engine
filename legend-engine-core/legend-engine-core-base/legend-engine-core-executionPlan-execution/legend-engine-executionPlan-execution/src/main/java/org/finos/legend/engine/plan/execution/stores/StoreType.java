@@ -49,6 +49,7 @@ public final class StoreType implements Comparable<StoreType>, Serializable
     public static final StoreType ESv7 = register("ESv7");
     public static final StoreType NonRelational_MongoDB = register("NonRelational_MongoDB");
     public static final StoreType Deephaven = register("Deephaven");
+    public static final StoreType GraphQL = register("GraphQL");
 
     private final String name;
     private final int ordinal;

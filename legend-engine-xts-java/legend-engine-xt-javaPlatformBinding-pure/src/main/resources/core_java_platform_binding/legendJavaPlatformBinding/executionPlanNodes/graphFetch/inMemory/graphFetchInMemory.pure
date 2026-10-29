@@ -51,6 +51,12 @@ Class meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJ
 
    {doc.doc = 'Extract value transformer from property mapping'}
    valueTransformerExtractors : Function<{Nil[1]->ValueTransformer<Any>[1]}>[*];
+
+   {doc.doc = 'Whether this store needs subtype-instanceof narrowing applied during in-memory graph fetch'}
+   requiresInMemorySubtypeFiltering : Function<{Nil[1] -> Boolean[1]}>[*];
+
+   {doc.doc = 'Whether this store needs this-threaded qualified-property routing applied during in-memory graph fetch, for the InstanceSetImplementation owning the property currently being processed'}
+   supportsThisThreadedQualifiedPropertyRouting : Function<{Nil[1] -> Boolean[1]}>[*];
 }
 
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::prepareForInMemoryGraphFetch(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], debug: DebugContext[1]):GenerationContext[1]
@@ -333,22 +339,68 @@ Class <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platf
 
 
 
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::narrowRoutedPropertyGraphFetchTreeToSingleTarget(tree: RoutedPropertyGraphFetchTree[1], candidatePropertyMapping: PropertyMapping[*], declaredType: meta::pure::metamodel::type::Type[1], mapping: Mapping[1]): RoutedPropertyGraphFetchTree[1]
+{
+   let targetType = if($tree.subType->isNotEmpty(), | $tree.subType->toOne(), | $declaredType);
+   let exactPropertyMapping = $candidatePropertyMapping->filter(pm | $mapping->classMappingById($pm.targetSetImplementationId)->filter(si | $si.class == $targetType)->isNotEmpty());
+   let subtypePropertyMapping = $candidatePropertyMapping->filter(pm | $mapping->classMappingById($pm.targetSetImplementationId)->filter(si |
+      $targetType->instanceOf(meta::pure::metamodel::type::Class) &&
+         ($si.class->_subTypeOf($targetType->cast(@meta::pure::metamodel::type::Class<Any>)) || $targetType->cast(@meta::pure::metamodel::type::Class<Any>)->_subTypeOf($si.class))
+   )->isNotEmpty());
+   assert($exactPropertyMapping->isNotEmpty() || $subtypePropertyMapping->isNotEmpty() || ($candidatePropertyMapping->size() <= 1),
+      | 'Could not unambiguously route a graph fetch to a single target for type \'' + $targetType->elementToPath() + '\' - ' + $candidatePropertyMapping->size()->toString() + ' candidate property mappings exist, none of which target that type or one of its subtypes/supertypes');
+   let effectivePropertyMapping = if($exactPropertyMapping->isNotEmpty(), | $exactPropertyMapping, | if($subtypePropertyMapping->isNotEmpty(), | $subtypePropertyMapping, | $candidatePropertyMapping));
+   let effectiveSets = $effectivePropertyMapping->map(pm | $mapping->classMappingById($pm.targetSetImplementationId))->removeDuplicates();
+   ^$tree(sets = $effectiveSets, propertyMapping = $effectivePropertyMapping);
+}
+
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::ownerSupportsThisThreadedQualifiedPropertyRouting(ownerSets: InstanceSetImplementation[*], inMemoryAdhocExtensions: LegendJavaInMemoryGraphFetchExtension[*]): Boolean[1]
+{
+   $ownerSets->exists(ownerSet |
+      $ownerSet->match($inMemoryAdhocExtensions.supportsThisThreadedQualifiedPropertyRouting->concatenate([s: InstanceSetImplementation[1] | false])->toOneMany()));
+}
+
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStorePropertyNodeProject(node: InMemoryPropertyGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):ProjectAndState[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generateCodeForInMemoryPropertyGraphFetch\n', |''));
 
    let conventions     = $context.conventions;
-   let graphFetchTree  = $node.graphFetchTree->cast(@RoutedPropertyGraphFetchTree);
+   let graphFetchTreeOuter = $node.graphFetchTree->cast(@RoutedPropertyGraphFetchTree);
 
-   let isMilestonedProp = $graphFetchTree.property->instanceOf(QualifiedProperty) && $graphFetchTree.property->hasGeneratedMilestoningPropertyStereotype();
+   let isMilestonedProp = $graphFetchTreeOuter.property->instanceOf(QualifiedProperty) && $graphFetchTreeOuter.property->hasGeneratedMilestoningPropertyStereotype();
+   let inMemoryAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaInMemoryGraphFetchExtension);
+   let supportsThisThreadedQp = $graphFetchTreeOuter.sets->cast(@InstanceSetImplementation)->ownerSupportsThisThreadedQualifiedPropertyRouting($inMemoryAdhocExtensions);
+   let isThisThreadedQp = $graphFetchTreeOuter.property->instanceOf(QualifiedProperty) && !$isMilestonedProp && $supportsThisThreadedQp;
+   let innerRoutedValue        = if($isThisThreadedQp && $graphFetchTreeOuter.property->cast(@QualifiedProperty<Any>).expressionSequence->size() == 1,
+                                    | $graphFetchTreeOuter.property->cast(@QualifiedProperty<Any>).expressionSequence->toOne();,
+                                    | []
+                                 );
+   let innerStoreMappingRouted = if($innerRoutedValue->isNotEmpty() && $innerRoutedValue->toOne()->instanceOf(meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification),
+                                    | $innerRoutedValue->toOne()->cast(@meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification);,
+                                    | []
+                                 );
+   assert(!$isThisThreadedQp || $innerStoreMappingRouted->isNotEmpty(),
+      | 'Qualified property \'' + $graphFetchTreeOuter.property->cast(@QualifiedProperty<Any>).name->toOne() + '\' could not be routed to a real store operation - its body must be a single bare property navigation (e.g. \'{ $this.someProperty }\') whose target property is itself mapped');
+   let graphFetchTree = if($innerStoreMappingRouted->isNotEmpty(),
+                           | let backingProperty = $innerRoutedValue->toOne()->meta::pure::router::byPassRouterInfo()->cast(@FunctionExpression).func->cast(@AbstractProperty<Any>);
+                             let owners = $innerStoreMappingRouted->toOne().propertyMapping.owner->removeDuplicates();
+                             let mapping = $innerStoreMappingRouted->toOne().mapping;
+                             let currentPropertyMapping = $owners->map(owner | $owner->_propertyMappingsByPropertyName($backingProperty.name->toOne()));
+                             narrowRoutedPropertyGraphFetchTreeToSingleTarget($graphFetchTreeOuter, $currentPropertyMapping, $backingProperty->functionReturnType().rawType->toOne(), $mapping);,
+                           | $graphFetchTreeOuter
+                        );
+
    let property         = if ($isMilestonedProp,
-                              | let cl = $graphFetchTree.property->functionType().parameters->evaluateAndDeactivate()->at(0).genericType.rawType->toOne()->cast(@meta::pure::metamodel::type::Class<Any>);
-                                $cl->propertyByName($graphFetchTree.property->edgePointPropertyName()->toOne())->toOne();,
-                              | $graphFetchTree.property
-                          )->cast(@Property<Nil,Any|*>);
+                              | let cl = $graphFetchTreeOuter.property->functionType().parameters->evaluateAndDeactivate()->at(0).genericType.rawType->toOne()->cast(@meta::pure::metamodel::type::Class<Any>);
+                                $cl->propertyByName($graphFetchTreeOuter.property->edgePointPropertyName()->toOne())->toOne()->cast(@Property<Nil,Any|*>);,
+                              | if($isThisThreadedQp,
+                                   | $innerRoutedValue->toOne()->meta::pure::router::byPassRouterInfo()->cast(@FunctionExpression).func->cast(@Property<Nil,Any|*>);,
+                                   | $graphFetchTreeOuter.property->cast(@Property<Nil,Any|*>);
+                                )
+                          );
    let propertyMappings = if ($isMilestonedProp,
-                              | let cl = $graphFetchTree.property->functionType().parameters->evaluateAndDeactivate()->at(0).genericType.rawType->toOne()->cast(@meta::pure::metamodel::type::Class<Any>);
-                                $graphFetchTree.sets.parent->map(x|$x->rootClassMappingByClass($cl)->cast(@InstanceSetImplementation))->map(w|$w->_propertyMappingsByPropertyName($property.name->toOne()))->toOne();,
+                              | let cl = $graphFetchTreeOuter.property->functionType().parameters->evaluateAndDeactivate()->at(0).genericType.rawType->toOne()->cast(@meta::pure::metamodel::type::Class<Any>);
+                                $graphFetchTreeOuter.sets.parent->map(x|$x->rootClassMappingByClass($cl)->cast(@InstanceSetImplementation))->map(w|$w->_propertyMappingsByPropertyName($property.name->toOne()))->toOne();,
                               | $graphFetchTree.propertyMapping
                           );
 
@@ -421,31 +473,30 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
          ->js_flatMap(
             j_lambda(
                $graphObject,
-               $pmTransformer
-                  ->j_invoke('apply', $graphObject->j_invoke($conventions->getterName(inMemorySource()), [], javaObject())
-                                                  ->j_cast($pmtType.parameterTypes->at(0))
-                                    , $pmtType.returnType)
-                  ->j_streamOf()
-                  ->addFilterForSubtype($propertyType,$targetSrc.type,$targetSet,$context,$extensions)
-                  ->map(x | if($targetSet->hasExplodeProperty(),
-                               | $x->js_flatMap(j_lambda($targetSrc, $tsTransformer->j_invoke('apply', [$targetSrc] , $currentGraphImpl->javaStream()))),
-                               | $x->js_map(j_lambda($targetSrc, $tsTransformer->j_invoke('apply', [$targetSrc] , $currentGraphImpl)))
-                              )
+               {|
+                  let perParentValueStream = $pmTransformer
+                     ->j_invoke('apply', $graphObject->j_invoke($conventions->getterName(inMemorySource()), [], javaObject())
+                                                     ->j_cast($pmtType.parameterTypes->at(0))
+                                       , $pmtType.returnType)
+                     ->j_streamOf()
+                     ->addFilterForSubtype($propertyType,$targetSrc.type,$targetSet,$context,$extensions)
+                     ->map(x | if($targetSet->hasExplodeProperty(),
+                                  | $x->js_flatMap(j_lambda($targetSrc, $tsTransformer->j_invoke('apply', [$targetSrc] , $currentGraphImpl->javaStream()))),
+                                  | $x->js_map(j_lambda($targetSrc, $tsTransformer->j_invoke('apply', [$targetSrc] , $currentGraphImpl)))
+                                 )
+                           );
+                  $perParentValueStream->js_map(j_lambda($targetGraphObject,
+                     $graphObject->j_invoke('add' + $property.name->toUpperFirstCharacter()->toOne(), $targetGraphObject, javaVoid())->concatenate(
+                        if ($property.owner->instanceOf(Association),
+                            | let otherProperty = $property.owner->cast(@Association).properties->filter(x | $x != $property)->toOne();
+                              $targetGraphObject->j_invoke('add' + $otherProperty.name->toUpperFirstCharacter()->toOne(), $graphObject, javaVoid());,
+                            | []
                         )
-                  ->js_map(
-                     j_lambda(
-                        $targetGraphObject,
-                        $graphObject->j_invoke('add' + $property.name->toUpperFirstCharacter()->toOne(), $targetGraphObject, javaVoid())->concatenate(
-                           if ($property.owner->instanceOf(Association),
-                               | let otherProperty = $property.owner->cast(@Association).properties->filter(x | $x != $property)->toOne();
-                                 $targetGraphObject->j_invoke('add' + $otherProperty.name->toUpperFirstCharacter()->toOne(), $graphObject, javaVoid());,
-                               | []
-                           )
-                        )->concatenate(
-                           $conventions->createGraphInstance($currentGraphImpl, $targetGraphObject)->j_return()
-                        )->j_block()
-                     )
-                  )
+                     )->concatenate(
+                        $conventions->createGraphInstance($currentGraphImpl, $targetGraphObject)->j_return()
+                     )->j_block()
+                  ));
+               }->eval()
             )
          );
    };
@@ -487,13 +538,12 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 {
   //if source is a mappingclass or a primitive type skip the filter (TODO: should we handle filters on primtive sources?)
   let sourceClass = $targetSet->sourceClass($extensions);
-  if($sourceClass->instanceOf(meta::pure::metamodel::type::Class), 
+  let inMemoryAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaInMemoryGraphFetchExtension);
+  let requiresFiltering = $targetSet->instanceOf(PureInstanceSetImplementation)
+      || $targetSet->match($inMemoryAdhocExtensions.requiresInMemorySubtypeFiltering->concatenate([s: InstanceSetImplementation[1] | false])->toOneMany());
+  if($sourceClass->instanceOf(meta::pure::metamodel::type::Class) && $requiresFiltering,
     | let targetSrcJType = $context.conventions->className($sourceClass);
-      if($targetSet->instanceOf(PureInstanceSetImplementation),
-        |let interParam  = j_parameter(javaClassType(), 'interParam');
-         $input->js_filter(j_lambda($propertyType, $propertyType->j_instanceof($targetSrcJType)));,
-        |$input
-        );,
+      $input->js_filter(j_lambda($propertyType, $propertyType->j_instanceof($targetSrcJType)));,
     | $input);
 }
 

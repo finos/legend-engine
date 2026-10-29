@@ -1,0 +1,287 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
+import meta::pure::metamodel::function::*;
+import meta::pure::metamodel::valuespecification::*;
+import meta::pure::router::store::metamodel::*;
+import meta::pure::mapping::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::external::store::graphQL::transformation::filter::GraphQLPushedDownArgument
+{
+  argument: Argument[1];
+  // An inline instance-creation argument (eg. [^FilterParam(key='k', value=$v), ...]) can embed any number
+  // of $variable-bound leaf fields, so both of these are [*] - one per embedded variable, not one per argument.
+  variableDefinition: VariableDefinition[*];
+  // Mutually exclusive: value is set for a literal (known at plan-generation time), requiredVariableInput
+  // for a variable-bound one (resolved from ExecutionState at execution time).
+  value: Any[*];
+  requiredVariableInput: VariableInput[*];
+  isList: Boolean[1];
+}
+
+// Carries the pieces produced while recursively rendering an inline instance-creation (or one of its field
+// values) into GraphQL SDL - the resulting Value AST, plus any $variable references found along the way.
+Class meta::external::store::graphQL::transformation::filter::GraphQLInlineValueTranslation
+{
+  value: Value[1];
+  variableDefinitions: VariableDefinition[*];
+  requiredVariableInputs: VariableInput[*];
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::filter::unwrapRouted(vs: ValueSpecification[1]): ValueSpecification[1]
+{
+  $vs->match([
+    s: StoreMappingRoutedValueSpecification[1] | $s.value->meta::external::store::graphQL::transformation::filter::unwrapRouted(),
+    a: Any[1]                                  | $vs
+  ]);
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::filter::graphQLTypeNameFor(value: Any[1]): String[1]
+{
+  $value->match([
+    s: String[1]  | 'String',
+    b: Boolean[1] | 'Boolean',
+    i: Integer[1] | 'Int',
+    f: Float[1]   | 'Float',
+    e: meta::pure::metamodel::type::Enum[1] | $e->type()->toOne().name->toOne(),
+    // Assumes the GraphQL schema's input-object type is named identically to the Pure Class generated
+    // for it - no override.
+    a: Any[1]     | $a->genericType().rawType->toOne().name->toOne()
+  ]);
+}
+
+// list-ness comes from the DECLARED parameter's own multiplicity, not instanceValue's - a literal list call
+// site with exactly one entry (eg. ['vip']) is itself indistinguishable from a bare scalar literal, the same
+// ambiguity valueSpecToPushedDownArgument's instance-creation branch already accounts for.
+function <<access.private>> meta::external::store::graphQL::transformation::filter::toVariableTypeReference(instanceValue: InstanceValue[1], declaredMultiplicity: Multiplicity[1]): TypeReference[1]
+{
+  let scalarType = ^NamedTypeReference(name = $instanceValue.values->at(0)->meta::external::store::graphQL::transformation::filter::graphQLTypeNameFor());
+  if($declaredMultiplicity->meta::pure::functions::meta::isToMany(), | ^ListTypeReference(itemType = $scalarType), | $scalarType);
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::filter::toVariableTypeReferenceForParameter(ve: VariableExpression[1], qualifiedProperty: QualifiedProperty<Any>[0..1], argName: String[0..1], embeddingProperty: Property<Nil,Any|*>[0..1]): TypeReference[1]
+{
+  let isOptional = $ve.multiplicity.lowerBound.value == 0;
+  let scalarTypeName = $ve.genericType.rawType->toOne()->meta::external::store::graphQL::transformation::filter::graphQLScalarTypeNameForType();
+  let isRequiredList = ($qualifiedProperty->isNotEmpty() && $argName->isNotEmpty()
+                     && $qualifiedProperty->toOne()->meta::external::store::graphQL::transformation::filter::isRequiredListArgument($argName->toOne()))
+                     || $embeddingProperty->meta::external::store::graphQL::transformation::filter::isRequiredListProperty();
+  if($ve.multiplicity->meta::pure::functions::meta::isToMany(),
+     | ^ListTypeReference(itemType = ^NamedTypeReference(name = $scalarTypeName), nullable = $isOptional && !$isRequiredList),
+     | ^NamedTypeReference(name = $scalarTypeName, nullable = $isOptional)
+  );
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::filter::hasRequiredArgumentsTag(taggedValues: TaggedValue[*], name: String[1]): Boolean[1]
+{
+  $taggedValues->exists(t | $t.tag == meta::external::store::graphQL::generation::RequiredArgumentsProfile->tag('requiredArguments') && $t.value == $name);
+}
+
+// Mirrors isRequiredListArgument, but for a nested input-object field (eg. ^FilterKey(tags = $tags)) rather
+// than a top-level QP argument
+function <<access.private>> meta::external::store::graphQL::transformation::filter::isRequiredListProperty(property: Property<Nil,Any|*>[0..1]): Boolean[1]
+{
+  $property->isNotEmpty() &&
+  $property->toOne().taggedValues->meta::external::store::graphQL::transformation::filter::hasRequiredArgumentsTag($property->toOne().name->toOne());
+}
+
+// Resolves which Property of the instance-creation's own target Class a given embedded $variable is
+// directly bound to, by name (GraphQL requires unique variable names per operation, already relied on
+// elsewhere in this file) - recurses into nested instance-creations so a variable embedded several levels
+// deep still resolves to its own innermost owning field, not some outer one.
+function <<access.private>> meta::external::store::graphQL::transformation::filter::resolveEmbeddingProperty(sfe: SimpleFunctionExpression[1], variableName: String[1]): Property<Nil,Any|*>[0..1]
+{
+  let targetClass = $sfe.genericType.rawType->toOne()->cast(@Class<Any>);
+  let keyExpressions = $sfe.parametersValues->evaluateAndDeactivate()->drop(2)->cast(@InstanceValue).values->cast(@KeyExpression);
+  $keyExpressions->fold({ke, found |
+    if($found->isNotEmpty(),
+      | $found,
+      | if($ke.expression->instanceOf(VariableExpression) && $ke.expression->cast(@VariableExpression).name == $variableName,
+          | $targetClass.properties->filter(p | $p.name == $ke.key->cast(@InstanceValue).values->toOne()->cast(@String))->toOne(),
+          | if($ke.expression->instanceOf(SimpleFunctionExpression),
+              | $ke.expression->cast(@SimpleFunctionExpression)->meta::external::store::graphQL::transformation::filter::resolveEmbeddingProperty($variableName),
+              | []
+            )
+        )
+    );
+  }, []);
+}
+
+function meta::external::store::graphQL::transformation::filter::graphQLScalarTypeNameForType(type: meta::pure::metamodel::type::Type[1]): String[1]
+{
+  if($type == String,  | 'String',
+  | if($type == Boolean, | 'Boolean',
+  | if($type == Integer, | 'Int',
+  | if($type == Float, | 'Float',
+  // Assumes the GraphQL schema's enum/input-object type is named identically to the Pure
+  // Enumeration/Class generated for it - no override.
+  | if($type->instanceOf(meta::pure::metamodel::type::Enumeration), | $type.name->toOne(),
+  | if($type->instanceOf(meta::pure::metamodel::type::Class), | $type.name->toOne(),
+  | fail('GraphQL store does not support a runtime-variable-bound argument of type ' + $type->elementToPath() + ' - only String, Boolean, Integer, Float, Enumeration and Class (input-object) types are supported today'); '';
+  ))))));
+}
+
+// Converts a plan-time-resolved Pure literal value into a GraphQL SDL Value node, for rendering inline as
+// part of an instance-creation argument's object literal.
+function <<access.private>> meta::external::store::graphQL::transformation::filter::literalToValue(a: Any[1]): Value[1]
+{
+  $a->match([
+    s: String[1]  | ^StringValue(value = $s),
+    b: Boolean[1] | ^BooleanValue(value = $b),
+    i: Integer[1] | ^IntValue(value = $i),
+    f: Float[1]   | ^FloatValue(value = $f),
+    e: meta::pure::metamodel::type::Enum[1] | ^EnumValue(value = $e.name),
+    a: Any[1]     | fail('GraphQL store does not support an inline literal value of type ' + $a->genericType().rawType->toOne()->elementToPath()); ^NullValue();
+  ]);
+}
+
+// A KeyExpression's own value is either a bare $variable reference, a nested instance-creation (recurses
+// into instanceCreationToValue), or a resolved literal - purely AST-building, no variable bookkeeping here:
+// instanceCreationToValue discovers every embedded $variable in one pass via the shared stdlib function
+// instead, so a nested recursive call's own discovery is simply unused by the caller.
+function <<access.private>> meta::external::store::graphQL::transformation::filter::keyExpressionValue(ke: meta::pure::metamodel::function::KeyExpression[1]): Value[1]
+{
+  if($ke.expression->instanceOf(VariableExpression),
+    | ^Variable(name = $ke.expression->cast(@VariableExpression).name);,
+    | if($ke.expression->instanceOf(SimpleFunctionExpression),
+        | $ke.expression->cast(@SimpleFunctionExpression)->meta::external::store::graphQL::transformation::filter::instanceCreationToValue().value;,
+        | let literal = $ke.expression->cast(@InstanceValue).values->toOne();
+          $literal->meta::external::store::graphQL::transformation::filter::literalToValue();
+      );
+  );
+}
+
+// Renders a compiled `^SomeClass(key=.., value=..)` instance-creation call as an inline GraphQL object
+// literal.
+function <<access.private>> meta::external::store::graphQL::transformation::filter::instanceCreationToValue(sfe: SimpleFunctionExpression[1]): meta::external::store::graphQL::transformation::filter::GraphQLInlineValueTranslation[1]
+{
+  let keyExpressions = $sfe.parametersValues->evaluateAndDeactivate()->drop(2)->cast(@InstanceValue).values->cast(@KeyExpression);
+  let fields = $keyExpressions->map(ke | ^ObjectField(name = $ke.key->cast(@InstanceValue).values->toOne()->cast(@String), value = $ke->meta::external::store::graphQL::transformation::filter::keyExpressionValue()));
+  let embeddedVariables = $sfe->meta::pure::functions::meta::findVariableExpressionsInValueSpecification();
+  ^meta::external::store::graphQL::transformation::filter::GraphQLInlineValueTranslation(
+    value = ^ObjectValue(fields = $fields),
+    variableDefinitions = $embeddedVariables->map(ve | ^VariableDefinition(name = $ve.name, type = $ve->meta::external::store::graphQL::transformation::filter::toVariableTypeReferenceForParameter([], [], $sfe->meta::external::store::graphQL::transformation::filter::resolveEmbeddingProperty($ve.name)))),
+    requiredVariableInputs = $embeddedVariables->map(ve | ^VariableInput(name = $ve.name, genericType = $ve.genericType, multiplicity = $ve.multiplicity))
+  );
+}
+
+// A declared list argument that the GraphQL schema marks non-null (eg. `tags: [String!]!`) must always be
+// sent, even when empty - GraphQLStoreModelGenerator stamps its name here at generation time, since only it
+// has the schema; the translator only has the call-site value, which is [] either way.
+function <<access.private>> meta::external::store::graphQL::transformation::filter::isRequiredListArgument(qualifiedProperty: QualifiedProperty<Any>[1], argName: String[1]): Boolean[1]
+{
+  $qualifiedProperty.taggedValues->meta::external::store::graphQL::transformation::filter::hasRequiredArgumentsTag($argName);
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::filter::valueSpecToPushedDownArgument(qualifiedProperty: QualifiedProperty<Any>[1], argName: String[1], rhs: ValueSpecification[1], declaredMultiplicity: Multiplicity[1], declaredType: meta::pure::metamodel::type::Type[1]): meta::external::store::graphQL::transformation::filter::GraphQLPushedDownArgument[*]
+{
+  if($rhs->instanceOf(InstanceValue),
+    | let iv = $rhs->cast(@InstanceValue);
+      let values = $iv.values;
+      if($values->isEmpty(),
+        | if($qualifiedProperty->meta::external::store::graphQL::transformation::filter::isRequiredListArgument($argName),
+            | ^meta::external::store::graphQL::transformation::filter::GraphQLPushedDownArgument(
+                argument = ^Argument(name = $argName, value = ^Variable(name = $argName)),
+                variableDefinition = ^VariableDefinition(name = $argName, type = ^ListTypeReference(itemType = ^NamedTypeReference(name = $declaredType->meta::external::store::graphQL::transformation::filter::graphQLScalarTypeNameForType()))),
+                value = [],
+                isList = true
+              );,
+            | [];
+          );,
+        | if($values->forAll(v | !$v->instanceOf(SimpleFunctionExpression) && !$v->instanceOf(VariableExpression)),
+            | let variableDefinition = ^VariableDefinition(name = $argName, type = $iv->meta::external::store::graphQL::transformation::filter::toVariableTypeReference($declaredMultiplicity));
+              let jsonSafeValues = $values->map(v | if($v->instanceOf(meta::pure::metamodel::type::Enum), | $v->cast(@meta::pure::metamodel::type::Enum).name, | $v));
+              ^meta::external::store::graphQL::transformation::filter::GraphQLPushedDownArgument(
+                argument = ^Argument(name = $argName, value = ^Variable(name = $argName)),
+                variableDefinition = $variableDefinition,
+                value = $jsonSafeValues,
+                isList = $declaredMultiplicity->meta::pure::functions::meta::isToMany()
+              );,
+            | let elementTranslations = $values->map(v |
+                if($v->instanceOf(VariableExpression),
+                  | let ve = $v->cast(@VariableExpression);
+                    ^meta::external::store::graphQL::transformation::filter::GraphQLInlineValueTranslation(
+                      value = ^Variable(name = $ve.name),
+                      variableDefinitions = ^VariableDefinition(name = $ve.name, type = $ve->meta::external::store::graphQL::transformation::filter::toVariableTypeReferenceForParameter($qualifiedProperty, $argName, [])),
+                      requiredVariableInputs = ^VariableInput(name = $ve.name, genericType = $ve.genericType, multiplicity = $ve.multiplicity)
+                    );,
+                  | if($v->instanceOf(SimpleFunctionExpression),
+                      | $v->cast(@SimpleFunctionExpression)->meta::external::store::graphQL::transformation::filter::instanceCreationToValue();,
+                      | ^meta::external::store::graphQL::transformation::filter::GraphQLInlineValueTranslation(value = $v->meta::external::store::graphQL::transformation::filter::literalToValue());
+                    )
+                )
+              );
+              ^meta::external::store::graphQL::transformation::filter::GraphQLPushedDownArgument(
+                argument = ^Argument(name = $argName, value = ^ListValue(values = $elementTranslations.value)),
+                variableDefinition = $elementTranslations.variableDefinitions->removeDuplicatesBy(vd | $vd.name),
+                value = [],
+                isList = true,
+                requiredVariableInput = $elementTranslations.requiredVariableInputs->removeDuplicatesBy(ri | $ri.name)
+              );
+          );
+      );,
+    | if($rhs->instanceOf(SimpleFunctionExpression),
+        // A single, bare (non-bracket-wrapped) inline instance-creation argument - Pure allows a to-one
+        // value to satisfy a to-many ([*]) declared parameter directly, so this shape isn't exclusive to
+        // scalar parameters; isList must reflect the DECLARED parameter's own multiplicity, not assume
+        // scalar just because the call site didn't wrap it in [...].
+        | let translation = $rhs->cast(@SimpleFunctionExpression)->meta::external::store::graphQL::transformation::filter::instanceCreationToValue();
+          ^meta::external::store::graphQL::transformation::filter::GraphQLPushedDownArgument(
+            argument = ^Argument(name = $argName, value = $translation.value),
+            variableDefinition = $translation.variableDefinitions,
+            value = [],
+            isList = $declaredMultiplicity->meta::pure::functions::meta::isToMany(),
+            requiredVariableInput = $translation.requiredVariableInputs
+          );,
+        | assert($rhs->instanceOf(VariableExpression), | 'Unsupported value shape for GraphQL argument translation');
+          let ve = $rhs->cast(@VariableExpression);
+          // argument.name is the schema's own argument name; the variable/VariableInput use $ve.name
+          // instead - the wire variable identifier doesn't have to match the schema's argument name.
+          ^meta::external::store::graphQL::transformation::filter::GraphQLPushedDownArgument(
+            argument = ^Argument(name = $argName, value = ^Variable(name = $ve.name)),
+            variableDefinition = ^VariableDefinition(name = $ve.name, type = $ve->meta::external::store::graphQL::transformation::filter::toVariableTypeReferenceForParameter($qualifiedProperty, $argName, [])),
+            value = [],
+            isList = $ve.multiplicity->meta::pure::functions::meta::isToMany(),
+            requiredVariableInput = ^VariableInput(name = $ve.name, genericType = $ve.genericType, multiplicity = $ve.multiplicity)
+          );
+      );
+  );
+}
+
+function meta::external::store::graphQL::transformation::filter::toGraphQLArgumentsForQualifiedProperty(subTree: RoutedPropertyGraphFetchTree[1]): meta::external::store::graphQL::transformation::filter::GraphQLPushedDownArgument[*]
+{
+  if(!$subTree.property->instanceOf(QualifiedProperty),
+    | [],
+    | let qualifiedProperty = $subTree.property->cast(@QualifiedProperty<Any>);
+      let declaredParams = $qualifiedProperty->meta::external::store::graphQL::transformation::filter::declaredParameters();
+      let callSiteValues = $subTree.parameters->map(p | $p->meta::external::store::graphQL::transformation::filter::unwrapRouted());
+      $declaredParams->toIndexed()->map(idxParam |
+        let idx = $idxParam.first;
+        let param = $idxParam.second;
+        $qualifiedProperty->meta::external::store::graphQL::transformation::filter::valueSpecToPushedDownArgument($param.name->toOne(), $callSiteValues->at($idx), $param.multiplicity, $param.genericType.rawType->toOne());
+      );
+  );
+}
+
+// The FunctionType's parameters always carry an implicit leading "this" ahead of the user-declared ones -
+// skip it.
+function <<access.private>> meta::external::store::graphQL::transformation::filter::declaredParameters(qualifiedProperty: QualifiedProperty<Any>[1]): VariableExpression[*]
+{
+  $qualifiedProperty.classifierGenericType.typeArguments->at(0).rawType->cast(@meta::pure::metamodel::type::FunctionType).parameters->tail();
+}

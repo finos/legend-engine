@@ -365,7 +365,7 @@ public class GraphQLGrammarParser
     {
         InterfaceTypeDefinition interfaceTypeDefinition = new InterfaceTypeDefinition();
         interfaceTypeDefinition.name = interfaceTypeDefinitionContext.name().getText();
-        interfaceTypeDefinition.fields = ListIterate.collect(interfaceTypeDefinitionContext.fieldsDefinition().fieldDefinition(), this::visitFieldsDefinitionContext);
+        interfaceTypeDefinition.fields = interfaceTypeDefinitionContext.fieldsDefinition() == null ? Collections.emptyList() : ListIterate.collect(interfaceTypeDefinitionContext.fieldsDefinition().fieldDefinition(), this::visitFieldsDefinitionContext);
         interfaceTypeDefinition._implements = visitImplementInterface(interfaceTypeDefinitionContext.implementsInterfaces(), Lists.mutable.empty()).reverseThis();
         return interfaceTypeDefinition;
     }

@@ -38,7 +38,7 @@ subtype:                            SUBTYPE_START qualifiedName PAREN_CLOSE
 ;
 parameter:                          scalarParameter | collectionParameter
 ;
-scalarParameter:                    LATEST_DATE | instanceLiteral | variable | enumReference
+scalarParameter:                    LATEST_DATE | instanceLiteral | variable | enumReference | instanceCreation
 ;
 collectionParameter:                BRACKET_OPEN
                                         (scalarParameter (COMMA scalarParameter)*)?
@@ -51,4 +51,10 @@ instanceLiteralToken:               STRING | INTEGER | FLOAT | DECIMAL | DATE | 
 variable:                           DOLLAR identifier
 ;
 enumReference:                      qualifiedName DOT identifier
+;
+instanceCreation:                   NEW_SYMBOL qualifiedName PAREN_OPEN
+                                        (keyExpression (COMMA keyExpression)*)?
+                                    PAREN_CLOSE
+;
+keyExpression:                      identifier EQUAL (instanceLiteral | variable | enumReference | instanceCreation)
 ;
