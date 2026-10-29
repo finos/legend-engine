@@ -168,7 +168,7 @@
         <bigqueryJDBC.version>1.0.0</bigqueryJDBC.version>
         <db2jcc.version>11.5.9.0</db2jcc.version>
         <googleCloudLibraries.version>26.86.0</googleCloudLibraries.version>
-        <httpcore5.version>5.3.4</httpcore5.version>
+        <httpcore5.version>5.4.3</httpcore5.version>
 
         <!-- Dependency versions -->
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
