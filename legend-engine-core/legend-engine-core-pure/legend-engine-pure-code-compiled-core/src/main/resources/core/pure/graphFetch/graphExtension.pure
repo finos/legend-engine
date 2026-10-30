@@ -534,10 +534,8 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          // A tree of shape root -> owner needs no owner analysis: it already starts where the source tree does.
          let rootedAtOwner    = meta::pure::lineage::scanProperties::getRootClass($propertyTree)->isNotEmpty() && isTreeRootOwner($propertyTree, $owner);
          let nestedProperties = if($rootedAtOwner, | $state.nestedProperties, | $state.nestedProperties->withNestedPropertiesOf($owner));
-         let sourceGraphTree  = if($rootedAtOwner,
-                                   | $propertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties(),
-                                   | $propertyTree->unrootedPropertyTreeToGraphFetchTree($owner, $nestedProperties->get($owner->elementToPath())->toOne().values, $setImplementation, $propertyMappings)
-                                );
+         let treeFromOwner    = if($rootedAtOwner, | $propertyTree, | $propertyTree->rerootAtOwner($owner, $nestedProperties->get($owner->elementToPath())->toOne().values, $setImplementation, $propertyMappings));
+         let sourceGraphTree  = $treeFromOwner->propertyTreeToGraphFetchTree($owner)->removeDummyProperties();
          let withProperties   = $state.tree->addSourceProperties($owner, $sourceGraphTree, $propertyPaths, $childSetImpls);
          let withChildren     = ^$state(tree=$withProperties, visitedFunctions=$visitedFunctions, nestedProperties=$nestedProperties)->enrichChildSetImplementations($propertyPaths, $owner, $childSetImpls, $mapping, $tgtPgft, $extensions);
          let withPassThru     = if($childSetImpls->isEmpty() && $tgtPgft->targetReturnType()->instanceOf(Class) && $property->isPropertyAutoMapped($setImplementation),
@@ -719,7 +717,7 @@ function <<access.private>> meta::pure::graphFetch::withNestedPropertiesOf(cache
    );
 }
 
-function <<access.private>> meta::pure::graphFetch::unrootedPropertyTreeToGraphFetchTree(pTree:PropertyPathTree[1], owner:Class<Any>[1], nestedProperties:AbstractProperty<Any>[*], setImplementation:PureInstanceSetImplementation[1], propertyMappings:PurePropertyMapping[*]): GraphFetchTree[0..1]
+function <<access.private>> meta::pure::graphFetch::rerootAtOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1], nestedProperties:AbstractProperty<Any>[*], setImplementation:PureInstanceSetImplementation[1], propertyMappings:PurePropertyMapping[*]): PropertyPathTree[1]
 {
    // Qualified properties are functions, not stored slots: they must never be synthesized into
    // the source tree as back-edges, or serialization would call them with no arguments.
@@ -736,8 +734,8 @@ function <<access.private>> meta::pure::graphFetch::unrootedPropertyTreeToGraphF
            display  = 'root',
            value    = 'root',
            children = ^PropertyPathTree(display = $owner.name->toOne(), value = $owner, children = $propertyTreesUptoOwner)
-        )->propertyTreeToGraphFetchTree($owner)->removeDummyProperties();,
-      | $pTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties()
+        );,
+      | $pTree
    );
 }
 
