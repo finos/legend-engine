@@ -22,7 +22,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 
-import java.util.Collections;
 import java.util.List;
 
 public interface TestRunner
@@ -41,17 +40,15 @@ public interface TestRunner
         }
     }
 
-    default TestDebug debugAtomicTest(Root_meta_pure_test_AtomicTest atomicTest, PureModel pureModel, PureModelContextData data)
-    {
-        return null;
-    }
+    /**
+     * What {@link #executeAtomicTest} would execute, without executing it: the execution plan, or
+     * for a test that does not run one, the statements it would issue. A runner whose atomic tests
+     * only run inside a suite throws here, as its {@link #executeAtomicTest} does.
+     */
+    TestDebug debugAtomicTest(Root_meta_pure_test_AtomicTest atomicTest, PureModel pureModel, PureModelContextData data);
 
     default List<TestDebug> debugTestSuite(Root_meta_pure_test_TestSuite testSuite, List<String> atomicTestIds, PureModel pureModel, PureModelContextData data)
     {
-        if (!supportsDebug())
-        {
-            return Collections.emptyList();
-        }
         try (TestSuiteSession<TestDebug> session = openTestSuiteDebugSession(testSuite, pureModel, data))
         {
             session.initialize();
@@ -69,29 +66,14 @@ public interface TestRunner
     TestSuiteSession<TestResult> openTestSuiteSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data);
 
     /**
-     * Return whether the runner supports debug mode. If so, then a debug
-     * session may be created by calling {@link #openTestSuiteDebugSession}.
-     * Otherwise, that method with throw an {@link UnsupportedOperationException}.
-     *
-     * @return whether the runner supports debug
-     * @see #openTestSuiteDebugSession
-     */
-    default boolean supportsDebug()
-    {
-        return false;
-    }
-
-    /**
-     * If the runner supports debug, then this will return a test suite debug session.
-     * (See {@link #openTestSuiteSession} for more information about test suite sessions.)
-     * If the runner does not support debug, this will throw an {@link UnsupportedOperationException}.
+     * Open a session that does everything {@link #openTestSuiteSession} does up to execution
+     * (runtime, test connections, plan generation) and returns, per atomic test, what that test
+     * would execute instead of executing it. Every runner supports it: it is how Studio's debug and
+     * EMIT's snapshots see what a test runs. (See {@link #openTestSuiteSession} for more
+     * information about test suite sessions.)
      *
      * @return test suite debug session
-     * @see #supportsDebug
      * @see #openTestSuiteSession
      */
-    default TestSuiteSession<TestDebug> openTestSuiteDebugSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
-    {
-        throw new UnsupportedOperationException("Debug is not supported");
-    }
+    TestSuiteSession<TestDebug> openTestSuiteDebugSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data);
 }
