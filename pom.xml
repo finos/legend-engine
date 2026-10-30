@@ -43,6 +43,7 @@
         <module>legend-engine-xts-serviceStore</module>
         <module>legend-engine-xts-relationalStore</module>
         <module>legend-engine-xts-mongodb</module>
+        <module>legend-engine-xts-store-graphQL</module>
         <module>legend-engine-xts-elasticsearch</module>
         <module>legend-engine-xts-deephaven</module>
 
@@ -1937,6 +1938,32 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-serviceStore-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-store-graphQL-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-store-graphQL-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-store-graphQL-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-store-graphQL-javaPlatformBinding-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-store-graphQL-executionPlan</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

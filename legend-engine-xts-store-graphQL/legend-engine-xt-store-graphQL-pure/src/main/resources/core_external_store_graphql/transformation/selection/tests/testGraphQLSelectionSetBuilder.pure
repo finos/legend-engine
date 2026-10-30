@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::graphQL::metamodel::pure::*;
+import meta::external::store::graphQL::transformation::selection::*;
+import meta::external::store::graphQL::transformation::selection::tests::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::mapping::*;
+
+Class meta::external::store::graphQL::transformation::selection::tests::Employee
+{
+  firstName: String[1];
+  lastName: String[1];
+  manager: Employee[0..1];
+  department: meta::external::store::graphQL::transformation::selection::tests::Department[0..1];
+}
+
+Class meta::external::store::graphQL::transformation::selection::tests::Department
+{
+  name: String[1];
+}
+
+function meta::external::store::graphQL::transformation::selection::tests::buildTestSetImpl(): RootGraphQLInstanceSetImplementation[1]
+{
+  ^RootGraphQLInstanceSetImplementation(
+    id = 'test',
+    root = true,
+    class = meta::external::store::graphQL::transformation::selection::tests::Department,
+    parent = ^Mapping(),
+    store = ^GraphQLStore(name = 'TestStore', package = meta::external::store::graphQL::transformation::selection::tests),
+    typeName = 'Query',
+    binding = ^meta::external::format::shared::binding::Binding(name = 'testBinding', package = meta::external::store::graphQL::transformation::selection::tests, contentType = 'application/json', modelUnit = ^meta::pure::model::unit::ModelUnit())
+  );
+}
+
+function <<test.Test>> meta::external::store::graphQL::transformation::selection::tests::testFlatSelection(): Boolean[1]
+{
+  let firstNameTree = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne());
+  let lastNameTree = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'lastName')->toOne());
+
+  let fields = getSubTreeFields([$firstNameTree, $lastNameTree]).fields;
+
+  assertEquals(2, $fields->size());
+  assertEquals('firstName', $fields->at(0).name);
+  assertEquals(0, $fields->at(0).selectionSet->size());
+  assertEquals('lastName', $fields->at(1).name);
+}
+
+function <<test.Test>> meta::external::store::graphQL::transformation::selection::tests::testNestedSameStoreAssociation(): Boolean[1]
+{
+  let managerFirstNameTree = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne());
+  let managerTree = ^RoutedPropertyGraphFetchTree(
+    property = Employee.properties->filter(p | $p.name == 'manager')->toOne(),
+    subTrees = [$managerFirstNameTree]
+  );
+
+  let fields = getSubTreeFields([$managerTree]).fields;
+
+  assertEquals(1, $fields->size());
+  assertEquals('manager', $fields->at(0).name);
+  assertEquals(1, $fields->at(0).selectionSet->size());
+  assertEquals('firstName', $fields->at(0).selectionSet->at(0)->cast(@meta::external::query::graphQL::metamodel::sdl::executable::Field).name);
+}
+
+function <<test.Test>> meta::external::store::graphQL::transformation::selection::tests::testNestedAssociationWithPopulatedSetsFoldsNormally(): Boolean[1]
+{
+  let departmentNameTree = ^RoutedPropertyGraphFetchTree(property = Department.properties->filter(p | $p.name == 'name')->toOne());
+  let departmentTree = ^RoutedPropertyGraphFetchTree(
+    property = Employee.properties->filter(p | $p.name == 'department')->toOne(),
+    subTrees = [$departmentNameTree],
+    sets = meta::external::store::graphQL::transformation::selection::tests::buildTestSetImpl()
+  );
+
+  let fields = getSubTreeFields([$departmentTree]).fields;
+
+  assertEquals(1, $fields->size());
+  assertEquals('department', $fields->at(0).name);
+}

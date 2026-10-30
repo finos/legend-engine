@@ -1,0 +1,133 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::*;
+
+// Shared by every store's getterCall (serialize.pure, jsonWriter.pure, ...) to reconstruct a qualified
+// property's argument list as Java expressions.
+function meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::qualifiedPropertyArgumentsCode(property: AbstractProperty<Any>[1], parameters: ValueSpecification[*], fContext: Code[1], conventions: Conventions[1], debug: DebugContext[1]): Code[*]
+{
+   let valueExtractor = {x: VariableExpression[1] |
+                           let javaType = $conventions->pureTypeToJavaType($x.genericType, $x.multiplicity);
+                           let typeArg  = if($javaType->isJavaList(), |$fContext->j_invoke('listType', $javaType->elementType()->toBoxed()->j_classField()), |$javaType->toBoxed()->j_classField());
+                           $fContext->j_invoke('getResult', [j_string($x.name), $typeArg], $javaType);
+                         };
+   $parameters->map(x |
+      let vals = $x->match([
+         iv : InstanceValue[1]      | $iv.values->map(x |
+                                         if($x->instanceOf(VariableExpression),
+                                            | $valueExtractor->eval($x),
+                                            // A literal inline instance-creation entry (eg. ^FilterParam(key='k', value='v')) stays
+                                            // unevaluated here - any $variable embedded inside it is sanitized to a dummy literal
+                                            // first, since this generic codegen can't recompute its real observed value. Only
+                                            // safe when $property's own reconstructed call is provably never read
+                                            | if($x->instanceOf(SimpleFunctionExpression),
+                                                 | {| $property->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::assertSafeToSanitizeInstanceCreation();
+                                                      $x->cast(@SimpleFunctionExpression)->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::sanitizeInstanceCreationVariables()->generateJava($conventions, $debug);
+                                                   }->eval(),
+                                                 | if($x->instanceOf(ValueSpecification),
+                                                      | $x->cast(@ValueSpecification)->generateJava($conventions, $debug),
+                                                      | $conventions->primitiveLiteral($x))
+                                            )
+                                         )),
+         v  : VariableExpression[1] | $valueExtractor->eval($v),
+         // A single (non-list) inline instance-creation argument (eg. customGroup=^CustomGroup(...))
+         // reaches here directly, unwrapped by an InstanceValue - sanitize it the same way as the
+         // list-of-instance-creation-entries case above, for the same reason, under the same
+         // isProvablyUnreadDelegateProperty guard.
+         sfe: SimpleFunctionExpression[1] | {| $property->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::assertSafeToSanitizeInstanceCreation();
+                                               $sfe->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::sanitizeInstanceCreationVariables()->generateJava($conventions, $debug);
+                                            }->eval(),
+         vs : ValueSpecification[1] | $vs->generateJava($conventions, $debug)
+      ]);
+      let param = $property->functionType().parameters->evaluateAndDeactivate()->tail()->at($parameters->indexOf($x));
+      if($param.multiplicity->hasToOneUpperBound(),
+         | if($vals->isEmpty(), | j_null(), | $vals->toOne()),
+         | if($vals->size() == 1 && $vals.type->toOne()->isJavaList(), |$vals, |javaArrays()->j_invoke('asList', $vals, $conventions->pureTypeToJavaType($param.genericType.rawType->toOne(), $param.multiplicity)))
+      );
+   );
+}
+
+// --- Support for reconstructing a call to a trivial delegate property (one whose body is exactly
+// { $this.someProperty }, ignoring its own arguments) when that call embeds a $variable the generic "new"
+// codegen (processNew, langLibrary.pure) has no way to evaluate. isProvablyUnreadDelegateProperty is the
+// gate qualifiedPropertyArgumentsCode checks before calling into this; it's false for any property shape
+// other than a trivial, zero-extra-argument delegate, so nothing below is ever reached for an ordinary
+// property. ---
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::dummyValueForVariableExpression(ve: VariableExpression[1]): InstanceValue[1]
+{
+   let rawType = $ve.genericType.rawType->toOne();
+   assert($rawType == String || $rawType == Integer || $rawType == Float || $rawType == Boolean,
+      | 'Cannot synthesize a dummy value for a $variable of type ' + $rawType->elementToPath() + ' embedded inside an instance-creation argument - only String, Integer, Float and Boolean are supported here today.');
+   let dummyValues = if($rawType == String,  | [''],
+                     | if($rawType == Integer, | [0],
+                     | if($rawType == Float,   | [0.0],
+                                                 | [false])));
+   ^InstanceValue(genericType = $ve.genericType, multiplicity = if($dummyValues->isEmpty(), | ZeroOne, | PureOne), values = $dummyValues);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::isProvablyUnreadDelegateProperty(property: AbstractProperty<Any>[1]): Boolean[1]
+{
+   $property->instanceOf(QualifiedProperty) &&
+   $property->cast(@QualifiedProperty<Any>).expressionSequence->size() == 1 &&
+   $property->cast(@QualifiedProperty<Any>).expressionSequence->toOne()->instanceOf(FunctionExpression) &&
+   $property->cast(@QualifiedProperty<Any>).expressionSequence->toOne()->cast(@FunctionExpression).func->instanceOf(AbstractProperty) &&
+   if(!$property->cast(@QualifiedProperty<Any>).expressionSequence->toOne()->cast(@FunctionExpression).func->instanceOf(QualifiedProperty),
+      | true,
+      | $property->cast(@QualifiedProperty<Any>).expressionSequence->toOne()->cast(@FunctionExpression).func->cast(@QualifiedProperty<Any>).classifierGenericType.typeArguments->at(0).rawType->cast(@meta::pure::metamodel::type::FunctionType).parameters->size() == 1
+   );
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::assertSafeToSanitizeInstanceCreation(property: AbstractProperty<Any>[1]): Boolean[1]
+{
+   assert($property->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::isProvablyUnreadDelegateProperty(),
+      | 'Cannot safely reconstruct an inline instance-creation argument embedding a $variable for property \'' + $property.name->toOne() + '\' - this generic codegen only guarantees the reconstructed value is never read when the property is a trivial delegate ({ $this.someProperty }). This property has a different body, so its reconstructed value could actually be read, and dummy-substituting an embedded $variable would be silently wrong.');
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::sanitizeInstanceCreationVariables(sfe: SimpleFunctionExpression[1]): SimpleFunctionExpression[1]
+{
+   assert($sfe.func == meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_,
+      | 'Cannot sanitize a $variable embedded inside a non-instance-creation expression (function \'' + $sfe.func.functionName->toOne() + '\') - only inline instance creation (eg. ^SomeClass(field=$variable)) is supported here.');
+   let args = $sfe.parametersValues->evaluateAndDeactivate();
+   let keyExpressionValues = $args->drop(2)->cast(@InstanceValue)->toOne();
+   let sanitizedKeyExpressions = $keyExpressionValues.values->cast(@KeyExpression)->map(ke |
+      ^$ke(expression = $ke.expression->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::sanitizeKeyExpressionValue())
+   );
+   ^$sfe(parametersValues = $args->take(2)->concatenate(^$keyExpressionValues(values = $sanitizedKeyExpressions)));
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::sanitizeKeyExpressionValue(expression: ValueSpecification[1]): ValueSpecification[1]
+{
+   if($expression->instanceOf(InstanceValue),
+      | let iv = $expression->cast(@InstanceValue);
+        ^$iv(values = $iv.values->map(v | $v->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::sanitizeInstanceCreationListElement()));,
+      | $expression->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::sanitizeInstanceCreationListElement()->cast(@ValueSpecification)
+   );
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::sanitizeInstanceCreationListElement(value: Any[1]): Any[1]
+{
+   $value->match([
+      ve:  VariableExpression[1]      | $ve->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::dummyValueForVariableExpression(),
+      sfe: SimpleFunctionExpression[1] | $sfe->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::sanitizeInstanceCreationVariables(),
+      a:   Any[1]                     | $a
+   ]);
+}

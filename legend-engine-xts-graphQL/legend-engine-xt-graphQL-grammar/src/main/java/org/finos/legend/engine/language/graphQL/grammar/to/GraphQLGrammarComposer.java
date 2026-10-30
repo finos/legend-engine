@@ -104,25 +104,28 @@ public class GraphQLGrammarComposer
             @Override
             public String visit(InterfaceTypeDefinition interfaceTypeDefinition)
             {
-                return "interface " + interfaceTypeDefinition.name + (interfaceTypeDefinition._implements.isEmpty() ? "" : " implements " + ListAdapter.adapt(interfaceTypeDefinition._implements).makeString(" & ")) + " {\n" +
+                return "interface " + interfaceTypeDefinition.name + (interfaceTypeDefinition._implements.isEmpty() ? "" : " implements " + ListAdapter.adapt(interfaceTypeDefinition._implements).makeString(" & ")) +
+                        (interfaceTypeDefinition.fields.isEmpty() ? "" : " {\n" +
                         ListIterate.collect(interfaceTypeDefinition.fields, f -> "  " + renderField(f)).makeString("\n") +
-                        "\n}";
+                        "\n}");
             }
 
             @Override
             public String visit(ObjectTypeDefinition objectTypeDefinition)
             {
-                return "type " + objectTypeDefinition.name + (objectTypeDefinition._implements.isEmpty() ? "" : " implements " + ListAdapter.adapt(objectTypeDefinition._implements).makeString(" & ")) + " {\n" +
+                return "type " + objectTypeDefinition.name + (objectTypeDefinition._implements.isEmpty() ? "" : " implements " + ListAdapter.adapt(objectTypeDefinition._implements).makeString(" & ")) +
+                        (objectTypeDefinition.fields.isEmpty() ? "" : " {\n" +
                         ListIterate.collect(objectTypeDefinition.fields, f -> "  " + renderField(f)).makeString("\n") +
-                        "\n}";
+                        "\n}");
             }
 
             @Override
             public String visit(InputObjectTypeDefinition inputObjectTypeDefinition)
             {
-                return "input " + inputObjectTypeDefinition.name + " {\n" +
+                return "input " + inputObjectTypeDefinition.name +
+                        (inputObjectTypeDefinition.fields.isEmpty() ? "" : " {\n" +
                         ListIterate.collect(inputObjectTypeDefinition.fields, f -> "  " + renderInputValueDefinition(f)).makeString("\n") +
-                        "\n}";
+                        "\n}");
             }
 
             @Override
@@ -215,7 +218,7 @@ public class GraphQLGrammarComposer
 
     public String renderField(Field field, String space)
     {
-        return field.name
+        return (field.alias == null ? "" : field.alias + " ") + field.name
                 + (field.arguments.isEmpty() ? "" : "(" + ListIterate.collect(field.arguments, a -> a.name + ": " + renderValue(a.value)).makeString(", ") + ")")
                 + (field.directives.isEmpty() ? "" : " " + ListIterate.collect(field.directives, this::renderDirective).makeString(" "));
     }

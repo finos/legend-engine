@@ -1,0 +1,141 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::store::graphQL::metamodel::pure::*;
+import meta::external::store::graphQL::transformation::filter::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::mapping::*;
+import meta::pure::metamodel::function::*;
+
+// Carries both the built Field tree and every GraphQLPushedDownArgument discovered along the way, since
+// a plain Field[*] return can't carry both.
+Class meta::external::store::graphQL::transformation::selection::SelectionBuildResult
+{
+  fields: Field[*];
+  pushedDownArguments: meta::external::store::graphQL::transformation::filter::GraphQLPushedDownArgument[*];
+}
+
+function meta::external::store::graphQL::transformation::selection::buildSelectionSetForClass(subTrees: RoutedPropertyGraphFetchTree[*]): meta::external::store::graphQL::transformation::selection::SelectionBuildResult[1]
+{
+  $subTrees->meta::external::store::graphQL::transformation::selection::getSubTreeFields();
+}
+
+function meta::external::store::graphQL::transformation::selection::getSubTreeFields(subTrees: RoutedPropertyGraphFetchTree[*]): meta::external::store::graphQL::transformation::selection::SelectionBuildResult[1]
+{
+  let qualifiedPropertyNames = $subTrees->meta::external::store::graphQL::transformation::selection::qualifiedPropertyNamesOf();
+  let effectiveSubTrees = $subTrees->filter(st | !$st->meta::external::store::graphQL::transformation::selection::isRedundantProxySiblingArtifact($qualifiedPropertyNames));
+  let groupNames = $effectiveSubTrees->map(st | $st->meta::external::store::graphQL::transformation::selection::fieldGroupKey())->distinct();
+  let perGroup = $groupNames->map({name |
+    $effectiveSubTrees->filter(st | $st->meta::external::store::graphQL::transformation::selection::fieldGroupKey() == $name)->meta::external::store::graphQL::transformation::selection::buildFieldForGroup();
+  });
+  ^meta::external::store::graphQL::transformation::selection::SelectionBuildResult(
+    fields = $perGroup.fields,
+    pushedDownArguments = $perGroup.pushedDownArguments
+  );
+}
+
+function meta::external::store::graphQL::transformation::selection::isRedundantProxySiblingArtifact(st: RoutedPropertyGraphFetchTree[1], qualifiedPropertyNames: String[*]): Boolean[1]
+{
+   let proxyForQpName = $st.property->toOne().taggedValues->filter(t | $t.tag == meta::external::store::graphQL::generation::GeneratedProxyProfile->tag('generatedProxyForQualifiedProperty'))->map(t | $t.value);
+   !$st.property->instanceOf(QualifiedProperty) && $proxyForQpName->exists(qpName | $qualifiedPropertyNames->contains($qpName));
+}
+
+function meta::external::store::graphQL::transformation::selection::qualifiedPropertyNamesOf(siblings: RoutedPropertyGraphFetchTree[*]): String[*]
+{
+   $siblings->filter(st | $st.property->instanceOf(QualifiedProperty)).property.name->cast(@String);
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::selection::fieldGroupKey(subTree: RoutedPropertyGraphFetchTree[1]): String[1]
+{
+  let info = $subTree->meta::external::store::graphQL::transformation::selection::subtypeBranchInfo();
+  if($info->isNotEmpty(), | $info->toOne().basePropertyName, | $subTree.property->toOne().name->toOne());
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::selection::subtypeBranchInfo(subTree: RoutedPropertyGraphFetchTree[1]): meta::external::store::graphQL::transformation::selection::SubtypeBranchInfo[0..1]
+{
+  if($subTree.subType->isNotEmpty(),
+    | ^meta::external::store::graphQL::transformation::selection::SubtypeBranchInfo(basePropertyName = $subTree.property->toOne().name->toOne(), targetSubtypeClass = $subTree.subType->toOne());,
+    | []
+  );
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::selection::buildFieldForGroup(group: RoutedPropertyGraphFetchTree[*]): meta::external::store::graphQL::transformation::selection::SelectionBuildResult[1]
+{
+  let plain = $group->filter(st | $st->meta::external::store::graphQL::transformation::selection::subtypeBranchInfo()->isEmpty());
+  let subtypeBranches = $group->filter(st | $st->meta::external::store::graphQL::transformation::selection::subtypeBranchInfo()->isNotEmpty());
+  assert($plain->size() <= 1,
+    | 'Two different overloads of qualified property \'' + $plain->at(0).property->toOne().name->toOne() + '\' were both requested at the same level - request one overload per field, not two side by side.');
+  let representative = if($plain->isNotEmpty(), | $plain->toOne(), | $subtypeBranches->at(0));
+
+  let plainChildResult = if($plain->isNotEmpty(),
+    | $plain->toOne().subTrees->cast(@RoutedPropertyGraphFetchTree)->meta::external::store::graphQL::transformation::selection::getSubTreeFields();,
+    | ^meta::external::store::graphQL::transformation::selection::SelectionBuildResult(fields = [], pushedDownArguments = []);
+  );
+
+  let subtypeChildResults = $subtypeBranches->map(st | $st.subTrees->cast(@RoutedPropertyGraphFetchTree)->meta::external::store::graphQL::transformation::selection::getSubTreeFields());
+  let fragments = $subtypeBranches->zip($subtypeChildResults)->filter(p | $p.second.fields->isNotEmpty())->map(p |
+    ^InLineFragment(
+      typeCondition = $p.first->meta::external::store::graphQL::transformation::selection::subtypeBranchInfo()->toOne().targetSubtypeClass.name->toOne(),
+      selectionSet = $p.second.fields
+    );
+  );
+  let typenameField = if($fragments->isNotEmpty(), | ^Field(name = '__typename', selectionSet = []);, | []);
+  let ownSelectionSet = $plainChildResult.fields->concatenate($typenameField)->concatenate($fragments);
+
+  // Pure's own graphFetch grammar has no syntax for a composite-typed property with zero selected
+  // sub-fields, so a composite-typed group that reaches here with an empty selection set can only
+  // be here because the shared graphFetch router widened the tree to satisfy a class-level constraint.
+  // It arrives as a bare proxy property, not a QP call, so there's no argument value
+  // available for it either way - render nothing instead of a field GraphQL would reject outright
+  if($ownSelectionSet->isEmpty() && $representative.property->toOne()->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class),
+    | ^meta::external::store::graphQL::transformation::selection::SelectionBuildResult(fields = [], pushedDownArguments = []);,
+    | let ownArguments = $representative->meta::external::store::graphQL::transformation::filter::toGraphQLArgumentsForQualifiedProperty();
+      let field = ^Field(
+        name = $representative->meta::external::store::graphQL::transformation::selection::fieldGroupKey(),
+        alias = $representative->meta::external::store::graphQL::transformation::selection::aliasForThisThreadedQualifiedProperty(),
+        arguments = $ownArguments.argument,
+        selectionSet = $ownSelectionSet
+      );
+      ^meta::external::store::graphQL::transformation::selection::SelectionBuildResult(
+        fields = $field,
+        pushedDownArguments = $ownArguments->concatenate($plainChildResult.pushedDownArguments)->concatenate($subtypeChildResults.pushedDownArguments)
+      );
+  );
+}
+
+// Detects a QP whose body is exactly "{ $this.someProperty }" - the delegate property's name becomes
+// the field alias, so the response key matches what's actually mapped.
+function <<access.private>> meta::external::store::graphQL::transformation::selection::aliasForThisThreadedQualifiedProperty(subTree: RoutedPropertyGraphFetchTree[1]): String[0..1]
+{
+  if(!$subTree.property->instanceOf(QualifiedProperty),
+    | [],
+    | let qp = $subTree.property->cast(@QualifiedProperty<Any>);
+      if($qp.expressionSequence->size() != 1,
+        | [],
+        | let inner = $qp.expressionSequence->toOne()->meta::pure::router::byPassRouterInfo();
+          if($inner->instanceOf(FunctionExpression) && $inner->cast(@FunctionExpression).func->instanceOf(AbstractProperty),
+            | $inner->cast(@FunctionExpression).func->cast(@AbstractProperty<Any>).name;,
+            | []
+          );
+      );
+  );
+}
+
+Class <<access.private>> meta::external::store::graphQL::transformation::selection::SubtypeBranchInfo
+{
+  basePropertyName: String[1];
+  targetSubtypeClass: Class<Any>[1];
+}

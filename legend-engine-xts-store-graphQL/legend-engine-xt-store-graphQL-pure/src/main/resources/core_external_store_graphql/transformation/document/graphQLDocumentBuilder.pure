@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
+
+function meta::external::store::graphQL::transformation::document::buildQueryDocument(selectionSet: Field[*], variableDefinitions: VariableDefinition[*]): Document[1]
+{
+  let operation = ^OperationDefinition(type = OperationType.query, selectionSet = $selectionSet, variables = $variableDefinitions);
+  ^Document(definitions = $operation);
+}
+
+// A minimal, query-only renderer for this metamodel - deliberately not a dependency on
+// legend-engine-xt-graphQL-pure's graphQLtoString(), which transitively pulls in core_relational.
+function meta::external::store::graphQL::transformation::document::renderQueryDocument(document: Document[1]): String[1]
+{
+  $document.definitions->map(d | $d->cast(@OperationDefinition)->meta::external::store::graphQL::transformation::document::renderOperation())->joinStrings('\n\n');
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::document::renderOperation(operation: OperationDefinition[1]): String[1]
+{
+  $operation.type->id() +
+    $operation.variables->meta::external::store::graphQL::transformation::document::renderVariableDefinitions() +
+    $operation.selectionSet->cast(@Field)->meta::external::store::graphQL::transformation::document::renderSelectionSet('');
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::document::renderVariableDefinitions(variables: VariableDefinition[*]): String[1]
+{
+  if($variables->isEmpty(),
+    | '',
+    | '(' + $variables->map(v | '$' + $v.name + ': ' + $v.type->meta::external::store::graphQL::transformation::document::renderType())->joinStrings(', ') + ')'
+  );
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::document::renderType(type: TypeReference[1]): String[1]
+{
+  ($type->match([
+    l: ListTypeReference[1]  | '[' + $l.itemType->meta::external::store::graphQL::transformation::document::renderType() + ']',
+    n: NamedTypeReference[1] | $n.name
+  ])) + if($type.nullable, | '', | '!');
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::document::renderField(field: Field[1], space: String[1]): String[1]
+{
+  '  ' + $space + if($field.alias->isEmpty(), | '', | $field.alias->toOne() + ': ') + $field.name +
+    $field.arguments->meta::external::store::graphQL::transformation::document::renderArguments() +
+    $field.selectionSet->meta::external::store::graphQL::transformation::document::renderSelectionSet($space + '  ');
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::document::renderInlineFragment(fragment: InLineFragment[1], space: String[1]): String[1]
+{
+  '  ' + $space + '... on ' + $fragment.typeCondition->toOne() +
+    $fragment.selectionSet->meta::external::store::graphQL::transformation::document::renderSelectionSet($space + '  ');
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::document::renderSelectionSet(selections: Selection[*], space: String[1]): String[1]
+{
+  if($selections->isEmpty(),
+    | '',
+    | ' {\n' + $selections->map(s | $s->meta::external::store::graphQL::transformation::document::renderSelection($space))->joinStrings('\n') + '\n' + $space + '}'
+  );
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::document::renderSelection(selection: Selection[1], space: String[1]): String[1]
+{
+  $selection->match([
+    f: Field[1]          | $f->meta::external::store::graphQL::transformation::document::renderField($space),
+    i: InLineFragment[1] | $i->meta::external::store::graphQL::transformation::document::renderInlineFragment($space)
+  ]);
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::document::renderArguments(arguments: Argument[*]): String[1]
+{
+  if($arguments->isEmpty(),
+    | '',
+    | '(' + $arguments->map(a | $a.name + ': ' + $a.value->meta::external::store::graphQL::transformation::document::renderValue())->joinStrings(', ') + ')'
+  );
+}
+
+function <<access.private>> meta::external::store::graphQL::transformation::document::renderValue(value: Value[1]): String[1]
+{
+  $value->match([
+    s: StringValue[1]  | $s.value->meta::json::toJSON(),
+    b: BooleanValue[1] | $b.value->toString(),
+    i: IntValue[1]     | $i.value->toString(),
+    f: FloatValue[1]   | $f.value->toString(),
+    l: ListValue[1]    | '[' + $l.values->map(v | $v->meta::external::store::graphQL::transformation::document::renderValue())->joinStrings(', ') + ']',
+    o: ObjectValue[1]  | '{' + $o.fields->map(f | $f.name + ': ' + $f.value->meta::external::store::graphQL::transformation::document::renderValue())->joinStrings(', ') + '}',
+    n: NullValue[1]    | 'null',
+    e: EnumValue[1]    | $e.value,
+    v: Variable[1]     | '$' + $v.name
+  ]);
+}

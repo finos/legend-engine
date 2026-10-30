@@ -374,6 +374,14 @@ public class TestLambdaRoundtrip
     }
 
     @Test
+    public void testGraphFetchWithInstanceCreationParameter()
+    {
+        testLambda("|MifidCDTModel.all()->graphFetch(#{MifidCDTModel{cPrimeId(^FilterParam(key='ok' , value=$var))}}#)");
+        testLambda("|MifidCDTModel.all()->graphFetch(#{MifidCDTModel{cPrimeId([^FilterParam(key='a' , value=$va), ^FilterParam(key='b' , value=$vb)])}}#)");
+        testLambda("|MifidCDTModel.all()->graphFetch(#{MifidCDTModel{cPrimeId(^CustomGroup(labels=^Labels(key=$key , value=$value) , groupByOperation=GroupByOperation.SUM))}}#)");
+    }
+
+    @Test
     public void testDslNavigationPath()
     {
         testLambda("|$this.employees.lastName->sortBy(#/model::Person/lastName#)->joinStrings('')");

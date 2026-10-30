@@ -18,8 +18,12 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.graphFetchTree.GraphFetchTreeParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.GenericTypeInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CBoolean;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDateTime;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CFloat;
@@ -28,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.data
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.EnumValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
@@ -145,6 +150,10 @@ public class GraphFetchTreeParseTreeWalker
 
     private ValueSpecification visitScalarParameterContext(GraphFetchTreeParserGrammar.ScalarParameterContext scalarParameterContext)
     {
+        if (scalarParameterContext.instanceCreation() != null)
+        {
+            return this.visitInstanceCreationContext(scalarParameterContext.instanceCreation());
+        }
         if (scalarParameterContext.enumReference() != null)
         {
             EnumValue result = new EnumValue();
@@ -161,6 +170,62 @@ public class GraphFetchTreeParseTreeWalker
             return ve;
         }
         return instanceLiteralToken(scalarParameterContext.instanceLiteral().instanceLiteralToken());
+    }
+
+    private ValueSpecification visitInstanceCreationContext(GraphFetchTreeParserGrammar.InstanceCreationContext instanceCreationContext)
+    {
+        String fullPath = PureGrammarParserUtility.fromQualifiedName(instanceCreationContext.qualifiedName().packagePath() == null ? Collections.emptyList() : instanceCreationContext.qualifiedName().packagePath().identifier(), instanceCreationContext.qualifiedName().identifier());
+        GenericType genericType = new GenericType(new PackageableType("meta::pure::metamodel::type::Class"), Collections.singletonList(new GenericType(new PackageableType(fullPath))));
+        GenericTypeInstance genericTypeInstance = new GenericTypeInstance(genericType);
+        genericTypeInstance.sourceInformation = walkerSourceInformation.getSourceInformation(instanceCreationContext.qualifiedName());
+
+        List<ValueSpecification> keyExpressions = new ArrayList<>();
+        for (GraphFetchTreeParserGrammar.KeyExpressionContext keyExpressionContext : instanceCreationContext.keyExpression())
+        {
+            keyExpressions.add(this.visitKeyExpressionContext(keyExpressionContext));
+        }
+
+        List<ValueSpecification> newParameters = new ArrayList<>();
+        newParameters.add(genericTypeInstance);
+        newParameters.add(new CString(""));
+        newParameters.add(new Collection(keyExpressions));
+
+        AppliedFunction result = new AppliedFunction();
+        result.function = "new";
+        result.parameters = newParameters;
+        result.sourceInformation = walkerSourceInformation.getSourceInformation(instanceCreationContext);
+        return result;
+    }
+
+    private KeyExpression visitKeyExpressionContext(GraphFetchTreeParserGrammar.KeyExpressionContext keyExpressionContext)
+    {
+        KeyExpression result = new KeyExpression();
+        result.key = new CString(PureGrammarParserUtility.fromIdentifier(keyExpressionContext.identifier()));
+        if (keyExpressionContext.instanceCreation() != null)
+        {
+            result.expression = this.visitInstanceCreationContext(keyExpressionContext.instanceCreation());
+        }
+        else if (keyExpressionContext.enumReference() != null)
+        {
+            EnumValue enumValue = new EnumValue();
+            enumValue.sourceInformation = walkerSourceInformation.getSourceInformation(keyExpressionContext.enumReference());
+            enumValue.fullPath = PureGrammarParserUtility.fromQualifiedName(keyExpressionContext.enumReference().qualifiedName().packagePath() == null ? Collections.emptyList() : keyExpressionContext.enumReference().qualifiedName().packagePath().identifier(), keyExpressionContext.enumReference().qualifiedName().identifier());
+            enumValue.value = PureGrammarParserUtility.fromIdentifier(keyExpressionContext.enumReference().identifier());
+            result.expression = enumValue;
+        }
+        else if (keyExpressionContext.variable() != null)
+        {
+            Variable ve = new Variable();
+            ve.sourceInformation = walkerSourceInformation.getSourceInformation(keyExpressionContext.variable().identifier());
+            ve.name = PureGrammarParserUtility.fromIdentifier(keyExpressionContext.variable().identifier());
+            result.expression = ve;
+        }
+        else
+        {
+            result.expression = instanceLiteralToken(keyExpressionContext.instanceLiteral().instanceLiteralToken());
+        }
+        result.sourceInformation = walkerSourceInformation.getSourceInformation(keyExpressionContext);
+        return result;
     }
 
     private ValueSpecification instanceLiteralToken(GraphFetchTreeParserGrammar.InstanceLiteralTokenContext ctx)

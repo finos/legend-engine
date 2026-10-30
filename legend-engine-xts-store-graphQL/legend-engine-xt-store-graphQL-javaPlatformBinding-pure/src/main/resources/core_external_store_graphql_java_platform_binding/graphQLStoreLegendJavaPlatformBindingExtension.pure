@@ -1,0 +1,150 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::graphQL::metamodel::pure::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::*;
+import meta::pure::extension::*;
+import meta::pure::metamodel::type::*;
+import meta::pure::metamodel::type::generics::*;
+import meta::pure::metamodel::function::*;
+import meta::pure::metamodel::valuespecification::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::*;
+import meta::external::format::json::extension::*;
+import meta::pure::mapping::*;
+import meta::external::language::java::metamodel::*;
+import meta::pure::executionPlan::platformBinding::*;
+
+function meta::external::store::graphQL::executionPlan::platformBinding::legendJava::graphQLStoreLegendJavaPlatformBindingExtension(): LegendJavaPlatformBindingExtension[1]
+{
+   ^LegendJavaPlatformBindingExtension
+   (
+      platformId = legendJavaPlatformBindingId(),
+      id = 'GraphQLStoreLegendJavaPlatformBindingExtension',
+      supportedExecutionNodes = [],
+      adhocExtensions = [
+         ^LegendJavaInMemoryGraphFetchExtension
+         (
+            filterCodeGenerator = {set: InstanceSetImplementation[1], src: Code[1], withoutFilter: Code[1..*], context: GenerationContext[1], debug: DebugContext[1] |
+               [
+                  rgi: RootGraphQLInstanceSetImplementation[1] | $withoutFilter,
+                  egsi: EmbeddedGraphQLSetImplementation[1] | $withoutFilter
+               ]
+            },
+
+            // Unlike PureInstanceSetImplementation-backed stores, a GraphQL response is deserialized
+            // straight off the wire - a polymorphic field's resolved object can be any of its possible-type
+            // subtypes, so the in-memory graph-fetch traversal needs the same instanceof narrowing applied.
+            requiresInMemorySubtypeFiltering = [
+               rgi: RootGraphQLInstanceSetImplementation[1] | true,
+               egsi: EmbeddedGraphQLSetImplementation[1] | true
+            ],
+
+            supportsThisThreadedQualifiedPropertyRouting = [
+               rgi: RootGraphQLInstanceSetImplementation[1] | true,
+               egsi: EmbeddedGraphQLSetImplementation[1] | true
+            ],
+
+            mappingTransformExtractors = [
+               {gpm: GraphQLPropertyMapping[1] |
+                  let dummyLambda = {|'ok'};
+                  let gen = ^GenericType
+                  (
+                     rawType = LambdaFunction,
+                     typeArguments = ^GenericType
+                     (
+                        rawType = ^meta::pure::metamodel::type::FunctionType
+                        (
+                           parameters = [],
+                           returnType = $gpm.property->functionReturnType(),
+                           returnMultiplicity = $gpm.property->functionReturnMultiplicity()
+                        )
+                     )
+                  );
+                  let exp = ^SimpleFunctionExpression(
+                     func = $gpm.property,
+                     genericType = $gpm.property.genericType,
+                     importGroup = system::imports.children->at(0)->cast(@ImportGroup),
+                     multiplicity = $gpm.property.multiplicity,
+                     parametersValues = ^VariableExpression(genericType = ^GenericType(rawType = $gpm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
+                     propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $gpm.property.name)
+                  );
+                  ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);
+               },
+               {egsi: EmbeddedGraphQLSetImplementation[1] |
+                  let dummyLambda = {|'ok'};
+                  let gen = ^GenericType
+                  (
+                     rawType = LambdaFunction,
+                     typeArguments = ^GenericType
+                     (
+                        rawType = ^meta::pure::metamodel::type::FunctionType
+                        (
+                           parameters = [],
+                           returnType = $egsi.property->functionReturnType(),
+                           returnMultiplicity = $egsi.property->functionReturnMultiplicity()
+                        )
+                     )
+                  );
+                  let exp = ^SimpleFunctionExpression(
+                     func = $egsi.property,
+                     genericType = $egsi.property.genericType,
+                     importGroup = system::imports.children->at(0)->cast(@ImportGroup),
+                     multiplicity = $egsi.property.multiplicity,
+                     parametersValues = ^VariableExpression(genericType = ^GenericType(rawType = $egsi.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
+                     propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $egsi.property.name)
+                  );
+                  ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);
+               }
+            ],
+
+            valueTransformerExtractors = [
+               gpm : GraphQLPropertyMapping[1] | [],
+               egsi : EmbeddedGraphQLSetImplementation[1] | []
+            ]
+         )
+      ]
+   )
+}
+
+function meta::external::store::graphQL::executionPlan::platformBinding::legendJava::graphQLStoreExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
+{
+   [
+      meta::external::store::graphQL::extension::graphQLStoreExtension(),
+      meta::external::format::shared::externalFormatExtension(),
+      meta::external::format::json::extension::jsonSchemaFormatExtension(),
+      meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - InMemory, GraphQLStore, ExternalFormatCore, ExternalFormatJSON', [
+         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding(
+            [
+               meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
+               meta::external::store::graphQL::executionPlan::platformBinding::legendJava::graphQLStoreLegendJavaPlatformBindingExtension(),
+               meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension()
+            ]->concatenate($externalFormatDescriptors->map(d | meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension($d)))
+         )
+      ])
+   ]
+}
+
+function meta::external::store::graphQL::executionPlan::platformBinding::legendJava::graphQLStoreOnlyLegendJavaPlatformBindingExtensions(): Extension[*]
+{
+   [
+      meta::external::store::graphQL::extension::graphQLStoreExtension(),
+      meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - GraphQLStore', [
+         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+            meta::external::store::graphQL::executionPlan::platformBinding::legendJava::graphQLStoreLegendJavaPlatformBindingExtension()
+         ])
+      ])
+   ]
+}

@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::graphQL::executionPlan::nodes::*;
+
+function meta::protocols::pure::vX_X_X::extension::store::graphQL::getGraphQLStoreExtension(type:String[1]):meta::pure::extension::SerializerExtension[1]
+{
+   let res = [
+      pair('graphQLStore', | meta::protocols::pure::vX_X_X::extension::store::graphQL::getGraphQLStoreExtension())
+   ]->filter(f|$f.first == $type);
+   assert($res->isNotEmpty(), |'Can\'t find the type '+$type);
+   $res->at(0).second->eval();
+}
+
+function meta::protocols::pure::vX_X_X::extension::store::graphQL::getGraphQLStoreExtension():meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X[1]
+{
+   ^meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X
+   (
+      transfers_executionPlan_transformNode = {extensions:meta::pure::extension::Extension[*] |
+          [
+             n:GraphQLExecutionNode[1]|
+                ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::graphQL::GraphQLExecutionNode(
+                   _type                        = 'graphQL',
+                   resultType                   = $n.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
+                   url                          = $n.url,
+                   query                        = $n.query,
+                   authenticationSpecification  = $n.authenticationSpecification->map(a | $a->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions)),
+                   variables                    = $n.variables->map(v | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::graphQL::GraphQLVariableBinding(name = $v.name, value = $v.value)),
+                   unwrapAlias                  = $n.unwrapAlias
+                )
+          ]}
+   )
+}
