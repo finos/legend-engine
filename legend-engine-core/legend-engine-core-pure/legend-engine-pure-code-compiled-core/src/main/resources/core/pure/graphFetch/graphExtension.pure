@@ -416,7 +416,7 @@ function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any
          assert($pisi.srcClass->isNotEmpty() && $pisi.srcClass->toOne()->instanceOf(Class), 'Pure mapping does not have a class as ~src for root of tree');
          let srcClass     = $pisi.srcClass->toOne()->cast(@Class<Any>);
          let root         = ^RootGraphFetchTree<Any>(class=$srcClass);
-         let withChildren = $root->newSourceTreeState()->enrichSourceTreeNode($mapping, $pisi, $replaced, $extensions).tree->mergeSubTrees()->sortTree()->cast(@RootGraphFetchTree<Any>);
+         let withChildren = $root->newSourceTreeState()->enrichSourceTreeNode($mapping, $pisi, $replaced, $extensions).tree->normaliseSourceTree()->sortTree()->cast(@RootGraphFetchTree<Any>);
       },
       // Root-level OperationSetImplementation (e.g. *Tgt: Operation { union(a, b) }).
       // Each constituent PureInstanceSetImplementation contributes its own source-class tree;
@@ -431,7 +431,7 @@ function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any
             assert($pisi.srcClass->isNotEmpty() && $pisi.srcClass->toOne()->instanceOf(Class), |'Pure mapping does not have a class as ~src for branch of operation set: ' + $pisi.id);
             let branchSrc  = $pisi.srcClass->toOne()->cast(@Class<Any>);
             let branchRoot = ^RootGraphFetchTree<Any>(class=$branchSrc);
-            $branchRoot->newSourceTreeState()->enrichSourceTreeNode($mapping, $pisi, $replaced, $extensions).tree->mergeSubTrees()->cast(@RootGraphFetchTree<Any>);
+            $branchRoot->newSourceTreeState()->enrichSourceTreeNode($mapping, $pisi, $replaced, $extensions).tree->normaliseSourceTree()->cast(@RootGraphFetchTree<Any>);
          );
 
          if($perBranchTrees->size() == 1,
@@ -446,17 +446,6 @@ function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any
 }
 
 
-function meta::pure::graphFetch::mergeSubTrees(tree:GraphFetchTree[1]): GraphFetchTree[1]
-{
-   ^$tree(subTrees = $tree.subTrees->cast(@PropertyGraphFetchTree)->mergeSubTreesRecur());
-}
-
-function meta::pure::graphFetch::mergeSubTreesRecur(subTrees:PropertyGraphFetchTree[*]): PropertyGraphFetchTree[*]
-{
-   let subTreesGroupedByProperty = $subTrees->groupBy(c|$c->cast(@PropertyGraphFetchTree).property);
-   let updatedSubTrees = $subTreesGroupedByProperty->keyValues()->map(p|mergePropertiesFromBaseSubTreeToSubTypedSubTree($p.second.values->cast(@PropertyGraphFetchTree)));
-}
-
 function meta::pure::graphFetch::getRootSetImplementation(tree:RootGraphFetchTree<Any>[1], mapping: Mapping[1]): SetImplementation[1]
 {
   let rootSetImplementation = $tree->match(
@@ -469,12 +458,34 @@ function meta::pure::graphFetch::getRootSetImplementation(tree:RootGraphFetchTre
   $rootSetImplementation->toOne();
 }
 
-function <<access.private>> meta::pure::graphFetch::mergePropertiesFromBaseSubTreeToSubTypedSubTree(subTrees:PropertyGraphFetchTree[*]): PropertyGraphFetchTree[*]
+// Normal form for a source tree: siblings for the same property are merged, and a subtype node
+// fetches whatever its base node fetches - a property's subtype variants get the base property's
+// children, and a node's subtype trees get the node's properties.
+function <<access.private>> meta::pure::graphFetch::normaliseSourceTree(tree:GraphFetchTree[1]): GraphFetchTree[1]
 {
-   let subTreeWithBaseClass = $subTrees->filter(st|$st->cast(@PropertyGraphFetchTree).subType->isEmpty())->cast(@PropertyGraphFetchTree);
-   let subTreesWithSubTypes = $subTrees->removeAll($subTreeWithBaseClass);
-   let updatedSubTreeWithBaseClass = $subTreeWithBaseClass->first()->map(st| ^$st(subTrees = $subTreeWithBaseClass->first().subTrees->concatenate($subTreeWithBaseClass->tail().subTrees)->cast(@PropertyGraphFetchTree)->mergeSubTreesRecur()));
-   $updatedSubTreeWithBaseClass->concatenate($subTreesWithSubTypes->map(st|^$st(subTrees = $st.subTrees->concatenate($subTreeWithBaseClass->cast(@PropertyGraphFetchTree).subTrees)->cast(@PropertyGraphFetchTree)->mergeSubTreesRecur())));
+   let subTrees     = $tree.subTrees->cast(@PropertyGraphFetchTree)->mergeSameProperty();
+   let withBase     = $subTrees->map(st | if($st.subType->isEmpty(),
+                                             | $st,
+                                             | ^$st(subTrees = $st.subTrees->concatenate($subTrees->filter(b | $b.subType->isEmpty() && $b.property == $st.property).subTrees))));
+   let subTypeTrees = $tree.subTypeTrees->mergeSameSubTypeClass()->map(stt | ^$stt(subTrees = $stt.subTrees->concatenate($withBase)));
+   ^$tree(subTrees     = $withBase->map(st | $st->normaliseSourceTree()),
+          subTypeTrees = $subTypeTrees->map(stt | $stt->normaliseSourceTree())->cast(@SubTypeGraphFetchTree));
+}
+
+function <<access.private>> meta::pure::graphFetch::mergeSameProperty(trees:PropertyGraphFetchTree[*]): PropertyGraphFetchTree[*]
+{
+   $trees->fold({t, merged | if($merged->exists(m | $m->forSameProperty($t)),
+                                | $merged->map(m | if($m->forSameProperty($t), | ^$m(subTrees = $m.subTrees->concatenate($t.subTrees), subTypeTrees = $m.subTypeTrees->concatenate($t.subTypeTrees)), | $m)),
+                                | $merged->concatenate($t))},
+                []->cast(@PropertyGraphFetchTree));
+}
+
+function <<access.private>> meta::pure::graphFetch::mergeSameSubTypeClass(trees:SubTypeGraphFetchTree[*]): SubTypeGraphFetchTree[*]
+{
+   $trees->fold({t, merged | if($merged->exists(m | $m->forSameSubTypeClass($t)),
+                                | $merged->map(m | if($m->forSameSubTypeClass($t), | ^$m(subTrees = $m.subTrees->concatenate($t.subTrees), subTypeTrees = $m.subTypeTrees->concatenate($t.subTypeTrees)), | $m)),
+                                | $merged->concatenate($t))},
+                []->cast(@SubTypeGraphFetchTree));
 }
 
 function <<access.private>> meta::pure::graphFetch::sourceClassForM2MConditionalPath(path:List<PropertyPathNode>[1], owner:Class<Any>[1]):Class<Any>[0..1]
