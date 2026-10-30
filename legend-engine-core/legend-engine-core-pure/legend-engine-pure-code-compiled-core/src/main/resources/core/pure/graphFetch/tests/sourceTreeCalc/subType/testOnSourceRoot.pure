@@ -62,6 +62,32 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sour
    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());
 }
 
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testSameSubTypeFromTwoProperties():Boolean[1]
+{
+   let tree = #{
+      Target{
+         targetZipCode,
+         targetAddress
+      }
+   }#;
+   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithSameSubTypeFromTwoProperties;
+
+   let sourceTree = calculateSourceTree($tree, $mapping, meta::pure::extension::defaultExtensions());
+
+   let expectedSourceTree =
+      'Location\n'+
+      '(\n' +
+      '  zipCode\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    street\n' +
+      '    zipCode\n' +
+      '  )\n' +
+      ')'
+   ;
+   assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());
+}
+
 function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMultipleSubTypes_instanceOf():Boolean[1]
 {
     let tree = #{
@@ -292,6 +318,16 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::s
    {
       ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location
       targetZipCode: $src.zipCode,
+      targetAddress: if($src->instanceOf(meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street),|$src->cast(@meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street).street,|'unknown')
+   }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithSameSubTypeFromTwoProperties
+(
+   *meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Target: Pure
+   {
+      ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location
+      targetZipCode: if($src->instanceOf(meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street),|$src->cast(@meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street).zipCode,|'none'),
       targetAddress: if($src->instanceOf(meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street),|$src->cast(@meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street).street,|'unknown')
    }
 )
