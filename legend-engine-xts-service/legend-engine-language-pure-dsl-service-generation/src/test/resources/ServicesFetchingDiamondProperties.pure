@@ -1,0 +1,105 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::diamond::BaseFeature
+{
+  id: String[1];
+  processingDate: StrictDate[0..1];
+}
+
+Class test::diamond::BaseSelection
+{
+  selectionMethod: String[0..1];
+  processingDate: StrictDate[0..1];
+}
+
+Class test::diamond::Feature extends test::diamond::BaseFeature, test::diamond::BaseSelection
+{
+  name: String[1];
+}
+
+Class test::diamond::Source
+{
+  id: String[1];
+  name: String[1];
+  selectionMethod: String[0..1];
+  processingDate: StrictDate[0..1];
+}
+
+
+###Mapping
+Mapping test::diamond::Map
+(
+  *test::diamond::Feature: Pure
+  {
+    ~src test::diamond::Source
+    id: $src.id,
+    name: $src.name,
+    selectionMethod: $src.selectionMethod,
+    processingDate: $src.processingDate
+  }
+)
+
+
+###Runtime
+Runtime test::diamond::Runtime
+{
+  mappings:
+  [
+    test::diamond::Map
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1:
+      #{
+        JsonModelConnection
+        {
+          class: test::diamond::Source;
+          url: 'data:application/json,{"id":"F1","name":"n"}';
+        }
+      }#
+    ]
+  ];
+}
+
+
+###Service
+Service test::diamond::FetchesProcessingDate
+{
+  pattern: '/test/diamond/processingDate';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::diamond::Feature.all()->graphFetch(#{test::diamond::Feature{id,processingDate}}#)->serialize(#{test::diamond::Feature{id,processingDate}}#);
+    mapping: test::diamond::Map;
+    runtime: test::diamond::Runtime;
+  }
+}
+
+Service test::diamond::FetchesName
+{
+  pattern: '/test/diamond/name';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::diamond::Feature.all()->graphFetch(#{test::diamond::Feature{id,name}}#)->serialize(#{test::diamond::Feature{id,name}}#);
+    mapping: test::diamond::Map;
+    runtime: test::diamond::Runtime;
+  }
+}

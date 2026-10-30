@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::relationalDiamond::BaseFeature
+{
+  id: Integer[1];
+  processingDate: StrictDate[0..1];
+}
+
+Class test::relationalDiamond::BaseSelection
+{
+  selectionMethod: String[0..1];
+  processingDate: StrictDate[0..1];
+}
+
+Class test::relationalDiamond::Feature extends test::relationalDiamond::BaseFeature, test::relationalDiamond::BaseSelection
+{
+  name: String[1];
+  owner: test::relationalDiamond::Owner[0..1];
+}
+
+Class test::relationalDiamond::Owner
+{
+  id: Integer[1];
+  firstName: String[0..1];
+  lastName: String[0..1];
+}
+
+
+###Relational
+Database test::relationalDiamond::DB
+(
+  Table FEATURE (ID INT PRIMARY KEY, NAME VARCHAR(100), SELECTION_METHOD VARCHAR(100), PROCESSING_DATE DATE, OWNER_ID INT)
+  Table OWNER (ID INT PRIMARY KEY, FIRST_NAME VARCHAR(100), LAST_NAME VARCHAR(100))
+  Join FeatureOwner(FEATURE.OWNER_ID = OWNER.ID)
+)
+
+
+###Mapping
+Mapping test::relationalDiamond::Map
+(
+  *test::relationalDiamond::Feature: Relational
+  {
+    ~primaryKey([test::relationalDiamond::DB]FEATURE.ID)
+    ~mainTable [test::relationalDiamond::DB]FEATURE
+    id: [test::relationalDiamond::DB]FEATURE.ID,
+    name: [test::relationalDiamond::DB]FEATURE.NAME,
+    selectionMethod: [test::relationalDiamond::DB]FEATURE.SELECTION_METHOD,
+    processingDate: [test::relationalDiamond::DB]FEATURE.PROCESSING_DATE,
+    owner: [test::relationalDiamond::DB]@FeatureOwner
+  }
+  *test::relationalDiamond::Owner: Relational
+  {
+    ~primaryKey([test::relationalDiamond::DB]OWNER.ID)
+    ~mainTable [test::relationalDiamond::DB]OWNER
+    id: [test::relationalDiamond::DB]OWNER.ID,
+    firstName: [test::relationalDiamond::DB]OWNER.FIRST_NAME,
+    lastName: [test::relationalDiamond::DB]OWNER.LAST_NAME
+  }
+)
+
+
+###Runtime
+Runtime test::relationalDiamond::Runtime
+{
+  mappings:
+  [
+    test::relationalDiamond::Map
+  ];
+  connections:
+  [
+    test::relationalDiamond::DB:
+    [
+      connection_1:
+      #{
+        RelationalDatabaseConnection
+        {
+          type: H2;
+          specification: LocalH2 {};
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}
+
+
+###Service
+Service test::relationalDiamond::FetchesProcessingDateAndOwnerFirstName
+{
+  pattern: '/test/relationalDiamond/processingDate';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::relationalDiamond::Feature.all()->graphFetch(#{test::relationalDiamond::Feature{id,processingDate,owner{firstName}}}#)->serialize(#{test::relationalDiamond::Feature{id,processingDate,owner{firstName}}}#);
+    mapping: test::relationalDiamond::Map;
+    runtime: test::relationalDiamond::Runtime;
+  }
+}
+
+Service test::relationalDiamond::FetchesNameAndOwnerLastName
+{
+  pattern: '/test/relationalDiamond/name';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::relationalDiamond::Feature.all()->graphFetch(#{test::relationalDiamond::Feature{id,name,owner{lastName}}}#)->serialize(#{test::relationalDiamond::Feature{id,name,owner{lastName}}}#);
+    mapping: test::relationalDiamond::Map;
+    runtime: test::relationalDiamond::Runtime;
+  }
+}
