@@ -56,7 +56,7 @@ function {doc.doc='Given the platform (ie DB agnostic) data types, convert to DB
 {
     $type->match([
         b : meta::relational::metamodel::datatype::Boolean[1] | 'BOOLEAN',
-        i : meta::relational::metamodel::datatype::Integer[1] | 'DECIMAL(19,0)',
+        i : meta::relational::metamodel::datatype::Integer[1] | 'INT',
         // The shared, dialect-agnostic pureToRelational.pure maps Pure Float to this relational
         // Float type directly (bypassing convert() above, which correctly maps Pure Float to
         // Double) whenever it types a #TDS-literal/extend()-computed column. Rendering it as real

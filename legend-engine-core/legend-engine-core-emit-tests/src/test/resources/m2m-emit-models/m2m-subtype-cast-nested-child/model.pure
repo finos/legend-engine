@@ -1,0 +1,255 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::m2m::subtypeCastNested::Extra { value: String[1]; }
+Class demo::m2m::subtypeCastNested::DeepExtra { value: String[1]; }
+Class demo::m2m::subtypeCastNested::Base { id: String[1]; }
+Class demo::m2m::subtypeCastNested::Sub extends demo::m2m::subtypeCastNested::Base { extra: demo::m2m::subtypeCastNested::Extra[1]; }
+Class demo::m2m::subtypeCastNested::SubSub extends demo::m2m::subtypeCastNested::Sub { deepExtra: demo::m2m::subtypeCastNested::DeepExtra[1]; }
+Class demo::m2m::subtypeCastNested::Root { items: demo::m2m::subtypeCastNested::Base[*]; }
+Class demo::m2m::subtypeCastNested::Row { id: String[1]; extraValue: String[1]; deepExtraValue: String[1]; }
+Class demo::m2m::subtypeCastNested::Holder { rows: demo::m2m::subtypeCastNested::Row[*]; }
+
+###Mapping
+Mapping demo::m2m::subtypeCastNested::ChildTransform
+(
+  *demo::m2m::subtypeCastNested::Holder: Pure
+  {
+    ~src demo::m2m::subtypeCastNested::Root
+    rows: $src.items
+  }
+  *demo::m2m::subtypeCastNested::Row: Pure
+  {
+    ~src demo::m2m::subtypeCastNested::Base
+    id: $src.id,
+    extraValue: $src->cast(@demo::m2m::subtypeCastNested::Sub).extra.value,
+    deepExtraValue: $src->cast(@demo::m2m::subtypeCastNested::Sub)->cast(@demo::m2m::subtypeCastNested::SubSub).deepExtra.value
+  }
+)
+
+Mapping demo::m2m::subtypeCastNested::SameSubTypeTransform
+(
+  *demo::m2m::subtypeCastNested::Holder: Pure
+  {
+    ~src demo::m2m::subtypeCastNested::Root
+    rows: $src.items
+  }
+  *demo::m2m::subtypeCastNested::Row: Pure
+  {
+    ~src demo::m2m::subtypeCastNested::Base
+    id: $src.id,
+    extraValue: $src->cast(@demo::m2m::subtypeCastNested::SubSub).extra.value,
+    deepExtraValue: $src->cast(@demo::m2m::subtypeCastNested::SubSub).deepExtra.value
+  }
+)
+
+###Runtime
+Runtime demo::m2m::subtypeCastNested::ChildRuntime
+{
+  mappings:
+  [
+    demo::m2m::subtypeCastNested::ChildTransform
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      json:
+      #{
+        JsonModelConnection
+        {
+          class: demo::m2m::subtypeCastNested::Root;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}
+
+Runtime demo::m2m::subtypeCastNested::SameSubTypeRuntime
+{
+  mappings:
+  [
+    demo::m2m::subtypeCastNested::SameSubTypeTransform
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      json:
+      #{
+        JsonModelConnection
+        {
+          class: demo::m2m::subtypeCastNested::Root;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}
+
+###Service
+Service demo::m2m::subtypeCastNested::ChildService
+{
+  pattern: '/m2m-subtype-cast-nested-child';
+  documentation: 'M2M child set reads a property declared two subtype levels below its source';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::subtypeCastNested::Holder.all()->graphFetch(#{demo::m2m::subtypeCastNested::Holder{rows{id,extraValue,deepExtraValue}}}#)->serialize(#{demo::m2m::subtypeCastNested::Holder{rows{id,extraValue,deepExtraValue}}}#);
+    mapping: demo::m2m::subtypeCastNested::ChildTransform;
+    runtime: demo::m2m::subtypeCastNested::ChildRuntime;
+  }
+  testSuites:
+  [
+    suite:
+    {
+      data:
+      [
+        connections:
+        [
+          json:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"items":[{"@type":"SubSub","id":"S1","extra":{"value":"x1"},"deepExtra":{"value":"d1"}},{"@type":"SubSub","id":"S2","extra":{"value":"x2"},"deepExtra":{"value":"d2"}}]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"rows":[{"id":"S1","extraValue":"x1","deepExtraValue":"d1"},{"id":"S2","extraValue":"x2","deepExtraValue":"d2"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::m2m::subtypeCastNested::SameSubTypeService
+{
+  pattern: '/m2m-subtype-cast-nested-child-same-subtype';
+  documentation: 'M2M child set reads an inherited and an own property through the same cast to the deeper subtype';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::subtypeCastNested::Holder.all()->graphFetch(#{demo::m2m::subtypeCastNested::Holder{rows{id,extraValue,deepExtraValue}}}#)->serialize(#{demo::m2m::subtypeCastNested::Holder{rows{id,extraValue,deepExtraValue}}}#);
+    mapping: demo::m2m::subtypeCastNested::SameSubTypeTransform;
+    runtime: demo::m2m::subtypeCastNested::SameSubTypeRuntime;
+  }
+  testSuites:
+  [
+    suite:
+    {
+      data:
+      [
+        connections:
+        [
+          json:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"items":[{"@type":"SubSub","id":"S1","extra":{"value":"x1"},"deepExtra":{"value":"d1"}},{"@type":"SubSub","id":"S2","extra":{"value":"x2"},"deepExtra":{"value":"d2"}}]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"rows":[{"id":"S1","extraValue":"x1","deepExtraValue":"d1"},{"id":"S2","extraValue":"x2","deepExtraValue":"d2"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::m2m::subtypeCastNested::SameSubTypeServiceDeepFirst
+{
+  pattern: '/m2m-subtype-cast-nested-child-same-subtype-deep-first';
+  documentation: 'M2M child set reads the own property before the inherited one through the same cast to the deeper subtype';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::subtypeCastNested::Holder.all()->graphFetch(#{demo::m2m::subtypeCastNested::Holder{rows{id,deepExtraValue,extraValue}}}#)->serialize(#{demo::m2m::subtypeCastNested::Holder{rows{id,deepExtraValue,extraValue}}}#);
+    mapping: demo::m2m::subtypeCastNested::SameSubTypeTransform;
+    runtime: demo::m2m::subtypeCastNested::SameSubTypeRuntime;
+  }
+  testSuites:
+  [
+    suite:
+    {
+      data:
+      [
+        connections:
+        [
+          json:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"items":[{"@type":"SubSub","id":"S1","extra":{"value":"x1"},"deepExtra":{"value":"d1"}},{"@type":"SubSub","id":"S2","extra":{"value":"x2"},"deepExtra":{"value":"d2"}}]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"rows":[{"id":"S1","extraValue":"x1","deepExtraValue":"d1"},{"id":"S2","extraValue":"x2","deepExtraValue":"d2"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

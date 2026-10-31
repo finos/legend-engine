@@ -1,0 +1,25 @@
+name: m2m-subtype-cast-nested-child
+title: "M2M child set reads a property declared two subtype levels below its source"
+description: |
+  SubSub extends Sub extends Base, and each child mapping with ~src Base is
+  reached through $src.items.
+  ChildService: extraValue through $src->cast(@Sub).extra.value and
+  deepExtraValue through $src->cast(@Sub)->cast(@SubSub).deepExtra.value, so
+  the source tree carries items->subType(Sub) and items->subType(SubSub).
+  SameSubTypeService: both values through $src->cast(@SubSub), one declared
+  on Sub and one on SubSub, so the single items->subType(SubSub) branch must
+  keep both. SameSubTypeServiceDeepFirst requests deepExtraValue first, since
+  whichever value is requested second is the one that has to be merged into
+  the existing SubSub branch.
+modelSources:
+  model:
+    root: m2m-subtype-cast-nested-child
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - subtype
