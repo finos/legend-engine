@@ -44,6 +44,9 @@ Class meta::external::language::java::transform::Conventions
 
    identifierFactory           : Function<{String[1]->String[1]}>[1];
    basePackageName             : String[1];
+   // [A] when set, node classes are namespaced per plan; model-derived types keep the plan-independent
+   // basePackageName so identical types dedup on merge
+   planId                      : String[0..1];
    typeAndPackageNameStrategy  : Function<{meta::pure::metamodel::type::Type[1],Conventions[1]->Pair<String,String>[1]}>[0..1];
    functionSignatureFactory    : Function<{ConcreteFunctionDefinition<Any>[1],Conventions[1]->FunctionSignature[1]}>[1];
    providedTypes               : Map<String, meta::external::language::java::metamodel::Class>[1];

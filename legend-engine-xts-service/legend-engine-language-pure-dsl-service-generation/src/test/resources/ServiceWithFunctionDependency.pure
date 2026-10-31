@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The property transforms call user-defined functions, so binding this service emits
+// _pure.functions.Functions__* helper classes through dependency resolution rather than
+// through the type layer. Mappings that only project source properties never exercise it.
+
+Class test::dependency::Source
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class test::dependency::Target
+{
+  displayName: String[1];
+  tier: test::dependency::Tier[1];
+}
+
+Enum test::dependency::Tier
+{
+  STANDARD,
+  PREMIUM
+}
+
+function test::dependency::displayName(first: String[1], last: String[1]): String[1]
+{
+  $last + ', ' + $first
+}
+
+function test::dependency::tierFor(last: String[1]): test::dependency::Tier[1]
+{
+  if($last->length() > 5, | test::dependency::Tier.PREMIUM, | test::dependency::Tier.STANDARD)
+}
+
+
+###Mapping
+Mapping test::dependency::Map
+(
+  *test::dependency::Target: Pure
+  {
+    ~src test::dependency::Source
+    displayName: test::dependency::displayName($src.firstName, $src.lastName),
+    tier: test::dependency::tierFor($src.lastName)
+  }
+)
+
+
+###Runtime
+Runtime test::dependency::Runtime
+{
+  mappings:
+  [
+    test::dependency::Map
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1:
+      #{
+        JsonModelConnection
+        {
+          class: test::dependency::Source;
+          url: 'data:application/json,{"firstName":"John","lastName":"Roberts"}';
+        }
+      }#
+    ]
+  ];
+}
+
+
+###Service
+Service test::dependency::FunctionDependencyService
+{
+  pattern: '/test/dependency/functionDependency';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::dependency::Target.all()->graphFetch(#{test::dependency::Target{displayName,tier}}#)->serialize(#{test::dependency::Target{displayName,tier}}#);
+    mapping: test::dependency::Map;
+    runtime: test::dependency::Runtime;
+  }
+}

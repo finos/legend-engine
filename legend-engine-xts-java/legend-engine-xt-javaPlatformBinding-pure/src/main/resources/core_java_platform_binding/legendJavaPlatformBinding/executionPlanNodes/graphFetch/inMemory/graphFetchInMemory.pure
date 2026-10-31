@@ -194,7 +194,8 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
             )
          );
 
-      newProject()->addClasses($updatedClass)->concatenate($body->dependencies()->resolveAndGetProjects())->toOneMany()->mergeProjects();
+      // [B] $body's deps stay attached to its method; root resolves them once
+      newProject()->addClasses($updatedClass);
    });
 
    newProject()->concatenate($projects)->toOneMany()->mergeProjects();
@@ -255,15 +256,8 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
         let executeClass   = $executeClassWithImports->addMethod($transformMethod)->addMethod($filterMethod);
         let executeProject = newProject()->addClasses($executeClass);
-        let s0             = $context->currentResolutionState();
-        let transformDeps  = $transformMethodCodes->dependencies();
-        let s1             = $transformDeps->resolveProjects($s0);
-        let filterDeps     = $filterMethodCode->dependencies();
-        let s2             = $filterDeps->resolveProjects($s1);
-        let allProjects    = $executeProject->concatenate($s2->getProjects($transformDeps))
-        ->concatenate($s2->getProjects($filterDeps))
-        ->toOneMany();
-        ^ProjectAndState(project = $allProjects->mergeProjects(), resolutionState = $s2);
+        // [B] deps stay attached to the methods on $executeClass; root resolves them once
+        ^ProjectAndState(project = $executeProject, resolutionState = $context->currentResolutionState());
      );
 }
 
@@ -314,11 +308,8 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
   let executeClass   = $executeClassWithImports->addMethods($transformMethod->concatenate($mergeMethods));
   let executeProject = newProject()->addClasses($executeClass);
-  let s0             = $context->currentResolutionState();
-  let transformDeps  = $transform->dependencies();
-  let s1             = $transformDeps->resolveProjects($s0);
-  let allProjects    = $executeProject->concatenate($s1->getProjects($transformDeps))->toOneMany();
-  ^ProjectAndState(project = $allProjects->mergeProjects(), resolutionState = $s1);
+  // [B] deps stay attached to the generated methods; root resolves them once
+  ^ProjectAndState(project = $executeProject, resolutionState = $context->currentResolutionState());
  }
 
 Class <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::MergedPropertyHolder
@@ -468,20 +459,8 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let executeClass            = $executeClassWithFields ->addMethod($transformPropertyMethod);
    let executeProject          = newProject()->addClasses($executeClass);
 
-   let s0             = $context->currentResolutionState();
-   let d1             = $propMappingTransformers->dependencies();
-   let s1             = $d1->resolveProjects($s0);
-   let d2             = $targetSetTransformers->dependencies();
-   let s2             = $d2->resolveProjects($s1);
-   let d3             = $transformPropertyMethodCodes->dependencies();
-   let s3             = $d3->resolveProjects($s2);
-   let allProjects = $executeProject
-      ->concatenate($s3->getProjects($d1))
-      ->concatenate($s3->getProjects($d2))
-      ->concatenate($s3->getProjects($d3))
-      ->toOneMany();
-
-    ^ProjectAndState(project = $allProjects->mergeProjects(), resolutionState = $s3);
+   // [B] deps stay attached to the generated methods; root resolves them once
+   ^ProjectAndState(project = $executeProject, resolutionState = $context->currentResolutionState());
 }
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::addFilterForSubtype(input:Code[1],propertyType: Code[1],targetSRCType:meta::external::language::java::metamodel::Type[1], targetSet:InstanceSetImplementation[1],context: GenerationContext[1],extensions: Extension[*]):Code[1]
 {
