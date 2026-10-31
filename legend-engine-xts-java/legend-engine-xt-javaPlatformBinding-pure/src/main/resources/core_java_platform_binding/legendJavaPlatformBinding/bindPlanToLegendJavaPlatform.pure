@@ -37,10 +37,11 @@ import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::commo
 function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegendJavaPlatform(plan: ExecutionPlan[1], platformBindingConfig: PlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionPlan[1]
 {
    let legendJavaConfig   = $platformBindingConfig->convertToLegendJavaPlatformBindingConfigIfPossible();
-   let bound              = $plan->bindPlanToNodeAst($legendJavaConfig, $extensions, $debug);
+   let conventions        = engineConventions($extensions);
+   let bound              = $plan->bindPlanToNodeAst($legendJavaConfig, $conventions, $extensions, $debug);
    let boundPlan          = $bound.plan;
 
-   let sharedTypes        = $bound.typeInfos->generateSharedTypes($extensions);
+   let sharedTypes        = $bound.typeInfos->generateSharedTypes($conventions);
    let prelim             = $sharedTypes->concatenate($bound.project)->toOneMany()->mergeProjects();
    let resolved           = $prelim->concatenate($prelim->resolveProjectDependencies())->toOneMany()->mergeProjects();
    let generatedProject   = $resolved->stubUnimplementedGetters($sharedTypes);
@@ -55,9 +56,9 @@ function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegen
 }
 
 // [B] leaf: node code only (no shared interfaces/enums), plus this plan's TypeInfoSet
-function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToNodeAst(plan: ExecutionPlan[1], legendJavaConfig: LegendJavaPlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): BoundNodePlan[1]
+function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToNodeAst(plan: ExecutionPlan[1], legendJavaConfig: LegendJavaPlatformBindingConfig[1], conventions: Conventions[1], extensions: Extension[*], debug: DebugContext[1]): BoundNodePlan[1]
 {
-   let generationContext = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
+   let generationContext = $plan->prepareGenerationContext($legendJavaConfig, $conventions, $extensions, $debug);
    let generatedNode     = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $generationContext, $extensions, $debug);
 
    ^BoundNodePlan
@@ -73,9 +74,10 @@ function meta::pure::executionPlan::platformBinding::legendJava::bindPlansToNode
 {
    assert($plans->size() == $platformBindingConfigs->size(), | 'bindPlansToNodeAst: plans and configs must be the same length');
 
-   let debug  = noDebug();
-   let bounds = $plans->zip($platformBindingConfigs)->map(pc |
-      $pc.first->bindPlanToNodeAst($pc.second->convertToLegendJavaPlatformBindingConfigIfPossible(), $extensions, $debug)
+   let debug       = noDebug();
+   let conventions = engineConventions($extensions);
+   let bounds      = $plans->zip($platformBindingConfigs)->map(pc |
+      $pc.first->bindPlanToNodeAst($pc.second->convertToLegendJavaPlatformBindingConfigIfPossible(), $conventions, $extensions, $debug)
    );
 
    let mergedProject   = if ($bounds->isEmpty(), | [], | $bounds.project->toOneMany()->mergeProjects());
@@ -125,8 +127,12 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 // [B] root: shared type layer (interfaces + enums + units) generated once from the global union
 function meta::pure::executionPlan::platformBinding::legendJava::generateSharedTypes(union: TypeInfoSet[1], extensions: Extension[*]): Project[1]
 {
-   let debug       = noDebug();
-   let conventions = engineConventions($extensions);
+   $union->generateSharedTypes(engineConventions($extensions));
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::generateSharedTypes(union: TypeInfoSet[1], conventions: Conventions[1]): Project[1]
+{
+   let debug = noDebug();
    let ctx0        = ^GenerationContext(typeInfos = $union, conventions = $conventions);
    let ctx1        = $ctx0->fillNewFunctionProhibitedList();
    let ctx2        = ^$ctx1(baseProject = $ctx1.conventions->fundamentals($debug));
@@ -266,10 +272,8 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 
 // Prepare generation context ---------------------------------------------------------
 
-function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::prepareGenerationContext(plan: ExecutionPlan[1], legendJavaConfig: LegendJavaPlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): GenerationContext[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::prepareGenerationContext(plan: ExecutionPlan[1], legendJavaConfig: LegendJavaPlatformBindingConfig[1], conventions: Conventions[1], extensions: Extension[*], debug: DebugContext[1]): GenerationContext[1]
 {
-   let conventions  = engineConventions($extensions);
-   
    // [A] basePackageName stays plan-independent so model-derived types dedup on merge; planId is applied
    // only to node classes (planNodeClass), whose content genuinely differs per plan
    let pathAdjusted = if ($legendJavaConfig.planId->isEmpty(),
