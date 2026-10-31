@@ -13,14 +13,18 @@
 // limitations under the License.
 
 ###Connection
-RelationalDatabaseConnection chain::connection::FirmH2Connection
+// Firm.all()->project(~[...]) returns a Relation, so RelationalConnectionFactory always rebuilds
+// this connection as DuckDB for test execution, regardless of what's declared here -- declare
+// DuckDB to match, rather than H2.
+RelationalDatabaseConnection chain::connection::FirmDuckDBConnection
 {
   store: chain::store::DB;
-  type: H2;
-  specification: LocalH2
+  type: DuckDB;
+  specification: DuckDB
   {
+    path: '';
   };
-  auth: DefaultH2;
+  auth: Test;
 }
 
 // What makes the mapping chain a chain: reads of the model-to-model mapping's source class are
