@@ -508,7 +508,8 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::sortProperties(properties:Property<Nil,Any|*>[*], class:Class<Any>[1]): Property<Nil,Any|*>[*]
 {
    let allProperties = $class->allProperties();
-   let ordinal = {p:Property<Nil,Any|*>[1]| $allProperties->indexOf($p)};
+   let ordinals = $allProperties->size()->range()->reverse()->map(i| pair($allProperties->at($i), $i))->newMap();
+   let ordinal = {p:Property<Nil,Any|*>[1]| let o = $ordinals->get($p); if($o->isEmpty(), | -1, | $o->toOne());};
    $properties->sort({p1,p2| $ordinal->eval($p1) - $ordinal->eval($p2)});
 }
 

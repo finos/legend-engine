@@ -37,7 +37,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegen
    let baseProject        = $generationContext->generateTypes($debug);
    let seededContext      = ^$generationContext(resolutionState = ^CodeDependencyResolutionState(projectsByDependency=^Map<String, Project>()));
    let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $seededContext, $extensions, $debug);
-   let generatedProject   = $baseProject->concatenate($generatedNode.project)->toOneMany()->mergeProjects();
+   let generatedProject   = $baseProject->concatenate($generatedNode.project)->concatenate($seededContext.baseProject)->toOneMany()->mergeProjects();
 
    ^$plan
    (
@@ -145,7 +145,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::generateLegendJ
    let ctxAfterChildren = ^$context(resolutionState = $stateAfterChildren);
 
    let newNode     = ^$node(executionNodes = $generatedChildren.node, implementation = $generated.implementation);
-   let fullProject = $generated.project->concatenate($generatedChildren.project)->concatenate($context.baseProject)->mergeProjectsNullable();
+   let fullProject = $generated.project->concatenate($generatedChildren.project)->mergeProjectsNullable();
 
    if ($supportingExtension.generateLegendJavaCodeForExtraChildNodes->isNotEmpty(),
        | $supportingExtension.generateLegendJavaCodeForExtraChildNodes->toOne()->eval($newNode, $fullProject, $path, $ctxAfterChildren, $extensions, $debug),

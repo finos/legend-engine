@@ -31,8 +31,9 @@ Class meta::external::language::java::serialization::Stringifier
    tabDepth         : Integer[1];
    scope            : Scope[1];
    foldLevel        : Integer[1];
-   wipLine          : String[*];
+   wipLine          : String[1];
    pending          : String[1];
+   recentLines      : String[1];
    completeLines    : String[*];
 
    tabString()  { range(0, $this.tabDepth)->map(x| $this.tab)->joinStrings() }: String[1];
@@ -48,12 +49,12 @@ Enum meta::external::language::java::serialization::Scope
 
 function meta::external::language::java::serialization::newStringifier(project:meta::external::language::java::metamodel::project::Project[1]): Stringifier[1]
 {
-   ^Stringifier(foldLevel=0, wipLine='', pending='', completeLines='', scope=Scope.DEFAULT, tab='    ', tabDepth=0, project=$project)
+   ^Stringifier(foldLevel=0, wipLine='', pending='', recentLines='', scope=Scope.DEFAULT, tab='    ', tabDepth=0, project=$project)
 }
 
 function meta::external::language::java::serialization::newStringifier(): Stringifier[1]
 {
-   ^Stringifier(foldLevel=0, wipLine='', pending='', completeLines='', scope=Scope.DEFAULT, tab='    ', tabDepth=0)
+   ^Stringifier(foldLevel=0, wipLine='', pending='', recentLines='', scope=Scope.DEFAULT, tab='    ', tabDepth=0)
 }
 
 // --- Entry Points
@@ -141,7 +142,7 @@ function <<access.private>> meta::external::language::java::serialization::class
 
          ^$sfer(
             imports          = $classImports,
-            classesInPackage = $sfer.project->map(p| $p->allClasses())->filter(c| $c.package == $class.package)
+            classesInPackage = $sfer.project->map(p| $p->allClasses())->filter(c| $c.package.name == $class.package.name && $c.package == $class.package)
          );
 
       }
@@ -360,7 +361,7 @@ function <<access.private>> meta::external::language::java::serialization::shoul
                p:meta::external::language::java::metamodel::Package[1] | $classPkg == $p->packageToString()
             ]);
          });
-   let shadowed = $sfer.classesInPackage->exists(c| $c != $class && $c.simpleName == $class.simpleName);
+   let shadowed = $sfer.classesInPackage->exists(c| $c.simpleName == $class.simpleName && $c != $class);
    !$imported || $shadowed;
 }
 
@@ -480,14 +481,20 @@ function <<access.private>> meta::external::language::java::serialization::doCod
 function <<access.private>> meta::external::language::java::serialization::doCode(sfer:Stringifier[1], code: Code[1]) :Stringifier[1]
 {
    $code->map(c| $c->resolveDeferred())->match([
+      c:Variable[1]                 | if($sfer.inParameters, |$sfer->doType($c.type)->space(), |$sfer)->addText($c.name),
+      c:MethodCall[1]               | $sfer->maybeInstanceParentheses($c.instance)->foldable()->addText('.')->doTypeArguments($c.typeArguments)->addText($c.methodName)->doArguments($c.arguments),
+      c:Literal[1]                  | $sfer->addText($c.literal),
+      c:StaticMethodCall[1]         | $sfer->doType($c.class)->foldable()->addText('.')->doTypeArguments($c.typeArguments)->addText($c.methodName)->doArguments($c.arguments),
+      c:FieldAccess[1]              | $sfer->maybeInstanceParentheses($c.instance)->foldable()->addText('.')->addText($c.fieldName),
+      c:Block[1]                    | $sfer->openBrace()->forEach($c.statements, {s,st| $s->doCode($st)->newLine()})->closeBrace(),
+      c:Return[1]                   | $sfer->addWord('return')->ifNotEmpty($c.expression, {s, e| $s->doCode($e->toOne())})->semicolon()->newLine(),
+      c:ExpressionStatement[1]      | $sfer->doCode($c.expression)->semicolon()->newLine(),
+      c:InfixExpression[1]          | $sfer->maybeParentheses($c.left, $c)->space()->addText($c.op)->space()->maybeParentheses($c.right, $c),
       c:SimpleCode[1]               | $sfer->forEach($c.code->replace('\n\n','\nBLANKLINE\n')->split('\n')->map(l| if($l->trim() == '', |'BLANKLINE', |$l)), {s, l| if($l == 'BLANKLINE', |$s->blankLine(), |$s->addText($l)->newLine())}),
       c:Null[1]                     | $sfer->addText('null'),
       c:This[1]                     | if($sfer.stack->isEmpty() || $sfer.stack->last() == $c.type, |$sfer, |$sfer->doType($c.type)->addText('.'))->addText('this'),
       c:Super[1]                    | $sfer->addText('super'),
-      c:Variable[1]                 | if($sfer.inParameters, |$sfer->doType($c.type)->space(), |$sfer)->addText($c.name),
       c:ArrayAccess[1]              | $sfer->doCode($c.array)->addText('[')->doCode($c.index)->addText(']'),
-      c:Literal[1]                  | $sfer->addText($c.literal),
-      c:InfixExpression[1]          | $sfer->maybeParentheses($c.left, $c)->space()->addText($c.op)->space()->maybeParentheses($c.right, $c),
       c:PrefixExpression[1]         | if($c.op == '!' && $c.expression->findProxyUnderlier()->instanceOf(InstanceOf),
                                         |$sfer->addText('!')->addText('(')->doCode($c.expression)->addText(')'),
                                         |$sfer->addText($c.op)->maybeParentheses($c.expression, $c);
@@ -495,8 +502,6 @@ function <<access.private>> meta::external::language::java::serialization::doCod
       c:PostfixExpression[1]        | $sfer->maybeParentheses($c.expression, $c)->addText($c.op),
       c:Conditional[1]              | $sfer->maybeParentheses($c.test, $c)->addText(' ')->foldable()->addText('? ')->subFoldingStart()->maybeParentheses($c.then, $c)->addText(' ')->subFoldingEnd()->foldable()->addText(': ')->subFoldingStart()->maybeParentheses($c.else, $c)->subFoldingEnd(),
       c:InstanceOf[1]               | $sfer->maybeParentheses($c.expression, $c)->addText(' instanceof ')->doType($c.class),
-      c:Block[1]                    | $sfer->openBrace()->forEach($c.statements, {s,st| $s->doCode($st)->newLine()})->closeBrace(),
-      c:ExpressionStatement[1]      | $sfer->doCode($c.expression)->semicolon()->newLine(),
       c:LocalVariableDeclaration[1] | $sfer->doModifiers($c.modifiers)->doType($c.type)->space()->addWord($c.variableName)->ifNotEmpty($c.initializer, {s, i| $s->addText('=')->space()->doCode($i)})->when(!$sfer.inForHead, {s|$s->semicolon()}),
       c:If[1]                       | $sfer->addWord('if')->addText('(')->doCode($c.test)->addText(')')->doCode($c.then)->ifNotEmpty($c.else, {s, else| $s->addWord('else')->doCode($else->toOne())}),
       c:For[1]                      | $sfer->addWord('for')->addText('(')->startForHead()->doCode($c.init)->semicolon()->space()->doCode($c.test)->semicolon()->space()->doCode($c.update)->endForHead()->addText(')')->newLine()->doCode($c.body),
@@ -506,7 +511,6 @@ function <<access.private>> meta::external::language::java::serialization::doCod
       c:Try[1]                      | $sfer->addWord('try')->doCode($c.try)->forEach($c.catches, {s, ctch| $s->doCode($ctch)})->ifNotEmpty($c.finally, {s, fin| $s->doCode($fin->toOne())}),
       c:Catch[1]                    | $sfer->addWord('catch')->doParameters($c.parameter)->doCode($c.clause),
       c:Finally[1]                  | $sfer->addWord('finally')->doCode($c.clause),
-      c:Return[1]                   | $sfer->addWord('return')->ifNotEmpty($c.expression, {s, e| $s->doCode($e->toOne())})->semicolon()->newLine(),
       c:Throw[1]                    | $sfer->addWord('throw')->doCode($c.expression)->semicolon(),
       c:New[1]                      | $sfer->doCodeNew($c),
       c:NewArray[1]                 | $sfer->doCodeNewArray($c),
@@ -515,10 +519,7 @@ function <<access.private>> meta::external::language::java::serialization::doCod
       c:Cast[1]                     | $sfer->addText('(')->doType($c.type)->addText(')')->space()->maybeParentheses($c.expression, $c),
       c:ThisConstructorCall[1]      | $sfer->addText('this')->doArguments($c.arguments)->semicolon(),
       c:SuperConstructorCall[1]     | $sfer->addText('super')->doArguments($c.arguments)->semicolon(),
-      c:MethodCall[1]               | $sfer->maybeInstanceParentheses($c.instance)->foldable()->addText('.')->doTypeArguments($c.typeArguments)->addText($c.methodName)->doArguments($c.arguments),
-      c:FieldAccess[1]              | $sfer->maybeInstanceParentheses($c.instance)->foldable()->addText('.')->addText($c.fieldName),
       c:MethodReference[1]          | $sfer->maybeInstanceParentheses($c.instance)->addText('::')->addText($c.methodName),
-      c:StaticMethodCall[1]         | $sfer->doType($c.class)->foldable()->addText('.')->doTypeArguments($c.typeArguments)->addText($c.methodName)->doArguments($c.arguments),
       c:StaticFieldAccess[1]        | $sfer->doType($c.class)->foldable()->addText('.')->addText($c.fieldName),
       c:StaticMethodReference[1]    | $sfer->doType($c.class)->addText('::')->addText($c.methodName),
       c:Lambda[1]                   | $sfer->doParametersWithoutFolds($c.parameters)->addText(' -> ')->doLambdaExpression($c.expression)
@@ -579,20 +580,21 @@ function <<access.private>> meta::external::language::java::serialization::prece
       cp  :CastProxy[1]                                         | $cp.proxy->precedence(),  // prints as its proxy
       pre :Cast[1]                                              | 13,     // 13 unary                  (type)
       {in:InfixExpression[1]|
-         if($in.op->in(['*', '/', '%']),                        | 12, |   // 12 multiplicative         * / %
-         if($in.op->in(['+', '-']),                             | 11, |   // 11 additive               + -
-         if($in.op->in(['<<', '>>', '>>>']),                    | 10, |   // 10 shift                  << >> >>>
-         if($in.op->in(['<', '>', '<=', '>=']),                 |  9, |   //  9 relational             < > <= >= instanceof (see below)
-         if($in.op->in(['==', '!=']),                           |  8, |   //  8 equality               == !=
-         if($in.op->in(['&']),                                  |  7, |   //  7 bitwise AND            &
-         if($in.op->in(['^']),                                  |  6, |   //  6 bitwise exclusive OR   ^
-         if($in.op->in(['|']),                                  |  5, |   //  5 bitwise inclusive OR   |
-         if($in.op->in(['&&']),                                 |  4, |   //  4 logical AND            &&
-         if($in.op->in(['||']),                                 |  3, |   //  3 logical OR             ||
+         let op = $in.op;
+         if($op == '*' || $op == '/' || $op == '%', | 12, |   // 12 multiplicative         * / %
+         if($op == '+' || $op == '-', | 11, |   // 11 additive               + -
+         if($op == '<<' || $op == '>>' || $op == '>>>', | 10, |   // 10 shift                  << >> >>>
+         if($op == '<' || $op == '>' || $op == '<=' || $op == '>=', |  9, |   //  9 relational             < > <= >= instanceof (see below)
+         if($op == '==' || $op == '!=', |  8, |   //  8 equality               == !=
+         if($op == '&', |  7, |   //  7 bitwise AND            &
+         if($op == '^', |  6, |   //  6 bitwise exclusive OR   ^
+         if($op == '|', |  5, |   //  5 bitwise inclusive OR   |
+         if($op == '&&', |  4, |   //  4 logical AND            &&
+         if($op == '||', |  3, |   //  3 logical OR             ||
                                                                           //  2 ternary (SEE BELOW)
          if($in.op->in(assignmentOperators()),                  |  1, |   //  1 assignment             = += -= *= /= %= &= ^= |= <<= >>= >>>=
             fail('Unknown operator: '+$in.op);-1;
-         )))))))))))
+         )))))))))));
       },
       i:InstanceOf[1]                                           |  9,     //  9 relational             instanceof (see above)
       c:Conditional[1]                                          |  2,     //  2 ternary                ? :
@@ -614,7 +616,8 @@ function meta::external::language::java::serialization::findProxyUnderlier(code:
 
 function <<access.private>> meta::external::language::java::serialization::maybeParentheses(sfer:Stringifier[1], code:Code[1], wrt:Code[1]): Stringifier[1]
 {
-   if($code->precedence() < $wrt->precedence(),
+   let codePrecedence = $code->precedence();
+   if(($codePrecedence < 99) && ($codePrecedence < $wrt->precedence()),
       | $sfer->addText('(')->doCode($code)->addText(')'),
       | $sfer->doCode($code)
    );
@@ -689,25 +692,21 @@ function <<access.private>> meta::external::language::java::serialization::debug
    println('scope         = ' + $sfer.scope->toString());
    println('tabDepth      = ' + $sfer.tabDepth->toString());
    println('pending       = \'' + $sfer.pending->replace('\n', '\\n') + '\'');
-   println('wipLine       = \'' + $sfer.wipLine->plus() + '\'');
-   println('completeLines = \'' + $sfer.completeLines->plus()->replace('\n', '\\n') + '\'');
+   println('wipLine       = \'' + $sfer.wipLine + '\'');
+   println('completeLines = \'' + $sfer.completeLines->concatenate($sfer.recentLines)->plus()->replace('\n', '\\n') + '\'');
    println('--------------------------------------------------');
    $sfer;
 }
 
 function <<access.private>> meta::external::language::java::serialization::addText(sfer:Stringifier[1], s:String[1]): Stringifier[1]
 {
-  if($s == '',
+  if($s->length() < 1,
     | $sfer,
   | if( $sfer.pending->endsWith('\n'),
-    | let lineEnded = $sfer->finishLine();
-      ^$lineEnded(
-        completeLines += $sfer.pending,
-        pending       = '',
-        wipLine       += $s 
-      );,
+    | let lineEnded = $sfer->finishLine($sfer.pending);
+      ^$lineEnded(wipLine = $lineEnded.wipLine + $s);,
   | ^$sfer(
-      wipLine += $sfer.pending->concatenate($s),
+      wipLine = $sfer.wipLine + $sfer.pending + $s,
       pending = ''
     )
   ))
@@ -715,10 +714,24 @@ function <<access.private>> meta::external::language::java::serialization::addTe
 
 function <<access.private>> meta::external::language::java::serialization::finishLine(sfer:Stringifier[1]): Stringifier[1]
 {
-  ^$sfer(
-      completeLines += $sfer.wipLine->plus()->applyFolds(0, 100),
-      pending       = '',
-      wipLine       = $sfer.tabString
+  $sfer->finishLine('');
+}
+
+function <<access.private>> meta::external::language::java::serialization::finishLine(sfer:Stringifier[1], terminator:String[1]): Stringifier[1]
+{
+  let appended = $sfer->appendCompleted($sfer.wipLine->applyFolds(0, 100) + $terminator);
+  ^$appended(
+      pending = '',
+      wipLine = $sfer.tabString
+  );
+}
+
+// recentLines bounds the copying: appending to completeLines on every line is quadratic in the size of the class
+function <<access.private>> meta::external::language::java::serialization::appendCompleted(sfer:Stringifier[1], s:String[1]): Stringifier[1]
+{
+  if($sfer.recentLines->length() > 1024,
+    | ^$sfer(completeLines += $sfer.recentLines, recentLines = $s),
+    | ^$sfer(recentLines = $sfer.recentLines + $s)
   )
 }
 
@@ -769,7 +782,7 @@ function <<access.private>> meta::external::language::java::serialization::pendi
 
 function <<access.private>> meta::external::language::java::serialization::semicolon(sfer:Stringifier[1]): Stringifier[1]
 {
-   ^$sfer(wipLine += ';', pending='');
+   ^$sfer(wipLine = $sfer.wipLine + ';', pending='');
 }
 
 function <<access.private>> meta::external::language::java::serialization::openParentheses(sfer:Stringifier[1]): Stringifier[1]
@@ -779,7 +792,7 @@ function <<access.private>> meta::external::language::java::serialization::openP
 
 function <<access.private>> meta::external::language::java::serialization::closeParentheses(sfer:Stringifier[1]): Stringifier[1]
 {
-   ^$sfer(wipLine += ')', pending='');
+   ^$sfer(wipLine = $sfer.wipLine + ')', pending='');
 }
 
 function <<access.private>> meta::external::language::java::serialization::space(sfer:Stringifier[1]): Stringifier[1]
@@ -808,7 +821,7 @@ function <<access.private>> meta::external::language::java::serialization::blank
 
 function <<access.private>> meta::external::language::java::serialization::blankLine(sfer:Stringifier[1]): Stringifier[1]
 {
-   if($sfer.pending->endsWith('\n\n') || $sfer.wipLine->plus()->matches(' *\\{'),  //  TODO: Extra new lines  are ok so this can be dropped
+   if($sfer.pending->endsWith('\n\n') || ($sfer.wipLine->contains('{') && $sfer.wipLine->matches(' *\\{')),  //  TODO: Extra new lines  are ok so this can be dropped
           | $sfer,
          |
       if($sfer.pending->endsWith('\n'),
@@ -820,9 +833,14 @@ function <<access.private>> meta::external::language::java::serialization::blank
 function <<access.private>> meta::external::language::java::serialization::foldable(sfer:Stringifier[1]): Stringifier[1]
 {
    if($sfer.foldLevel <= 99,   //  TODO: function folding can be skipped unless in pretty mode
-      | $sfer->addText(format('|FOLD%02d|', $sfer.foldLevel)),
+      | $sfer->addText(foldMarker($sfer.foldLevel)),
       | $sfer
    );
+}
+
+function <<access.private>> meta::external::language::java::serialization::foldMarker(level:Integer[1]): String[1]
+{
+   if($level < 10, | '|FOLD0' + $level->toString() + '|', | '|FOLD' + $level->toString() + '|');
 }
 
 function <<access.private>> meta::external::language::java::serialization::subFoldingStart(sfer:Stringifier[1]): Stringifier[1]
@@ -906,17 +924,18 @@ function <<access.private>> meta::external::language::java::serialization::joini
 
 function <<access.private>> meta::external::language::java::serialization::initialize(sfer:Stringifier[1], j:meta::external::language::java::metamodel::Class[1]): Stringifier[1]
 {
-   ^$sfer(stack=$j, wipLine='', pending='', completeLines='');
+   ^$sfer(stack=$j, wipLine='', pending='', recentLines='', completeLines=[]);
 }
 
 function meta::external::language::java::serialization::getResult(sfer:Stringifier[1]): String[1]
 {
-   $sfer->finishLine().completeLines->plus();
+   let finished = $sfer->finishLine();
+   $finished.completeLines->concatenate($finished.recentLines)->plus();
 }
 
 function <<access.private>> meta::external::language::java::serialization::applyFolds(s:String[1], level:Integer[1], maxLength:Integer[1]): String[1]
 {
-   let levelSplit = format('|FOLD%02d|', $level); //TODO: Skip when not on pretty mode
+   let levelSplit = foldMarker($level); //TODO: Skip when not on pretty mode
 
    if($s == 'BLANKLINE',
      | '',
