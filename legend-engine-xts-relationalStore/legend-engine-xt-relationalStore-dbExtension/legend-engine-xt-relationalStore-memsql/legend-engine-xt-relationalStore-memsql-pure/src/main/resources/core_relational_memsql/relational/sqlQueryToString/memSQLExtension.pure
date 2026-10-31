@@ -50,6 +50,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       ddlCommandsTranslator = getDDLCommandsTranslator(),
       processTempTableName = processTempTableNameDefault_String_1__DatabaseConnection_1__String_1_,
       pureTypeToDatabaseTypeConverter = convert_GenericType_1__DataType_1_,
+      dataTypeToSqlText = getColumnTypeSqlTextMemSQL_DataType_1__String_1_,
       buildDummyConnection = buildDummyConnection__RelationalDatabaseConnection_1_
    );
 }
@@ -430,7 +431,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
                 createTable =  translateCreateTableStatementMemSQL_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementMemSQL_DropTableSQL_1__DbConfig_1__String_1_,
                 loadTable =  loadValuesToDbTableMemSQL_LoadTableSQL_1__DbConfig_1__String_MANY_,
-                createPipeline = createPipeline_CreatePipelineSQL_1__DbConfig_1__String_1_
+                createPipeline = createPipeline_CreatePipelineSQL_1__DbConfig_1__String_1_,
+                createView = createView_CreateViewSQL_1__DbConfig_1__Extension_MANY__String_1_,
+                createFunction = createFunction_CreateFunctionSQL_1__DbConfig_1__Extension_MANY__String_1_
               );
 }
 
