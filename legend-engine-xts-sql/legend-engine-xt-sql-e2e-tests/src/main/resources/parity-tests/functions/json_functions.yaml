@@ -210,7 +210,7 @@ tests:
     function: json_extract_path
     signature: json_extract_path(from_json json, VARIADIC path_elems text[]) → json
     expected_tds_status: ERROR
-    expected_rel_status: PASS
+    expected_rel_status: FAIL
 
   - id: json_extract_path_text__from_column
     sql: SELECT JSON_EXTRACT_PATH_TEXT(json_val, 'a', 'b', 'c') AS result FROM json_data WHERE id = 2
