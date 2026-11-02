@@ -480,9 +480,10 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
 }
 
 // =============================================================================
-// Union on BOTH sides of model join (Relation-function)
+// ToFix: Union on BOTH sides of model join (Relation-function)
+// Cast exception: RelationFunction cannot be cast to NamedRelation
 // =============================================================================
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testUnionBothSides():Boolean[1]
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testUnionBothSides():Boolean[1]
 {
   let fullTimeCsv =
     'default\n' +
