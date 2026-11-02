@@ -378,6 +378,7 @@ public final class EMITTestSuiteBuilder
         {
             tasks.add(test(snapshot::crossRead, verboseNames, label, containerName, "Protocol Cross-Read"));
         }
+        tasks.add(test(snapshot::writeComplete, verboseNames, label, containerName, "Complete"));
         return DynamicContainer.dynamicContainer(containerName, tasks.build());
     }
 
