@@ -218,7 +218,7 @@ public class GraphQLGrammarComposer
 
     public String renderField(Field field, String space)
     {
-        return (field.alias == null ? "" : field.alias + " ") + field.name
+        return (field.alias == null ? "" : field.alias + ": ") + field.name
                 + (field.arguments.isEmpty() ? "" : "(" + ListIterate.collect(field.arguments, a -> a.name + ": " + renderValue(a.value)).makeString(", ") + ")")
                 + (field.directives.isEmpty() ? "" : " " + ListIterate.collect(field.directives, this::renderDirective).makeString(" "));
     }

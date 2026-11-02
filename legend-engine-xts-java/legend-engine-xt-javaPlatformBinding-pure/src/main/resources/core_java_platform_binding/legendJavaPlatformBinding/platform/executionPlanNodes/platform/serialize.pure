@@ -149,15 +149,19 @@ Class meta::pure::executionPlan::platformBinding::legendJava::platform::serializ
    fieldName : String[1];
    fieldSet  : PropertyGraphFetchTree[*];
 
+   isCheckedWrapper() {
+      $this.property->isCheckedWrapperProperty();
+   }: Boolean[1];
+
    returnType() {
-      if($this.property == checkedProperty('value') || $this.property == checkedProperty('source'),
+      if($this.isCheckedWrapper(),
          | $this.fieldSet->at(0).subType->toOne(),
          | $this.property->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()
       );
    }:meta::pure::metamodel::type::Type[1];
 
    defaultTree()  {
-      if($this.property == checkedProperty('value') || $this.property == checkedProperty('source'),
+      if($this.isCheckedWrapper(),
          | $this.fieldSet->at(0),
          | $this.fieldSet->filter(t| $t.subType->isEmpty())->first()
       );
@@ -165,7 +169,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::platform::serializ
 
 
    propertySubTypeTrees() {
-      if($this.property == checkedProperty('value') || $this.property == checkedProperty('source'),
+      if($this.isCheckedWrapper(),
          | $this.fieldSet->tail(),
          | $this.fieldSet->filter(t| $t.subType->isNotEmpty());
       );
@@ -220,6 +224,11 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
   ])->concatenate($propertyTreesForRootSubTypeTrees);
 }
 
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::isCheckedWrapperProperty(property:AbstractProperty<Any>[1]): Boolean[1]
+{
+   $property == checkedProperty('value') || $property == checkedProperty('source');
+}
+
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::groupByFields(tree:GraphFetchTree[1]): GraphFetchTree[1]
 {
    let byFieldName        = $tree.subTrees->cast(@PropertyGraphFetchTree)->groupBy(st| $st->subTreeFieldName());
@@ -240,7 +249,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
          fieldSet   = $subTrees->map(st| $st->groupByFields())->cast(@PropertyGraphFetchTree),
          property   = $property,
          parameters = $subTrees->at(0).parameters,
-         subType    = if($property == checkedProperty('value') || $property == checkedProperty('source'), |$subTrees->at(0).subType, |[])
+         subType    = if($property->isCheckedWrapperProperty(), |$subTrees->at(0).subType, |[])
       );
    );
    let subTypeTrees = $tree.subTypeTrees->map(stt |  $stt->groupByFields());
@@ -285,29 +294,61 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    if($defaultTree->isNotEmpty() && $propertySubTypeTrees->isEmpty(),
       {|
          let method         = treeSerialiseMethod($jClass, $path, $class, $defaultTree->toOne(), $conventions, $debug);
-         let subTreeMethods = $defaultTree.subTrees->concatenate($defaultTree.subTypeTrees->map(st | $st.subTrees))->cast(@SerializePropertyGraphFetchTree)
+         let defaultSubTreeMethods = $defaultTree.subTrees->cast(@SerializePropertyGraphFetchTree)
             ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
             ->map(spgft| treeSerialiseMethods($jClass, $path->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $debug->indent()));
-         $method->concatenate($subTreeMethods);
-      }
-      ,
-      {|
-         let convertedSubTypeTrees = $propertySubTypeTrees->map(pst | ^SubTypeGraphFetchTree(subTypeClass = $pst.subType->toOne(), subTrees = $pst.subTrees));
-         let effectiveTree = if($defaultTree->isNotEmpty(),
-            | let defaultTreeOnly = $defaultTree->toOne();
-              ^$defaultTreeOnly(subTypeTrees = $defaultTreeOnly.subTypeTrees->concatenate($convertedSubTypeTrees));,
-            | ^$tree(subTrees = [], subTypeTrees = $convertedSubTypeTrees)
-         );
-         let method = treeSerialiseMethod($jClass, $path, $class, $effectiveTree, $conventions, $debug);
-         let defaultSubTreeMethods = $effectiveTree.subTrees->cast(@SerializePropertyGraphFetchTree)
-            ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
-            ->map(spgft| treeSerialiseMethods($jClass, $path->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $debug->indent()));
-         let subTypeSubTreeMethods = $effectiveTree.subTypeTrees->toIndexed()->map(ist |
+         let subTypeSubTreeMethods = $defaultTree.subTypeTrees->toIndexed()->map(ist |
             $ist.second.subTrees->cast(@SerializePropertyGraphFetchTree)
                ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
                ->map(spgft| treeSerialiseMethods($jClass, $path->add('subType'+$ist.first->toString())->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $debug->indent()))
          );
          $method->concatenate($defaultSubTreeMethods)->concatenate($subTypeSubTreeMethods);
+      }
+      ,
+      {|
+         let checkedWrapper = $tree->match([spgft:SerializePropertyGraphFetchTree[1] | $spgft.isCheckedWrapper(), other:GraphFetchTree[1] | false]);
+         if($checkedWrapper || $defaultTree->isEmpty(),
+            |
+            let indexed            = $propertySubTypeTrees->toIndexed();
+            let subTypeMethods     = $indexed->map(ist| list(treeSerialiseMethods($jClass, $path->add('subType'+$ist.first->toString()), $ist.second.subType->toOne(), $ist.second, $conventions, $debug)));
+            let subTypesAndMethods = $propertySubTypeTrees.subType->zip($subTypeMethods->map(l| $l.values->at(0).first));
+
+            let name          = treeSerialiseMethodName($path, $class, false, $conventions);
+            let value         = j_parameter($conventions->className($class), 'value');
+            let testsAndThens = list($subTypesAndMethods->map(tm|
+                                   let jType = $conventions->pureTypeToJavaType($tm.first, PureOne);
+                                   pair(
+                                      $value->j_instanceof($jType),
+                                      j_this($jClass)->j_invoke($tm.second, $value->j_cast($jType))
+                                   );
+                                ));
+            let else          = $defaultTree->map(t |treeSerialiseMethod($jClass, $path, $class, $t, $conventions, $debug)).second;
+            let defaultSubTreeMethods = $defaultTree.subTrees->cast(@SerializePropertyGraphFetchTree)
+               ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
+               ->map(spgft| treeSerialiseMethods($jClass, $path->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $debug->indent()));
+
+            let method        = pair(javaMethod('public', javaVoid(), $name, [$value]), j_if($testsAndThens, $else));
+
+            $method->concatenate($defaultSubTreeMethods)->concatenate($subTypeMethods.values);
+            ,
+            |
+            let convertedSubTypeTrees = $propertySubTypeTrees->map(pst | ^SubTypeGraphFetchTree(subTypeClass = $pst.subType->toOne(), subTrees = $pst.subTrees));
+            let effectiveTree = if($defaultTree->isNotEmpty(),
+               | let defaultTreeOnly = $defaultTree->toOne();
+                 ^$defaultTreeOnly(subTypeTrees = $defaultTreeOnly.subTypeTrees->concatenate($convertedSubTypeTrees));,
+               | ^$tree(subTrees = [], subTypeTrees = $convertedSubTypeTrees)
+            );
+            let method = treeSerialiseMethod($jClass, $path, $class, $effectiveTree, $conventions, $debug);
+            let defaultSubTreeMethods = $effectiveTree.subTrees->cast(@SerializePropertyGraphFetchTree)
+               ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
+               ->map(spgft| treeSerialiseMethods($jClass, $path->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $debug->indent()));
+            let subTypeSubTreeMethods = $effectiveTree.subTypeTrees->toIndexed()->map(ist |
+               $ist.second.subTrees->cast(@SerializePropertyGraphFetchTree)
+                  ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
+                  ->map(spgft| treeSerialiseMethods($jClass, $path->add('subType'+$ist.first->toString())->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $debug->indent()))
+            );
+            $method->concatenate($defaultSubTreeMethods)->concatenate($subTypeSubTreeMethods);
+         );
       }
    );
 }
@@ -352,7 +393,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 {
   let property     = $spgft.property;
   let type         = $spgft.returnType;
-  if($property == checkedProperty('value') || $property == checkedProperty('value') || $property == checkedProperty('source'),
+  if($spgft.isCheckedWrapper(),
     | $value->j_invoke($conventions->getterName($property), [], javaWildcard())->j_cast($conventions->pureTypeToJavaType($type, PureOne)),
     {|
         $value->j_invoke(

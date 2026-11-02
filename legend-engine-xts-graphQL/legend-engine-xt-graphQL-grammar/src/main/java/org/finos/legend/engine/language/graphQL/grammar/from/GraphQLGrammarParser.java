@@ -314,7 +314,7 @@ public class GraphQLGrammarParser
         {
             GraphQLParser.FieldContext fieldContext = selectionContext.field();
             Field field = new Field();
-            field.alias = fieldContext.alias() == null ? null : fieldContext.alias().getText();
+            field.alias = fieldContext.alias() == null ? null : fieldContext.alias().name().getText();
             field.name = fieldContext.name().getText();
             field.arguments = fieldContext.arguments() == null ? Collections.emptyList() : ListIterate.collect(fieldContext.arguments().argument(), this::visitArgument);
             field.selectionSet = fieldContext.selectionSet() == null ? Collections.emptyList() : ListIterate.collect(fieldContext.selectionSet().selection(), this::visitSelectionSet);
