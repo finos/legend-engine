@@ -57,6 +57,9 @@ Class meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJ
 
    {doc.doc = 'Whether this store needs this-threaded qualified-property routing applied during in-memory graph fetch, for the InstanceSetImplementation owning the property currently being processed'}
    supportsThisThreadedQualifiedPropertyRouting : Function<{Nil[1] -> Boolean[1]}>[*];
+
+   {doc.doc = 'Whether serializing a property owned by this store merges its plain fields with its subType() branches, instead of emitting only the matching subType branch'}
+   requiresUnionSubtypeDispatch : Function<{Nil[1] -> Boolean[1]}>[*];
 }
 
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::prepareForInMemoryGraphFetch(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], debug: DebugContext[1]):GenerationContext[1]

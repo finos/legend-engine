@@ -57,6 +57,11 @@ function meta::external::store::graphQL::executionPlan::platformBinding::legendJ
                egsi: EmbeddedGraphQLSetImplementation[1] | true
             ],
 
+            requiresUnionSubtypeDispatch = [
+               rgi: RootGraphQLInstanceSetImplementation[1] | true,
+               egsi: EmbeddedGraphQLSetImplementation[1] | true
+            ],
+
             mappingTransformExtractors = [
                {gpm: GraphQLPropertyMapping[1] |
                   let dummyLambda = {|'ok'};

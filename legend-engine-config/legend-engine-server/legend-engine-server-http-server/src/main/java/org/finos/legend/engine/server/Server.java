@@ -115,6 +115,7 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.stores.graphQLStore.api.GraphQLGenerationApi;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
@@ -396,6 +397,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new GraphQLGenerationService(modelManager));
         environment.jersey().register(new JSONSchemaGenerationService(modelManager));
         environment.jersey().register(new AvroGenerationService(modelManager));
+        environment.jersey().register(new GraphQLGenerationApi(credentialProviderProvider));
 
         // Execution
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));

@@ -18,7 +18,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.code.core.StoreLegendPureCoreExtension;
 
-public class GraphQLStoreLegendPureCoreExtension implements StoreLegendPureCoreExtension
+public class GraphQLStoreJavaBindingLegendPureCoreExtension implements StoreLegendPureCoreExtension
 {
     @Override
     public String functionFile()

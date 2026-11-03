@@ -30,8 +30,8 @@ public class TestExtensionAvailable
     public void testServiceAvailable()
     {
         MutableList<LegendPureCoreExtension> extensions = PureCoreExtensionLoader.extensions();
-        Assert.assertEquals(1, extensions.selectInstancesOf(GraphQLStoreLegendPureCoreExtension.class).size());
-        List<String> types = extensions.selectInstancesOf(GraphQLStoreLegendPureCoreExtension.class).get(0)
+        Assert.assertEquals(1, extensions.selectInstancesOf(GraphQLStoreJavaBindingLegendPureCoreExtension.class).size());
+        List<String> types = extensions.selectInstancesOf(GraphQLStoreJavaBindingLegendPureCoreExtension.class).get(0)
                 .extraPureCoreExtensions(PureModel.getCorePureModel().getExecutionSupport())
                 .toList().collect(Root_meta_pure_extension_Extension::_type).sortThis();
         Assert.assertEquals(2, types.size());
