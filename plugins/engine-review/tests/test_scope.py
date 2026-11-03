@@ -32,6 +32,18 @@ def test_every_configured_module_exists_in_the_reactor():
     assert [m for m in configured if m not in reactor.by_path] == []
 
 
+def test_discovery_finds_exactly_the_configured_suites():
+    config = scope.load_config()
+    found = scope.suites(config, modules.Reactor(REPO))
+    assert sorted(found) == sorted(config["suites"])
+    assert all(s["tests"] == scope.DEFAULT_TESTS for s in found.values())
+    assert found["crossfeature"]["lenses"] == []
+
+
+def test_engine_repo_resolves_to_the_bundled_config():
+    assert scope.resolve_config(REPO)["source"] == scope.CONFIG
+
+
 def test_relational_core_change_reaches_the_relational_suite():
     reactor = modules.Reactor(REPO)
     changed = reactor.module_of("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/"
