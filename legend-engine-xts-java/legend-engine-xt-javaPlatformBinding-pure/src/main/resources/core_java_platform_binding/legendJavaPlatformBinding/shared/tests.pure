@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::serialization::tests::*;
 
@@ -39,4 +40,43 @@ function <<test.Test>> meta::pure::executionPlan::platformBinding::legendJava::s
         '}',
         javaClass('org.finos.test.Test')->addClassMethodsCache()->inferImports()
   );
+}
+
+function <<test.Test>> meta::pure::executionPlan::platformBinding::legendJava::shared::tests::testSanitizeInstanceCreationVariablesRejectsNonNewExpression(): Boolean[1]
+{
+   let sfe = ^SimpleFunctionExpression(
+      func             = meta::pure::functions::string::length_String_1__Integer_1_,
+      genericType      = ^GenericType(rawType = Integer),
+      importGroup      = system::imports.children->at(0)->cast(@ImportGroup),
+      multiplicity     = PureOne,
+      parametersValues = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = 'x')
+   );
+
+   assertError(
+      | $sfe->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::sanitizeInstanceCreationVariables(),
+      'Cannot sanitize a $variable embedded inside a non-instance-creation expression (function \'length\') - only inline instance creation (eg. ^SomeClass(field=$variable)) is supported here.'
+   );
+}
+
+function <<test.Test>> meta::pure::executionPlan::platformBinding::legendJava::shared::tests::testSanitizeInstanceCreationVariablesSubstitutesDummyForEmbeddedVariable(): Boolean[1]
+{
+   let embeddedVariable = ^VariableExpression(genericType = ^GenericType(rawType = String), multiplicity = PureOne, name = 'v');
+   let keyExpression     = ^KeyExpression(key = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = 'key'), expression = $embeddedVariable);
+   let sfe = ^SimpleFunctionExpression(
+      func             = meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_,
+      genericType      = ^GenericType(rawType = String),
+      importGroup      = system::imports.children->at(0)->cast(@ImportGroup),
+      multiplicity     = PureOne,
+      parametersValues = [
+         ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = String),
+         ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = ''),
+         ^InstanceValue(genericType = ^GenericType(rawType = KeyExpression), multiplicity = PureOne, values = $keyExpression)
+      ]
+   );
+
+   let sanitized = $sfe->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::sanitizeInstanceCreationVariables();
+
+   let sanitizedKeyExpression = $sanitized.parametersValues->evaluateAndDeactivate()->at(2)->cast(@InstanceValue).values->at(0)->cast(@KeyExpression);
+   assert($sanitizedKeyExpression.expression->instanceOf(InstanceValue), | 'expected the embedded $variable to be replaced with a literal InstanceValue');
+   assertEquals('', $sanitizedKeyExpression.expression->cast(@InstanceValue).values->at(0));
 }
