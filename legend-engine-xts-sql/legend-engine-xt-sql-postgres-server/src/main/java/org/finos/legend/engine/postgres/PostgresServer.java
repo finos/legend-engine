@@ -302,7 +302,7 @@ public class PostgresServer
         {
             HttpConfiguration httpsConfig = new HttpConfiguration();
             httpsConfig.setSecureScheme("https");
-            httpsConfig.addCustomizer(new SecureRequestCustomizer(false));
+            httpsConfig.addCustomizer(new SecureRequestCustomizer(this.sslConfig.isSniHostCheck()));
 
             SslContextFactory.Server sslContextFactory = buildSslContextFactory(this.sslConfig);
             connector = new ServerConnector(
