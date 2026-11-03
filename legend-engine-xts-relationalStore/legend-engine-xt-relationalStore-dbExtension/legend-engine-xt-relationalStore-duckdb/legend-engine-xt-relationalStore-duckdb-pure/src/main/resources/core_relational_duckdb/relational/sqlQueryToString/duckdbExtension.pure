@@ -187,7 +187,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   [
     dynaFnToSql('array_max',              $allStates,            ^ToSql(format='array_aggregate(%s, \'max\')')),
     dynaFnToSql('array_min',              $allStates,            ^ToSql(format='array_aggregate(%s, \'min\')')),
-    dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='coalesce(array_aggregate(%s, \'sum\'), 0)')),
+    dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='array_aggregate(%s, \'sum\')')),
     dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='array_sort(%s)')),
     dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='array_reverse(%s)')),
     dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(json_array_length(cast(%s as JSON)), 0)')),
@@ -298,7 +298,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='ifnull(to_json(%s), \'null\'::json)')),
     dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='list_value(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='MAP {%s}', transform={p:String[*] | range(0, $p->size(), 2)->map(i | $p->at($i) + ': ' + $p->at($i + 1))->joinStrings(', ')})),
-    dynaFnToSql('variantTo',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | if($p->at(1)->startsWith('VARCHAR') && !$p->at(1)->endsWith('[]'), |'(%s->>\'$\')'->format($p->at(0)), |'cast(%s as %s)'->format($p))})),
+    dynaFnToSql('variantTo',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | if($p->at(1)->startsWith('VARCHAR'), |'(%s->>\'$\')'->format($p->at(0)), |'cast(%s as %s)'->format($p))})),
     dynaFnToSql('keys',                   $allStates,            ^ToSql(format='map_keys(%s)')),
     dynaFnToSql('values',                 $allStates,            ^ToSql(format='map_values(%s)')),    
     dynaFnToSql('mapConcatenate',         $allStates,           ^ToSql(format='map_concat(%s, %s)')),  
@@ -722,11 +722,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
    // whose array is empty or absent would simply disappear. Substituting a singleton [NULL]
    // keeps the row and yields a null flattened value, which is the outer-flatten semantics the
    // other dialects get from their own flatten operators.
-   let list = $s.navigation->match([
-      // A semi-structured column holds a JSON document, e.g. the array a union of semi-structured branches exposes.
-      t: TableAliasColumn[1] | if($t.column.type->isPlainDataTypeForDuckDB(), | $t->asListForDuckDB($sgc), | 'cast(' + $t->processOperation($sgc) + ' as JSON[])'),
-      e: RelationalOperationElement[1] | $e->asListForDuckDB($sgc)
-   ]);
+   let list = $s.navigation->asListForDuckDB($sgc);
    '(select unnest(if(len(' + $list + ') > 0, ' + $list + ', [NULL]), recursive := false) as VALUE)';
 }
 
@@ -740,11 +736,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::asListForDuckDB(element: RelationalOperationElement[1], sgc: SqlGenerationContext[1], elementType: String[1]): String[1]
 {
+   let processed = $element->processOperation($sgc);
    if($element->isSemiStructuredValueForDuckDB(),
-      // The navigation must stay JSON: unquoted to text, the array no longer casts to a list.
-      | let document = $element->match([s: SemiStructuredObjectNavigation[1] | ^$s(avoidCastIfPrimitive = true), r: RelationalOperationElement[1] | $r]);
-        'cast(' + $document->processOperation($sgc) + ' as ' + $elementType + '[])';,
-      | $element->processOperation($sgc));
+      | 'cast(' + $processed + ' as ' + $elementType + '[])',
+      | $processed);
 }
 
 // True when the element renders as a JSON scalar and therefore has to be cast before it can be
@@ -791,41 +786,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
                | $propertyAccess,
                | '(%s->\'$[%s]\')'->format([$propertyAccess, $p.index->toOne()->cast(@Literal).value->toString()]));,
       a: SemiStructuredArrayElementAccess[1] |
-            if($a.operand->isTypedListForDuckDB(),
-               | '(%s[%s])'->format([$processedOperand, ($a.index->cast(@Literal).value->toString()->parseInteger() + 1)->toString()]),
-               | '(%s->\'$[%s]\')'->format([$processedOperand, $a.index->cast(@Literal).value->toString()]))
+            '(%s->\'$[%s]\')'->format([$processedOperand, $a.index->cast(@Literal).value->toString()])
    ]);
 
    // '->' yields JSON, so a navigated string comes back still quoted. Cast to the navigated
-   // type the way Snowflake and Databricks already do. An element of a typed list is already
-   // a plain value, and '->>' would try to parse it as JSON.
-   if($s.avoidCastIfPrimitive == true || $s->match([a: SemiStructuredArrayElementAccess[1] | $a.operand->isTypedListForDuckDB(), n: SemiStructuredObjectNavigation[1] | false]),
-      | $navigation,
-      | $navigation->castForDuckDBSemiStructuredData($s.returnType));
-}
-
-// True when the element renders as a DuckDB list of plain values rather than as JSON. Such a list
-// is indexed from 1 by subscript, and its elements must not be unquoted again.
-function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::isTypedListForDuckDB(element: RelationalOperationElement[1]): Boolean[1]
-{
-   $element->match([
-      f: FilterRelationalLambda[1] | $f.parameters->at(0).type->isPlainDataTypeForDuckDB(),
-      d: DynaFunction[1] |
-            if($d.name->in(['variantTo', 'cast']) && ($d.parameters->size() > 1) && $d.parameters->at(1)->instanceOf(meta::relational::metamodel::DataTypeInfo),
-               | let dataType = $d.parameters->at(1)->cast(@meta::relational::metamodel::DataTypeInfo).dataType;
-                 $dataType->instanceOf(meta::relational::metamodel::datatype::Array)
-                   && $dataType->cast(@meta::relational::metamodel::datatype::Array).type->isNotEmpty()
-                   && $dataType->cast(@meta::relational::metamodel::datatype::Array).type->toOne()->isPlainDataTypeForDuckDB();,
-               | $d.name->in(['array_sort', 'array_reverse', 'array_append', 'array_slice', 'array_drop', 'array_take', 'array_init', 'array_tail', 'array_distinct', 'array_concatenate'])
-                   && $d.parameters->isNotEmpty()
-                   && $d.parameters->at(0)->isTypedListForDuckDB()),
-      a: RelationalOperationElement[1] | false
-   ]);
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::isPlainDataTypeForDuckDB(type: meta::relational::metamodel::datatype::DataType[1]): Boolean[1]
-{
-   !($type->instanceOf(meta::relational::metamodel::datatype::SemiStructured) || $type->instanceOf(meta::relational::metamodel::datatype::Json));
+   // type the way Snowflake and Databricks already do.
+   if($s.avoidCastIfPrimitive == true, | $navigation, | $navigation->castForDuckDBSemiStructuredData($s.returnType));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::castForDuckDBSemiStructuredData(elementAccess:String[1], type:Type[0..1]): String[1]
@@ -862,29 +828,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   // seed such as '' into JSON.
   let accumulatorType = $sgc.dbConfig.dataTypeToSqlText($lambda.parameters->at(1).type);
   // reduce requires the seed and the list element to share a type, so a JSON element type
-  // would force the seed to JSON and fail on values such as ''. A text accumulator therefore
-  // sees the elements as text; the body re-casts each element to JSON where it navigates.
-  // Documents do not convert to a number, so any other accumulator over documents shares JSON
-  // with them instead: the seed and each step go through to_json, and the accumulator's own
-  // cast reads the value back out. The collection may be a nested filter/apply rather than a
-  // bare navigation, so key off the element type rather than the shape of the expression.
-  let elementsAreDocuments = $lambda.parameters->at(0).type->instanceOf(meta::relational::metamodel::datatype::SemiStructured);
-  let accumulatesAsJson = $elementsAreDocuments
-                            && !($lambda.parameters->at(1).type->instanceOf(meta::relational::metamodel::datatype::Varchar)
-                                 || $lambda.parameters->at(1).type->instanceOf(meta::relational::metamodel::datatype::Char));
-  let foldCollection = if($accumulatesAsJson,
-                          | $lambda.parameters->at(0).value->asListForDuckDB($sgc, 'JSON'),
-                          | if($elementsAreDocuments,
-                               | 'cast(' + $lambda.parameters->at(0).value->processOperation($sgc) + ' as ' + $accumulatorType + '[])',
-                               | $lambda.parameters->at(0).value->asListForDuckDB($sgc, 'VARCHAR')));
-  let body = $lambda.body->processOperation($sgc);
-  let seed = 'cast(' + $lambda.parameters->at(1).value->processOperation($sgc) + ' as ' + $accumulatorType + ')';
-  'cast(reduce(%s, lambda "%s", "%s" : %s, %s) as %s)'->format([
+  // would force the seed to JSON and fail on values such as ''. Present the elements as the
+  // accumulator type; the body re-casts each element to JSON where it navigates. The
+  // collection may be a nested filter/apply rather than a bare navigation, so key off the
+  // element type rather than the shape of the expression.
+  let foldCollection = if($lambda.parameters->at(0).type->instanceOf(meta::relational::metamodel::datatype::SemiStructured),
+                          | 'cast(' + $lambda.parameters->at(0).value->processOperation($sgc) + ' as ' + $accumulatorType + '[])',
+                          | $lambda.parameters->at(0).value->asListForDuckDB($sgc, 'VARCHAR'));
+  'cast(reduce(%s, lambda "%s", "%s" : %s, cast(%s as %s)) as %s)'->format([
     $foldCollection,
     $lambda.parameters->at(1).name,
     $lambda.parameters->at(0).name,
-    if($accumulatesAsJson, | 'to_json(' + $body + ')', | $body),
-    if($accumulatesAsJson, | 'to_json(' + $seed + ')', | $seed),
+    $lambda.body->processOperation($sgc),
+    $lambda.parameters->at(1).value->processOperation($sgc),
+    $accumulatorType,
     $accumulatorType
   ]);
 }
