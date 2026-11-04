@@ -183,6 +183,16 @@ public class TestGraphQLRoundtrip
     }
 
     @Test
+    public void testFieldAliasRoundtrip()
+    {
+        check("query getUser {\n" +
+                "  myAlias: user {\n" +
+                "    firstname\n" +
+                "  }\n" +
+                "}");
+    }
+
+    @Test
     public void testDirectiveParsingError()
     {
         try

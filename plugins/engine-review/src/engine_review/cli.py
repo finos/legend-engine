@@ -29,12 +29,17 @@ def _repo_root(path):
 
 
 def _default_base(repo):
-    for candidate in ("origin/master", "master"):
+    candidates = []
+    try:
+        candidates.append(scopelib.git(repo, "symbolic-ref", "--short", "refs/remotes/origin/HEAD").strip())
+    except subprocess.CalledProcessError:
+        pass
+    for candidate in candidates + ["origin/master", "master", "origin/main", "main"]:
         try:
             return scopelib.git(repo, "merge-base", candidate, "HEAD").strip()
         except subprocess.CalledProcessError:
             continue
-    raise SystemExit("cannot find master or origin/master; pass --base")
+    raise SystemExit("cannot find the default branch (origin/HEAD, master or main); pass --base")
 
 
 def _write_report(out, result, manifest):
@@ -49,7 +54,7 @@ def cmd_scope(args):
     repo = _repo_root(args.repo)
     base = scopelib.resolve(repo, args.base or _default_base(repo))
     head = scopelib.resolve(repo, args.head)
-    result = scopelib.classify(repo, base, head)
+    result = scopelib.classify(repo, base, head, scopelib.resolve_config(repo, args.config))
     if args.json:
         print(json.dumps(result, indent=2))
         return
@@ -62,13 +67,15 @@ def cmd_scope(args):
             print("  ... %d more" % (len(hits) - 25))
     for spot in result["blind_spots"]:
         print("\n[blind spot] %s\n  %s" % (spot["note"], "\n  ".join(spot["paths"][:10])))
-    print("\nEMIT suites: %s" % (", ".join(result["suites"]) or "none"))
+    print("\nEMIT suites: %s  (available: %s)" % (", ".join(result["suites"]) or "none", ", ".join(result["available_suites"]) or "none"))
+    print("config: %s" % result["config"])
 
 
 def cmd_run(args):
     repo = _repo_root(args.repo)
     base = args.base or _default_base(repo)
-    out, manifest = runlib.run(repo, base, args.head, suites=args.suites, rebuild=args.rebuild, jobs=args.jobs, out=args.out, forward=not args.no_forward)
+    out, manifest = runlib.run(repo, base, args.head, suites=args.suites, rebuild=args.rebuild, jobs=args.jobs, out=args.out,
+                               forward=not args.no_forward, config=scopelib.resolve_config(repo, args.config), engine_repo=args.engine_repo)
     forward = os.path.join(out, "base-xread")
     result = comparelib.compare(os.path.join(out, "base"), os.path.join(out, "head"), forward if os.path.isdir(forward) else None)
     _write_report(out, result, manifest)
@@ -76,19 +83,8 @@ def cmd_run(args):
 
 def cmd_snapshot(args):
     repo = _repo_root(args.repo)
-    config = scopelib.load_config()
-    suites = args.suites or [n for n, s in config["suites"].items() if s["lenses"]]
-    modules = [config["suites"][n]["module"] for n in suites]
-    sha = scopelib.resolve(repo, args.rev)
-    tree = repo if sha == scopelib.WORKTREE else runlib.prepare_tree(repo, sha)
-    runlib.overlay(repo, tree, modules, config["instrument_files"])
-    key = "worktree" if sha == scopelib.WORKTREE else sha[:runlib.SHORT]
-    maven = runlib.Maven(tree, os.path.join(runlib.CACHE, "m2", args.repo_key or key), [runlib.M2], os.path.join(args.out, "logs"), args.jobs)
-    if not runlib._product_built(maven.repo, modules):
-        maven.run("product", ["clean", "install", "-DskipTests", "-pl", ",".join(modules), "-am"])
-    maven.run("instrument", ["clean", "install", "-DskipTests", "-pl", ",".join(config["framework"])], parallel=False)
-    runlib.snapshot(maven, "snapshot", [(config["suites"][n]["module"], config["suites"][n]["tests"]) for n in suites], os.path.join(args.out, "snapshot"), cross_read=args.cross_read)
-    print(os.path.join(args.out, "snapshot"))
+    print(runlib.snapshot_one(repo, args.rev, args.out, suites=args.suites, repo_key=args.repo_key, jobs=args.jobs, cross_read=args.cross_read,
+                              config=scopelib.resolve_config(repo, args.config), engine_repo=args.engine_repo))
 
 
 def cmd_compare(args):
@@ -108,21 +104,24 @@ def main(argv=None):
 
     scope = sub.add_parser("scope", help="classify the changes between two revisions into review lenses")
     scope.add_argument("--repo", default=".")
-    scope.add_argument("--base", help="base revision (default: merge-base with origin/master)")
+    scope.add_argument("--base", help="base revision (default: merge-base with the default branch)")
     scope.add_argument("--head", default="HEAD", help="head revision, or WORKTREE for uncommitted changes")
     scope.add_argument("--json", action="store_true")
+    scope.add_argument("--config", help="review config (default: <repo>/.engine-review/lenses.json, else the bundled legend-engine config for legend-engine, else EMIT suite discovery only)")
     scope.set_defaults(func=cmd_scope)
 
     run = sub.add_parser("run", help="build base and head, snapshot the EMIT corpus on both, write report.md")
     run.add_argument("--repo", default=".")
     run.add_argument("--base")
     run.add_argument("--head", default="HEAD")
-    run.add_argument("--suites", nargs="*", help="EMIT suites from config/lenses.json (default: every suite with a lens)")
+    run.add_argument("--suites", nargs="*", help="EMIT suites, as listed by scope (default: every suite with a lens)")
     run.add_argument("--rebuild", choices=("changed", "dependents"), default="changed",
                      help="head rebuilds only changed modules, or also everything in the corpus closure that depends on them")
     run.add_argument("--jobs", type=int, default=4)
     run.add_argument("--out")
     run.add_argument("--no-forward", action="store_true", help="skip the base-engine-reads-head-JSON pass")
+    run.add_argument("--config", help="review config (default: <repo>/.engine-review/lenses.json, else the bundled legend-engine config for legend-engine, else EMIT suite discovery only)")
+    run.add_argument("--engine-repo", help="legend-engine checkout holding the snapshot hook, used when the repo pins a release without it (default: the checkout this plugin is in)")
     run.set_defaults(func=cmd_run)
 
     snap = sub.add_parser("snapshot", help="snapshot the EMIT corpus on one revision (e.g. to check a new corpus model)")
@@ -133,6 +132,8 @@ def main(argv=None):
     snap.add_argument("--jobs", type=int, default=4)
     snap.add_argument("--cross-read")
     snap.add_argument("--out", required=True)
+    snap.add_argument("--config", help="review config (default: <repo>/.engine-review/lenses.json, else the bundled legend-engine config for legend-engine, else EMIT suite discovery only)")
+    snap.add_argument("--engine-repo", help="legend-engine checkout holding the snapshot hook, used when the repo pins a release without it (default: the checkout this plugin is in)")
     snap.set_defaults(func=cmd_snapshot)
 
     cmp_ = sub.add_parser("compare", help="compare two existing snapshot directories")

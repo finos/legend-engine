@@ -314,7 +314,7 @@ public class GraphQLGrammarParser
         {
             GraphQLParser.FieldContext fieldContext = selectionContext.field();
             Field field = new Field();
-            field.alias = fieldContext.alias() == null ? null : fieldContext.alias().getText();
+            field.alias = fieldContext.alias() == null ? null : fieldContext.alias().name().getText();
             field.name = fieldContext.name().getText();
             field.arguments = fieldContext.arguments() == null ? Collections.emptyList() : ListIterate.collect(fieldContext.arguments().argument(), this::visitArgument);
             field.selectionSet = fieldContext.selectionSet() == null ? Collections.emptyList() : ListIterate.collect(fieldContext.selectionSet().selection(), this::visitSelectionSet);
@@ -365,7 +365,7 @@ public class GraphQLGrammarParser
     {
         InterfaceTypeDefinition interfaceTypeDefinition = new InterfaceTypeDefinition();
         interfaceTypeDefinition.name = interfaceTypeDefinitionContext.name().getText();
-        interfaceTypeDefinition.fields = ListIterate.collect(interfaceTypeDefinitionContext.fieldsDefinition().fieldDefinition(), this::visitFieldsDefinitionContext);
+        interfaceTypeDefinition.fields = interfaceTypeDefinitionContext.fieldsDefinition() == null ? Collections.emptyList() : ListIterate.collect(interfaceTypeDefinitionContext.fieldsDefinition().fieldDefinition(), this::visitFieldsDefinitionContext);
         interfaceTypeDefinition._implements = visitImplementInterface(interfaceTypeDefinitionContext.implementsInterfaces(), Lists.mutable.empty()).reverseThis();
         return interfaceTypeDefinition;
     }

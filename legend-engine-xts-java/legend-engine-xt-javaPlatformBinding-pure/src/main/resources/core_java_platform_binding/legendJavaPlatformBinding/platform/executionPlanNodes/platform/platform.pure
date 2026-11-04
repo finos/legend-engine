@@ -37,7 +37,7 @@ import meta::pure::graphFetch::execution::*;
 function meta::pure::executionPlan::platformBinding::legendJava::platform::prepareForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
 {
   $p.expression->match([
-    fe: FunctionExpression[1] | if($fe->isSerialize(), | prepareForSerialize($p, $path, $context, $debug), | prepareForExpression($p, $path, $context, $debug)),
+    fe: FunctionExpression[1] | if($fe->isSerialize(), | prepareForSerialize($p, $path, $context, $extensions, $debug), | prepareForExpression($p, $path, $context, $debug)),
     vs: ValueSpecification[1] | prepareForExpression($p, $path, $context, $debug)
   ]);
 }

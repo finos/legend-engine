@@ -154,7 +154,11 @@ def render(result, manifest=None):
     out.append("- head: `%s`" % (manifest or {}).get("head", result["head"]))
     if manifest:
         out.append("- suites: %s" % ", ".join(manifest.get("suites", [])))
-        out.append("- head rebuilt: %s" % (", ".join(manifest.get("head_rebuilt", [])) or "nothing (no product module in the corpus closure changed)"))
+        rebuilt = manifest.get("head_rebuilt", [])
+        if len(rebuilt) > 10:
+            out.append("- head rebuilt: %d modules (%s, ...; full list in run.json)" % (len(rebuilt), ", ".join(rebuilt[:10])))
+        else:
+            out.append("- head rebuilt: %s" % (", ".join(rebuilt) or "nothing (no product module in the corpus closure changed)"))
         for caveat in manifest.get("caveats", []):
             out.append("- caveat: " + caveat)
     out.append("")
