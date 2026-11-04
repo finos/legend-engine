@@ -1,6 +1,6 @@
 ---
 name: review-impact
-description: "Targeted impact review of a legend-engine change (PR number, branch, commit range, or uncommitted work) for reviewers and authors: classifies the diff into hot-area lenses (SQL generation, protocol JSON, auth/JDBC connectivity), runs the EMIT corpus on base and head to show how generated SQL and protocol JSON actually change, applies the auth checklist statically, and writes a review that separates intended change from transitive impact and names coverage gaps. Use when asked to review a legend-engine PR or change, to assess its impact, blast radius or regression risk, or whether a small change to pureToSQLQuery/router/protocol/auth code is safe."
+description: "Targeted impact review of a legend-engine change, or of a change to any repository carrying an EMIT corpus (PR number, branch, commit range, or uncommitted work) for reviewers and authors: classifies the diff into hot-area lenses (SQL generation, protocol JSON, auth/JDBC connectivity), runs the EMIT corpus on base and head to show how generated SQL and protocol JSON actually change, applies the auth checklist statically, and writes a review that separates intended change from transitive impact and names coverage gaps. Use when asked to review a legend-engine PR or change, to assess its impact, blast radius or regression risk, or whether a small change to pureToSQLQuery/router/protocol/auth code is safe."
 ---
 
 # Impact review
@@ -29,7 +29,8 @@ The tools are `engine-review` (in this plugin's `bin/`; on PATH after `.claude-p
   base=$(git merge-base origin/<baseRefName> <headRefOid>)
   ```
   Review `<headRefOid>`, not a local branch that may have drifted.
-- **Branch:** the base is `git merge-base origin/master HEAD`, which is the default when `--base`
+- **Branch:** the base is the merge-base of HEAD with the default branch (`origin/HEAD`, else
+  `master` or `main`), which is the default when `--base`
   is omitted.
 - **Uncommitted work:** use `--head WORKTREE`.
 
@@ -60,13 +61,65 @@ Tell the user the cost before starting:
 - Each snapshot pass takes about one minute per suite, and there are three passes.
 - Nothing is written to `~/.m2`.
 
-Requirements: JDK 17 (found with `/usr/libexec/java_home -v 17`, or set `ENGINE_REVIEW_JAVA_HOME`)
-and Maven 3.9 or later, which the chained local repositories need.
+Requirements: JDK 17 (set `ENGINE_REVIEW_JAVA_HOME`; on macOS `/usr/libexec/java_home -v 17` is
+used when it is unset) and Maven 3.9 or later, which the chained local repositories need.
 
 The run copies the snapshot hook (`EMITSnapshot` and the JUnit builder) and the corpus **from this
 checkout** onto both revisions, so new corpus models measure old commits too. The rest of the EMIT
 framework stays each revision's own, because it calls product APIs that change between revisions.
 `run.json` records what was copied and rebuilt, plus the caveats.
+
+A change to a `pom.xml` rebuilds every corpus-closure module that inherits from or depends on it,
+even under `--rebuild changed`, so a dependency bump never leaves head mixing two dependency sets.
+
+**Resuming.** Builds are cached by commit. Each snapshot pass writes a marker recording its inputs
+and progress, and the hook writes `complete.json` last in every model directory.
+
+- Rerun with the same `--out` and a completed pass is skipped.
+- An interrupted pass reruns only the runner classes whose models did not all complete, selected with
+  `surefire.includesFile`.
+- A runner class whose fork died (OOM, "forked VM terminated") is retried once. If it still does not
+  finish, the run stops rather than report missing models as engine differences. Raise the fork heap
+  in `snapshot_args`, then rerun with the same `--out`.
+
+Before any build, the run warns when `--out` or the cache is on `/tmp`, `/var/tmp` or tmpfs, which
+are wiped on restart. It stops when the disk cannot hold *models × passes × `snapshot_mb_per_model`*
+(default 1.5 MB). It also warns when the forks plus the Maven JVM would exceed the memory available,
+counting about 1.3 GB of overhead per fork over its heap, or about 2.4 GB without
+`-Djacoco.skip=true`. A lock file in `--out` keeps two runs out of the same directory.
+
+On both revisions it also reads the root's effective pom (`help:effective-pom -N`, which takes
+seconds and builds nothing). It then stops when a managed external pin used directly by a corpus-closure
+module is in no local repository and every repository in `~/.m2/settings.xml` answers 404 or cannot be
+reached. That typically means an internal artifact published only where this machine cannot reach.
+Transitive dependencies are not checked.
+
+### Other repositories with an EMIT corpus
+
+Pass `--repo <checkout>` to review any Maven repository whose corpus modules depend on
+`legend-engine-emit-junit`. Suites are discovered: every module with that dependency and
+`*EMITTests` classes, run with the `*EMITTests` pattern. `scope` lists them.
+
+Lenses come from `<repo>/.engine-review/lenses.json` (or `--config`), with the same `ignore`,
+`rules`, `blind_spots` and optional `suites` keys as this plugin's `config/lenses.json`. A `suites`
+entry names a discovered module and may set `lenses`, `tests` or `note`. Without a config file,
+suites are still discovered but no lens fires, so `scope` selects nothing. Extra keys:
+
+| key | default | meaning |
+|---|---|---|
+| `engine_version_property` | `legend.engine.version` | root-pom property pinning legend-engine |
+| `java` | `17` | JDK for the repo's builds, from `ENGINE_REVIEW_JAVA_HOME_<java>` |
+| `snapshot_args` | none | extra Maven arguments for the snapshot passes, e.g. `-DforkCount=4`, `-DargLine=-Xmx6g`, `-Djacoco.skip=true -Djacoco.argLine=` |
+| `snapshot_mb_per_model` | `1.5` | disk estimate per model per pass, for the preflight |
+| `preflight_dependencies` | `true` | check the closure's direct external pins resolve before building |
+
+Such a repo uses the framework from the legend-engine release it pins. If that release's jar has
+no snapshot hook, each revision gets the release's own framework source plus the hook from this
+plugin's checkout (or `--engine-repo`). That build runs at the release's version and goes into the
+revision's private local repository, where it shadows the released jar. The release commit is read
+from `legendExecutionVersion.json` in its `legend-engine-shared-core` jar and fetched if missing.
+When base and head pin different engine releases, `run.json` says so. That range needs its own
+review in legend-engine, because the downstream corpus sees the engine only through its own models.
 
 If a Maven step fails, read the named log under `<run>/logs/` before anything else. A failed
 product build means the comparison never happened. Do not review from a partial report.

@@ -174,7 +174,7 @@ function meta::external::query::graphQL::serialization::graphQLtoString(frag: In
 
 function meta::external::query::graphQL::serialization::graphQLtoString(field: Field[1], space: String[1]):String[1]
 {
-  '  ' + $space + if ($field.alias->isEmpty(), |'', |$field.alias->toOne()+': ') + $field.name + $field.arguments->graphQLtoString() + $field.directives->graphQLtoString() + 
+  '  ' + $space + if ($field.alias->isEmpty(), |'', |$field.alias->toOne()+': ') + $field.name + $field.arguments->graphQLtoString() + $field.directives->graphQLtoString() +
   $field.selectionSet->graphQLtoString($space + '  ');
 }
 

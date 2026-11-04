@@ -294,7 +294,8 @@ public class PlanExecutor
                 singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
                 // execute
                 ExecutionNodeExecutor executionNodeExecutor = this.buildExecutionNodeExecutor(executeArgs.identity, state);
-                return singleExecutionPlan.rootExecutionNode.accept(executionNodeExecutor);
+                Result result = singleExecutionPlan.rootExecutionNode.accept(executionNodeExecutor);
+                return result.addCloseable(() -> state.closeVariables(result));
             }
         }
         finally

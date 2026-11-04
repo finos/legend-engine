@@ -102,6 +102,9 @@ import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.Ela
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.graphQLStore.plugin.GraphQLStoreExecutionConfiguration;
+import org.finos.legend.engine.plan.execution.stores.graphQLStore.plugin.GraphQLStoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.graphQLStore.plugin.GraphQLStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.api.RelationalExecutorInformation;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
@@ -112,6 +115,7 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.stores.graphQLStore.api.GraphQLGenerationApi;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
@@ -309,12 +313,15 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         DeephavenStoreExecutorConfiguration deephavenExecutorConfiguration = DeephavenStoreExecutorConfiguration.newInstance().withCredentialProviderProvider(credentialProviderProvider).build();
         DeephavenStoreExecutor deephavenStoreExecutor = new DeephavenStoreExecutorBuilder().build(deephavenExecutorConfiguration);
 
+        GraphQLStoreExecutionConfiguration graphQLStoreExecutionConfiguration = GraphQLStoreExecutionConfiguration.builder().withCredentialProviderProvider(credentialProviderProvider).build();
+        GraphQLStoreExecutor graphQLStoreExecutor = (GraphQLStoreExecutor) new GraphQLStoreExecutorBuilder().build(graphQLStoreExecutionConfiguration);
+
         PlanExecutor planExecutor;
         ParallelGraphFetchExecutionExecutorPool parallelGraphFetchExecutionExecutorPool = null;
         if (serverConfiguration.graphFetchExecutionConfiguration != null)
         {
             GraphFetchExecutionConfiguration graphFetchExecutionConfiguration = serverConfiguration.graphFetchExecutionConfiguration;
-            planExecutor = PlanExecutor.newPlanExecutor(graphFetchExecutionConfiguration, relationalStoreExecutor, elasticsearchV7StoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, deephavenStoreExecutor, InMemory.build());
+            planExecutor = PlanExecutor.newPlanExecutor(graphFetchExecutionConfiguration, relationalStoreExecutor, elasticsearchV7StoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, deephavenStoreExecutor, graphQLStoreExecutor, InMemory.build());
             if (graphFetchExecutionConfiguration.canExecuteInParallel())
             {
                 parallelGraphFetchExecutionExecutorPool = new ParallelGraphFetchExecutionExecutorPool(graphFetchExecutionConfiguration.getParallelGraphFetchExecutionConfig(), "thread-pool for parallel graphFetch execution");
@@ -323,7 +330,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         }
         else
         {
-            planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, elasticsearchV7StoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, deephavenStoreExecutor, InMemory.build());
+            planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, elasticsearchV7StoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, deephavenStoreExecutor, graphQLStoreExecutor, InMemory.build());
         }
 
         // Session Management
@@ -391,6 +398,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new GraphQLGenerationService(modelManager));
         environment.jersey().register(new JSONSchemaGenerationService(modelManager));
         environment.jersey().register(new AvroGenerationService(modelManager));
+        environment.jersey().register(new GraphQLGenerationApi(credentialProviderProvider));
 
         // Execution
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));

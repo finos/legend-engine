@@ -1,0 +1,467 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
+import meta::external::store::graphQL::executionPlan::generation::*;
+import meta::external::store::graphQL::executionPlan::tests::*;
+import meta::external::store::graphQL::metamodel::pure::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::mapping::*;
+
+Class meta::external::store::graphQL::executionPlan::tests::Employee
+{
+  firstName: String[1];
+  department: String[1];
+  employeeByStatusProxy: meta::external::store::graphQL::executionPlan::tests::Employee[0..1];
+  employeeByStatus(status: meta::external::store::graphQL::executionPlan::tests::Status[1]) { $this.employeeByStatusProxy }: meta::external::store::graphQL::executionPlan::tests::Employee[0..1];
+  employeesByIdsProxy: meta::external::store::graphQL::executionPlan::tests::Employee[*];
+  employeesByIds(ids: Integer[*]) { $this.employeesByIdsProxy }: meta::external::store::graphQL::executionPlan::tests::Employee[*];
+  employeeByName(name: String[1]) { $this.firstName->toOne(); $this; }: meta::external::store::graphQL::executionPlan::tests::Employee[1];
+  manager: meta::external::store::graphQL::executionPlan::tests::TestParentObject[0..1];
+  employeesByFilterProxy: meta::external::store::graphQL::executionPlan::tests::Employee[*];
+  employeesByFilter(filters: meta::external::store::graphQL::executionPlan::tests::FilterKey[*]) { $this.employeesByFilterProxy }: meta::external::store::graphQL::executionPlan::tests::Employee[*];
+  employeesByRequiredIdsProxy: meta::external::store::graphQL::executionPlan::tests::Employee[*];
+  {meta::external::store::graphQL::generation::RequiredArgumentsProfile.requiredArguments = 'ids'} employeesByRequiredIds(ids: Integer[*]) { $this.employeesByRequiredIdsProxy }: meta::external::store::graphQL::executionPlan::tests::Employee[*];
+}
+
+Class meta::external::store::graphQL::executionPlan::tests::TestParentObject
+{
+  id: String[1];
+}
+
+Class meta::external::store::graphQL::executionPlan::tests::Worker extends meta::external::store::graphQL::executionPlan::tests::TestParentObject
+{
+  employeeId: String[1];
+}
+
+Class meta::external::store::graphQL::executionPlan::tests::Candidate extends meta::external::store::graphQL::executionPlan::tests::TestParentObject
+{
+  applicationId: String[1];
+}
+
+Class meta::external::store::graphQL::executionPlan::tests::SeniorWorker extends meta::external::store::graphQL::executionPlan::tests::Worker
+{
+  bonus: String[1];
+}
+
+Enum meta::external::store::graphQL::executionPlan::tests::Status
+{
+  ACTIVE, INACTIVE
+}
+
+Class meta::external::store::graphQL::executionPlan::tests::FilterKey
+{
+  key: String[1];
+  value: String[1];
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testInputObjectShapedInstanceSerializesToJsonCorrectly(): Boolean[1]
+{
+  let single = ^meta::external::store::graphQL::executionPlan::tests::FilterKey(key = 'ids', value = '123');
+  assertEquals('{"key":"ids","value":"123"}', $single->meta::json::toJSON());
+
+  let list = [^meta::external::store::graphQL::executionPlan::tests::FilterKey(key = 'ids', value = '123'), ^meta::external::store::graphQL::executionPlan::tests::FilterKey(key = 'status', value = 'ACTIVE')];
+  assertEquals('[{"key":"ids","value":"123"},{"key":"status","value":"ACTIVE"}]', $list->meta::json::toJSON());
+}
+
+function meta::external::store::graphQL::executionPlan::tests::buildTestSetImpl(typeName: String[1]): RootGraphQLInstanceSetImplementation[1]
+{
+  ^RootGraphQLInstanceSetImplementation(
+    id = 'test',
+    root = true,
+    class = Employee,
+    parent = ^Mapping(),
+    store = ^GraphQLStore(name = 'TestStore', package = meta::external::store::graphQL::executionPlan::tests),
+    typeName = $typeName,
+    binding = ^meta::external::format::shared::binding::Binding(name = 'testBinding', package = meta::external::store::graphQL::executionPlan::tests, contentType = 'application/json', modelUnit = ^meta::pure::model::unit::ModelUnit())
+  );
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testBuildsUrlAndQuery(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let firstNameTree = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne());
+
+  let node = buildGraphQLExecutionNode($connection, [$firstNameTree], false);
+
+  assertEquals('https://api.example.com/graphql', $node.url);
+  assertEquals('query {\n  firstName\n}', $node.query);
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testEnumTypedVariableArgumentDeclaresRealEnumTypeAndSendsBareName(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeeByStatus = Employee.qualifiedProperties->filter(p | $p.name == 'employeeByStatus')->toOne();
+  let statusParameter = ^VariableExpression(name = 'status', genericType = ^GenericType(rawType = meta::external::store::graphQL::executionPlan::tests::Status), multiplicity = PureOne);
+  let employeeByStatusTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeeByStatus,
+    parameters = $statusParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$employeeByStatusTree], false);
+
+  assertEquals('query($status: Status!) {\n  employeeByStatusProxy: employeeByStatus(status: $status) {\n    firstName\n  }\n}', $node.query);
+  assert($node.variables->isEmpty(), | 'expected no static variable binding - the status argument is variable-bound, not literal');
+  assertEquals(1, $node.requiredVariableInputs->size());
+  assertEquals('status', $node.requiredVariableInputs->toOne().name);
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testEnumTypedLiteralArgumentSendsBareNameNotQualifiedName(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeeByStatus = Employee.qualifiedProperties->filter(p | $p.name == 'employeeByStatus')->toOne();
+  let statusParameter = ^InstanceValue(
+    values = meta::external::store::graphQL::executionPlan::tests::Status.ACTIVE,
+    genericType = ^GenericType(rawType = meta::external::store::graphQL::executionPlan::tests::Status),
+    multiplicity = PureOne
+  );
+  let employeeByStatusTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeeByStatus,
+    parameters = $statusParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$employeeByStatusTree], false);
+
+  assertEquals(1, $node.variables->size());
+  assertEquals('"ACTIVE"', $node.variables->toOne().value);
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testToManyVariableArgumentDeclaresListTypeNotBareScalar(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeesByIds = Employee.qualifiedProperties->filter(p | $p.name == 'employeesByIds')->toOne();
+  let idsParameter = ^VariableExpression(name = 'ids', genericType = ^GenericType(rawType = Integer), multiplicity = ZeroMany);
+  let employeesByIdsTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeesByIds,
+    parameters = $idsParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$employeesByIdsTree], false);
+
+  assertEquals('query($ids: [Int!]) {\n  employeesByIdsProxy: employeesByIds(ids: $ids) {\n    firstName\n  }\n}', $node.query);
+  assertEquals(1, $node.requiredVariableInputs->size());
+  assertEquals('ids', $node.requiredVariableInputs->toOne().name);
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testRequiredToManyVariableArgumentDeclaresNonNullListType(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeesByRequiredIds = Employee.qualifiedProperties->filter(p | $p.name == 'employeesByRequiredIds')->toOne();
+  let idsParameter = ^VariableExpression(name = 'ids', genericType = ^GenericType(rawType = Integer), multiplicity = ZeroMany);
+  let employeesByRequiredIdsTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeesByRequiredIds,
+    parameters = $idsParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$employeesByRequiredIdsTree], false);
+
+  assertEquals('query($ids: [Int!]!) {\n  employeesByRequiredIdsProxy: employeesByRequiredIds(ids: $ids) {\n    firstName\n  }\n}', $node.query);
+  assertEquals(1, $node.requiredVariableInputs->size());
+  assertEquals('ids', $node.requiredVariableInputs->toOne().name);
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testSingleElementListLiteralArgumentDeclaresListTypeNotBareScalar(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeesByIds = Employee.qualifiedProperties->filter(p | $p.name == 'employeesByIds')->toOne();
+  let idsParameter = ^InstanceValue(values = 5, genericType = ^GenericType(rawType = Integer), multiplicity = ZeroMany);
+  let employeesByIdsTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeesByIds,
+    parameters = $idsParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$employeesByIdsTree], false);
+
+  assertEquals('query($ids: [Int!]!) {\n  employeesByIdsProxy: employeesByIds(ids: $ids) {\n    firstName\n  }\n}', $node.query);
+  assertEquals(1, $node.variables->size());
+  assertEquals('[5]', $node.variables->toOne().value);
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testInputObjectTypedLiteralListArgumentDeclaresNamedListType(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeesByFilter = Employee.qualifiedProperties->filter(p | $p.name == 'employeesByFilter')->toOne();
+  let filtersParameter = ^InstanceValue(
+    values = ^meta::external::store::graphQL::executionPlan::tests::FilterKey(key = 'ids', value = '123'),
+    genericType = ^GenericType(rawType = meta::external::store::graphQL::executionPlan::tests::FilterKey),
+    multiplicity = ZeroMany
+  );
+  let employeesByFilterTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeesByFilter,
+    parameters = $filtersParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$employeesByFilterTree], false);
+
+  assertEquals('query($filters: [FilterKey!]!) {\n  employeesByFilterProxy: employeesByFilter(filters: $filters) {\n    firstName\n  }\n}', $node.query);
+  assertEquals(1, $node.variables->size());
+  assertEquals('[{"key":"ids","value":"123"}]', $node.variables->toOne().value);
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testInputObjectTypedVariableListArgumentDeclaresNamedListType(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeesByFilter = Employee.qualifiedProperties->filter(p | $p.name == 'employeesByFilter')->toOne();
+  let filtersParameter = ^VariableExpression(name = 'filters', genericType = ^GenericType(rawType = meta::external::store::graphQL::executionPlan::tests::FilterKey), multiplicity = ZeroMany);
+  let employeesByFilterTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeesByFilter,
+    parameters = $filtersParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$employeesByFilterTree], false);
+
+  assertEquals('query($filters: [FilterKey!]) {\n  employeesByFilterProxy: employeesByFilter(filters: $filters) {\n    firstName\n  }\n}', $node.query);
+  assert($node.variables->isEmpty(), | 'expected no static variable binding - the filters argument is variable-bound, not literal');
+  assertEquals(1, $node.requiredVariableInputs->size());
+  assertEquals('filters', $node.requiredVariableInputs->toOne().name);
+}
+
+// A non-single-expression QP body falls back to no alias instead of failing plan generation - whether
+// it round-trips at execution time then depends on the binding's schema describing a matching property.
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testQualifiedPropertyWithoutProxyDelegationStillBuildsAnUnaliasedField(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeeByName = Employee.qualifiedProperties->filter(p | $p.name == 'employeeByName')->toOne();
+  let nameParameter = ^VariableExpression(name = 'name', genericType = ^GenericType(rawType = String), multiplicity = PureOne);
+  let employeeByNameTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeeByName,
+    parameters = $nameParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$employeeByNameTree], false);
+
+  assertEquals('query($name: String!) {\n  employeeByName(name: $name) {\n    firstName\n  }\n}', $node.query);
+}
+
+// A polymorphic property's subtype branches arrive as separate sibling subtrees for the same base property
+// (manager, manager->subType(@Worker){...}, manager->subType(@Candidate){...}) sharing manager's own wire
+// field name - this asserts they get grouped back into one field with a plain selection, auto-requested
+// __typename, and one inline fragment per subtype.
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testPolymorphicPropertyGroupsSubtypeBranchesIntoInlineFragmentsWithTypename(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let managerProperty = Employee.properties->filter(p | $p.name == 'manager')->toOne();
+
+  let plainManagerTree = ^RoutedPropertyGraphFetchTree(
+    property = $managerProperty,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = TestParentObject.properties->filter(p | $p.name == 'id')->toOne())
+  );
+  let workerManagerTree = ^RoutedPropertyGraphFetchTree(
+    property = $managerProperty,
+    subType = meta::external::store::graphQL::executionPlan::tests::Worker,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Worker.properties->filter(p | $p.name == 'employeeId')->toOne())
+  );
+  let candidateManagerTree = ^RoutedPropertyGraphFetchTree(
+    property = $managerProperty,
+    subType = meta::external::store::graphQL::executionPlan::tests::Candidate,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Candidate.properties->filter(p | $p.name == 'applicationId')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$plainManagerTree, $workerManagerTree, $candidateManagerTree], false);
+
+  assertEquals('query {\n  manager {\n    id\n    __typename\n    ... on Worker {\n      employeeId\n    }\n    ... on Candidate {\n      applicationId\n    }\n  }\n}', $node.query);
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testPolymorphicPropertyWithNoPlainSiblingStillUsesBasePropertyAsFieldName(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let managerProperty = Employee.properties->filter(p | $p.name == 'manager')->toOne();
+
+  let workerManagerTree = ^RoutedPropertyGraphFetchTree(
+    property = $managerProperty,
+    subType = meta::external::store::graphQL::executionPlan::tests::Worker,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Worker.properties->filter(p | $p.name == 'employeeId')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$workerManagerTree], false);
+
+  assertEquals('query {\n  manager {\n    __typename\n    ... on Worker {\n      employeeId\n    }\n  }\n}', $node.query);
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testScalarListArgumentWithAllVariableElementsBindsEachAsItsOwnVariable(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeesByIds = Employee.qualifiedProperties->filter(p | $p.name == 'employeesByIds')->toOne();
+  let idsParameter = ^InstanceValue(
+    values = [
+      ^VariableExpression(name = 'x', genericType = ^GenericType(rawType = Integer), multiplicity = PureOne),
+      ^VariableExpression(name = 'y', genericType = ^GenericType(rawType = Integer), multiplicity = PureOne)
+    ],
+    genericType = ^GenericType(rawType = Integer),
+    multiplicity = ZeroMany
+  );
+  let employeesByIdsTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeesByIds,
+    parameters = $idsParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$employeesByIdsTree], false);
+
+  assertEquals('query($x: Int!, $y: Int!) {\n  employeesByIdsProxy: employeesByIds(ids: [$x, $y]) {\n    firstName\n  }\n}', $node.query);
+  assert($node.variables->isEmpty(), | 'expected no static variable binding - every list element is variable-bound');
+  assertEquals(2, $node.requiredVariableInputs->size());
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testScalarListArgumentMixingLiteralAndVariableElementBindsOnlyTheVariableElement(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeesByIds = Employee.qualifiedProperties->filter(p | $p.name == 'employeesByIds')->toOne();
+  let idsParameter = ^InstanceValue(
+    values = [5, ^VariableExpression(name = 'x', genericType = ^GenericType(rawType = Integer), multiplicity = PureOne)],
+    genericType = ^GenericType(rawType = Integer),
+    multiplicity = ZeroMany
+  );
+  let employeesByIdsTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeesByIds,
+    parameters = $idsParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$employeesByIdsTree], false);
+
+  assertEquals('query($x: Int!) {\n  employeesByIdsProxy: employeesByIds(ids: [5, $x]) {\n    firstName\n  }\n}', $node.query);
+  assert($node.variables->isEmpty(), | 'expected no static variable binding - the list mixes a plain literal with a $variable element');
+  assertEquals(1, $node.requiredVariableInputs->size());
+  assertEquals('x', $node.requiredVariableInputs->toOne().name);
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testInputObjectTypedListArgumentMixesInlineInstanceCreationAndBareVariableElements(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeesByFilter = Employee.qualifiedProperties->filter(p | $p.name == 'employeesByFilter')->toOne();
+
+  let instanceCreationEntry = ^SimpleFunctionExpression(
+    func = meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_,
+    genericType = ^GenericType(rawType = meta::external::store::graphQL::executionPlan::tests::FilterKey),
+    importGroup = system::imports.children->at(0)->cast(@ImportGroup),
+    multiplicity = PureOne,
+    parametersValues = [
+      ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = meta::external::store::graphQL::executionPlan::tests::FilterKey),
+      ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = ''),
+      ^InstanceValue(genericType = ^GenericType(rawType = KeyExpression), multiplicity = ZeroMany, values = [
+        ^KeyExpression(key = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = 'key'), expression = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = 'k1')),
+        ^KeyExpression(key = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = 'value'), expression = ^VariableExpression(genericType = ^GenericType(rawType = String), multiplicity = PureOne, name = 'v'))
+      ])
+    ]
+  );
+  let filterVariable = ^VariableExpression(name = 'filterVar', genericType = ^GenericType(rawType = meta::external::store::graphQL::executionPlan::tests::FilterKey), multiplicity = PureOne);
+  let filtersParameter = ^InstanceValue(
+    values = [$instanceCreationEntry, $filterVariable],
+    genericType = ^GenericType(rawType = meta::external::store::graphQL::executionPlan::tests::FilterKey),
+    multiplicity = ZeroMany
+  );
+  let employeesByFilterTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeesByFilter,
+    parameters = $filtersParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  let node = buildGraphQLExecutionNode($connection, [$employeesByFilterTree], false);
+
+  assertEquals('query($v: String!, $filterVar: FilterKey!) {\n  employeesByFilterProxy: employeesByFilter(filters: [{key: "k1", value: $v}, $filterVar]) {\n    firstName\n  }\n}', $node.query);
+  assert($node.variables->isEmpty(), | 'expected no static variable binding - the instance-creation entry embeds a variable and the other entry is itself a bare variable');
+  assertEquals(2, $node.requiredVariableInputs->size());
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testMixedShapeListArgumentFailsLoudlyInsteadOfMisserializing(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+  let employeesByFilter = Employee.qualifiedProperties->filter(p | $p.name == 'employeesByFilter')->toOne();
+
+  let literalEntry = ^meta::external::store::graphQL::executionPlan::tests::FilterKey(key = 'k1', value = 'v1');
+  let instanceCreationEntry = ^SimpleFunctionExpression(
+    func = meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_,
+    genericType = ^GenericType(rawType = meta::external::store::graphQL::executionPlan::tests::FilterKey),
+    importGroup = system::imports.children->at(0)->cast(@ImportGroup),
+    multiplicity = PureOne,
+    parametersValues = [
+      ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = meta::external::store::graphQL::executionPlan::tests::FilterKey),
+      ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = ''),
+      ^InstanceValue(genericType = ^GenericType(rawType = KeyExpression), multiplicity = ZeroMany, values = [
+        ^KeyExpression(key = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = 'key'), expression = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = 'k2')),
+        ^KeyExpression(key = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = 'value'), expression = ^VariableExpression(genericType = ^GenericType(rawType = String), multiplicity = PureOne, name = 'x'))
+      ])
+    ]
+  );
+  let filtersParameter = ^InstanceValue(
+    values = [$literalEntry, $instanceCreationEntry],
+    genericType = ^GenericType(rawType = meta::external::store::graphQL::executionPlan::tests::FilterKey),
+    multiplicity = ZeroMany
+  );
+  let employeesByFilterTree = ^RoutedPropertyGraphFetchTree(
+    property = $employeesByFilter,
+    parameters = $filtersParameter,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Employee.properties->filter(p | $p.name == 'firstName')->toOne())
+  );
+
+  assertError(
+    | buildGraphQLExecutionNode($connection, [$employeesByFilterTree], false),
+    'GraphQL store does not support an inline literal value of type meta::external::store::graphQL::executionPlan::tests::FilterKey'
+  );
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testUnwrapSingleFieldToleratesEmptySelection(): Boolean[1]
+{
+  let connection = ^GraphQLConnection(url = 'https://api.example.com/graphql');
+
+  let node = buildGraphQLExecutionNode($connection, [], true);
+
+  assert($node.unwrapAlias->isEmpty(), | 'expected no unwrapAlias to be computed when there is nothing to unwrap');
+}
+
+function <<test.Test>> meta::external::store::graphQL::executionPlan::generation::tests::testFoldAncestorFieldsIntoSubTypePullsInEveryAncestorInATransitiveHierarchy(): Boolean[1]
+{
+  let managerProperty = Employee.properties->filter(p | $p.name == 'manager')->toOne();
+
+  let plainTree = ^RoutedPropertyGraphFetchTree(
+    property = $managerProperty,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = TestParentObject.properties->filter(p | $p.name == 'id')->toOne())
+  );
+  let workerTree = ^RoutedPropertyGraphFetchTree(
+    property = $managerProperty,
+    subType = meta::external::store::graphQL::executionPlan::tests::Worker,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Worker.properties->filter(p | $p.name == 'employeeId')->toOne())
+  );
+  let candidateTree = ^RoutedPropertyGraphFetchTree(
+    property = $managerProperty,
+    subType = meta::external::store::graphQL::executionPlan::tests::Candidate,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = Candidate.properties->filter(p | $p.name == 'applicationId')->toOne())
+  );
+  let seniorWorkerTree = ^RoutedPropertyGraphFetchTree(
+    property = $managerProperty,
+    subType = meta::external::store::graphQL::executionPlan::tests::SeniorWorker,
+    subTrees = ^RoutedPropertyGraphFetchTree(property = meta::external::store::graphQL::executionPlan::tests::SeniorWorker.properties->filter(p | $p.name == 'bonus')->toOne())
+  );
+
+  let group = [$plainTree, $workerTree, $candidateTree, $seniorWorkerTree];
+
+  let foldedSeniorWorker = meta::external::store::graphQL::executionPlan::generation::foldAncestorFieldsIntoSubType($group, $seniorWorkerTree);
+  assertEquals(['bonus', 'employeeId', 'id'], $foldedSeniorWorker.subTrees->cast(@RoutedPropertyGraphFetchTree).property.name->toOneMany()->sort());
+
+  // Worker itself must still only pick up the base field, not SeniorWorker's or the unrelated Candidate's.
+  let foldedWorker = meta::external::store::graphQL::executionPlan::generation::foldAncestorFieldsIntoSubType($group, $workerTree);
+  assertEquals(['employeeId', 'id'], $foldedWorker.subTrees->cast(@RoutedPropertyGraphFetchTree).property.name->toOneMany()->sort());
+}

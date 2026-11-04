@@ -44,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 public class TestStoreType
 {
     private static final String[] BUILT_INS =
-            {"Relational", "Service", "InMemory", "ESv7", "NonRelational_MongoDB", "Deephaven"};
+            {"Relational", "Service", "InMemory", "ESv7", "NonRelational_MongoDB", "Deephaven", "GraphQL"};
 
     @Test
     public void builtInsKeepTheirNamesAndDeclarationOrder()
@@ -77,6 +77,7 @@ public class TestStoreType
         assertSame(StoreType.ESv7, StoreType.valueOf("ESv7"));
         assertSame(StoreType.NonRelational_MongoDB, StoreType.valueOf("NonRelational_MongoDB"));
         assertSame(StoreType.Deephaven, StoreType.valueOf("Deephaven"));
+        assertSame(StoreType.GraphQL, StoreType.valueOf("GraphQL"));
     }
 
     @Test

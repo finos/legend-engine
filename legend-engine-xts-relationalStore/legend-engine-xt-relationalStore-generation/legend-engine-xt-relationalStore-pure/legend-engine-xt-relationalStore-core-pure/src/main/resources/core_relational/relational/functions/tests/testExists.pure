@@ -520,23 +520,89 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter
    assertSameSQL('select "root".FIRSTNAME as "firstName" from personTable as "root" left outer join (select distinct "othernamestable_1".PERSON_ID from otherNamesTable as "othernamestable_1" where "othernamestable_1".OTHER_NAME = \'abc\') as "othernamestable_0" on ("root".ID = "othernamestable_0".PERSON_ID) where "othernamestable_0".PERSON_ID is not null', $result);
 }
 
-function <<test.ToFix>> meta::relational::tests::query::filter::exists::testMultipleExistsOnSameProperty():Boolean[1]
+function <<test.Test>> meta::relational::tests::query::filter::exists::testMultipleExistsOnSameProperty():Boolean[1]
 {
    let result1 = execute(
       |Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter'))->project(col(x|$x.legalName, 'name')),
       simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
+   assertSameSQL('select "root".LEGALNAME as "name" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".FIRSTNAME = \'Peter\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result1);
    assertEquals('name\nFirm X\n', $result1.values->meta::relational::tests::csv::toCSV());
 
    let result2 = execute(
       |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Harris'))->project(col(x|$x.legalName, 'name')),
       simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
+   assertSameSQL('select "root".LEGALNAME as "name" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".LASTNAME = \'Harris\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result2);
    assertEquals('name\nFirm C\n', $result2.values->meta::relational::tests::csv::toCSV());
 
    let result3 = execute(
       |Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter') || $f.employees->exists(e|$e.lastName == 'Harris'))->project(col(x|$x.legalName, 'name')),
       simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
+   assertSameSQL('select "root".LEGALNAME as "name" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".FIRSTNAME = \'Peter\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join (select distinct "persontable_3".FIRMID from personTable as "persontable_3" where "persontable_3".LASTNAME = \'Harris\') as "persontable_2" on ("root".ID = "persontable_2".FIRMID) where "persontable_0".FIRMID is not null or "persontable_2".FIRMID is not null', $result3);
    assertEquals('name\nFirm X\nFirm C\n', $result3.values->meta::relational::tests::csv::toCSV());
+
+   let result4 = execute(
+      |Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter') && $f.employees->exists(e|$e.lastName == 'Smith'))->project(col(x|$x.legalName, 'name')),
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
+   );
+   assertSameSQL('select "root".LEGALNAME as "name" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".FIRSTNAME = \'Peter\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join (select distinct "persontable_3".FIRMID from personTable as "persontable_3" where "persontable_3".LASTNAME = \'Smith\') as "persontable_2" on ("root".ID = "persontable_2".FIRMID) where "persontable_0".FIRMID is not null and "persontable_2".FIRMID is not null', $result4);
+   assertEquals('name\nFirm X\n', $result4.values->meta::relational::tests::csv::toCSV());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::exists::testRepeatedIdenticalExistsOnSamePropertyDoesNotBlowUp():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->filter(f|
+         $f.employees->exists(e|$e.firstName == 'Peter') ||
+         $f.employees->exists(e|$e.firstName == 'Peter') ||
+         $f.employees->exists(e|$e.firstName == 'Peter') ||
+         $f.employees->exists(e|$e.firstName == 'Peter') ||
+         $f.employees->exists(e|$e.firstName == 'Peter') ||
+         $f.employees->exists(e|$e.firstName == 'Peter')
+      )->project(col(x|$x.legalName, 'name')),
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
+   );
+
+   assertSameSQL('select "root".LEGALNAME as "name" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".FIRSTNAME = \'Peter\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null or "persontable_0".FIRMID is not null or "persontable_0".FIRMID is not null or "persontable_0".FIRMID is not null or "persontable_0".FIRMID is not null or "persontable_0".FIRMID is not null', $result);
+   assertEquals('name\nFirm X\n', $result.values->meta::relational::tests::csv::toCSV());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::exists::testRepeatedIsEmptyInProjectionCaseDoesNotBlowUp():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(
+         [
+            f|$f.legalName,
+            f|if($f.employees->isEmpty(), |'none', |'some'),
+            f|if($f.employees->isEmpty(), |'none', |'some'),
+            f|if($f.employees->isEmpty(), |'none', |'some'),
+            f|if($f.employees->isEmpty(), |'none', |'some'),
+            f|if($f.employees->isEmpty(), |'none', |'some'),
+            f|if($f.employees->isEmpty(), |'none', |'some')
+         ],
+         ['name', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6']
+      ),
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
+   );
+   assertSameSQL('select "root".LEGALNAME as "name", case when "firmtable_1".FIRMID is null then \'none\' else \'some\' end as "c1", case when "firmtable_1".FIRMID is null then \'none\' else \'some\' end as "c2", case when "firmtable_1".FIRMID is null then \'none\' else \'some\' end as "c3", case when "firmtable_1".FIRMID is null then \'none\' else \'some\' end as "c4", case when "firmtable_1".FIRMID is null then \'none\' else \'some\' end as "c5", case when "firmtable_1".FIRMID is null then \'none\' else \'some\' end as "c6" from firmTable as "root" left outer join (select distinct "persontable_0".FIRMID from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)) as "firmtable_1" on ("root".ID = "firmtable_1".FIRMID)', $result);
+   assertEquals('name,c1,c2,c3,c4,c5,c6\nFirm X,some,some,some,some,some,some\nFirm A,some,some,some,some,some,some\nFirm B,some,some,some,some,some,some\nFirm C,some,some,some,some,some,some\nNo Employees,none,none,none,none,none,none\n', $result.values->meta::relational::tests::csv::toCSV());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::exists::testRepeatedIsEmptyInFilterDoesNotBlowUp():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->filter(f|
+         $f.employees->isEmpty() ||
+         $f.employees->isEmpty() ||
+         $f.employees->isEmpty() ||
+         $f.employees->isEmpty() ||
+         $f.employees->isEmpty() ||
+         $f.employees->isEmpty()
+      )->project(col(x|$x.legalName, 'name')),
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
+   );
+   assertSameSQL('select "root".LEGALNAME as "name" from firmTable as "root" left outer join (select distinct "persontable_0".FIRMID from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)) as "firmtable_1" on ("root".ID = "firmtable_1".FIRMID) where "firmtable_1".FIRMID is null or "firmtable_1".FIRMID is null or "firmtable_1".FIRMID is null or "firmtable_1".FIRMID is null or "firmtable_1".FIRMID is null or "firmtable_1".FIRMID is null', $result);
+   assertEquals('name\nNo Employees\n', $result.values->meta::relational::tests::csv::toCSV());
 }

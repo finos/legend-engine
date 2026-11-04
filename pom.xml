@@ -43,6 +43,7 @@
         <module>legend-engine-xts-serviceStore</module>
         <module>legend-engine-xts-relationalStore</module>
         <module>legend-engine-xts-mongodb</module>
+        <module>legend-engine-xts-store-graphQL</module>
         <module>legend-engine-xts-elasticsearch</module>
         <module>legend-engine-xts-deephaven</module>
 
@@ -122,7 +123,7 @@
         <revision>5.0.3-SNAPSHOT</revision>
 
         <!-- Legend -->
-        <legend.pure.version>5.110.0</legend.pure.version>
+        <legend.pure.version>5.111.0</legend.pure.version>
         <legend.shared.version>1.0.2</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
         <legend.pylegend.version>0.21.0</legend.pylegend.version>
@@ -1937,6 +1938,37 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-serviceStore-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-store-graphQL-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-store-graphQL-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-store-graphQL-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-store-graphQL-javaPlatformBinding-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-store-graphQL-executionPlan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-store-graphQL-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

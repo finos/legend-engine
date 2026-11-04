@@ -2,7 +2,7 @@
   "$schema": "../../../plugin-schema.json",
   "name": "engine-review",
   "displayName": "Engine Review",
-  "description": "Targeted impact review for legend-engine changes: classifies a diff into hot-area lenses, runs the EMIT corpus on base and head to show how generated SQL, execution plans and protocol JSON actually change (alias-normalized, clustered, cross-read in both directions), and applies a static auth/JDBC-connectivity checklist - so reviewers see transitive impact, not just the diff.",
+  "description": "Targeted impact review for legend-engine changes, and for any repository carrying an EMIT corpus: classifies a diff into hot-area lenses, runs the EMIT corpus on base and head to show how generated SQL, execution plans and protocol JSON actually change (alias-normalized, clustered, cross-read in both directions), and applies a static auth/JDBC-connectivity checklist - so reviewers see transitive impact, not just the diff.",
   "version": "1.0.0",
   "author": {
     "name": "FINOS Legend"

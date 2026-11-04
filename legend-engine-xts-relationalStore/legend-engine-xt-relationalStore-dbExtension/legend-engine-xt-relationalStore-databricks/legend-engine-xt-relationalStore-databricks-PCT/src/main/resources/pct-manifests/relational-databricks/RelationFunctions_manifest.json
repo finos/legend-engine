@@ -103,10 +103,10 @@
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_",
     "expectedError" : "\"pivot is not supported\""
   }, {
-    "test" : "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_StringPivotValue_Function_1__Boolean_1_",
-    "expectedError" : "Not supported data type :'LONG' for Pure type: 'String'"
-  }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_StringPivotValue_Function_1__Boolean_1_",
+    "expectedError" : "Not supported data type :'LONG' for Pure type: 'String'"
   } ]
 }

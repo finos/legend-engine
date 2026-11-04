@@ -30,6 +30,7 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 
@@ -225,32 +226,13 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
     | $value->j_invoke(
             $conventions->getterName($property),
             if($property->instanceOf(QualifiedProperty),
-              {|
-                let valueExtractor = {x: VariableExpression[1] |
-                                        let javaType = $conventions->pureTypeToJavaType($x.genericType, $x.multiplicity);
-                                        let typeArg  = if($javaType->isJavaList(), |$fContext->j_invoke('listType', $javaType->elementType()->toBoxed()->j_classField()), |$javaType->toBoxed()->j_classField());
-                                        $fContext->j_invoke('getResult', [j_string($x.name), $typeArg], $javaType);
-                                      };
-                let parameters = $spgft.parameters->evaluateAndDeactivate();
-                $parameters->map(x |
-                    let vals = $x->match([
-                      iv : InstanceValue[1]      | $iv.values->map(x | if($x->instanceOf(VariableExpression), | $valueExtractor->eval($x), | $conventions->primitiveLiteral($x))),
-                      v  : VariableExpression[1] | $valueExtractor->eval($v),
-                      vs : ValueSpecification[1] | $vs->generateJava($conventions, $debug)
-                    ]);
-                    let param = $property->functionType().parameters->evaluateAndDeactivate()->tail()->at($parameters->indexOf($x));
-                    if($param.multiplicity->hasToOneUpperBound(),
-                      | if($vals->isEmpty(), | j_null(), | $vals->toOne()),
-                      | if($vals->size() == 1 && $vals.type->toOne()->isJavaList(), |$vals, |javaArrays()->j_invoke('asList', $vals, $conventions->pureTypeToJavaType($param.genericType.rawType->toOne(), $param.multiplicity)))
-                    );
-                );
-              },
+              | $property->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::qualifiedPropertyArgumentsCode($spgft.parameters->evaluateAndDeactivate(), $fContext, $conventions, $debug),
               | []
             ),
             $conventions->pureTypeToJavaType($property)
           );
   );
-}                
+}
 
 function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::serializeProperty(spgft : GroupedPropertyGraphFetchTree[1], getterCall : Code[1], jClass:meta::external::language::java::metamodel::Class[1], path:String[*], conventions:Conventions[1], debug:DebugContext[1]):Code[1]
 {
