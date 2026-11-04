@@ -47,13 +47,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDiagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceElementPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutable;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutionContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceOperationalMetadata;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpacePackageableElementExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportFullInfo;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceOperationalMetadata;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
@@ -67,7 +67,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElement;
 import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_RelationRow_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_Mapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceDiagram_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext;
@@ -79,18 +78,18 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSp
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 import org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
@@ -460,27 +459,27 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
     private void validateExecutableAgainstExecutionContext(FunctionDefinition<?> executableFunction, DataSpaceExecutionContext executionContext, Root_meta_pure_metamodel_dataSpace_DataSpace metamodel, CompileContext context, SourceInformation executableSourceInformation)
     {
         // might be worth extending this also to lambdas
-        if (!(executableFunction instanceof Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl))
+        if (!(executableFunction instanceof ConcreteFunctionDefinition))
         {
             return;
         }
 
         Optional<? extends ValueSpecification> fromFunc = executableFunction._expressionSequence().toList().stream()
-                .filter(func -> func instanceof Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl && ((Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) func)._functionName.equals("from")).findAny();
+                .filter(func -> func instanceof SimpleFunctionExpression && "from".equals(((SimpleFunctionExpression) func)._functionName())).findAny();
 
         if (fromFunc.isPresent())
         {
-            Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl fromFuncExpression = (Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) fromFunc.get();
+            SimpleFunctionExpression fromFuncExpression = (SimpleFunctionExpression) fromFunc.get();
 
             // only check mapping and runtime if using ->from() in the most basic way e.g. ->from(model::Mapping, model::Runtime)
             ValueSpecification mappingInstance = fromFuncExpression._parametersValues().toList().get(1);
-            if (mappingInstance instanceof Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl)
+            if (mappingInstance instanceof InstanceValue)
             {
                 // check if mapping matches to what is used in execution key
-                Object mappingImpl = ((Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl) mappingInstance)._values().toList().get(0);
-                if (mappingImpl instanceof Root_meta_pure_mapping_Mapping_Impl)
+                Object mappingImpl = ((InstanceValue) mappingInstance)._values().toList().get(0);
+                if (mappingImpl instanceof Mapping)
                 {
-                    String mappingPath = platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_((Root_meta_pure_mapping_Mapping_Impl) mappingImpl, "::", context.pureModel.getExecutionSupport());
+                    String mappingPath = platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_((Mapping) mappingImpl, "::", context.pureModel.getExecutionSupport());
                     Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext compiledCtx = metamodel._executionContexts().toList().stream().filter(ec -> executionContext.name.equals(ec._name())).findFirst().orElse(null);
                     String expectedMappingPath = compiledCtx == null ? null : effectiveMappingPath(executionContext, compiledCtx, context);
                     if (expectedMappingPath != null && !mappingPath.equals(expectedMappingPath))
