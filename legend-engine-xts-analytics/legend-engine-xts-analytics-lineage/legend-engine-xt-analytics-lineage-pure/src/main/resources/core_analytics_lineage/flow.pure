@@ -172,7 +172,7 @@ function meta::analytics::lineage::flow::removeNode(flow:Flow[1],node:FlowNode[1
       packages = if($node->instanceOf(PackageNode),|$flow.packages->filter(p|$p!=$node->cast(@PackageNode).package),|$flow.packages),
       classes = if($node->instanceOf(ClassNode),|$flow.classes->filter(c|$c!=$c->cast(@ClassNode).class),|$flow.classes),
       properties = if($node->instanceOf(PropertyNode),|$flow.properties->filter(p|$p!=$p->cast(@PropertyNode).property),|$flow.properties),
-      services = if($node->instanceOf(ServiceNode),|$flow.services->filter(p|$p!=$p->cast(@ServiceNode).service),|$flow.services),
+      services = if($node->instanceOf(ServiceNode),|$flow.services->filter(p|$p!=$node->cast(@ServiceNode).service),|$flow.services),
 
       links = $flow.links->filter(l|!$l->in($in))->filter(l|!$l->in($out))->concatenate($in.source->fold({x,y:FlowEdge[*]|$y->concatenate($out.target->map(e|^FlowEdge(source=$x, target=$e, lineageMaturity=maturity($x, $e, $maturityTests))))},[]))
    );

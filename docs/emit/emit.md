@@ -741,6 +741,7 @@ model with a **Snapshot** group, and `EMITSnapshot` writes what the engine produ
 | `plans/service/<service>.json` | the execution plan of each primary-scope service, or its error |
 | `plans/test/<testable>/<suite>/<test>.json` | what each test runs, from its runner's debug (`TestRunner.debugTestSuite` / `debugAtomicTest`): the execution plan, or for a test that runs none (persistence) its `statements`; or the error |
 | `../_subtypes.json` | once per suite: every `_type` each polymorphic protocol base resolves |
+| `complete.json` | written last; a model directory without it was cut short (crash, OOM, killed fork) |
 
 With `legend.emit.snapshot.crossRead=<other snapshot dir>` set as well, the group also deserializes
 the other snapshot's `pmcd.json` with this engine, re-serializes it (`pmcd.crossread.json`) and

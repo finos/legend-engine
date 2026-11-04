@@ -537,7 +537,7 @@ function meta::relational::functions::sqlQueryToString::memsql::convert(genericT
             pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer))),
             pair(|$path == 'Variant', |^meta::relational::metamodel::datatype::Json())
         ],
-        | fail ($path + ' is not managed yet');
+        | fail ($path + ' is not managed yet')->toOne();
     )->cast(@meta::relational::metamodel::datatype::DataType);
 }
 

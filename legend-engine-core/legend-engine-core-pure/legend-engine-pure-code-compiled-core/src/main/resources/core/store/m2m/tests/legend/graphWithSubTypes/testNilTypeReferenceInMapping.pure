@@ -46,7 +46,7 @@ Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::nilReference::
 
 function meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::nilReference::parseOptionalDate(in: String[0..1]): Date[1]
 {
- if($in->isEmpty(), | Nil->cast(@Date), | $in->toOne()->parseDate())
+ if($in->isEmpty(), | []->cast(@Date)->toOne(), | $in->toOne()->parseDate())
 }
 
 // Nil is a subtype of every type, so a reference to it in a mapping must not turn

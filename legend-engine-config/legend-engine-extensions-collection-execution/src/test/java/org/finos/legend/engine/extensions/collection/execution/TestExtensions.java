@@ -30,6 +30,8 @@ import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExte
 import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServicePlanExecutor;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.graphQLStore.GraphQLStoreExecutionExtension;
+import org.finos.legend.engine.plan.execution.stores.graphQLStore.plugin.GraphQLStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.AthenaConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.BigQueryConnectionExtension;
@@ -67,7 +69,8 @@ public class TestExtensions
                 .with(ServiceStoreExecutionExtension.class)
                 .with(org.finos.legend.engine.plan.execution.stores.deephaven.DeephavenExecutionExtension.class)
                 .with(org.finos.legend.engine.plan.execution.stores.mongodb.MongoDBStoreExecutionExtension.class)
-                .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.Elasticsearch7ExecutionExtension.class);
+                .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.Elasticsearch7ExecutionExtension.class)
+                .with(GraphQLStoreExecutionExtension.class);
     }
 
     @Test
@@ -142,7 +145,8 @@ public class TestExtensions
                 .with(ServiceStoreExecutorBuilder.class)
                 .with(org.finos.legend.engine.plan.execution.stores.deephaven.plugin.DeephavenStoreExecutorBuilder.class)
                 .with(org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutorBuilder.class)
-                .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.ElasticsearchV7StoreExecutorBuilder.class);
+                .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.ElasticsearchV7StoreExecutorBuilder.class)
+                .with(GraphQLStoreExecutorBuilder.class);
     }
 
     @Test

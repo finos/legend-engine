@@ -423,6 +423,26 @@
         </dependency>
         <!-- Service Store -->
 
+        <!-- GraphQL Store -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-store-graphQL-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-store-graphQL-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-store-graphQL-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-store-graphQL-javaPlatformBinding-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- GraphQL Store -->
+
         <!-- Service -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

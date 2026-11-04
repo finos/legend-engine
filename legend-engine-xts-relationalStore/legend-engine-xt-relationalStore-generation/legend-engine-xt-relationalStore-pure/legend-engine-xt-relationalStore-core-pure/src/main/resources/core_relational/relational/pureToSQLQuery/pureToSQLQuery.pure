@@ -6389,7 +6389,8 @@ function meta::relational::functions::pureToSqlQuery::buildExistsAsJoinWithNullC
          print(if(!$context.debug, |'',
                  | $context.space+'   (S)Exists condition result>  '+$existsSubSelect->printDebugQuery($context.space, $extensions)));
 
-         let targetAlias =  ^TableAlias(name=$childNode.alias.name+'_ecq', relationalElement=$existsSubSelect);
+         let existsIdentity = $existsSubSelect->buildUniqueName(false, $extensions)->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.MD5);
+         let targetAlias =  ^TableAlias(name=$childNode.alias.name+'_ecq_'+$existsIdentity, relationalElement=$existsSubSelect);
 
          let columnNullCheck =  $joinAliases->map(c| let newCol =^$c(alias=$targetAlias) ;$negate->if(|^DynaFunction(name = 'isNull', parameters=$newCol),|^DynaFunction(name = 'isNotNull', parameters=$newCol));)->andFilters($extensions);
 
@@ -6399,7 +6400,7 @@ function meta::relational::functions::pureToSqlQuery::buildExistsAsJoinWithNullC
 
          let newJoinOperation = $oldJoin.operation->andFilters($extensions)->reprocessAliases($oldToNewAlias);
 
-         let newJoin = ^$oldJoin(name=$oldJoin.name + $existsSubSelect.data->buildUniqueName(false, $extensions) + '_ecq',operation=$newJoinOperation->toOne()->cast(@Operation))->reprocessJoin($oldToNewAlias, []);
+         let newJoin = ^$oldJoin(name=$oldJoin.name + '_ecq_' + $existsIdentity,operation=$newJoinOperation->toOne()->cast(@Operation))->reprocessJoin($oldToNewAlias, []);
 
          let newChildNode = ^$childNode(alias=$targetAlias,join=$newJoin,childrenData=[]);
 
@@ -10985,7 +10986,7 @@ function meta::relational::functions::pureToSqlQuery::genericTypeToDataType(gene
             // pair(|$path == 'UTinyInt', |fail('not supported yet!')),
             pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer)))
         ],
-        | fail ($genericType->printGenericType(false) + ' is not managed yet!');
+        | fail ($genericType->printGenericType(false) + ' is not managed yet!')->toOne();
     )->cast(@meta::relational::metamodel::datatype::DataType);
 
     if ($mult->isToMany(), |^meta::relational::metamodel::datatype::Array(type = $type), |$type);

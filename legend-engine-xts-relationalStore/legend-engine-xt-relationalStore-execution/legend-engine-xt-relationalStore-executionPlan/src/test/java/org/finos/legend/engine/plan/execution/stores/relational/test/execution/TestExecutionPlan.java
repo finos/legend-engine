@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -624,25 +625,108 @@ public class TestExecutionPlan extends AlloyTestServer
                 .sum();
     }
 
+    @Test
+    public void testLetBoundToScalarBlockReleasesItsConnectionWhenExecutedWithArgs() throws Exception
+    {
+        SingleExecutionPlan executionPlan = objectMapper.readValue(buildLetThenScalarBlockPlan(), SingleExecutionPlan.class);
+        long activeBefore = activeConnectionsOnTestServer();
+
+        for (int execution = 1; execution <= 3; execution++)
+        {
+            Result result = executeWithArgs(executionPlan);
+
+            Assert.assertTrue(result instanceof ConstantResult);
+            Assert.assertEquals("Alice", ((ConstantResult) result).getValue());
+            Assert.assertEquals(2L, activeConnectionsOnTestServer() - activeBefore);
+
+            result.close();
+            Assert.assertEquals(
+                    "connections leaked after " + execution + " execution(s) of a plan with a let bound to a block",
+                    0L,
+                    activeConnectionsOnTestServer() - activeBefore);
+        }
+    }
+
+    @Test
+    public void testLetBoundToScalarBlockReleasesItsConnectionWhenStreamingResultExecutedWithArgsIsClosed() throws Exception
+    {
+        SingleExecutionPlan executionPlan = objectMapper.readValue(buildLetThenStreamingQueryPlan(), SingleExecutionPlan.class);
+        long activeBefore = activeConnectionsOnTestServer();
+
+        for (int execution = 1; execution <= 3; execution++)
+        {
+            Result result = executeWithArgs(executionPlan);
+
+            Assert.assertTrue(result instanceof RelationalResult);
+            Assert.assertEquals(2L, activeConnectionsOnTestServer() - activeBefore);
+
+            result.close();
+            Assert.assertEquals(
+                    "connections leaked after " + execution + " execution(s) of a plan with a let bound to a block",
+                    0L,
+                    activeConnectionsOnTestServer() - activeBefore);
+        }
+    }
+
+    private Result executeWithArgs(SingleExecutionPlan executionPlan)
+    {
+        return planExecutor.executeWithArgs(PlanExecutor.ExecuteArgs.newArgs()
+                .withPlan(executionPlan)
+                .withIdentity(Identity.getAnonymousIdentity())
+                .build());
+    }
+
     private String buildScalarAllocationBlockPlan()
     {
-        String connection = "{\n" +
-                "  \"_type\": \"RelationalDatabaseConnection\",\n" +
-                "  \"type\": \"H2\",\n" +
-                "  \"authenticationStrategy\": {\"_type\": \"test\"},\n" +
-                "  \"datasourceSpecification\": {\n" +
-                "    \"_type\": \"static\",\n" +
-                "    \"databaseName\": \"testDB\",\n" +
-                "    \"host\": \"127.0.0.1\",\n" +
-                "    \"port\": \"" + serverPort + "\"\n" +
-                "  }\n" +
+        return "{\n" +
+                "  \"templateFunctions\": [],\n" +
+                "  \"rootExecutionNode\": " + scalarAllocationBlockNode("maxName", "max(name)") + "\n" +
                 "}";
+    }
 
+    private String buildLetThenScalarBlockPlan()
+    {
         return "{\n" +
                 "  \"templateFunctions\": [],\n" +
                 "  \"rootExecutionNode\": {\n" +
+                "    \"_type\": \"sequence\",\n" +
+                "    \"resultType\": {\"_type\": \"dataType\", \"dataType\": \"String\"},\n" +
+                "    \"executionNodes\": [\n" +
+                "      " + scalarAllocationBlockNode("maxName", "max(name)") + ",\n" +
+                "      " + scalarAllocationBlockNode("minName", "min(name)") + "\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+    }
+
+    private String buildLetThenStreamingQueryPlan()
+    {
+        return "{\n" +
+                "  \"templateFunctions\": [],\n" +
+                "  \"rootExecutionNode\": {\n" +
+                "    \"_type\": \"sequence\",\n" +
+                "    \"resultType\": {\"_type\": \"tds\", \"tdsColumns\": [{\"name\": \"name\", \"type\": \"VARCHAR(200)\"}]},\n" +
+                "    \"executionNodes\": [\n" +
+                "      " + scalarAllocationBlockNode("maxName", "max(name)") + ",\n" +
+                "      {\n" +
+                "        \"_type\": \"relational\",\n" +
+                "        \"sqlQuery\": \"select name as \\\"name\\\" from employeeTable\",\n" +
+                "        \"resultColumns\": [{\"label\": \"name\", \"dataType\": \"VARCHAR(200)\"}],\n" +
+                "        \"resultSizeRange\": {\"lowerBound\": 0},\n" +
+                "        \"resultType\": {\"_type\": \"tds\", \"tdsColumns\": [{\"name\": \"name\", \"type\": \"VARCHAR(200)\"}]},\n" +
+                "        \"connection\": " + testServerConnection() + "\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+    }
+
+    private String scalarAllocationBlockNode(String varName, String aggregate)
+    {
+        String connection = testServerConnection();
+        return "{\n" +
                 "    \"_type\": \"allocation\",\n" +
-                "    \"varName\": \"maxName\",\n" +
+                "    \"varName\": \"" + varName + "\",\n" +
                 "    \"realizeInMemory\": false,\n" +
                 "    \"resultSizeRange\": {\"lowerBound\": 1, \"upperBound\": 1},\n" +
                 "    \"resultType\": {\"_type\": \"dataType\", \"dataType\": \"String\"},\n" +
@@ -666,8 +750,8 @@ public class TestExecutionPlan extends AlloyTestServer
                 "            \"executionNodes\": [\n" +
                 "              {\n" +
                 "                \"_type\": \"sql\",\n" +
-                "                \"sqlQuery\": \"select max(name) from employeeTable\",\n" +
-                "                \"resultColumns\": [{\"label\": \"max(name)\", \"dataType\": \"\"}],\n" +
+                "                \"sqlQuery\": \"select " + aggregate + " from employeeTable\",\n" +
+                "                \"resultColumns\": [{\"label\": \"" + aggregate + "\", \"dataType\": \"\"}],\n" +
                 "                \"resultType\": {\"_type\": \"dataType\", \"dataType\": \"meta::pure::metamodel::type::Any\"},\n" +
                 "                \"connection\": " + connection + "\n" +
                 "              }\n" +
@@ -677,6 +761,20 @@ public class TestExecutionPlan extends AlloyTestServer
                 "        \"finallyExecutionNodes\": []\n" +
                 "      }\n" +
                 "    ]\n" +
+                "  }";
+    }
+
+    private String testServerConnection()
+    {
+        return "{\n" +
+                "  \"_type\": \"RelationalDatabaseConnection\",\n" +
+                "  \"type\": \"H2\",\n" +
+                "  \"authenticationStrategy\": {\"_type\": \"test\"},\n" +
+                "  \"datasourceSpecification\": {\n" +
+                "    \"_type\": \"static\",\n" +
+                "    \"databaseName\": \"testDB\",\n" +
+                "    \"host\": \"127.0.0.1\",\n" +
+                "    \"port\": \"" + serverPort + "\"\n" +
                 "  }\n" +
                 "}";
     }
