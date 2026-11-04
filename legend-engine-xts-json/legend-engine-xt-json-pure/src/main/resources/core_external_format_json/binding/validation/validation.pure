@@ -117,12 +117,20 @@ function <<access.private>> meta::external::format::json::binding::validation::m
 
       let errorMessages = $finalState.errorMessages;  
       if($errorMessages->isEmpty(),
-          | let classToPropertiesMap = $finalState.matchedSchema->map(ms | pair($ms.class, $ms.matchedFields.first->list()))->newMap();
+          | let ownMatchedFieldsByModelClass = $finalState.matchedSchema->map(ms | pair($ms.class, $ms.matchedFields.first->list()))->newMap();
+            let classToPropertiesMap = $finalState.matchedSchema->map(ms | pair($ms.class, $ms.class->meta::external::format::json::binding::validation::allMappedPropertiesIncludingGeneralizations($ownMatchedFieldsByModelClass)->list()))->newMap();
             let propertiesToFieldMap = $finalState.matchedSchema.matchedFields->map(p | pair($p.first, $p.second))->newMap();
             ^JsonSchemaBindingDetail(fetchMappedPropertiesForClass = {class:Class<Any>[1] | $classToPropertiesMap->get($class).values;},
                                      propertyToFieldNameGenerator  = {property:AbstractProperty<Any>[1] | $propertiesToFieldMap->get($property)->toOne('Property ' + $property.name->toOne() + ' not bound to any field.')});,
           | ^FailedBindingDetail(errorMessages = $errorMessages));
   );
+}
+
+function <<access.private>> meta::external::format::json::binding::validation::allMappedPropertiesIncludingGeneralizations(class: Class<Any>[1], ownMatchedFieldsByModelClass: Map<Class<Any>, List<AbstractProperty<Any>>>[1]): AbstractProperty<Any>[*]
+{
+  $ownMatchedFieldsByModelClass->get($class).values->concatenate(
+     $class.generalizations->map(g | $g.general.rawType->cast(@Class<Any>)->toOne()->meta::external::format::json::binding::validation::allMappedPropertiesIncludingGeneralizations($ownMatchedFieldsByModelClass))
+  )->removeDuplicates();
 }
 
 function <<access.private>> meta::external::format::json::binding::validation::matchModelAndSchema(schema:Class<Any>[1], model:Class<Any>[1]): SchemaClassMatchState[1]

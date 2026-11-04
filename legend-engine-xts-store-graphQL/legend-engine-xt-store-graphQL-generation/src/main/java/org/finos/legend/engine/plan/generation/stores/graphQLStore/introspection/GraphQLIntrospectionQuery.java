@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.plan.generation.stores.graphQLStore.introspection;
+
+public class GraphQLIntrospectionQuery
+{
+    public static final String QUERY =
+            "fragment FullType on __Type {\n" +
+            "  kind\n" +
+            "  name\n" +
+            "  fields(includeDeprecated: true) {\n" +
+            "    name\n" +
+            "    args {\n" +
+            "      ...InputValue\n" +
+            "    }\n" +
+            "    type {\n" +
+            "      ...TypeRef\n" +
+            "    }\n" +
+            "    isDeprecated\n" +
+            "    deprecationReason\n" +
+            "  }\n" +
+            "  inputFields {\n" +
+            "    ...InputValue\n" +
+            "  }\n" +
+            "  interfaces {\n" +
+            "    ...TypeRef\n" +
+            "  }\n" +
+            "  enumValues(includeDeprecated: true) {\n" +
+            "    name\n" +
+            "    isDeprecated\n" +
+            "    deprecationReason\n" +
+            "  }\n" +
+            "  possibleTypes {\n" +
+            "    ...TypeRef\n" +
+            "  }\n" +
+            "}\n" +
+            "fragment InputValue on __InputValue {\n" +
+            "  name\n" +
+            "  type {\n" +
+            "    ...TypeRef\n" +
+            "  }\n" +
+            "  defaultValue\n" +
+            "}\n" +
+            "fragment TypeRef on __Type {\n" +
+            "  kind\n" +
+            "  name\n" +
+            "  ofType {\n" +
+            "    kind\n" +
+            "    name\n" +
+            "    ofType {\n" +
+            "      kind\n" +
+            "      name\n" +
+            "      ofType {\n" +
+            "        kind\n" +
+            "        name\n" +
+            "        ofType {\n" +
+            "          kind\n" +
+            "          name\n" +
+            "          ofType {\n" +
+            "            kind\n" +
+            "            name\n" +
+            "            ofType {\n" +
+            "              kind\n" +
+            "              name\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}\n" +
+            "query IntrospectionQuery {\n" +
+            "  __schema {\n" +
+            "    queryType {\n" +
+            "      name\n" +
+            "    }\n" +
+            "    mutationType {\n" +
+            "      name\n" +
+            "    }\n" +
+            "    types {\n" +
+            "      ...FullType\n" +
+            "    }\n" +
+            "    directives {\n" +
+            "      name\n" +
+            "      locations\n" +
+            "      args {\n" +
+            "        ...InputValue\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}";
+
+    private GraphQLIntrospectionQuery()
+    {
+    }
+}

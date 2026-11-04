@@ -79,6 +79,8 @@ import org.finos.legend.engine.language.pure.grammar.from.DiagramParserExtension
 import org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.integration.store.graphql.GraphQLStoreGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.integration.store.graphql.GraphQLStoreGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.TextParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.BigQueryGrammarComposerExtension;
@@ -124,6 +126,7 @@ import org.finos.legend.engine.protocol.pure.v1.PersistenceRelationalProtocolExt
 import org.finos.legend.engine.protocol.pure.v1.RedshiftProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension;
+import org.finos.legend.engine.protocol.graphQLStore.GraphQLStoreProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.SpannerProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension;
@@ -161,6 +164,8 @@ import org.finos.legend.pure.code.core.MongoDBLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.PostgresSqlDialectTranslationPureCoreExtension;
 import org.finos.legend.pure.code.core.RelationalJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.RelationalLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.GraphQLStoreJavaBindingLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.GraphQLStoreLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.ServiceStoreJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.ServiceStoreLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.XMLJavaBindingLegendPureCoreExtension;
@@ -359,6 +364,7 @@ public class TestExtensions
                 .with(RedshiftProtocolExtension.class)
                 .with(ServiceProtocolExtension.class)
                 .with(ServiceStoreProtocolExtension.class)
+                .with(GraphQLStoreProtocolExtension.class)
                 .with(AuthenticationProtocolExtension.class)
                 .with(TextProtocolExtension.class)
                 .with(GraphQLPureProtocolExtension.class)
@@ -406,6 +412,7 @@ public class TestExtensions
                 .with(GraphQLGrammarParserExtension.class)
                 .with(SQLExpressionGrammarParserExtension.class)
                 .with(ServiceStoreGrammarParserExtension.class)
+                .with(GraphQLStoreGrammarParserExtension.class)
                 .with(TextParserExtension.class)
                 .with(ElasticsearchGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBGrammarParserExtension.class)
@@ -442,6 +449,7 @@ public class TestExtensions
                 .with(DatabricksGrammarComposerExtension.class)
                 .with(ServiceGrammarComposerExtension.class)
                 .with(ServiceStoreGrammarComposerExtension.class)
+                .with(GraphQLStoreGrammarComposerExtension.class)
                 .with(GraphQLPureGrammarComposerExtension.class)
                 .with(SQLExpressionGrammarComposerExtension.class)
                 .with(AuthenticationGrammarComposerExtension.class)
@@ -494,6 +502,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLCompilerExtension.class)
                 .with(SQLCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.integration.store.graphql.compiler.GraphQLStoreCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationCompilerExtension.class)
                 .with(org.finos.legend.engine.language.stores.elasticsearch.v7.compiler.ElasticsearchCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBCompilerExtension.class)
@@ -522,6 +531,8 @@ public class TestExtensions
                 .with(ExternalFormatJavaBindingLegendPureCoreExtension.class)
                 .with(M2MJavaBindingLegendPureCoreExtension.class)
                 .with(ServiceStoreJavaBindingLegendPureCoreExtension.class)
+                .with(GraphQLStoreJavaBindingLegendPureCoreExtension.class)
+                .with(GraphQLStoreLegendPureCoreExtension.class)
                 .with(ServiceStoreLegendPureCoreExtension.class)
                 .with(FlatDataJavaBindingLegendPureCoreExtension.class)
                 .with(XMLLegendPureCoreExtension.class)
@@ -648,6 +659,7 @@ public class TestExtensions
                 .with("core_relational_sparksql")
                 .with("core_relational_store_entitlement")
                 .with("core_servicestore")
+                .with("core_external_store_graphql")
                 .with("core_authentication")
                 .with("core_snowflake")
                 .with("core_bigqueryfunction")
@@ -662,6 +674,7 @@ public class TestExtensions
                 .with("core_java_platform_binding_external_format")
                 .with("core_relational_java_platform_binding")
                 .with("core_servicestore_java_platform_binding")
+                .with("core_external_store_graphql_java_platform_binding")
                 .with("core_external_format_flatdata_java_platform_binding")
                 .with("core_external_format_json_java_platform_binding")
                 .with("core_external_format_xml_java_platform_binding")

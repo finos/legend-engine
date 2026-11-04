@@ -1,0 +1,298 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
+import meta::external::store::graphQL::executionPlan::nodes::*;
+import meta::external::store::graphQL::metamodel::pure::*;
+import meta::external::store::graphQL::transformation::document::*;
+import meta::external::store::graphQL::transformation::filter::*;
+import meta::external::store::graphQL::transformation::selection::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
+import meta::pure::mapping::xStore::*;
+import meta::pure::metamodel::valuespecification::*;
+import meta::pure::router::store::metamodel::*;
+import meta::pure::store::*;
+import meta::core::runtime::*;
+
+function meta::external::store::graphQL::executionPlan::generation::buildGraphQLExecutionNode(connection: GraphQLConnection[1], subTrees: RoutedPropertyGraphFetchTree[*], unwrapSingleField: Boolean[1]): GraphQLExecutionNode[1]
+{
+  let selectionBuildResult = $subTrees->meta::external::store::graphQL::transformation::selection::buildSelectionSetForClass();
+  let fields = $selectionBuildResult.fields;
+
+  let pushedDown = $selectionBuildResult.pushedDownArguments;
+
+  // An inline instance-creation argument with no embedded $variable fields at all has an empty
+  // requiredVariableInput AND an empty variableDefinition (its literal data is embedded directly in the
+  // query text, with no outer bound variable) - it needs no GraphQLVariableBinding, unlike every other
+  // static argument shape, which always pairs exactly one variableDefinition with its binding.
+  let pushedDownStaticRaw = $pushedDown->filter(p | $p.requiredVariableInput->isEmpty() && $p.variableDefinition->isNotEmpty());
+  let pushedDownDynamic   = $pushedDown->filter(p | $p.requiredVariableInput->isNotEmpty());
+
+  $pushedDownStaticRaw->groupBy(p | $p.variableDefinition->toOne().name)->keyValues()->forAll(kv |
+    let group = $kv.second.values->cast(@meta::external::store::graphQL::transformation::filter::GraphQLPushedDownArgument);
+    let distinctSignatures = $group->map(p | $p.isList->toString() + ':[' + $p.value->map(v | $v->meta::json::toJSON())->meta::pure::functions::string::joinStrings(',') + ']')->removeDuplicates();
+    assert($distinctSignatures->size() == 1,
+      | 'Two different arguments both resolved to the GraphQL variable name \'' + $kv.first->toOne() + '\' with different literal values - rename one of the colliding schema arguments, or bind both calls to the same $variable instead.');
+  );
+  let pushedDownStatic = $pushedDownStaticRaw->removeDuplicatesBy(p | $p.variableDefinition->toOne().name);
+  $pushedDownStatic.variableDefinition.name->concatenate($pushedDownDynamic.variableDefinition->removeDuplicatesBy(vd | $vd.name).name)
+    ->groupBy(name | $name)->keyValues()->forAll(kv |
+      assert($kv.second.values->size() == 1,
+        | 'A literal argument and a $variable-bound argument both resolved to the GraphQL variable name \'' + $kv.first->toOne() + '\' - rename one of the colliding schema arguments, or bind both calls to the same $variable instead.');
+  );
+  let dynamicVariableDefinitionsDeduped = $pushedDownDynamic.variableDefinition->removeDuplicatesBy(vd | $vd.name);
+  let dynamicRequiredVariableInputsDeduped = $pushedDownDynamic.requiredVariableInput->removeDuplicatesBy(ri | $ri.name);
+
+  let document = meta::external::store::graphQL::transformation::document::buildQueryDocument($fields, $pushedDownStatic.variableDefinition->concatenate($dynamicVariableDefinitionsDeduped));
+  let queryText = $document->meta::external::store::graphQL::transformation::document::renderQueryDocument();
+  // toJSON() infers array-ness from the value collection's own size, so a declared-list argument with
+  // exactly one value must be serialized element-by-element and wrapped manually to stay array-shaped.
+  let variableBindings = $pushedDownStatic->map(p |
+    let jsonValue = if($p.isList,
+       | '[' + $p.value->map(v | $v->meta::json::toJSON()) ->meta::pure::functions::string::joinStrings(',') + ']';,
+       | $p.value->meta::json::toJSON();
+    );
+    ^GraphQLVariableBinding(name = $p.variableDefinition->toOne().name, value = $jsonValue);
+  );
+
+  // A ~joinAccessor call wraps the real target behind a synthetic top-level field with no matching
+  // class - the executor must peel that field off before internalize, which expects the unwrapped
+  // shape. An ordinary fetch's class already matches the wire response, so no unwrap is needed there.
+  let unwrapAlias = if($unwrapSingleField && $fields->isNotEmpty(), | $fields->toOne().alias, | []);
+
+  ^GraphQLExecutionNode(
+    url = $connection.url,
+    query = $queryText,
+    authenticationSpecification = $connection.authenticationSpecification,
+    variables = $variableBindings,
+    requiredVariableInputs = $dynamicRequiredVariableInputsDeduped,
+    unwrapAlias = $unwrapAlias,
+    resultType = ^DataTypeResultType(genericType = ^GenericType(rawType = String))
+  );
+}
+
+function <<access.private>> meta::external::store::graphQL::executionPlan::generation::isEmptySubTypeSiblingArtifact(st: RoutedPropertyGraphFetchTree[1], group: RoutedPropertyGraphFetchTree[*]): Boolean[1]
+{
+   $st.subType->isEmpty() && $st.subTrees->isEmpty() &&
+   $group->exists(other | $other.subType->isNotEmpty());
+}
+
+function meta::external::store::graphQL::executionPlan::generation::foldAncestorFieldsIntoSubType(group: RoutedPropertyGraphFetchTree[*], target: RoutedPropertyGraphFetchTree[1]): RoutedPropertyGraphFetchTree[1]
+{
+   let targetType = $target.subType->toOne();
+   let contributingSiblings = $group->filter(st |
+      ($st != $target) && $st.subTrees->isNotEmpty() &&
+      ($st.subType->isEmpty() || $targetType->meta::pure::functions::meta::_subTypeOf($st.subType->toOne()))
+   );
+   let effectiveSubTrees = $contributingSiblings->fold({st, acc |
+      let extra = $st.subTrees->cast(@RoutedPropertyGraphFetchTree)->filter(st2 |
+         !$acc->exists(a | $a.property->toOne().name == $st2.property->toOne().name));
+      $acc->concatenate($extra);
+   }, $target.subTrees->cast(@RoutedPropertyGraphFetchTree));
+   ^$target(subTrees = $effectiveSubTrees);
+}
+
+function <<access.private>> meta::external::store::graphQL::executionPlan::generation::narrowPropertyMappingToDeclaredType(st: RoutedPropertyGraphFetchTree[1], mapping: Mapping[1]): RoutedPropertyGraphFetchTree[1]
+{
+   if($st.propertyMapping->size() <= 1,
+      | $st,
+      | let declaredType = $st.property->toOne()->functionReturnType().rawType->toOne();
+        let narrowed = $st.propertyMapping->filter(pm | $mapping->classMappingById($pm.targetSetImplementationId)->filter(si | $si.class == $declaredType)->isNotEmpty());
+        if($narrowed->isEmpty(), | $st, | ^$st(propertyMapping = $narrowed));
+   );
+}
+
+function <<access.private>> meta::external::store::graphQL::executionPlan::generation::buildInMemoryPropertyNodeForGraphQL(effectiveTree: RoutedPropertyGraphFetchTree[1], pathSource: RoutedPropertyGraphFetchTree[1], parentPath: String[1], orderedPaths: String[*], parentSets: SetImplementation[*], mapping: Mapping[1], debug: DebugContext[1]): InMemoryGraphFetchExecutionNode[*]
+{
+   let shouldBuildNode = !$effectiveTree.property->meta::pure::functions::meta::isPrimitiveValueProperty()
+                          && generatePropertyNodeForComplexProperty($effectiveTree, $parentSets);
+   if ($shouldBuildNode,
+      {|
+         let currentPath = $parentPath + '.' + $pathSource->nodePathName();
+
+         assert($parentPath->in($orderedPaths),  | 'Unknown path ' + $parentPath  + '; known are: ' + $orderedPaths->joinStrings('[', '; ', ']'));
+         assert($currentPath->in($orderedPaths), | 'Unknown path ' + $currentPath + '; known are: ' + $orderedPaths->joinStrings('[', '; ', ']'));
+
+         ^InMemoryPropertyGraphFetchExecutionNode
+         (
+            resultType     = $effectiveTree->resultTypeFromGraphFetchTree(),
+            nodeIndex      = $orderedPaths->indexOf($currentPath),
+            parentIndex    = $orderedPaths->indexOf($parentPath),
+            graphFetchTree = $effectiveTree,
+            children       = $effectiveTree->meta::external::store::graphQL::executionPlan::generation::generateInMemoryChildGraphNodesForGraphQL($currentPath, $orderedPaths, $mapping, $debug)
+         );
+      },
+      {|
+         []
+      }
+   );
+}
+
+// Moved to meta::external::store::graphQL::transformation::selection (isRedundantProxySiblingArtifact) so the
+// GraphQL query-text-building side (graphQLSelectionSetBuilder.pure) can share the exact same check instead of
+// only being applied on this, the in-memory-execution-node-tree-building side - this file already imports that
+// module, so this is the only non-circular direction to share it in.
+
+function <<access.private>> meta::external::store::graphQL::executionPlan::generation::generateInMemoryChildGraphNodesForGraphQL(tree: RoutedGraphFetchTree[1], parentPath: String[1], orderedPaths: String[*], mapping: Mapping[1], debug: DebugContext[1]): InMemoryGraphFetchExecutionNode[*]
+{
+   let siblings = $tree.subTrees->cast(@RoutedPropertyGraphFetchTree);
+   let qualifiedPropertyNames = $siblings->meta::external::store::graphQL::transformation::selection::qualifiedPropertyNamesOf();
+   let propertyNames = $siblings->map(st | $st.property->toOne().name->toOne())->distinct();
+   $propertyNames->map({name: String[1] |
+      let group = $siblings->filter(st | $st.property->toOne().name->toOne() == $name);
+      $group
+         ->filter(st | !$st->meta::external::store::graphQL::executionPlan::generation::isEmptySubTypeSiblingArtifact($group)
+                    && !$st->meta::external::store::graphQL::transformation::selection::isRedundantProxySiblingArtifact($qualifiedPropertyNames))
+         ->map(st |
+            let effectiveTree = if($st.subType->isNotEmpty(),
+               | meta::external::store::graphQL::executionPlan::generation::foldAncestorFieldsIntoSubType($group, $st);,
+               | meta::external::store::graphQL::executionPlan::generation::narrowPropertyMappingToDeclaredType($st, $mapping);
+            );
+            meta::external::store::graphQL::executionPlan::generation::buildInMemoryPropertyNodeForGraphQL($effectiveTree, $st, $parentPath, $orderedPaths, $tree.sets, $mapping, $debug);
+         );
+   });
+}
+
+// Mirrors ServiceStore's planRootGraphFetchExecutionServiceStore, but - following MongoDB's precedent -
+// skips calculateSourceTree/ensureConstraintsRequirements: the mapping is document-native, with no
+// source/target remapping to translate.
+function meta::external::store::graphQL::executionPlan::generation::planRootGraphFetchExecutionGraphQL(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): InMemoryRootGraphFetchExecutionNode[1]
+{
+   let store      = $sq.store->cast(@meta::external::store::graphQL::metamodel::pure::GraphQLStore);
+   let rootTree   = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
+   let setImpl    = $rootTree.sets->toOne()->cast(@RootGraphQLInstanceSetImplementation);
+   let connection = $runtime->connectionByElement($store)->cast(@GraphQLConnection);
+
+   let fe = $sq.vs->evaluateAndDeactivate()->cast(@FunctionExpression);
+   let possibleFilter = $fe->meta::pure::mapping::modelToModel::graphFetch::executionPlan::graphFetchFilter()->evaluateAndDeactivate();
+   assert($possibleFilter->isEmpty(), | 'Push-down/in-memory filtering is not supported; remove the filter() or apply it after the fetched data is in memory (e.g. via a subsequent ->filter() on the fetched result, outside the graphFetch() call)');
+
+   let subTrees  = $rootTree.subTrees->cast(@RoutedPropertyGraphFetchTree);
+   let graphQLNode = meta::external::store::graphQL::executionPlan::generation::buildGraphQLExecutionNode($connection, $subTrees, false);
+
+   let internalizeNode = ^meta::external::format::shared::executionPlan::ExternalFormatInternalizeExecutionNode
+   (
+      resultType        = ^PartialClassResultType(
+                             genericType = ^GenericType(rawType = $rootTree.class),
+                             propertiesWithParameters = $rootTree.subTrees->cast(@PropertyGraphFetchTree)->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters))
+                           ),
+      resultSizeRange   = ZeroMany,
+      tree              = $rootTree,
+      binding           = $setImpl.binding,
+      // GraphQL's own discriminator convention - resolved from the response's __typename, not from
+      // query/mapping shape the way other stores resolve subtypes
+      config            = ^meta::external::format::json::metamodel::internalize::JsonSchemaInternalizeConfig(typeKeyName = '__typename'),
+      executionNodes    = $graphQLNode,
+      // Hardcoded false (mirrors MongoDB): ensureConstraintsRequirements never ran to enrich the tree,
+      // so internalize must not expect constraint-only properties to be present.
+      enableConstraints = false,
+      checked           = $checked
+   );
+
+   ^InMemoryRootGraphFetchExecutionNode
+   (
+      resultType     = $rootTree->resultTypeFromGraphFetchTree(),
+      nodeIndex      = 0,
+      graphFetchTree = $rootTree,
+      checked        = $checked,
+      children       = $rootTree->meta::external::store::graphQL::executionPlan::generation::generateInMemoryChildGraphNodesForGraphQL($rootTree->nodePathName(), $orderedPaths, $mapping, $debug),
+      executionNodes = $internalizeNode
+   );
+}
+
+// VariableInput naming below must use propertyToVarName() - the same convention the generic in-memory
+// cross-store executor uses to populate ExecutionState.
+function meta::external::store::graphQL::executionPlan::generation::planCrossStoreGraphFetchExecutionGraphQL(input: StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput[1]): LocalGraphFetchExecutionNode[1]
+{
+   let store = $input.clusteredTree.store;
+   assert($store->instanceOf(meta::external::store::graphQL::metamodel::pure::GraphQLStore), | 'Expected a GraphQLStore. Found - ' + $store->cast(@Store)->elementToPath());
+
+   let rootTree        = $input.clusteredTree->byPassClusteringInfo()->cast(@RoutedPropertyGraphFetchTree);
+   let targetClass     = $rootTree->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>);
+   let updatedRootTree = ^RoutedRootGraphFetchTree<Any>
+                          (
+                             subTrees = $rootTree.subTrees,
+                             class = $targetClass,
+                             sets = $rootTree.sets,
+                             requiredQualifiedProperties = $rootTree.requiredQualifiedProperties
+                          );
+   let rootPath = $input.parentPath + '.' + $rootTree->nodePathName();
+
+   assert($input.parentPath->in($input.orderedPaths), | 'Unknown path ' + $input.parentPath + '; known are: ' + $input.orderedPaths->joinStrings('[', '; ', ']'));
+   assert($rootPath->in($input.orderedPaths),          | 'Unknown path ' + $rootPath + '; known are: ' + $input.orderedPaths->joinStrings('[', '; ', ']'));
+   assertFalse($input.checked, | 'graphFetchChecked is not supported with cross-instance GraphQL joins');
+
+   let parentIdx  = $input.orderedPaths->indexOf($input.parentPath);
+   let currentIdx = $input.orderedPaths->indexOf($rootPath);
+
+   let xStorePropertyMapping = $rootTree.propertyMapping->toOne()->cast(@XStorePropertyMapping);
+   let setImpl               = $rootTree.sets->toOne()->cast(@RootGraphQLInstanceSetImplementation);
+   let connection            = $input.runtime->connectionByElement($setImpl.store)->cast(@GraphQLConnection);
+
+   assert($setImpl.joinAccessor->isNotEmpty(), | 'Cross-instance GraphQL join target \'' + $targetClass->elementToPath() + '\' needs a \'~joinAccessor\' qualified property declared on its class mapping to scope the fetch by join key');
+
+   let xStorePropInScope = $xStorePropertyMapping->meta::pure::mapping::modelToModel::graphFetch::executionPlan::getPopulatedXStorePropertiesInScope($targetClass);
+   assert($xStorePropInScope->size() == 1, | 'GraphQL cross-instance joins support exactly one join property per Association today; found ' + $xStorePropInScope->size()->toString() + ' for ' + $targetClass->elementToPath());
+   let joinProperty = $xStorePropInScope->toOne();
+   let joinVarName  = $joinProperty->meta::pure::mapping::modelToModel::graphFetch::executionPlan::propertyToVarName();
+
+   let joinValueParameter = ^VariableExpression(name = $joinVarName, genericType = $joinProperty->functionReturnType(), multiplicity = $joinProperty->functionReturnMultiplicity());
+   let joinAccessorTree = ^RoutedPropertyGraphFetchTree(
+                              property = $setImpl.joinAccessor->toOne(),
+                              parameters = $joinValueParameter,
+                              subTrees = $updatedRootTree.subTrees,
+                              sets = $updatedRootTree.sets
+                           );
+
+   let graphQLNode = meta::external::store::graphQL::executionPlan::generation::buildGraphQLExecutionNode($connection, [$joinAccessorTree], true);
+
+   let internalizeNode = ^meta::external::format::shared::executionPlan::ExternalFormatInternalizeExecutionNode
+   (
+      resultType        = ^PartialClassResultType(
+                             genericType = ^GenericType(rawType = $updatedRootTree.class),
+                             propertiesWithParameters = $updatedRootTree.subTrees->cast(@PropertyGraphFetchTree)->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters))
+                           ),
+      resultSizeRange   = ZeroMany,
+      tree              = $updatedRootTree,
+      binding           = $setImpl.binding,
+      config            = ^meta::external::format::json::metamodel::internalize::JsonSchemaInternalizeConfig(typeKeyName = '__typename'),
+      executionNodes    = $graphQLNode,
+      enableConstraints = false,
+      checked           = $input.checked
+   );
+
+   ^InMemoryCrossStoreGraphFetchExecutionNode
+   (
+      resultType            = $rootTree->resultTypeFromGraphFetchTree(),
+      parentIndex           = $parentIdx,
+      nodeIndex             = $currentIdx,
+      graphFetchTree        = $rootTree,
+      checked               = $input.checked,
+      xStorePropertyMapping = $xStorePropertyMapping,
+      // One HTTP call per parent object (N+1) - ~joinAccessor takes exactly one join-key parameter today
+      // (GraphQLStoreCompilerHelper.resolveJoinAccessor), so there's no batched-list-of-keys shape to
+      // route multiple parents' lookups through in a single request. Batching is unimplemented future work.
+      supportsBatching      = false,
+      children              = $rootTree->meta::external::store::graphQL::executionPlan::generation::generateInMemoryChildGraphNodesForGraphQL($rootPath, $input.orderedPaths, $input.mapping, $input.debug),
+      executionNodes        = $internalizeNode
+   );
+}

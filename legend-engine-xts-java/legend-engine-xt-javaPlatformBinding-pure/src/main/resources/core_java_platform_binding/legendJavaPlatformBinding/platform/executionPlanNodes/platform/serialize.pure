@@ -24,9 +24,11 @@ import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::*;
+import meta::pure::mapping::*;
 import meta::pure::graphFetch::execution::*;
 
 Class meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::SerializeData
@@ -34,9 +36,10 @@ Class meta::pure::executionPlan::platformBinding::legendJava::platform::serializ
    tree           : RootGraphFetchTree<Any>[1];
    auxiliaryTrees : RootGraphFetchTree<Any>[*];
    config         : AlloySerializationConfig[0..1];
+   mergeSubTypePaths : String[*];
 }
 
-function meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::prepareForSerialize(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GenerationContext[1]
+function meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::prepareForSerialize(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]): GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepareForSerialize\n', |''));
 
@@ -59,10 +62,27 @@ function meta::pure::executionPlan::platformBinding::legendJava::platform::seria
    let data = ^SerializeData(
       tree           = $tree,
       auxiliaryTrees = $childInfo.graphFetchTrees,
-      config         = $config
+      config         = $config,
+      mergeSubTypePaths = $childInfo.graphFetchTrees->map(t | $t->mergeSubTypePaths([], $extensions))
    );
 
    ^$context(typeInfos=$newInfo, nodeInfos=$context.nodeInfos->concatenate(^NodeInfo(path=$path, returnType=^SimpleJavaType(pureType=String, javaType=javaString()), data=$data, graphFetchTrees=$data.tree->concatenate($data.auxiliaryTrees))));
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::mergeSubTypePaths(tree:GraphFetchTree[1], parentPath:String[*], extensions:meta::pure::extension::Extension[*]): String[*]
+{
+   let inMemoryAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::LegendJavaInMemoryGraphFetchExtension);
+   let path  = $tree->match([
+      p: PropertyGraphFetchTree[1] | $parentPath->concatenate($p.property.name->toOne()),
+      g: GraphFetchTree[1]         | $parentPath
+   ]);
+   let owned = $tree->match([
+      r: meta::pure::graphFetch::routing::RoutedPropertyGraphFetchTree[1] | $r.sets->cast(@InstanceSetImplementation)->exists(set | $set->match($inMemoryAdhocExtensions.requiresUnionSubtypeDispatch->concatenate([s: InstanceSetImplementation[1] | false])->toOneMany())),
+      g: GraphFetchTree[1]                                                | false
+   ]);
+   $path->propertyPathKey()->filter(x | $owned)
+      ->concatenate($tree.subTrees->map(st | $st->mergeSubTypePaths($path, $extensions)))
+      ->concatenate($tree.subTypeTrees->map(stt | $stt.subTrees->map(st | $st->mergeSubTypePaths($path, $extensions))));
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::validateDateTimeFormat(config: AlloySerializationConfig[1]):Boolean[1]
@@ -107,11 +127,16 @@ function meta::pure::executionPlan::platformBinding::legendJava::platform::seria
    let pContext       = j_parameter($conventions->className(IExecutionNodeContext), 'context');
 
    let tree       = prepareTree($data, $inputType)->groupByFields()->cast(@RootGraphFetchTree<Any>);
-   let serializer = treeSerializerClass($path, $tree, $conventions, $debug);
+   let serializer = treeSerializerClass($path, $tree, $conventions, $data.mergeSubTypePaths, $debug);
    let method     = pair(javaMethod('public', $serializerWild, 'serializer', [$pWriter, $pContext]), j_return(j_new($serializer, [$pWriter, $pContext])));
 
    let serializeClass = javaClass($proto, [$method]);
-   newProject()->addClasses([$serializeClass, $serializer]);
+
+   // getterCall can embed an inline instance-creation expression (eg. `new FilterParam_Impl()...`) whose
+   // target class is only materialized via its CodeDependency, not eagerly built - resolve and merge those
+   // in, or javac fails to find the referenced class.
+   let methodBodyCodes = $serializer.methods.bodyCode->concatenate($method.second);
+   newProject()->addClasses([$serializeClass, $serializer])->concatenate($methodBodyCodes->dependencies()->resolveAndGetProjects())->toOneMany()->mergeProjects();
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::prnt(tree:GraphFetchTree[1], indent:String[1]): Any[*]
@@ -143,15 +168,19 @@ Class meta::pure::executionPlan::platformBinding::legendJava::platform::serializ
    fieldName : String[1];
    fieldSet  : PropertyGraphFetchTree[*];
 
+   isCheckedWrapper() {
+      $this.property->isCheckedWrapperProperty();
+   }: Boolean[1];
+
    returnType() {
-      if($this.property == checkedProperty('value') || $this.property == checkedProperty('source'),
+      if($this.isCheckedWrapper(),
          | $this.fieldSet->at(0).subType->toOne(),
          | $this.property->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()
       );
    }:meta::pure::metamodel::type::Type[1];
 
    defaultTree()  {
-      if($this.property == checkedProperty('value') || $this.property == checkedProperty('source'),
+      if($this.isCheckedWrapper(),
          | $this.fieldSet->at(0),
          | $this.fieldSet->filter(t| $t.subType->isEmpty())->first()
       );
@@ -159,7 +188,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::platform::serializ
 
 
    propertySubTypeTrees() {
-      if($this.property == checkedProperty('value') || $this.property == checkedProperty('source'),
+      if($this.isCheckedWrapper(),
          | $this.fieldSet->tail(),
          | $this.fieldSet->filter(t| $t.subType->isNotEmpty());
       );
@@ -214,6 +243,11 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
   ])->concatenate($propertyTreesForRootSubTypeTrees);
 }
 
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::isCheckedWrapperProperty(property:AbstractProperty<Any>[1]): Boolean[1]
+{
+   $property == checkedProperty('value') || $property == checkedProperty('source');
+}
+
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::groupByFields(tree:GraphFetchTree[1]): GraphFetchTree[1]
 {
    let byFieldName        = $tree.subTrees->cast(@PropertyGraphFetchTree)->groupBy(st| $st->subTreeFieldName());
@@ -234,14 +268,14 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
          fieldSet   = $subTrees->map(st| $st->groupByFields())->cast(@PropertyGraphFetchTree),
          property   = $property,
          parameters = $subTrees->at(0).parameters,
-         subType    = if($property == checkedProperty('value') || $property == checkedProperty('source'), |$subTrees->at(0).subType, |[])
+         subType    = if($property->isCheckedWrapperProperty(), |$subTrees->at(0).subType, |[])
       );
    );
    let subTypeTrees = $tree.subTypeTrees->map(stt |  $stt->groupByFields());
    ^$tree(subTrees = $grouped, subTypeTrees = $subTypeTrees->cast(@SubTypeGraphFetchTree));
 }
 
-function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeSerializerClass(path:String[1], tree:RootGraphFetchTree<Any>[1], conventions:Conventions[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeSerializerClass(path:String[1], tree:RootGraphFetchTree<Any>[1], conventions:Conventions[1], mergeSubTypePaths:String[*], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    print(if($debug.debug,|$debug.space+'treeSerializerClass\n', |''));
 
@@ -260,7 +294,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
       j_this($proto)->j_field($fContext)->j_assign($pContext)
    ]));
 
-   let methods     = treeSerialiseMethods($proto, [], $tree.class, $tree, $conventions, $debug->indent());
+   let methods     = treeSerialiseMethods($proto, [], $tree.class, $tree, $conventions, $mergeSubTypePaths, $debug->indent());
    let firstMethod = $methods->at(0).first;
    let withRenamed = pair(^$firstMethod(name='serialize'), $methods->at(0).second)->concatenate($methods->tail());
 
@@ -268,7 +302,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 }
 
 
-function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeSerialiseMethods(jClass:meta::external::language::java::metamodel::Class[1], path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], tree:GraphFetchTree[1], conventions:Conventions[1], debug:DebugContext[1]): Pair<meta::external::language::java::metamodel::Method, Code>[*]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeSerialiseMethods(jClass:meta::external::language::java::metamodel::Class[1], path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], tree:GraphFetchTree[1], conventions:Conventions[1], mergeSubTypePaths:String[*], debug:DebugContext[1]): Pair<meta::external::language::java::metamodel::Method, Code>[*]
 {
    let name = treeSerialiseMethodName($path, $class, false, $conventions);
    print(if($debug.debug,|$debug.space+'treeSerialiseMethods '+$name+'\n', |''));
@@ -277,39 +311,70 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    let propertySubTypeTrees = $tree->match([spgft:SerializePropertyGraphFetchTree[1] | $spgft.propertySubTypeTrees(), other:GraphFetchTree[1] | []    ])->cast(@PropertyGraphFetchTree);
 
    if($defaultTree->isNotEmpty() && $propertySubTypeTrees->isEmpty(),
+      | $defaultTree->toOne()->treeSerialiseMethodsWithSubTypeTrees($jClass, $path, $class, $conventions, $mergeSubTypePaths, $debug),
       {|
-         let method         = treeSerialiseMethod($jClass, $path, $class, $defaultTree->toOne(), $conventions, $debug);
-         let subTreeMethods = $defaultTree.subTrees->concatenate($defaultTree.subTypeTrees->map(st | $st.subTrees))->cast(@SerializePropertyGraphFetchTree)
-            ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
-            ->map(spgft| treeSerialiseMethods($jClass, $path->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $debug->indent()));
-         $method->concatenate($subTreeMethods);
-
-      }
-      ,
-      {|
-         let indexed            = $propertySubTypeTrees->toIndexed();
-         let subTypeMethods     = $indexed->map(ist| list(treeSerialiseMethods($jClass, $path->add('subType'+$ist.first->toString()), $ist.second.subType->toOne(), $ist.second, $conventions, $debug)));
-         let subTypesAndMethods = $propertySubTypeTrees.subType->zip($subTypeMethods->map(l| $l.values->at(0).first));
-
-         let name          = treeSerialiseMethodName($path, $class, false, $conventions);
-         let value         = j_parameter($conventions->className($class), 'value');
-         let testsAndThens = list($subTypesAndMethods->map(tm|
-                                let jType = $conventions->pureTypeToJavaType($tm.first, PureOne);
-                                pair(
-                                   $value->j_instanceof($jType),
-                                   j_this($jClass)->j_invoke($tm.second, $value->j_cast($jType))
-                                );
-                             ));
-         let else          = $defaultTree->map(t |treeSerialiseMethod($jClass, $path, $class, $t, $conventions, $debug)).second;
-         let defaultSubTreeMethods = $defaultTree.subTrees->cast(@SerializePropertyGraphFetchTree)
-            ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
-            ->map(spgft| treeSerialiseMethods($jClass, $path->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $debug->indent()));
-
-         let method        = pair(javaMethod('public', javaVoid(), $name, [$value]), j_if($testsAndThens, $else));
-
-         $method->concatenate($defaultSubTreeMethods)->concatenate($subTypeMethods.values);
+         if($defaultTree->usesExclusiveSubTypeDispatch($path, $mergeSubTypePaths),
+            | $defaultTree->treeSerialiseMethodsWithSubTypeDispatch($propertySubTypeTrees, $jClass, $path, $class, $conventions, $mergeSubTypePaths, $debug),
+            {|
+               let convertedSubTypeTrees = $propertySubTypeTrees->map(pst | ^SubTypeGraphFetchTree(subTypeClass = $pst.subType->toOne(), subTrees = $pst.subTrees));
+               let effectiveTree = if($defaultTree->isNotEmpty(),
+                  | let defaultTreeOnly = $defaultTree->toOne();
+                    ^$defaultTreeOnly(subTypeTrees = $defaultTreeOnly.subTypeTrees->concatenate($convertedSubTypeTrees));,
+                  | ^$tree(subTrees = [], subTypeTrees = $convertedSubTypeTrees)
+               );
+               $effectiveTree->treeSerialiseMethodsWithSubTypeTrees($jClass, $path, $class, $conventions, $mergeSubTypePaths, $debug);
+            }
+         );
       }
    );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeSerialiseMethodsWithSubTypeDispatch(defaultTree:GraphFetchTree[0..1], propertySubTypeTrees:PropertyGraphFetchTree[*], jClass:meta::external::language::java::metamodel::Class[1], path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1], mergeSubTypePaths:String[*], debug:DebugContext[1]): Pair<meta::external::language::java::metamodel::Method, Code>[*]
+{
+   let indexed            = $propertySubTypeTrees->toIndexed();
+   let subTypeMethods     = $indexed->map(ist| list(treeSerialiseMethods($jClass, $path->add('subType'+$ist.first->toString()), $ist.second.subType->toOne(), $ist.second, $conventions, $mergeSubTypePaths, $debug)));
+   let subTypesAndMethods = $propertySubTypeTrees.subType->zip($subTypeMethods->map(l| $l.values->at(0).first));
+
+   let name          = treeSerialiseMethodName($path, $class, false, $conventions);
+   let value         = j_parameter($conventions->className($class), 'value');
+   let testsAndThens = list($subTypesAndMethods->map(tm|
+                          let jType = $conventions->pureTypeToJavaType($tm.first, PureOne);
+                          pair(
+                             $value->j_instanceof($jType),
+                             j_this($jClass)->j_invoke($tm.second, $value->j_cast($jType))
+                          );
+                       ));
+   let else          = $defaultTree->map(t |treeSerialiseMethod($jClass, $path, $class, $t, $conventions, $debug)).second;
+   let defaultSubTreeMethods = $defaultTree.subTrees->cast(@SerializePropertyGraphFetchTree)
+      ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
+      ->map(spgft| treeSerialiseMethods($jClass, $path->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $mergeSubTypePaths, $debug->indent()));
+
+   let method        = pair(javaMethod('public', javaVoid(), $name, [$value]), j_if($testsAndThens, $else));
+
+   $method->concatenate($defaultSubTreeMethods)->concatenate($subTypeMethods.values);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeSerialiseMethodsWithSubTypeTrees(tree:GraphFetchTree[1], jClass:meta::external::language::java::metamodel::Class[1], path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1], mergeSubTypePaths:String[*], debug:DebugContext[1]): Pair<meta::external::language::java::metamodel::Method, Code>[*]
+{
+   let method = treeSerialiseMethod($jClass, $path, $class, $tree, $conventions, $debug);
+   let nestedMethods = {nestedPath:String[*], spgfts:GraphFetchTree[*] |
+      $spgfts->cast(@SerializePropertyGraphFetchTree)
+         ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
+         ->map(spgft| treeSerialiseMethods($jClass, $nestedPath->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $mergeSubTypePaths, $debug->indent()))
+   };
+   let defaultSubTreeMethods = $nestedMethods->eval($path, $tree.subTrees);
+   let subTypeSubTreeMethods = $tree.subTypeTrees->toIndexed()->map(ist | $nestedMethods->eval($path->add('subType'+$ist.first->toString()), $ist.second.subTrees));
+   $method->concatenate($defaultSubTreeMethods)->concatenate($subTypeSubTreeMethods);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::usesExclusiveSubTypeDispatch(defaultTree:GraphFetchTree[0..1], path:String[*], mergeSubTypePaths:String[*]): Boolean[1]
+{
+   $defaultTree->isEmpty() || !$path->propertyPathKey()->in($mergeSubTypePaths);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::propertyPathKey(path:String[*]): String[1]
+{
+   $path->filter(segment | !$segment->startsWith('subType'))->makeString('.');
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeSerialiseMethod(jClass:meta::external::language::java::metamodel::Class[1], path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], tree:GraphFetchTree[1], conventions:Conventions[1], debug:DebugContext[1]): Pair<meta::external::language::java::metamodel::Method, Code>[1]
@@ -321,9 +386,10 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    let value    = j_parameter($conventions->className($class), 'value');
 
    let propertyLines = $tree.subTrees->cast(@SerializePropertyGraphFetchTree)->map(spgft | $spgft->serializeProperty(getterCall($spgft, $value, $fContext, $conventions, $debug), $jClass, $path, $conventions, $debug));
-   let subTypePropertyLines =  $tree.subTypeTrees->map(sst | let subTypeClass = $sst.subTypeClass;
-                                                                   $sst.subTrees->cast(@SerializePropertyGraphFetchTree)->map(spgft | j_if($value->j_instanceof($conventions->className($subTypeClass)),
-                                                                                                                                           $spgft->serializeProperty(getterCall($spgft, $value->j_cast($conventions->className($subTypeClass)), $fContext, $conventions, $debug), $jClass, $path, $conventions, $debug))
+   let subTypePropertyLines =  $tree.subTypeTrees->toIndexed()->map(ist | let subTypeClass = $ist.second.subTypeClass;
+                                                                   let subTypePath = $path->add('subType'+$ist.first->toString());
+                                                                   $ist.second.subTrees->cast(@SerializePropertyGraphFetchTree)->map(spgft | j_if($value->j_instanceof($conventions->className($subTypeClass)),
+                                                                                                                                           $spgft->serializeProperty(getterCall($spgft, $value->j_cast($conventions->className($subTypeClass)), $fContext, $conventions, $debug), $jClass, $subTypePath, $conventions, $debug))
                                                                                                                              );
                                                       );
 
@@ -351,39 +417,20 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 {
   let property     = $spgft.property;
   let type         = $spgft.returnType;
-  if($property == checkedProperty('value') || $property == checkedProperty('value') || $property == checkedProperty('source'),
+  if($spgft.isCheckedWrapper(),
     | $value->j_invoke($conventions->getterName($property), [], javaWildcard())->j_cast($conventions->pureTypeToJavaType($type, PureOne)),
     {|
         $value->j_invoke(
           $conventions->getterName($property),
           if($property->instanceOf(QualifiedProperty),
-              {|
-                let valueExtractor = {x: VariableExpression[1] |
-                                        let javaType = $conventions->pureTypeToJavaType($x.genericType, $x.multiplicity);
-                                        let typeArg  = if($javaType->isJavaList(), |$fContext->j_invoke('listType', $javaType->elementType()->toBoxed()->j_classField()), |$javaType->toBoxed()->j_classField());
-                                        $fContext->j_invoke('getResult', [j_string($x.name), $typeArg], $javaType);
-                                      };
-                let parameters = $spgft.parameters->evaluateAndDeactivate();
-                $parameters->map(x |
-                    let vals = $x->match([
-                      iv : InstanceValue[1]      | $iv.values->map(x | if($x->instanceOf(VariableExpression), | $valueExtractor->eval($x), | $conventions->primitiveLiteral($x))),
-                      v  : VariableExpression[1] | $valueExtractor->eval($v),
-                      vs : ValueSpecification[1] | $vs->generateJava($conventions, $debug)
-                    ]);
-                    let param = $property->functionType().parameters->evaluateAndDeactivate()->tail()->at($parameters->indexOf($x));
-                    if($param.multiplicity->hasToOneUpperBound(),
-                      | if($vals->isEmpty(), | j_null(), | $vals->toOne()),
-                      | if($vals->size() == 1 && $vals.type->toOne()->isJavaList(), |$vals, |javaArrays()->j_invoke('asList', $vals, $conventions->pureTypeToJavaType($param.genericType.rawType->toOne(), $param.multiplicity)))
-                    );
-                );
-              },
+              | $property->meta::pure::executionPlan::platformBinding::legendJava::shared::instanceCreationArguments::qualifiedPropertyArgumentsCode($spgft.parameters->evaluateAndDeactivate(), $fContext, $conventions, $debug),
               | []
           ),
           $conventions->pureTypeToJavaType($property)
         );
     }
   );
-}                
+}
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::serializeProperty(spgft : SerializePropertyGraphFetchTree[1], getterCall : Code[1], jClass:meta::external::language::java::metamodel::Class[1], path:String[*], conventions:Conventions[1], debug:DebugContext[1]):Code[1]
 {

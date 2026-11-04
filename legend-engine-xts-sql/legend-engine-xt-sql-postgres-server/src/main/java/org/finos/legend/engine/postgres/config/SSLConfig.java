@@ -28,6 +28,7 @@ public class SSLConfig
     private boolean needClientAuth;
     private boolean wantClientAuth;
     private boolean requireSsl;
+    private boolean sniHostCheck;
     private List<String> supportedProtocols;
     private List<String> supportedCipherSuites;
 
@@ -94,6 +95,11 @@ public class SSLConfig
     public boolean isRequireSsl()
     {
         return requireSsl;
+    }
+
+    public boolean isSniHostCheck()
+    {
+        return sniHostCheck;
     }
 
     public List<String> getSupportedProtocols()

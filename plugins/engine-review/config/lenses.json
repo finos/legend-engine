@@ -10,10 +10,6 @@
     "suites": {
         "relational": {
             "module": "legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit",
-            "tests": [
-                "RelationalEMITTests",
-                "RelationEMITTests"
-            ],
             "lenses": [
                 "sql",
                 "protocol"
@@ -21,9 +17,6 @@
         },
         "service": {
             "module": "legend-engine-xts-service/legend-engine-xt-service-emit",
-            "tests": [
-                "ServiceEMITTests"
-            ],
             "lenses": [
                 "sql",
                 "protocol"
@@ -31,9 +24,6 @@
         },
         "persistence": {
             "module": "legend-engine-xts-persistence/legend-engine-xt-persistence-emit",
-            "tests": [
-                "PersistenceEMITTests"
-            ],
             "lenses": [
                 "sql",
                 "protocol"
@@ -41,19 +31,12 @@
         },
         "core": {
             "module": "legend-engine-core/legend-engine-core-emit-tests",
-            "tests": [
-                "GrammarEMITTests",
-                "M2MEMITTests"
-            ],
             "lenses": [
                 "protocol"
             ]
         },
         "crossfeature": {
             "module": "legend-engine-config/legend-engine-emit-tests",
-            "tests": [
-                "CrossFeatureEMITTests"
-            ],
             "lenses": [],
             "note": "Needs nearly the whole reactor built; request it explicitly with --suites."
         }

@@ -69,6 +69,7 @@ import java.util.stream.Collectors;
  *       the execution plan of each service and of each test its runner can debug (for a test that
  *       runs no plan, such as persistence, the statements it would issue), or the error that
  *       prevented it</li>
+ *   <li>{@value #COMPLETE_FILE}: written last, so a model directory without it was cut short</li>
  * </ul>
  * Errors are recorded without stack frames, so that line numbers do not differ between revisions.
  */
@@ -76,6 +77,7 @@ public final class EMITSnapshot
 {
     public static final String DIRECTORY_PROPERTY = "legend.emit.snapshot.dir";
     public static final String CROSS_READ_PROPERTY = "legend.emit.snapshot.crossRead";
+    public static final String COMPLETE_FILE = "complete.json";
 
     private static final ObjectMapper MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final Set<Path> WRITTEN_SUBTYPE_FILES = ConcurrentHashMap.newKeySet();
@@ -239,6 +241,11 @@ public final class EMITSnapshot
         debugs.stream()
                 .filter(debug -> debug != null)
                 .forEach(debug -> write(testPlanPath(testablePath, suiteId, debug.atomicTestId), debugEntry(debug)));
+    }
+
+    public void writeComplete()
+    {
+        write(Paths.get(COMPLETE_FILE), new LinkedHashMap<>());
     }
 
     private static Path testPlanPath(String testablePath, String suiteId, String atomicTestId)
