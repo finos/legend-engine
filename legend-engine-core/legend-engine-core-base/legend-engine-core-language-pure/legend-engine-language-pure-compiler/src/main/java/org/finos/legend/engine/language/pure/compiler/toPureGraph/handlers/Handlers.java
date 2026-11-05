@@ -949,13 +949,18 @@ public class Handlers
             else if (valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
             {
                 ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
+                String secondType = secondProcessedParameter._genericType()._rawType()._name();
+                if (!valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_relation_Relation").contains(secondType))
+                {
+                    throw new EngineException("join() expects its second argument to be a relation, got " + secondType, parameters.get(1).sourceInformation, EngineErrorType.COMPILATION);
+                }
                 org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity one = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
                 updateTwoParamsLambdaDiffTypes(parameters.get(3), firstProcessedParameter._genericType()._typeArguments().getFirst(), secondProcessedParameter._genericType()._typeArguments().getFirst(), one, one);
                 result.with(secondProcessedParameter).with(parameters.get(2).accept(valueSpecificationBuilder)).with(parameters.get(3).accept(valueSpecificationBuilder));
             }
             else
             {
-                parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
+                throw new EngineException("join() expects its first argument to be a relation or a TabularDataSet, got " + gt._rawType()._name(), parameters.get(0).sourceInformation, EngineErrorType.COMPILATION);
             }
             return result;
         }
@@ -2499,7 +2504,7 @@ public class Handlers
                 h("meta::pure::tds::emptyLast_SortInformation_1__SortInformation_1_", "emptyLast", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "SortInformation".equals(ps.get(0)._genericType()._rawType()._name()))
         ));
 
-        register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "join", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)));
+        register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "join", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> ps.size() == 4 && typeOneRelation(ps.get(0)) && typeOneRelation(ps.get(1)) && typeOne(ps.get(2), "JoinKind") && typeOne(ps.get(3), pureModel.taxonomyTypes("cov_function_FunctionDefinition")))));
 
         register(grp(AsOfJoinInference,
                         h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", "asOfJoin", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true),
@@ -3605,6 +3610,16 @@ public class Handlers
     public boolean typeOne(ValueSpecification vs, MutableSet<String> type)
     {
         return isNilOrType(vs, type) && isOne(vs._multiplicity());
+    }
+
+    public boolean typeOneRelation(ValueSpecification vs)
+    {
+        return typeOne(vs, pureModel.taxonomyTypes("cov_relation_Relation"));
+    }
+
+    public boolean typeOneTabularDataSet(ValueSpecification vs)
+    {
+        return typeOne(vs, pureModel.taxonomyTypes("cov_tds_TabularDataSet"));
     }
 
     public boolean typeZeroOne(ValueSpecification vs, String type)
