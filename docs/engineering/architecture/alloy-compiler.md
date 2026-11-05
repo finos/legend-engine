@@ -900,8 +900,8 @@ public class MyStoreProcessor extends Processor<MyStore> {
     @Override
     protected void processElementSecondPass(MyStore element, CompileContext context) {
         // Fill in body — resolve cross-references now that all types are registered
-        Root_meta_mystore_MyStore_Impl compiled =
-            (Root_meta_mystore_MyStore_Impl) context.pureModel.getStore(
+        Root_meta_mystore_MyStore compiled =
+            (Root_meta_mystore_MyStore) context.pureModel.getStore(
                 buildPackageString(element._package, element.name), element.sourceInformation);
         compiled._connectionUrl(element.connectionUrl);
     }
