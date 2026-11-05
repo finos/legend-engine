@@ -3556,6 +3556,7 @@ function <<access.private>> meta::external::language::java::factory::project::me
       {|
          let existing = $base->getClass($srcDirPath, $classFullName)->toOne();
          
+         if ($existing->is($class), | $base, |
          if ($existing->instanceOf(meta::external::language::java::metamodel::Enumeration) && $class->instanceOf(meta::external::language::java::metamodel::Class),
           | $base,
           | if ($existing->instanceOf(meta::external::language::java::metamodel::Class) && $class->instanceOf(meta::external::language::java::metamodel::Enumeration),
@@ -3602,7 +3603,7 @@ function <<access.private>> meta::external::language::java::factory::project::me
 
               $base->replaceClass($f);
               
-            ));
+            )));
       }
    );
 }
