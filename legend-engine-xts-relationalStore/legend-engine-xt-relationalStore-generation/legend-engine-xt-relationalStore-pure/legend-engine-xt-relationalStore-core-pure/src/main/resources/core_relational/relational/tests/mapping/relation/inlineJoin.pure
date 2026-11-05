@@ -157,38 +157,6 @@ import meta::pure::metamodel::relation::*;
 import meta::pure::executionPlan::*;
 import meta::relational::metamodel::execute::*;
 
-function <<meta::pure::profiles::test.BeforePackage>> meta::relational::tests::mapping::relation::inlineJoin::setUp():Boolean[1]
-{
-  let connection = meta::external::store::relational::tests::testRuntime(JoinDB).connectionByElement(JoinDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
-
-  meta::relational::metamodel::execute::executeInDb('Drop table if exists PersonTable;', $connection);
-  meta::relational::metamodel::execute::executeInDb('Create Table PersonTable(ID INT PRIMARY KEY, FIRSTNAME VARCHAR(100) NOT NULL, FIRMID INT NOT NULL);', $connection);
-  meta::relational::metamodel::execute::executeInDb('insert into PersonTable (ID, FIRSTNAME, FIRMID) values (1, \'Alice\', 1);', $connection);
-  meta::relational::metamodel::execute::executeInDb('insert into PersonTable (ID, FIRSTNAME, FIRMID) values (2, \'Bob\', 2);', $connection);
-
-  meta::relational::metamodel::execute::executeInDb('Drop table if exists FirmTable;', $connection);
-  meta::relational::metamodel::execute::executeInDb('Create Table FirmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(100) NOT NULL);', $connection);
-  meta::relational::metamodel::execute::executeInDb('insert into FirmTable (ID, LEGALNAME) values (1, \'Acme\');', $connection);
-  meta::relational::metamodel::execute::executeInDb('insert into FirmTable (ID, LEGALNAME) values (2, \'Beta\');', $connection);
-
-  meta::relational::metamodel::execute::executeInDb('Drop table if exists ChainPersonTable;', $connection);
-  meta::relational::metamodel::execute::executeInDb('Create Table ChainPersonTable(ID INT PRIMARY KEY, FIRSTNAME VARCHAR(100) NOT NULL, FIRMID INT NOT NULL, COUNTRYID INT NOT NULL);', $connection);
-  meta::relational::metamodel::execute::executeInDb('insert into ChainPersonTable (ID, FIRSTNAME, FIRMID, COUNTRYID) values (1, \'Alice\', 1, 1);', $connection);
-  meta::relational::metamodel::execute::executeInDb('insert into ChainPersonTable (ID, FIRSTNAME, FIRMID, COUNTRYID) values (2, \'Bob\', 2, 2);', $connection);
-
-  meta::relational::metamodel::execute::executeInDb('Drop table if exists ChainFirmTable;', $connection);
-  meta::relational::metamodel::execute::executeInDb('Create Table ChainFirmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(100) NOT NULL, COUNTRYID INT NOT NULL);', $connection);
-  meta::relational::metamodel::execute::executeInDb('insert into ChainFirmTable (ID, LEGALNAME, COUNTRYID) values (1, \'Acme\', 1);', $connection);
-  meta::relational::metamodel::execute::executeInDb('insert into ChainFirmTable (ID, LEGALNAME, COUNTRYID) values (2, \'Beta\', 2);', $connection);
-
-  meta::relational::metamodel::execute::executeInDb('Drop table if exists CountryTable;', $connection);
-  meta::relational::metamodel::execute::executeInDb('Create Table CountryTable(ID INT PRIMARY KEY, COUNTRYNAME VARCHAR(100) NOT NULL);', $connection);
-  meta::relational::metamodel::execute::executeInDb('insert into CountryTable (ID, COUNTRYNAME) values (1, \'USA\');', $connection);
-  meta::relational::metamodel::execute::executeInDb('insert into CountryTable (ID, COUNTRYNAME) values (2, \'UK\');', $connection);
-
-  true;
-}
-
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testNavigationJoinDefaultsToLeftOuterJoin():Boolean[1]
 {
   let result = executionPlan(
