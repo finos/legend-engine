@@ -625,8 +625,8 @@ rooted at the source class):
 | Step | What happens | Output |
 |------|-------------|--------|
 | **A. Build branch source SWC** (`buildBranchSourceSWC`) | A *fresh* SWC rooted at the raw source table (or RelationFunction subselect). Aliases use suffix `_mj_src`. **Independent** of `srcSWC`. | `branchSrcSWC` |
-| **B. Attach target placeholder** (`buildModelJoinPlaceholder`) | Build a fresh target-side SWC (raw table or RF subselect, suffix `_mj_tgt`), join it under `branchSrcSWC` via a dummy `1=1` join named `<src>_<tgt>_mj_ph`. Both `_mj_src` and `_mj_tgt` now live in one tree. | `withPlaceholder` |
-| **C. Compile lambda body** | Bind `_mj_src → branchSrcSWC`, `_mj_tgt → withPlaceholder` in a `FunctionParamScope`, then `processValueSpecification(lambda.body[0], …)`. | `resultSWC` containing compiled `Operation` |
+| **B. Attach target placeholder** (`buildModelJoinPlaceholder`) | Caller already built the target-side SWC (`buildMappedModelJoinTargetSWC`, dispatching on the target's `InstanceSetImplementation` type — raw table or RF subselect, suffix `_mj_tgt` — for classic/inline `modelJoin`; a synthetic `RelationFunctionInstanceSetImplementation` wrapping an arbitrary expression as a zero-arg `LambdaFunction`, for `navigationJoin`/`filterJoin`, which are unmodeled). `buildModelJoinPlaceholder` just joins that SWC under `branchSrcSWC` via a dummy `1=1` join named `<src>_<tgt>_mj_ph`. Both `_mj_src` and `_mj_tgt` now live in one tree. The `mj` in these suffixes is `buildModelJoinBranch`'s `joinKind`; the relation-mapping `navigationJoin`/`filterJoin` lowering reuses the same steps with `nj`/`fj`. | `withPlaceholder` |
+| **C. Compile lambda body** | Bind `_mj_src → branchSrcSWC`, `_mj_tgt → withPlaceholder` in a `FunctionParamScope`, then `processValueSpecification(lambda.body[0], …)` with `shouldIsolate = false`, so an enclosing filter context (e.g. `isNotEmpty`) cannot trigger isolation of these trees. The condition's own parameters are always already named `_mj_src`/`_mj_tgt` by this point for every caller — classic/inline `modelJoin` rewrite to those names at compile time (`ModelJoinLambdaRewriteVisitor`), `navigationJoin`/`filterJoin` at SQL-gen time (`withJoinSideSentinels`, positional) — so `compileModelJoinForBranch`'s `conditionVariableNames` parameter is always the literal `['_mj_src', '_mj_tgt']`, never read off the condition itself. | `resultSWC` containing compiled `Operation` |
 | **D. Extract** | Pull the compiled condition (`select.columns` or `filteringOperation`); locate the placeholder JTN in the result tree and the source-side intermediates that compilation may have added (e.g. for `$_mj_src.region.code`). | `compiledCondition`, `placeholderJTN`, `sourceIntermediates` |
 | **E. Build the real join** | `^Join(operation = compiledCondition, target = compiledTgtAlias, aliases = [(parentOfTarget, tgt), (tgt, parentOfTarget)])`. `parentOfTarget` is the deepest source intermediate (or the branch source alias if no chain). | `realJoin` |
 | **F. Materialise target if needed** (`materializeTargetAsSubselect`) | If the target side accumulated children (nested target navigation), or the target class mapping has filter / groupBy / distinct, wrap target as a `SelectSQLQuery` exposing only the columns referenced by the ON clause; rewrite `realJoin.operation` aliases to point at the subselect. | `targetJTN` |
@@ -841,13 +841,14 @@ per-leaf conditions.
 | Target is a Union? | Multiple MJPMs (one per leaf). Synthetic RPMs flow into `buildSQLQueryOutManySetImplementations` → `buildUnion` + `buildUnionJoin`. | step 3 of dispatch |
 | Source is a Union? | Multiple MJPMs (one per leaf). Same multi-set path; `addMissingColumnIfUnion` exposes FK columns on each source branch. | step 3 of dispatch |
 | Source is a `RelationFunction`? | `buildBranchSourceSWC` calls `processRelationFunctionClassMapping`; aliases reference the wrapped `RelationFunctionSelectSQLQuery`. Otherwise identical. | step A |
-| Target is a `RelationFunction`? | Same on the target side inside `buildModelJoinPlaceholder`. The wrapper must be preserved (historical bug — see below). | step B |
+| Target is a `RelationFunction`? | Same on the target side inside `buildMappedModelJoinTargetSWC` (called by the caller before `compileModelJoinForBranch`/`buildModelJoinPlaceholder` ever see the target). The wrapper must be preserved (historical bug — see below). | step B |
 | Self-association? | Compiler binds both lambda params to the same class via name-based pairing; SQL side is unchanged — branch source and placeholder are two independent aliases of the same table. | n/a |
 
 ### Things to watch out for (historical bugs, in code form)
 
 These all live in `compileModelJoinForBranch` / `buildModelJoinPlaceholder` /
-`materializeTargetAsSubselect`. Touching any of them invites regression here.
+`buildMappedModelJoinTargetSWC` / `materializeTargetAsSubselect`. Touching any of them invites
+regression here.
 
 1. **Alias drift across `merge()`.** Inside `processValueSpecification`, `mergeSQLQueryData`
    may rename the placeholder JTN's alias for uniqueness. Step **D** must read the
@@ -860,7 +861,7 @@ These all live in `compileModelJoinForBranch` / `buildModelJoinPlaceholder` /
    targets where `createJoinTableAlias` mutates the alias name).
 
 3. **RelationFunction wrapper preservation.** `buildBranchSourceSWC` /
-   `buildModelJoinPlaceholder` must keep the `RelationFunctionSelectSQLQuery` wrapper
+   `buildMappedModelJoinTargetSWC` must keep the `RelationFunctionSelectSQLQuery` wrapper
    visible at the alias. If you accidentally peel it off, downstream property
    resolution falls through to the `SelectSQLQuery` arm and fails with
    "Found 0 relations".
@@ -884,7 +885,7 @@ These all live in `compileModelJoinForBranch` / `buildModelJoinPlaceholder` /
 | Goal | Touch |
 |------|-------|
 | New supported expression in the lambda body | Nothing — if `processValueSpecification` already handles it for ordinary queries, ModelJoin gets it for free. |
-| New target store kind | Extend the `match` arms in `buildBranchSourceSWC` / `buildModelJoinPlaceholder` so the resulting alias preserves whatever wrapper the SQL generator expects. |
+| New target store kind | Extend the `match` arms in `buildBranchSourceSWC` / `buildMappedModelJoinTargetSWC` so the resulting alias preserves whatever wrapper the SQL generator expects. |
 | New target post-processing requiring materialisation | Extend the `targetHasComplexMapping` predicate in step **F**. |
 | Non-binary association support | Currently rejected at compiler step 1; adding support requires a new `ModelJoinAssociationImplementation` shape and rethinking the cross-product expansion. |
 | Cross-store ModelJoin | Out of scope for the relational generator. The router's "exactly one cluster" assertion (§5 step 4) is the natural place to relax — but downstream the SQL stage assumes one store, so a parallel multi-store plan-generation path would be needed. |

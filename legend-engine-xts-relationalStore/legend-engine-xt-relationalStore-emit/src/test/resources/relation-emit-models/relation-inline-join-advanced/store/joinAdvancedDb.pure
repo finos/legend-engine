@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::relation::joinadvanced::db::JoinAdvancedDB
+(
+  Table PersonTable
+  (
+    ID         INTEGER PRIMARY KEY,
+    NAME       VARCHAR(100) NOT NULL,
+    FIRM_ID    INTEGER,
+    MANAGER_ID INTEGER
+  )
+  Table FirmTable
+  (
+    ID         INTEGER PRIMARY KEY,
+    LEGAL_NAME VARCHAR(100) NOT NULL,
+    ADDRESS_ID INTEGER
+  )
+  Table AddressTable
+  (
+    ID   INTEGER PRIMARY KEY,
+    CITY VARCHAR(100) NOT NULL
+  )
+  Table TemporalPersonTable
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ID      INTEGER PRIMARY KEY,
+    NAME    VARCHAR(100) NOT NULL,
+    FIRM_ID INTEGER,
+    FROM_Z  DATE NOT NULL,
+    THRU_Z  DATE NOT NULL
+  )
+  Table AccountTable
+  (
+    ID           INTEGER PRIMARY KEY,
+    PERSON_ID    INTEGER NOT NULL,
+    ACCOUNT_NAME VARCHAR(100) NOT NULL
+  )
+)

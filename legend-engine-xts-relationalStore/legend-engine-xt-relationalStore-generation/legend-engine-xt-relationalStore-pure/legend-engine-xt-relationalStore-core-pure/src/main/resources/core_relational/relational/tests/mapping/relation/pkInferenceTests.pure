@@ -120,6 +120,12 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
     meta::relational::tests::mapping::relation::pkTestJoin__Relation_1_));
 }
 
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromSelfJoin():Boolean[1]
+{
+  assertSameElements(['ID', 'MGR_ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestSelfJoin__Relation_1_));
+}
+
 // B. Unsupported / negative — operators we conservatively treat as empty.
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKEmptyForAggregate():Boolean[1]

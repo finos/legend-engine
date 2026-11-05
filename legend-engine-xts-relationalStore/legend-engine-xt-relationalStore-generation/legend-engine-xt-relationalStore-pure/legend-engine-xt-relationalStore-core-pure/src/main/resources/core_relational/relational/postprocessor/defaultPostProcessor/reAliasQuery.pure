@@ -41,28 +41,31 @@ function meta::relational::postProcessor::reAlias::replaceAliasName(query:Select
    ^Result<SelectSQLQuery|1>(values= $result);
 }
 
+function <<access.private>> meta::relational::postProcessor::reAlias::ownStructuralPair(a:RelationalTreeNode[1]): Pair<String,String>[*]
+{
+    let alias      = $a.alias;
+    let relElement = $alias.relationalElement;
+    $relElement->match([
+                          u:SetOperationQuery[1]        | pair('unionAlias', $alias.name)->concatenate($u->traverse());,
+                          v:ViewSelectSQLQuery[1]  | pair($relElement->cast(@Table).name, $alias.name)->concatenate($v.selectSQLQuery->traverse());,
+                          t:Table[1]               | pair($relElement->cast(@Table).name, $alias.name);,
+                          tf:TabularFunction[1]    | pair($relElement->cast(@TabularFunction).name, $alias.name);,
+                          tf:TabularFunctionCall[1] | pair($relElement->cast(@TabularFunctionCall).function->cast(@TabularFunction).name, $alias.name);,
+                          c:CommonTableExpressionReference[1] | pair($relElement->cast(@CommonTableExpressionReference).name, $alias.name);,
+                          s:SelectSQLQuery[1]      | let childPairs = $s->traverse();
+                                                     if($childPairs->isNotEmpty(),
+                                                        |pair($childPairs->first()->toOne().first, $alias.name)->concatenate($childPairs),
+                                                        |$childPairs);,
+                          ss: SemiStructuredArrayFlatten[1] | pair('ss_flatten', $alias.name)->concatenate($ss.navigation->traverse());,
+                          ss: SemiStructuredArrayFlattenRelation[1] | pair('ss_flatten', $alias.name)->concatenate($ss.navigation->traverse());,
+                          g: GenerateSeriesRelation[1] | pair('generate_series', $alias.name);,
+                          any:Any[1]               | []
+                          ]);
+}
+
 function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q:RelationalTreeNode[*]): Pair<String,String>[*]
 {
-    $q->map(a| let alias      = $a.alias;
-               let relElement = $alias.relationalElement;
-               $relElement->match([
-                                     u:SetOperationQuery[1]        | pair('unionAlias', $alias.name)->concatenate($u->traverse());,
-                                     v:ViewSelectSQLQuery[1]  | pair($relElement->cast(@Table).name, $alias.name)->concatenate($v.selectSQLQuery->traverse());,
-                                     t:Table[1]               | pair($relElement->cast(@Table).name, $alias.name);,
-                                     tf:TabularFunction[1]    | pair($relElement->cast(@TabularFunction).name, $alias.name);,
-                                     tf:TabularFunctionCall[1] | pair($relElement->cast(@TabularFunctionCall).function->cast(@TabularFunction).name, $alias.name);,
-                                     c:CommonTableExpressionReference[1] | pair($relElement->cast(@CommonTableExpressionReference).name, $alias.name);,
-                                     s:SelectSQLQuery[1]      | let childPairs = $s->traverse();
-                                                                if($childPairs->isNotEmpty(),
-                                                                   |pair($childPairs->first()->toOne().first, $alias.name)->concatenate($childPairs),
-                                                                   |$childPairs);,
-                                     ss: SemiStructuredArrayFlatten[1] | pair('ss_flatten', $alias.name)->concatenate($ss.navigation->traverse());,
-                                     ss: SemiStructuredArrayFlattenRelation[1] | pair('ss_flatten', $alias.name)->concatenate($ss.navigation->traverse());,
-                                     g: GenerateSeriesRelation[1] | pair('generate_series', $alias.name);,
-                                     any:Any[1]               | []
-                                     ])
-                          ->concatenate($a.childrenData->cast(@RelationalTreeNode)->traverse());
-           );
+    $q->map(a| $a->ownStructuralPair()->concatenate($a.childrenData->cast(@RelationalTreeNode)->traverse()));
 }
 
 function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q:RelationalOperationElement[*]): Pair<String,String>[*]
@@ -79,6 +82,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
                                                let relElement = $ta.relationalElement;
                                                $relElement->match([
                                                                     t:Table[1]                  | pair($t.name,$name);,
+                                                                    v:View[1]                   | pair($v.name,$name);,
                                                                     tf:TabularFunction[1]       | pair($tf.name,$name);,
                                                                     tf:TabularFunctionCall[1]   | pair($tf.function.name, $name);,
                                                                     c:CommonTableExpressionReference[1] | pair($c.name,$name);,
@@ -102,22 +106,45 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
                      s:SemiStructuredPropertyAccess[1] | $s.operand->concatenate($s.property)->concatenate($s.index)->traverse(),
                      s:SemiStructuredArrayElementAccess[1] | $s.operand->concatenate($s.index)->traverse(),
                      s:SemiStructuredArrayFlattenOutput[1] | $s.tableAliasColumn->traverse(),
+                     // The joinTreeNode is detached from the query's RootJoinTreeNode, so the source-side
+                     // aliases are only reachable through each hop's join condition.
+                     roj:RelationalOperationElementWithJoin[1] | $roj.joinTreeNode->traverseDetachedJoinTree()
+                                                                  ->concatenate($roj.relationalOperationElement->traverse()),
                      any:Any[1]             | [];
                    ])
          )
+}
+
+function <<access.private>> meta::relational::postProcessor::reAlias::traverseDetachedJoinTree(q:RelationalTreeNode[*]): Pair<String,String>[*]
+{
+    $q->map(a| let conditionPairs = $a->match([j:JoinTreeNode[1] | let referencedAliases = $j.join.operation->extractTableAliasColumns().alias->removeDuplicatesBy(ta | $ta.name);
+                                                                   $j.join.operation->traverse()->concatenate($referencedAliases->traverse());,
+                                               any:Any[1] | []]);
+               $a->ownStructuralPair()
+                 ->concatenate($conditionPairs)
+                 ->concatenate($a.childrenData->cast(@RelationalTreeNode)->traverseDetachedJoinTree());
+           );
+}
+
+function <<access.private>> meta::relational::postProcessor::reAlias::resolveOtherAliasTransformed(join:Join[1], alias:TableAlias[1], m:Map<String,String>[1]):TableAlias[1]
+{
+   $join->otherTableFromAlias($alias)->toOne()->transformAliasName($m)->cast(@TableAlias);
 }
 
 function <<access.private>> meta::relational::postProcessor::reAlias::transformAliasName(r:RelationalTreeNode[1], m:Map<String,String>[1], parentAlias:TableAlias[0..1]):RelationalTreeNode[1]
 {
    $r->match([j:JoinTreeNode[1] | let join = $j.join;
                                   let alias = $j.alias->transformAliasName($m)->cast(@TableAlias);
+                                  let resolvedParentAlias = if($parentAlias->isNotEmpty(),
+                                                               |$parentAlias,
+                                                               |resolveOtherAliasTransformed($j.join, $j.alias, $m));
                                   let joinTarget = if($j.join.target->isNotEmpty(),
                                                       |if($j.join.target == $j.alias,
                                                           |$alias,
-                                                          |$parentAlias),
+                                                          |$resolvedParentAlias),
                                                       |[]);
                                   ^$j(
-                                     join         = ^$join(operation=$join.operation->transformAliasName($m)->cast(@Operation), aliases = [pair($parentAlias->toOne(), $alias), pair($alias, $parentAlias->toOne())], target = $joinTarget),
+                                     join         = ^$join(operation=$join.operation->transformAliasName($m)->cast(@Operation), aliases = [pair($resolvedParentAlias->toOne(), $alias), pair($alias, $resolvedParentAlias->toOne())], target = $joinTarget),
                                      alias        = $alias,
                                      childrenData = $j.childrenData->cast(@RelationalTreeNode)->map(x | $x->transformAliasName($m, $alias))
                                   );,
@@ -136,8 +163,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                                     let transformedCols = $s.columns->map(c | $c->transformAliasName($m));
                                     let transformedExtraFilteringOp = $s.extraFilteringOperation->map(ef | $ef->transformAliasName($m));
                                     let transformedSf   = $s.savedFilteringOperation->map(sf| let parentAliasTransformed = if($sf.first->instanceOf(JoinTreeNode),
-                                                                                                                              |let parentAlias = $sf.first->cast(@JoinTreeNode).join->otherTableFromAlias($sf.first->cast(@JoinTreeNode).alias);
-                                                                                                                               $parentAlias->toOne()->transformAliasName($m)->cast(@TableAlias);,
+                                                                                                                              |resolveOtherAliasTransformed($sf.first->cast(@JoinTreeNode).join, $sf.first->cast(@JoinTreeNode).alias, $m),
                                                                                                                               |[]);
                                                                                               let firstTransformed  = $sf.first->transformAliasName($m, $parentAliasTransformed);
                                                                                               let secondTransformed = $sf.second->transformAliasName($m);
