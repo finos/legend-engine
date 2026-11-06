@@ -67,47 +67,14 @@
     "test" : "meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""
   }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
     "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketHours_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "The DurationUnit 'HOUR' is not supported yet for timeBucket"
   }, {
     "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMinutes_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMonths_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "The DurationUnit 'MINUTE' is not supported yet for timeBucket"
   }, {
     "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketSeconds_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketWeeks_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketYears_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketDays_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketMonths_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketWeeks_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketYears_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'hashAgg' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_",
-    "expectedError" : "Unsupported number of bits to shift - max bits allowed is 62"
-  }, {
-    "test" : "meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_",
-    "expectedError" : "Unsupported number of bits to shift - max bits allowed is 62"
+    "expectedError" : "The DurationUnit 'SECOND' is not supported yet for timeBucket"
   }, {
     "test" : "meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_",
     "expectedError" : "Unused format args. [4] arguments provided to expression \"COVAR_POP(%s, %s)\""
