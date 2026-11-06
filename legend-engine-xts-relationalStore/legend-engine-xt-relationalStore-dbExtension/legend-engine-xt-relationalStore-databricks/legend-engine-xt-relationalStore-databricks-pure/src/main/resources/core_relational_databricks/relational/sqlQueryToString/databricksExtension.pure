@@ -152,8 +152,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpLikeDatabricks()})),
     dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpReplaceDatabricks()})),
     // The shared SQL generation flattens maxBy/minBy's two collections into one argument list,
-    // [values..., keys..., n?]. The aggregate forms (a value column, a key column and an optional n) render at
-    // most 3 arguments, so more than 3 can only be the collection form, which the MAX_BY/MIN_BY aggregates cannot take.
+    // [values..., keys..., n?], and drops the boundary between them. The aggregate forms (a value column, a key column
+    // and an optional n) render at most 3 arguments, so more than 3 can only be the collection form, which the
+    // MAX_BY/MIN_BY aggregates cannot take. Single-element collections stay on the aggregates, which give the same result.
     dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] |
         [if($p->size() > 3, | $p->maxByOrMinByOverCollectionsForDatabricks(true), | 'MAX_BY(' + $p->joinStrings(', ') + ')')]
     })),
@@ -766,9 +767,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    $result.numMax;
 }
 
-// An odd argument count means a trailing n (the top-N overload). Ties keep their original order, as in
-// maxBy.pure/minBy.pure. try_element_at gives a key past the end of a shorter key list a null, and null keys
-// are dropped, which matches both Pure's zip truncation and the MAX_BY/MIN_BY aggregates skipping null keys.
+// An odd argument count means a trailing n (the top-N overload). With the boundary between the collections lost,
+// splitting the rest in half assumes they are the same length; only keeping collection arguments grouped in the
+// shared SQL generation would lift that. Ties keep their original order, as in maxBy.pure/minBy.pure, and null keys
+// are dropped, as the MAX_BY/MIN_BY aggregates skip them.
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::maxByOrMinByOverCollectionsForDatabricks(args:String[*], isMax:Boolean[1]):String[1]
 {
    let hasN = $args->size()->rem(2) == 1;
