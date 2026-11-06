@@ -356,3 +356,86 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
     simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
   assertEquals('select concat(`root`.FIRSTNAME, \' \', `root`.LASTNAME) as `fullName` from personTable as `root`', $sql);
 }
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testMaxByOverCollectionsOfColumnsDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Person.all()->project(p|maxBy([$p.firstName->toOne(), $p.lastName->toOne()], [$p.age->toOne(), 0]), 'eldest'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select try_element_at(array_sort(filter(transform(array(`root`.FIRSTNAME, `root`.LASTNAME), (v, i) -> named_struct(\'v\', v, \'k\', try_element_at(array(`root`.AGE, 0), i + 1), \'i\', i)), x -> x.k is not null), (l, r) -> case when l.k > r.k then -1 when l.k < r.k then 1 else l.i - r.i end), 1).v as `eldest` from personTable as `root` group by `root`.ID', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testMinByTopNOverLiteralCollectionsDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Person.all()->project(p|minBy(['a', 'b', 'c'], [3, 1, 2], 2), 'lowest'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select transform(slice(array_sort(filter(transform(array(\'a\', \'b\', \'c\'), (v, i) -> named_struct(\'v\', v, \'k\', try_element_at(array(3, 1, 2), i + 1), \'i\', i)), x -> x.k is not null), (l, r) -> case when l.k < r.k then -1 when l.k > r.k then 1 else l.i - r.i end), 1, 2), x -> x.v) as `lowest` from personTable as `root` group by `root`.ID', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testMaxByOverSingleElementCollectionsUsesAggregateDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Person.all()->project(p|maxBy(['a'], [1]), 'highest'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select MAX_BY(\'a\', 1) as `highest` from personTable as `root` group by `root`.ID', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testMaxByTopNOverSingleElementCollectionsUsesAggregateDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Person.all()->project(p|maxBy(['a'], [1], 1), 'highest'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select MAX_BY(\'a\', 1, 1) as `highest` from personTable as `root` group by `root`.ID', $sql);
+}
+
+function <<access.private>> meta::relational::tests::functions::sqlstring::databricks::rangeIntervalWindowColumnSql(from:meta::relational::metamodel::FrameIntervalValue[1], to:meta::relational::metamodel::FrameIntervalValue[1]):String[1]
+{
+  let window = ^meta::relational::metamodel::Window(
+    sortBy = ^meta::relational::metamodel::SortByInfo(sortByElement = ^meta::relational::metamodel::ColumnName(name = 'settlementDateTime'), sortDirection = meta::relational::metamodel::SortDirection.ASC),
+    frame = ^meta::relational::metamodel::Frame(frameType = meta::relational::metamodel::FrameType.RANGE, offsetFrom = $from, offsetTo = $to)
+  );
+  let column = ^meta::relational::metamodel::WindowColumn(columnName = 'total', window = $window, func = ^meta::relational::metamodel::DynaFunction(name = 'sum', parameters = ^meta::relational::metamodel::ColumnName(name = 'quantity')));
+  meta::relational::functions::sqlQueryToString::processOperation($column, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+}
+
+function <<access.private>> meta::relational::tests::functions::sqlstring::databricks::followingInterval(value:Integer[1], unit:DurationUnit[1]):meta::relational::metamodel::FrameIntervalValue[1]
+{
+  ^meta::relational::metamodel::FrameIntervalValue(value = ^meta::relational::metamodel::Literal(value = $value), durationUnit = $unit, direction = meta::relational::metamodel::FrameValueDirection.FOLLOWING)
+}
+
+function <<access.private>> meta::relational::tests::functions::sqlstring::databricks::precedingInterval(value:Integer[1], unit:DurationUnit[1]):meta::relational::metamodel::FrameIntervalValue[1]
+{
+  ^meta::relational::metamodel::FrameIntervalValue(value = ^meta::relational::metamodel::Literal(value = $value), durationUnit = $unit, direction = meta::relational::metamodel::FrameValueDirection.PRECEDING)
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testRangeFrameWithMixedFixedUnitsUsesFinerUnitDatabricks():Boolean[1]
+{
+  let sql = rangeIntervalWindowColumnSql(followingInterval(1, DurationUnit.SECONDS), followingInterval(1, DurationUnit.DAYS));
+  assertEquals('sum(quantity) OVER (Order By settlementDateTime asc nulls last RANGE BETWEEN INTERVAL 1 SECOND FOLLOWING AND INTERVAL 86400 SECOND FOLLOWING)', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testRangeFrameWithCoarserUnitFirstUsesFinerUnitDatabricks():Boolean[1]
+{
+  let sql = rangeIntervalWindowColumnSql(precedingInterval(2, DurationUnit.WEEKS), precedingInterval(3, DurationUnit.HOURS));
+  assertEquals('sum(quantity) OVER (Order By settlementDateTime asc nulls last RANGE BETWEEN INTERVAL 336 HOUR PRECEDING AND INTERVAL 3 HOUR PRECEDING)', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testRangeFrameWithSameUnitsIsNotConvertedDatabricks():Boolean[1]
+{
+  let sql = rangeIntervalWindowColumnSql(precedingInterval(2, DurationUnit.MONTHS), followingInterval(1, DurationUnit.MONTHS));
+  assertEquals('sum(quantity) OVER (Order By settlementDateTime asc nulls last RANGE BETWEEN INTERVAL 2 MONTH PRECEDING AND INTERVAL 1 MONTH FOLLOWING)', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testRangeFrameMixingMonthsWithAFixedUnitIsUnsupportedDatabricks():Boolean[1]
+{
+  assertError(|rangeIntervalWindowColumnSql(followingInterval(1, DurationUnit.MONTHS), followingInterval(1, DurationUnit.DAYS)),
+    'Window function with range frame using interval is not supported for this database type: Databricks');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testRangeFrameMixingUnitsWithAParameterOffsetIsUnsupportedDatabricks():Boolean[1]
+{
+  let parameterOffset = ^meta::relational::metamodel::FrameIntervalValue(
+    value = ^meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder(name = 'n', type = Integer),
+    durationUnit = DurationUnit.SECONDS,
+    direction = meta::relational::metamodel::FrameValueDirection.FOLLOWING
+  );
+  assertError(|rangeIntervalWindowColumnSql($parameterOffset, followingInterval(1, DurationUnit.DAYS)),
+    'Window function with range frame using interval is not supported for this database type: Databricks');
+}

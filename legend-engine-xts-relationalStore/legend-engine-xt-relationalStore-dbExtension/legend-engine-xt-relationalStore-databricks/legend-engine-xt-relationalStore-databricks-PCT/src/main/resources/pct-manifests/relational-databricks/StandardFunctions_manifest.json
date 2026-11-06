@@ -121,9 +121,6 @@
     "test" : "meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 2\nactual:   2.0\""
   }, {
-    "test" : "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
-    "expectedError" : "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `max_by` requires [2, 3] parameters but the actual number is 4."
-  }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\""
   }, {
@@ -138,11 +135,5 @@
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 1.23D\nactual:   1.23\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
-    "expectedError" : "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `min_by` requires [2, 3] parameters but the actual number is 4."
-  }, {
-    "test" : "meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_",
-    "expectedError" : "[PARSE_SYNTAX_ERROR] Syntax error at or near '['."
   } ]
 }
