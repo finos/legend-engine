@@ -369,7 +369,14 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
     | let originalEmbedded = $currentPropertyMapping->cast(@EmbeddedSetImplementation);
       let directEmbeddedPM = $originalEmbedded->map(c|$c->_propertyMappingsByPropertyName($propertyName));
       let inlineTargetIds = $originalEmbedded.targetSetImplementationId->filter(t | !$t->isEmpty() && $originalEmbedded.id != $t);
+      // An inline modelJoin's model-level condition only resolves the embedded owner's properties
+      // once routed (its $_mj_src bound to this embedded set), so prefer the router's routed copy.
+      let routedModelJoinPM = if(!$directEmbeddedPM->isEmpty() && $directEmbeddedPM->forAll(pm | $pm->instanceOf(meta::pure::mapping::modelJoin::ModelJoinPropertyMapping))
+                                   && propertyMappingsFromRouterMatchProperty($propertyMappingFromRouter, $property),
+                                 | $propertyMappingFromRouter->filter(pm | $pm->instanceOf(meta::pure::mapping::modelJoin::ModelJoinPropertyMapping)),
+                                 | []);
       let result = if([
+                        pair(|!$routedModelJoinPM->isEmpty(), | $routedModelJoinPM),
                         pair(|!$directEmbeddedPM->isEmpty(), | $directEmbeddedPM),
                         pair(|!$inlineTargetIds->isEmpty(), | $mapping->_classMappingByIdRecursive($inlineTargetIds)
                                                                       ->filter(c | !$c->instanceOf(EmbeddedSetImplementation))

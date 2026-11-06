@@ -339,11 +339,25 @@ Location: `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-ge
 | Model-join combinations (relation leaf + relational leaf) | `modelJoin/testModelJoinAdvanced.pure`, `modelJoin/testModelJoinMilestoning.pure` |
 | Union mappings | `union/relation/testRelationUnion.pure`, `union/relation/testRelationUnionAdvanced.pure` |
 
+The inline join constructs (`modelJoin`, `navigationJoin`, `filterJoin` —
+[§2.11 of the architecture doc](../architecture/relation-mapping.md#211-relationship-join-property-mappings))
+are compiled here by legend-pure's own compiler; their SQL generation is covered by
+`relation/inlineJoin.pure`. Their engine compile-time rules are covered by
+`TestRelationFunctionMappingJoinCompilation` (compiler module) and
+`TestRelationMappingJoinPrimaryKeyGate` (relational grammar module, where table primary keys can be
+inferred), and their execution by the EMIT models below.
+
 These run as part of the compiled-mode Pure suite entry point `Test_Pure_Relational`
 (`org.finos.legend.pure.code.core.relational.Test_Pure_Relational`, in the `core-pure` module
 above). A small number of tests only exercise interpreted-mode/Alloy behavior — they are tagged
 `<<test.AlloyOnly>>` (e.g. in `relationCoverageFilter.pure`, `relationCoverageDates.pure`) and are
-excluded from that compiled run.
+excluded from that compiled run. They run in the engine server module's
+`Test_Relational_UsingPureClientTestSuite`, which starts an H2 test server, a metadata server and
+the engine `Server` before executing them:
+
+```bash
+mvn test -pl legend-engine-config/legend-engine-server/legend-engine-server-http-server -Dtest=Test_Relational_UsingPureClientTestSuite
+```
 
 ```bash
 mvn test -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/legend-engine-xt-relationalStore-core-pure -Dtest=Test_Pure_Relational
@@ -369,6 +383,12 @@ layout, `.emit.yaml` schema, feature taxonomy) see
 ```bash
 mvn test -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit -Dtest=RelationEMITTests
 ```
+
+Inline-join execution coverage lives in `relation-inline-join` (single hop of each construct),
+`relation-inline-self-join` and `relation-inline-join-advanced` (chains, filterJoin, to-many and
+self modelJoins, filter / isEmpty / exists / groupBy over join properties, derived properties,
+embedded and union mappings, business-temporal sources and modelJoin targets, and the same keyed property at two
+navigation depths).
 
 ### Which layer to add a new test to
 

@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::metamodel::relation::*;
+
+Class demo::relation::selfjoin::Employee
+{
+  id: Integer[1];
+  firstName: String[1];
+  managerName: String[1];
+  nameIfManaged: String[1];
+}
+
+function demo::relation::selfjoin::func::employeesRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], FIRST_NAME:String[1], MANAGER_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::selfjoin::db::SelfJoinDB.EmployeeTable}#
+}
+
+###Mapping
+import demo::relation::selfjoin::func::*;
+
+Mapping demo::relation::selfjoin::mapping::SelfJoinMapping
+(
+  *demo::relation::selfjoin::Employee[emp]: Relation
+  {
+    ~src demo::relation::selfjoin::func::employeesRel()
+    id: ID,
+    firstName: FIRST_NAME,
+    managerName: $src->navigationJoin(employeesRel(), {e, m | $e.MANAGER_ID == $m.ID}).FIRST_NAME,
+    nameIfManaged: $src->filterJoin(employeesRel(), {e, m | $e.MANAGER_ID == $m.ID}).FIRST_NAME
+  }
+
+  testSuites:
+  [
+    selfJoinNavigationSuite:
+    {
+      function: |demo::relation::selfjoin::Employee.all()->project(~[Name: x | $x.firstName, Manager: x | $x.managerName])->sort([~Name->ascending()]);
+      tests:
+      [
+        resolvesManagerViaSelfJoin:
+        {
+          data:
+          [
+            demo::relation::selfjoin::db::SelfJoinDB:
+              Reference
+              #{
+                demo::relation::selfjoin::data::SelfJoinData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnManagerFirstName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Manager":"Alice"},{"Name":"Bob","Manager":"Alice"},{"Name":"Carol","Manager":"Bob"},{"Name":"Dave","Manager":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    selfJoinFilterSuite:
+    {
+      function: |demo::relation::selfjoin::Employee.all()->project(~[Name: x | $x.nameIfManaged])->sort([~Name->ascending()]);
+      tests:
+      [
+        keepsSourceNameGatedBySelfJoin:
+        {
+          data:
+          [
+            demo::relation::selfjoin::db::SelfJoinDB:
+              Reference
+              #{
+                demo::relation::selfjoin::data::SelfJoinData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnGatedSourceColumn:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice"},{"Name":"Bob"},{"Name":"Carol"},{"Name":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

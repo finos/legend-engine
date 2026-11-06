@@ -918,12 +918,15 @@ so live in the `mapping:` domain alongside their relational counterparts:
 |---|---|
 | `mapping:relation-binding-transformer` | `Binding <qualifiedName>:` property transformer |
 | `mapping:relation-embedded` | Embedded property mapping — `prop ( ... )` |
-| `mapping:relation-expression-rhs` | Full `$src` expression as a property RHS (vs. a bare column) |
+| `mapping:relation-expression-rhs` | Full `$row` expression as a property RHS (vs. a bare column) |
 | `mapping:relation-filter` | `->filter` applied in the source relation (the `~func` body) |
+| `mapping:relation-filter-join` | Inline `$src->filterJoin(rel(), {..}).COL` property (source column gated by a join) |
 | `mapping:relation-group-by` | `->groupBy` aggregation in the source relation, mapped as the class shape |
 | `mapping:relation-inline-embedded` | Inline embedded property mapping — `prop () Inline [setId]` |
+| `mapping:relation-inline-model-join` | Inline `modelJoin({..})` class-navigation property with a model-level condition (no association; target resolved from the property's declared type) |
 | `mapping:relation-local-property` | Local property — `+prop: Type[mult]: <rhs>` |
 | `mapping:relation-model-join` | ModelJoin association between relation-mapped classes |
+| `mapping:relation-navigation-join` | Inline `$src->navigationJoin(rel(), {..}).COL` property (joined-side column, chainable) |
 | `mapping:relation-primary-key` | Explicit `~primaryKey: col` / `~primaryKey: [a, b]` |
 | `mapping:relation-src` | `~src` inline-source form (vs. `~func`) |
 | `mapping:relation-union` | Union of relation set implementations |

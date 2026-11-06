@@ -178,18 +178,10 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
                     EngineErrorType.COMPILATION);
         }
 
-        // Extract the row type from the source's last expression. Deeper structural
-        // checks (e.g. column existence per property) happen in the mapping validation
-        // stage; here we just need enough type information to bind `$row` in property
-        // value lambdas.
-        GenericType lastExprType = relationFunction._expressionSequence().toList().getLast()._genericType();
-        MutableList<? extends GenericType> typeArgs = Lists.mutable.withAll(lastExprType._typeArguments());
-        GenericType rowType = typeArgs.isEmpty() ? null : typeArgs.getFirst();
-
         // Attach a value function to each property mapping. Embedded property mappings
         // inherit the parent's source relation and row type, since an embedded set shares
         // the parent's row shape.
-        buildValueFunctionsForPropertyMappings(classMapping.propertyMappings, setImpl, relationFunction, rowType);
+        buildValueFunctionsForPropertyMappings(classMapping.propertyMappings, setImpl, relationFunction);
 
         return setImpl;
     }
@@ -203,9 +195,9 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
      * <p>Pairing by index is safe here because the first-pass builder emits compiled
      * property mappings in the same order as the protocol input.</p>
      */
-    private void buildValueFunctionsForPropertyMappings(java.util.List<PropertyMapping> protocolPropertyMappings, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation parent, FunctionDefinition<?> relationFunction, GenericType rowType)
+    private void buildValueFunctionsForPropertyMappings(java.util.List<PropertyMapping> protocolPropertyMappings, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation parent, FunctionDefinition<?> relationFunction)
     {
-        MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> m3PropertyMappings = Lists.mutable.withAll(parent._propertyMappings());
+        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> m3PropertyMappings = Lists.mutable.withAll(parent._propertyMappings());
         for (int i = 0; i < protocolPropertyMappings.size(); i++)
         {
             PropertyMapping protocolPm = protocolPropertyMappings.get(i);
@@ -213,8 +205,20 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
             if (protocolPm instanceof RelationFunctionPropertyMapping && m3Pm instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionPropertyMapping)
             {
                 RelationFunctionPropertyMapping pPm = (RelationFunctionPropertyMapping) protocolPm;
+                if (RelationModelJoinBuilder.resolveJoinCondition(pPm) != null)
+                {
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinPropertyMapping modelJoin =
+                            new org.finos.legend.pure.generated.Root_meta_pure_mapping_modelJoin_ModelJoinPropertyMapping_Impl("", m3Pm.getSourceInformation(), context.pureModel.getClass("meta::pure::mapping::modelJoin::ModelJoinPropertyMapping"));
+                    modelJoin._property(m3Pm._property())._owner(parent)
+                            ._sourceSetImplementationId(m3Pm._sourceSetImplementationId())
+                            ._localMappingProperty(m3Pm._localMappingProperty())
+                            ._localMappingPropertyType(m3Pm._localMappingPropertyType())
+                            ._localMappingPropertyMultiplicity(m3Pm._localMappingPropertyMultiplicity());
+                    m3PropertyMappings.set(i, modelJoin);
+                    continue;
+                }
                 org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionPropertyMapping mPm = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionPropertyMapping) m3Pm;
-                LambdaFunction<?> valueFn = buildPropertyValueFn(pPm, rowType, parent._id());
+                LambdaFunction<?> valueFn = buildPropertyValueFn(pPm, relationFunction, parent._id());
                 if (valueFn != null)
                 {
                     mPm._valueFn(valueFn);
@@ -228,10 +232,11 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
                 // Can be null for Inline embedded
                 if (pEmb.propertyMappings != null && !pEmb.propertyMappings.isEmpty())
                 {
-                    buildValueFunctionsForPropertyMappings(pEmb.propertyMappings, mEmb, relationFunction, rowType);
+                    buildValueFunctionsForPropertyMappings(pEmb.propertyMappings, mEmb, relationFunction);
                 }
             }
         }
+        parent._propertyMappings(m3PropertyMappings);
     }
 
     /**
@@ -246,7 +251,7 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
      * Returns {@code null} when neither shape is set; the missing definition is reported
      * later by the mapping validation stage rather than aborting compilation here.
      */
-    private LambdaFunction<?> buildPropertyValueFn(RelationFunctionPropertyMapping pm, GenericType rowType, String parentId)
+    private LambdaFunction<?> buildPropertyValueFn(RelationFunctionPropertyMapping pm, FunctionDefinition<?> relationFunction, String parentId)
     {
         // Choose the body to compile: the bare-column form is normalised to a property
         // access on `$row`; the inline-expression form is used verbatim.
@@ -270,37 +275,37 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
         {
             return null;
         }
-        return compileRelationPropertyLambda(body, rowType, parentId + "." + (pm.property == null ? "" : pm.property.property), pm.sourceInformation);
+        return compileRelationPropertyLambda(body, relationFunction, parentId + "." + (pm.property == null ? "" : pm.property.property), pm.sourceInformation);
     }
 
     /**
      * Compiles a body of expressions as a single-arg lambda whose only parameter is
-     * {@code row}, bound to the given row type. Follows the same shape used elsewhere
-     * for model-to-model transform lambdas.
+     * {@code row}, bound to the given row type. {@code src}, bound to the relation type,
+     * is in scope for the join operators but is not a parameter: the SQL path
+     * (evaluateRfpmValueFn / updateFunctionParamScope) relies on a single-parameter value-fn.
      */
-    private LambdaFunction<?> compileRelationPropertyLambda(java.util.List<ValueSpecification> body, GenericType rowType, String lambdaId, SourceInformation sourceInformation)
+    private LambdaFunction<?> compileRelationPropertyLambda(java.util.List<ValueSpecification> body, FunctionDefinition<?> relationFunction, String lambdaId, SourceInformation sourceInformation)
     {
-        VariableExpression rowVar = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass(M3Paths.VariableExpression))
-                ._name("row")
-                ._multiplicity(context.pureModel.getMultiplicity("one"))
-                ._genericType(rowType == null
-                        // Fallback when the row type can't be inferred (e.g. the source doesn't
-                        // actually return a relation). A separate validator surfaces that as
-                        // its own error; degrading gracefully here lets compilation continue
-                        // and report all problems together.
-                        ? context.newGenericType(context.pureModel.getType(M3Paths.Any))
-                        : (GenericType) org.finos.legend.pure.m3.navigation.generictype.GenericType.copyGenericType(rowType, context.pureModel.getExecutionSupport().getProcessorSupport()));
+        // A null row type (the source doesn't actually return a relation) falls back to Any. A separate
+        // validator surfaces that as its own error; degrading gracefully here lets compilation continue
+        // and report all problems together.
+        VariableExpression rowVar = relationVariable("row", HelperMappingBuilder.getRelationFunctionRowType(relationFunction));
+        VariableExpression srcVar = relationVariable("src", relationFunction._expressionSequence().toList().getLast()._genericType());
 
         MutableList<VariableExpression> pureParameters = Lists.mutable.with(rowVar);
         ProcessingContext ctx = new ProcessingContext("Building relation property valueFn for '" + lambdaId + "'");
+        ctx.isRelationMappingPropertyValue = true;
         ctx.addVariableLevel();
         ctx.addInferredVariables("row", rowVar);
+        ctx.addInferredVariables("src", srcVar);
         MutableList<String> openVariables = Lists.mutable.empty();
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> valueSpecifications =
                 ListIterate.collect(body, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, ctx)));
         MutableList<String> cleanedOpenVariables = openVariables.distinct();
         cleanedOpenVariables.removeAll(pureParameters.collect(VariableExpression::_name));
+        cleanedOpenVariables.remove("src");
         GenericType functionType = PureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity(), context.pureModel);
+        ctx.flushVariable("src");
         ctx.flushVariable("row");
         ctx.removeLastVariableLevel();
 
@@ -308,5 +313,15 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
                 ._classifierGenericType(context.newGenericType(context.pureModel.getType(M3Paths.LambdaFunction), Lists.mutable.with(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
+    }
+
+    private VariableExpression relationVariable(String name, GenericType type)
+    {
+        return new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass(M3Paths.VariableExpression))
+                ._name(name)
+                ._multiplicity(context.pureModel.getMultiplicity("one"))
+                ._genericType(type == null
+                        ? context.newGenericType(context.pureModel.getType(M3Paths.Any))
+                        : (GenericType) org.finos.legend.pure.m3.navigation.generictype.GenericType.copyGenericType(type, context.pureModel.getExecutionSupport().getProcessorSupport()));
     }
 }
