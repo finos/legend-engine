@@ -426,6 +426,29 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     ->toOne('Unexpected base comparator to negate for a Databricks quantified-comparison rewrite: ' + $name);
 }
 
+// Spark rejects a mixed-type literal IN list (e.g. [1, 'a', true]), so a fully literal in() is evaluated in Pure.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isFullyLiteralInForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name == 'in' && $func.parameters->size() == 2
+      && $func.parameters->at(1)->instanceOf(LiteralList)
+      && ($func.parameters->at(0)->instanceOf(Literal)
+           || ($func.parameters->at(0)->instanceOf(DynaFunction) && $func.parameters->at(0)->cast(@DynaFunction).name == 'minus'));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::renderFullyLiteralInForDatabricks(func:DynaFunction[1]):String[1]
+{
+   let value = $func.parameters->at(0)->processLiteralOrMinusDynaFunction().value;
+   let collection = $func.parameters->at(1)->cast(@LiteralList).values.value;
+   if($value->in($collection), | 'true', | 'false');
+}
+
+// Spark requires at least two arguments to greatest/least, so a single operand (including the null
+// placeholder for an empty collection) is emitted bare.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isGreatestOrLeastSingleForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name->in(['greatest', 'least']) && $func.parameters->size() == 1;
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dynaFuncDispatchForDatabricksNonQuantified(func:DynaFunction[1], sgc:SqlGenerationContext[1], baseDispatch:meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]):DynaFunctionToSql[1]
 {
    let variantOverride = arrayFunctionVariantOverrideForDatabricks()->get($func.name);
@@ -443,6 +466,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
              // strict same-element-type check when the scalar search value is a real Integer
              // column (INT). Only cast the scalar operand when it is actually Integer-typed, so
              // ARRAY<STRING>/ARRAY<DOUBLE> callers are untouched.
+             if($func->isGreatestOrLeastSingleForDatabricks(),
+                | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = '%s')),
+                | if($func->isFullyLiteralInForDatabricks(),
+                     | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = $func->renderFullyLiteralInForDatabricks(), transform = {p:String[*] | []})),
+                     | // The same missing CAST(MAP<..> AS VARIANT) applies to a nested Map value inside toVariantObject().
+                       if($func.name == 'toVariantObject' && $func.parameters->isNotEmpty(),
+                          | buildToVariantObjectDynaFunctionToSqlForDatabricks($func);,
+                          |
              if($func.name == 'array_position' && $func.parameters->size() == 2
                   && meta::relational::functions::typeInference::inferRelationalType($func.parameters->at(1), false)->isNotEmpty()
                   && meta::relational::functions::typeInference::inferRelationalType($func.parameters->at(1), false)->toOne()->instanceOf(meta::relational::metamodel::datatype::Integer),
@@ -487,6 +518,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
                                | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='%s')),
                                | $baseDispatch->eval($func, $sgc)
                             )
+                       )
+                  )
+             )
                        )
                   )
              )
@@ -552,6 +586,22 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 {
    let inferred = meta::relational::functions::typeInference::inferRelationalType($op, false);
    $inferred->isNotEmpty() && $inferred->toOne()->instanceOf(meta::relational::metamodel::datatype::Object);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildToVariantObjectDynaFunctionToSqlForDatabricks(func:DynaFunction[1]):DynaFunctionToSql[1]
+{
+   let valueIsMap = $func.parameters->map(p | $p->isMapOperandForDatabricks());
+   ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='map(%s)', transform = {p:String[*] |
+      range(0, $p->size(), 2)->map(i | $p->at($i) + ', ' + castVariantObjectValueForDatabricks($p->at($i + 1), $valueIsMap->at($i + 1)))->joinStrings(', ')
+   }));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::castVariantObjectValueForDatabricks(value:String[1], isMap:Boolean[1]):String[1]
+{
+   if($isMap,
+      | 'parse_json(to_json(' + $value + '))',
+      | 'cast(' + $value + ' as variant)'
+   );
 }
 
 // True when the operand renders to a Databricks VARIANT value: a semi-structured navigation, or any
@@ -1091,11 +1141,25 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 }
 
 // Spark's regexp_replace always replaces every occurrence; its fourth argument is a start position,
-// not an occurrence count, so replaceFirst has no direct equivalent.
+// not an occurrence count. replaceFirst is emulated with split(str, pattern, 2), so $n backreferences
+// in the replacement are not resolved.
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpReplaceDatabricks(params: String[5]):String[1]
 {
-   assert($params->at(3) == 'true', | 'regexpReplace with replaceAll=false is not supported on Databricks: regexp_replace always replaces every occurrence');
-   'regexp_replace(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsDatabricks($params->at(4)) + ', ' + $params->at(2) + ')';
+   let pattern = $params->at(1)->applyInlineFlagsDatabricks($params->at(4));
+   if($params->at(3) == 'true',
+      | 'regexp_replace(' + $params->at(0) + ', ' + $pattern + ', ' + $params->at(2) + ')',
+      | if($params->at(3) == 'false',
+           | $params->firstOccurrenceRegexpReplaceDatabricks($pattern),
+           | assert(false, | 'regexpReplace with a non-literal replaceAll flag is not supported on Databricks: regexp_replace always replaces every occurrence'); '';
+         )
+     );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::firstOccurrenceRegexpReplaceDatabricks(params: String[5], pattern:String[1]):String[1]
+{
+   let splitExpr = 'split(' + $params->at(0) + ', ' + $pattern + ', 2)';
+   'case when size(' + $splitExpr + ') = 1 then ' + $params->at(0)
+      + ' else concat(element_at(' + $splitExpr + ', 1), ' + $params->at(2) + ', element_at(' + $splitExpr + ', 2)) end';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::schemaNameToIdentifierForDatabricks(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
