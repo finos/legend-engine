@@ -147,6 +147,7 @@ public class TestQueryStoreManager
         public List<StereotypePtr> stereotypes = Collections.emptyList();
         public List<QueryParameterValue> parameterValues = Collections.emptyList();
         public Map<String, ?> gridConfigs;
+        public QueryRelationType relationType;
 
         public QueryExecutionContext executionContext;
 
@@ -263,6 +264,12 @@ public class TestQueryStoreManager
             return this;
         }
 
+        TestQueryBuilder withRelationType(QueryRelationType relationType)
+        {
+            this.relationType = relationType;
+            return this;
+        }
+
         Query build()
         {
             Query query = new Query();
@@ -279,9 +286,49 @@ public class TestQueryStoreManager
             query.stereotypes = this.stereotypes;
             query.defaultParameterValues = this.parameterValues;
             query.gridConfig = this.gridConfigs;
+            query.relationType = this.relationType;
             query.executionContext = this.executionContext;
             return query;
         }
+    }
+
+    private static Map<String, Object> createTestColumn(String name, String typePath, List<Integer> typeParameters, int lowerBound)
+    {
+        Map<String, Object> rawType = new LinkedHashMap<>();
+        rawType.put("_type", "packageableType");
+        rawType.put("fullPath", typePath);
+        Map<String, Object> genericType = new LinkedHashMap<>();
+        genericType.put("rawType", rawType);
+        genericType.put("typeArguments", Collections.emptyList());
+        genericType.put("typeVariableValues", typeParameters.stream().map(value ->
+        {
+            Map<String, Object> parameter = new LinkedHashMap<>();
+            parameter.put("_type", "integer");
+            parameter.put("value", value);
+            return parameter;
+        }).collect(Collectors.toList()));
+        Map<String, Object> multiplicity = new LinkedHashMap<>();
+        multiplicity.put("lowerBound", lowerBound);
+        multiplicity.put("upperBound", 1);
+        Map<String, Object> column = new LinkedHashMap<>();
+        column.put("name", name);
+        column.put("genericType", genericType);
+        column.put("multiplicity", multiplicity);
+        return column;
+    }
+
+    /**
+     * Two columns as the engine's lambda relation type gives them: a nullable Varchar(40), whose type
+     * parameter must survive, and an Integer
+     */
+    private static QueryRelationType createTestRelationType(String versionId)
+    {
+        QueryRelationType relationType = new QueryRelationType();
+        relationType.columns = Arrays.asList(
+                createTestColumn("Company", "meta::pure::precisePrimitives::Varchar", Collections.singletonList(40), 0),
+                createTestColumn("Orders", "Integer", Collections.emptyList(), 1));
+        relationType.versionId = versionId;
+        return relationType;
     }
 
     private static QueryProjectCoordinates createTestQueryProjectCoordinate(String groupId, String artifactId, String version)
@@ -1068,6 +1115,69 @@ public class TestQueryStoreManager
         store.patchQuery("1", queryWithSelectedFields, currentUser);
         Assert.assertEquals("1.0.0", store.getQuery("1").versionId);
         Assert.assertEquals("0.0.0", store.getQuery("1").originalVersionId);
+    }
+
+    @Test
+    public void testCreateQueryWithRelationType() throws Exception
+    {
+        String currentUser = "testUser";
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withDataSpaceExecution("my::dataSpace").withRelationType(createTestRelationType("1.4.0")).build(), currentUser);
+        QueryRelationType relationType = store.getQuery("1").relationType;
+        Assert.assertEquals(createTestRelationType("1.4.0"), relationType);
+        Map<String, ?> genericType = (Map<String, ?>) relationType.columns.get(0).get("genericType");
+        Assert.assertEquals(1, ((List<?>) genericType.get("typeVariableValues")).size());
+    }
+
+    @Test
+    public void testSearchQueriesLeaveOutRelationType() throws Exception
+    {
+        String currentUser = "testUser";
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withDataSpaceExecution("my::dataSpace").withRelationType(createTestRelationType("1.4.0")).build(), currentUser);
+        List<Query> queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
+        Assert.assertEquals(1, queries.size());
+        Assert.assertNull(queries.get(0).relationType);
+        Assert.assertNotNull(store.getQuery("1").relationType);
+    }
+
+    @Test
+    public void testUpdateQueryReplacesRelationType() throws Exception
+    {
+        String currentUser = "testUser";
+        Query createdQuery = store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withDataSpaceExecution("my::dataSpace").withRelationType(createTestRelationType("1.4.0")).build(), currentUser);
+        createdQuery.versionId = "1.5.0";
+        createdQuery.relationType = createTestRelationType("1.5.0");
+        store.updateQuery("1", createdQuery, currentUser);
+        Assert.assertEquals(createTestRelationType("1.5.0"), store.getQuery("1").relationType);
+
+        // an update replaces the whole query: one without a relation type drops it
+        Query updatedQuery = store.getQuery("1");
+        updatedQuery.content = "new content";
+        updatedQuery.relationType = null;
+        store.updateQuery("1", updatedQuery, currentUser);
+        Assert.assertNull(store.getQuery("1").relationType);
+    }
+
+    @Test
+    public void testPatchQueryRelationType() throws Exception
+    {
+        String currentUser = "testUser";
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withDataSpaceExecution("my::dataSpace").build(), currentUser);
+        Assert.assertNull(store.getQuery("1").relationType);
+
+        Query withRelationType = new Query();
+        withRelationType.id = "1";
+        withRelationType.relationType = createTestRelationType("0.0.0");
+        store.patchQuery("1", withRelationType, currentUser);
+        Assert.assertEquals(createTestRelationType("0.0.0"), store.getQuery("1").relationType);
+
+        // a patch keeps the fields it doesn't send: the relation type's version no longer matches the query's
+        Query withVersion = new Query();
+        withVersion.id = "1";
+        withVersion.versionId = "1.0.0";
+        store.patchQuery("1", withVersion, currentUser);
+        Query patchedQuery = store.getQuery("1");
+        Assert.assertEquals("1.0.0", patchedQuery.versionId);
+        Assert.assertEquals("0.0.0", patchedQuery.relationType.versionId);
     }
 
     @Test
