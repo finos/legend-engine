@@ -168,6 +168,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       ' in a native DATE/TIMESTAMP column; ' + $func.name + '() would silently lose that precision.';
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateLiteralOverrideForDatabricks(func:DynaFunction[1]):DynaFunctionToSql[0..1]
+{
+   if($func->isDateFieldExtractionMissingForDatabricks(),
+      | fail($func->dateFieldExtractionErrorMessageForDatabricks()); [];,
+      | if($func->isCoarseDatePrecisionOperandForDatabricks(),
+           | fail($func->coarseDatePrecisionErrorMessageForDatabricks()); [];,
+           | if($func->isLiteralDateToStringForDatabricks(),
+                | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = $func->renderLiteralDateToStringForDatabricks(), transform = {p:String[*] | []})),
+                | []
+             )
+        )
+   );
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::getDynaFunctionToSqlForDatabricks(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
@@ -401,7 +415,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 {
    if($func->isQuantifiedComparisonForDatabricks(),
       | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='%s', transform={p:String[*] | [$func->rewriteQuantifiedComparisonForDatabricks($sgc)]})),
-      | $func->dynaFuncDispatchForDatabricksNonQuantified($sgc, $baseDispatch));
+      | let dateLiteralOverride = $func->dateLiteralOverrideForDatabricks();
+        if($dateLiteralOverride->isNotEmpty(),
+           | $dateLiteralOverride->toOne(),
+           | $func->dynaFuncDispatchForDatabricksNonQuantified($sgc, $baseDispatch));
+   );
 }
 
 // The shared router lowers equalAny/equalAll/greaterThanAny/greaterThanAll/lessThanAny/lessThanAll/
@@ -508,13 +526,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         // `toVariant()` renders as `cast(map(...) as VARIANT)` by default, which Spark rejects
         // (DATATYPE_MISMATCH.CAST_WITHOUT_SUGGESTION). Route a Map operand through a JSON round-trip
         // instead, which Databricks does support for constructing a VARIANT from a MAP.
-        if($func->isDateFieldExtractionMissingForDatabricks(),
-           | fail($func->dateFieldExtractionErrorMessageForDatabricks()); ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = ''));,
-           | if($func->isCoarseDatePrecisionOperandForDatabricks(),
-                | fail($func->coarseDatePrecisionErrorMessageForDatabricks()); ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = ''));,
-                | if($func->isLiteralDateToStringForDatabricks(),
-                     | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = $func->renderLiteralDateToStringForDatabricks(), transform = {p:String[*] | []})),
-                     |
         if($func.name == 'toVariant' && $func.parameters->size() == 1 && $func.parameters->at(0)->isMapOperandForDatabricks(),
            | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='parse_json(to_json(%s))')),
            | // A relational Integer-typed column renders as Databricks INT, but as BIGINT in
@@ -568,9 +579,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
                                | $baseDispatch->eval($func, $sgc)
                             )
                        )
-                  )
-             )
-        )
                   )
              )
         )
@@ -691,18 +699,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformFormatDateDatabricks(params:String[2]):String[1]
 {
   let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
-  if($enumValue == 'ISO8601_NanoSecondPrecision',
-     // Databricks' date_format rejects the 'S' pattern letter at any width, so microseconds come from the epoch
-     // double. TIMESTAMP has no finer precision, hence the trailing '000'.
-     | let epoch = 'cast(' + $params->at(0) + ' as double)';
-       let fracMicros = 'cast(floor((' + $epoch + ' - floor(' + $epoch + ')) * 1000000) as bigint)';
-       let paddedMicros = 'lpad(cast(' + $fracMicros + ' as string), 6, \'0\')';
-       // A quoted 'T' inside a date_format pattern is rejected too, so it is concatenated instead.
-       'concat(date_format(' + $params->at(0) + ', \'yyyy-MM-dd\'), \'T\', date_format(' + $params->at(0) + ', \'HH:mm:ss\'), \'.\', ' + $paddedMicros + ', \'000\')';,
-     | let formatPairs = [pair('ISO8601', '\'yyyy-MM-dd\'')];
-       let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
-       format('date_format(%s,%s)', [$params->at(0), $sqlFmt]);
-  );
+  // Spark SQL reads '' inside a string literal as two adjacent literals rather than an escaped quote, so the
+  // quotes around T are backslash-escaped.
+  let formatPairs = [
+    pair('ISO8601', '\'yyyy-MM-dd\''),
+    pair('ISO8601_NanoSecondPrecision', '\'yyyy-MM-dd\\\'T\\\'HH:mm:ss.SSSSSSSSS\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
+  format('date_format(%s,%s)', [$params->at(0), $sqlFmt]);
 }
 
 // percentile_cont's ORDER BY expression must resolve to a NUMERIC type. Databricks rejects the
@@ -1231,11 +1235,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     // dateDiff(d1: Date[1], d2: Date[1], du: DurationUnit[1]): Integer[1]
     // This returns an integer, hence a need to round results to int
     let interval = if($p->size() == 2, |'DAY', |$p->at(2)->replace('\'', '')->mapToDBUnitType());
-    // Pure's dateDiff truncates to whole units crossed rather than rounding to the nearest unit.
+    // Pure counts calendar boundaries crossed for YEAR, MONTH and WEEK, but whole elapsed units, truncated
+    // toward zero, from HOUR down. months_between measures elapsed months, so Jan 31 to Feb 1 would be 0, not 1.
+    // unix_timestamp drops fractional seconds, so 13:00:00.9 to 14:00:00.1 would be 1 hour, not 0.
+    let elapsedMicros = '(unix_micros(' + $p->at(1) + ') - unix_micros(' + $p->at(0) + '))';
     let cmd = if ($interval == 'YEAR',
         | 'year('+ $p->at(1) +') - year('+ $p->at(0) +')',
         | if ($interval == 'MONTH',
-             | 'cast(months_between('+ $p->at(1) +', '+ $p->at(0) +') AS INT)',
+             | '(year('+ $p->at(1) +') * 12 + month('+ $p->at(1) +')) - (year('+ $p->at(0) +') * 12 + month('+ $p->at(0) +'))',
              | if ($interval == 'DAY',
                   | 'datediff('+ $p->at(1) +', '+ $p->at(0) +')',
                   | if ($interval == 'WEEK',
@@ -1245,13 +1252,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
                          ' then cast(floor((unix_timestamp(' + $p->at(1) + ')/86400.0 + 4)/7) - floor((unix_timestamp(' + $p->at(0) + ')/86400.0 + 4)/7) as INT)' +
                          ' else cast(ceil((unix_timestamp(' + $p->at(1) + ')/86400.0 + 4)/7) - ceil((unix_timestamp(' + $p->at(0) + ')/86400.0 + 4)/7) as INT) end',
                        | if ($interval == 'HOUR',
-                            | 'cast((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 3600 AS INT)',
+                            | 'cast(' + $elapsedMicros + ' div 3600000000 AS INT)',
                             | if ($interval == 'MINUTE',
-                                 | 'cast((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 60 AS INT)',
+                                 | 'cast(' + $elapsedMicros + ' div 60000000 AS INT)',
                                  | if ($interval == 'SECOND',
-                                      | 'unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')',
+                                      | $elapsedMicros + ' div 1000000',
                                       | if ($interval == 'MILLISECOND',
-                                           | '(unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) * 1000',
+                                           | $elapsedMicros + ' div 1000',
                                            | ''
                                       )
                                  )
