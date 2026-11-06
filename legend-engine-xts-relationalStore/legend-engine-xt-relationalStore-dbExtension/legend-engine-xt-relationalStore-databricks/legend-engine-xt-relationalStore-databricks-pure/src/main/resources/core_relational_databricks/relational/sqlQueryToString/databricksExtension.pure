@@ -151,13 +151,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('regexpIndexOf',          $allStates,            ^ToSql(format='%s', transform={p:String[4]|$p->transformRegexpIndexOfDatabricks()})),
     dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpLikeDatabricks()})),
     dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpReplaceDatabricks()})),
-    // A fully literal call flattens both input collections into $p, which no max_by/min_by call shape can
-    // pair back up, so it is evaluated in Pure. A column-backed call never renders more than 3 arguments.
+    // The shared SQL generation flattens maxBy/minBy's two collections into one argument list,
+    // [values..., keys..., n?]. The aggregate forms (a value column, a key column and an optional n) render at
+    // most 3 arguments, so more than 3 can only be the collection form, which the MAX_BY/MIN_BY aggregates cannot take.
     dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] |
-        [if($p->size() > 3, | maxByOrMinByLiteralDatabricksHelper(true, $p), | 'MAX_BY(' + $p->joinStrings(', ') + ')')]
+        [if($p->size() > 3, | $p->maxByOrMinByOverCollectionsForDatabricks(true), | 'MAX_BY(' + $p->joinStrings(', ') + ')')]
     })),
     dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] |
-        [if($p->size() > 3, | maxByOrMinByLiteralDatabricksHelper(false, $p), | 'MIN_BY(' + $p->joinStrings(', ') + ')')]
+        [if($p->size() > 3, | $p->maxByOrMinByOverCollectionsForDatabricks(false), | 'MIN_BY(' + $p->joinStrings(', ') + ')')]
     })),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
@@ -765,18 +766,24 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    $result.numMax;
 }
 
-// Rendered args are [values..., order keys...], plus a trailing n for the top-N overload, so an odd count
-// means top-N. sortBy is stable, matching the tie handling in maxBy.pure/minBy.pure.
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::maxByOrMinByLiteralDatabricksHelper(isMax:Boolean[1], values:String[*]):String[1]
+// An odd argument count means a trailing n (the top-N overload). Ties keep their original order, as in
+// maxBy.pure/minBy.pure. try_element_at gives a key past the end of a shorter key list a null, and null keys
+// are dropped, which matches both Pure's zip truncation and the MAX_BY/MIN_BY aggregates skipping null keys.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::maxByOrMinByOverCollectionsForDatabricks(args:String[*], isMax:Boolean[1]):String[1]
 {
-   let isEven = (2 * (($values->size() / 2)->floor())) == $values->size();
-   let n = if($isEven, | 1, | $values->last()->toOne()->parseInteger());
-   let pairs = if($isEven, | $values, | $values->init());
+   let hasN = $args->size()->rem(2) == 1;
+   let pairs = if($hasN, | $args->init(), | $args);
    let half = ($pairs->size() / 2)->floor();
-   let paired = range($half)->map(i | pair($pairs->at($i), $pairs->at($half + $i)->parseFloat()));
-   let sorted = if($isMax, | $paired->sortBy(pr | 0.0 - $pr.second), | $paired->sortBy(pr | $pr.second));
-   let top = $sorted->take($n)->map(p | $p.first);
-   if($n == 1, | $top->at(0), | 'array(' + $top->joinStrings(', ') + ')');
+   let values = 'array(' + $pairs->take($half)->joinStrings(', ') + ')';
+   let keys = 'array(' + $pairs->drop($half)->joinStrings(', ') + ')';
+   let ranksFirst = if($isMax, | '>', | '<');
+   let ranksLast = if($isMax, | '<', | '>');
+   let sorted = 'array_sort(filter(transform(' + $values + ', (v, i) -> named_struct(\'v\', v, \'k\', try_element_at(' + $keys + ', i + 1), \'i\', i)), x -> x.k is not null), '
+      + '(l, r) -> case when l.k ' + $ranksFirst + ' r.k then -1 when l.k ' + $ranksLast + ' r.k then 1 else l.i - r.i end)';
+   if($hasN,
+      | 'transform(slice(' + $sorted + ', 1, ' + $args->last()->toOne() + '), x -> x.v)',
+      | 'try_element_at(' + $sorted + ', 1).v'
+   );
 }
 
 function meta::relational::functions::sqlQueryToString::databricks::loadValuesToDbTableForDatabricks(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
@@ -901,6 +908,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    $unit != DurationUnit.YEARS && $unit != DurationUnit.MONTHS;
 }
 
+// Only an integer literal offset can be rescaled while the SQL is generated. A parameter or expression offset
+// keeps the unsupported error.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isConvertibleRangeIntervalForDatabricks(i:meta::relational::metamodel::FrameIntervalValue[1]):Boolean[1]
+{
+   $i.durationUnit->isFixedDurationRangeIntervalUnitForDatabricks()
+      && $i.value->instanceOf(Literal) && $i.value->cast(@Literal).value->instanceOf(Integer);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::fixedDurationRangeIntervalUnitMicrosecondsForDatabricks(unit:DurationUnit[1]):Integer[1]
 {
    if($unit == DurationUnit.MICROSECONDS, | 1,
@@ -929,7 +944,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         && $frame.offsetFrom->cast(@meta::relational::metamodel::FrameIntervalValue).durationUnit != $frame.offsetTo->cast(@meta::relational::metamodel::FrameIntervalValue).durationUnit,
       | let from = $frame.offsetFrom->cast(@meta::relational::metamodel::FrameIntervalValue);
         let to = $frame.offsetTo->cast(@meta::relational::metamodel::FrameIntervalValue);
-        if($from.durationUnit->isFixedDurationRangeIntervalUnitForDatabricks() && $to.durationUnit->isFixedDurationRangeIntervalUnitForDatabricks(),
+        if($from->isConvertibleRangeIntervalForDatabricks() && $to->isConvertibleRangeIntervalForDatabricks(),
            | let commonUnit = if($from.durationUnit->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks() < $to.durationUnit->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks(), | $from.durationUnit, | $to.durationUnit);
              $frameType + ' '
                 + $from->normalizeFrameIntervalValueUnitForDatabricks($commonUnit)->processFrameValueForDatabricks($sgc)

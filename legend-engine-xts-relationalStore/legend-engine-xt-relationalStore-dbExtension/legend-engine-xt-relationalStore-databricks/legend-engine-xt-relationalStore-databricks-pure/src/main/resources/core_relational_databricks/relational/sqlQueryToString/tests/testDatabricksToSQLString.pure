@@ -356,3 +356,17 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
     simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
   assertEquals('select concat(`root`.FIRSTNAME, \' \', `root`.LASTNAME) as `fullName` from personTable as `root`', $sql);
 }
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testMaxByOverCollectionsOfColumnsDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Person.all()->project(p|maxBy([$p.firstName->toOne(), $p.lastName->toOne()], [$p.age->toOne(), 0]), 'eldest'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select try_element_at(array_sort(filter(transform(array(`root`.FIRSTNAME, `root`.LASTNAME), (v, i) -> named_struct(\'v\', v, \'k\', try_element_at(array(`root`.AGE, 0), i + 1), \'i\', i)), x -> x.k is not null), (l, r) -> case when l.k > r.k then -1 when l.k < r.k then 1 else l.i - r.i end), 1).v as `eldest` from personTable as `root` group by `root`.ID', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testMinByTopNOverLiteralCollectionsDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Person.all()->project(p|minBy(['a', 'b', 'c'], [3, 1, 2], 2), 'lowest'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select transform(slice(array_sort(filter(transform(array(\'a\', \'b\', \'c\'), (v, i) -> named_struct(\'v\', v, \'k\', try_element_at(array(3, 1, 2), i + 1), \'i\', i)), x -> x.k is not null), (l, r) -> case when l.k < r.k then -1 when l.k > r.k then 1 else l.i - r.i end), 1, 2), x -> x.v) as `lowest` from personTable as `root` group by `root`.ID', $sql);
+}
