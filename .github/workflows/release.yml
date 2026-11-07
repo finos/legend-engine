@@ -285,15 +285,6 @@ jobs:
           git config --global user.email "37706051+finos-admin@users.noreply.github.com"
           git config --global user.name "FINOS Administrator"
 
-      - name: Create and push git tag
-        if: ${{ github.event.inputs.dryRun != 'true' }}
-        env:
-          TAG: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
-        run: |
-          set -euo pipefail
-          git tag "${TAG}"
-          git push origin "refs/tags/${TAG}"
-
       - name: Download m2 repository for publishing
         uses: actions/download-artifact@v8
         with:
@@ -339,12 +330,24 @@ jobs:
       # here: there is no way to rehearse wave 2 without really publishing
       # wave 1, and Central is immutable.
       - name: Publish wave 1
+        id: publish_wave1
         if: ${{ github.event.inputs.dryRun != 'true' }}
         run: |
           while read -r id; do
             .github/scripts/central-publish.sh publish "$id" < /dev/null
           done < wave1-ids.txt
           .github/scripts/await-wave.sh wave1-ids.txt PUBLISHED
+
+      # Tagged only once wave 1 is published: from then on the version is
+      # permanent on Central, and before it a failed run leaves nothing behind.
+      - name: Create and push git tag
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        env:
+          TAG: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+        run: |
+          set -euo pipefail
+          git tag "${TAG}"
+          git push origin "refs/tags/${TAG}"
 
       # Reaching PUBLISHED on the Portal is not the same as being readable on
       # repo1, and it is the read side that wave 2's validation resolves against.
@@ -382,7 +385,7 @@ jobs:
           .github/scripts/await-wave.sh wave2-ids.txt PUBLISHED
 
       - name: Compute and set next SNAPSHOT
-        if: ${{ github.event.inputs.dryRun != 'true' }}
+        if: ${{ always() && steps.publish_wave1.outcome == 'success' }}
         env:
           RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
         run: |
