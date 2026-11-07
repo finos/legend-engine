@@ -2753,7 +2753,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTeeNode::tests::
 {
   let rootSetImplementation= $tree->getRootSetImplementation($mapping)->cast(@meta::external::store::model::PureInstanceSetImplementation);
   let root = ^RootGraphFetchTree<Any>(class=$rootSetImplementation.srcClass->toOne()->cast(@Class<Any>));
-  let visitedFunctions = $root->enrichSourceTreeNode($mapping, $rootSetImplementation, $tree, $extensions, ^Map<String, meta::pure::lineage::scanProperties::ScanPropertiesState>()).second;
+  let visitedFunctions = $root->newSourceTreeState()->enrichSourceTreeNode($mapping, $rootSetImplementation, $tree, $extensions).visitedFunctions;
   $visitedFunctions->keys();
 }
 
