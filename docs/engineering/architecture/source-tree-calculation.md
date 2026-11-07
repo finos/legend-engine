@@ -708,7 +708,7 @@ the top-level dispatch:
       assert($pisi.srcClass->isNotEmpty() && $pisi.srcClass->toOne()->instanceOf(Class), |'Pure mapping does not have a class as ~src for branch of operation set: ' + $pisi.id);
       let branchSrc  = $pisi.srcClass->toOne()->cast(@Class<Any>);
       let branchRoot = ^RootGraphFetchTree<Any>(class=$branchSrc);
-      $branchRoot->enrichSourceTreeNode($mapping, $pisi, $replaced, $extensions, ^Map<String,ScanPropertiesState>()).first->mergeSubTrees()->cast(@RootGraphFetchTree<Any>);
+      ^SourceTreeState(tree=$branchRoot, visitedFunctions=^Map<String,ScanPropertiesState>())->enrichSourceTreeNode($mapping, $pisi, $replaced, $extensions).tree->normaliseSourceTree()->cast(@RootGraphFetchTree<Any>);
    );
 
    if($perBranchTrees->size() == 1,
