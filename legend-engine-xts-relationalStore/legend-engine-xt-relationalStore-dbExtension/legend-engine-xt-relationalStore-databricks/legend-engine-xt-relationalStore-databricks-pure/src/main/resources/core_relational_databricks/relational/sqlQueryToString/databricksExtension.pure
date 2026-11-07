@@ -95,8 +95,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    ]);
 }
 
-// The shared convertDateToSqlString's pattern has an unconditional 'dd', so a year-month Date (e.g. %2014-01)
-// throws "Date has no day". Nesting each optional section inside the next-coarser one renders every precision.
+// The shared convertDateToSqlString refuses Year and Year-Month dates, and writes its time only when the date
+// has seconds, so %2015-04-15T17:09 renders as '2015-04-15'. Nesting each optional section inside the
+// next-coarser one renders every precision.
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::convertDateToSqlStringForDatabricks(date:Date[1], dbTimeZone:String[0..1]):String[1]
 {
    let timeZone = if($dbTimeZone->isEmpty(), | 'GMT', | $dbTimeZone->toOne());
@@ -1233,7 +1234,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateDiffDatabricks(p:String[2..3]):String[1]
 {
     // dateDiff(d1: Date[1], d2: Date[1], du: DurationUnit[1]): Integer[1]
-    // This returns an integer, hence a need to round results to int
     let interval = if($p->size() == 2, |'DAY', |$p->at(2)->replace('\'', '')->mapToDBUnitType());
     // Pure counts calendar boundaries crossed for YEAR, MONTH and WEEK, but whole elapsed units, truncated
     // toward zero, from HOUR down. months_between measures elapsed months, so Jan 31 to Feb 1 would be 0, not 1.
@@ -1246,11 +1246,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
              | if ($interval == 'DAY',
                   | 'datediff('+ $p->at(1) +', '+ $p->at(0) +')',
                   | if ($interval == 'WEEK',
-                       // Counts Sunday week-start boundaries crossed, not days / 7; day 0 was a Thursday, hence +4. Going
-                       // backwards uses ceil at both ends so a boundary reached from the far side is not counted.
+                       // Counts Sunday week-start boundaries crossed, not days / 7; the epoch fell on a Thursday, four
+                       // days (345600 seconds) after a Sunday. Going backwards uses ceil at both ends so a boundary reached
+                       // from the far side is not counted.
                        | 'case when ' + $p->at(1) + ' >= ' + $p->at(0) +
-                         ' then cast(floor((unix_timestamp(' + $p->at(1) + ')/86400.0 + 4)/7) - floor((unix_timestamp(' + $p->at(0) + ')/86400.0 + 4)/7) as INT)' +
-                         ' else cast(ceil((unix_timestamp(' + $p->at(1) + ')/86400.0 + 4)/7) - ceil((unix_timestamp(' + $p->at(0) + ')/86400.0 + 4)/7) as INT) end',
+                         ' then cast(floor((unix_timestamp(' + $p->at(1) + ') + 345600) / 604800) - floor((unix_timestamp(' + $p->at(0) + ') + 345600) / 604800) as INT)' +
+                         ' else cast(ceil((unix_timestamp(' + $p->at(1) + ') + 345600) / 604800) - ceil((unix_timestamp(' + $p->at(0) + ') + 345600) / 604800) as INT) end',
                        | if ($interval == 'HOUR',
                             | 'cast(' + $elapsedMicros + ' div 3600000000 AS INT)',
                             | if ($interval == 'MINUTE',
