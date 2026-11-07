@@ -369,12 +369,20 @@ jobs:
       # Every wave-2 bundle must validate before any is published: publishing
       # bundle 1 and then finding bundle 3 invalid leaves a partial release,
       # and nothing on Central can be changed or withdrawn.
+      # Wave 2 holds ~1GB of jars, and Portal validation time grows with bundle
+      # size: in 5.1.1 an 897MB bundle took ~100 minutes to reach VALIDATED and
+      # the default 1h poll timeout failed a release that would have succeeded.
+      # Each deployment gets its own deadline, so this is per bundle.
       - name: Validate wave 2
         if: ${{ github.event.inputs.dryRun != 'true' }}
+        env:
+          CENTRAL_POLL_TIMEOUT: 10800
         run: .github/scripts/await-wave.sh wave2-ids.txt VALIDATED
 
       - name: Publish wave 2
         if: ${{ github.event.inputs.dryRun != 'true' }}
+        env:
+          CENTRAL_POLL_TIMEOUT: 10800
         run: |
           while read -r id; do
             .github/scripts/central-publish.sh publish "$id" < /dev/null
