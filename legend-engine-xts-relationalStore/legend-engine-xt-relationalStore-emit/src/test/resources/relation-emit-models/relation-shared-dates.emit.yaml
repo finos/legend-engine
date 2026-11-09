@@ -5,8 +5,7 @@ description: |
   mappings: a business temporal Product with DATE milestoning columns, a
   processing temporal Account and a bitemporal Rating with TIMESTAMP
   milestoning columns, and a Trade that carries a plain date and a plain
-  date-time. Each class is mapped with ~func over the whole of its table. A
-  relation function mapping cannot map a property through a join, so Trade
+  date-time. Each class is mapped with ~func over the whole of its table. Trade
   carries the keys of its product and account and reaches them through
   associations implemented with ModelJoin. The store is a copy of the relational
   one, so neither suite depends on the other.

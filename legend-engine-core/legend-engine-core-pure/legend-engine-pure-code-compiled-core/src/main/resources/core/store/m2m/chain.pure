@@ -33,7 +33,10 @@ function meta::pure::mapping::modelToModel::chain::executeChain(f:StoreQuery[1],
 {
    let returnType = $f.vs.genericType.rawType->toOne();
    print(if(!$debug.debug, |'',|$debug.space+'Mappings: ['+$mapping->concatenate($mcc.mappings->init())->makeString(', ')+']\n'));
-   let processed = $f.vs->allReprocess($e, $mapping->concatenate($mcc.mappings->init()), $extensions, $debug);
+   // In-flow keeps col() lambdas' declared return types. Retyping them to the reprocessed body
+   // (#5243) turns enum TDS columns into String ones, which existing in-flow queries rely on, so
+   // only plan generation gets it.
+   let processed = $f.vs->allReprocess($e, $mapping->concatenate($mcc.mappings->init()), $extensions, false, true, $debug);
    let existingsVars =   $f.inScopeVars->keys()->map(k|
                                                      let inScopeVarValue = $f.inScopeVars->get($k).values;
                                                      let rightValue = $inScopeVarValue->evaluateAndDeactivate();
@@ -155,6 +158,11 @@ function meta::pure::mapping::modelToModel::chain::allReprocess(vs:ValueSpecific
 
 function meta::pure::mapping::modelToModel::chain::allReprocess(vs:ValueSpecification[1], r:StoreMappingRoutedValueSpecification[0..1], mappings:Mapping[*], extensions:meta::pure::extension::Extension[*],trackPropertyFunction:Boolean[1], debug:DebugContext[1]):Container[1]
 {
+   meta::pure::mapping::modelToModel::chain::allReprocess($vs,$r,$mappings,$extensions,$trackPropertyFunction,false,$debug);
+}
+
+function meta::pure::mapping::modelToModel::chain::allReprocess(vs:ValueSpecification[1], r:StoreMappingRoutedValueSpecification[0..1], mappings:Mapping[*], extensions:meta::pure::extension::Extension[*],trackPropertyFunction:Boolean[1], legacyColumnReturnType:Boolean[1], debug:DebugContext[1]):Container[1]
+{
    $mappings->fold(
                      {a,b|
                         print(if(!$debug.debug, |'', | $debug.space+'  Mapping: '+$a.name->toOne()+'\n'));
@@ -162,8 +170,8 @@ function meta::pure::mapping::modelToModel::chain::allReprocess(vs:ValueSpecific
                         print(if(!$debug.debug, |'', | $debug.space+'  Routed: '+$rez->at(0)->asString()+'\n'));
                         let res = $rez.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification).val->match(
                            [
-                              e:StoreMappingRoutedValueSpecification[1]|pair(list($e), $e.value->cast(@FunctionExpression)->toOne()->reprocess($e, $a, $mappings, [], $trackPropertyFunction, $extensions));,
-                              f:FunctionExpression[1]|pair(list($r), $vs->reprocess($r, $a, $mappings, [], $trackPropertyFunction, $extensions));
+                              e:StoreMappingRoutedValueSpecification[1]|pair(list($e), $e.value->cast(@FunctionExpression)->toOne()->reprocess($e, $a, $mappings, [], $trackPropertyFunction, $legacyColumnReturnType, $extensions));,
+                              f:FunctionExpression[1]|pair(list($r), $vs->reprocess($r, $a, $mappings, [], $trackPropertyFunction, $legacyColumnReturnType, $extensions));
                            ]
                         );
                         print(if(!$debug.debug, |'', | $debug.space+'  Chain Reprocessed Query: '+$res.second.newExpression->cast(@ValueSpecification)->asString()+'\n'));
@@ -185,9 +193,13 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
 }
 function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecification[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], r:FunctionRoutedValueSpecification[0..1],trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):Res[1]
 {
+      meta::pure::mapping::modelToModel::chain::reprocess($vs,$e,$mapping,$mappings,$r,$trackPropertyFunction,false,$extensions);
+}
+function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecification[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], r:FunctionRoutedValueSpecification[0..1],trackPropertyFunction:Boolean[1], legacyColumnReturnType:Boolean[1], extensions:meta::pure::extension::Extension[*]):Res[1]
+{
    $vs->match(
       [ fe:FunctionExpression[1]|
-      let results = $fe.parametersValues->evaluateAndDeactivate()->map(p|$p->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions)); 
+      let results = $fe.parametersValues->evaluateAndDeactivate()->map(p|$p->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $legacyColumnReturnType, $extensions)); 
                                   let newFunc = if ($fe.func->instanceOf(Property),
                                                    |
                                                     let setImpl = $fe.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation);
@@ -242,21 +254,21 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                        vars=if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues()))),
                                        propertyFunctions =   if( $trackPropertyFunction && $fe.func->instanceOf(Property) ,| pair($fe.func->cast(@Property<Nil,Any|*>), $newFuncF),|[])->concatenate($results.propertyFunctions)        
                                   );,
-         r:FunctionRoutedValueSpecification[1]|$r.value->reprocess($e, $mapping, $mappings, $r,$trackPropertyFunction, $extensions);,
-         e:StoreMappingRoutedValueSpecification[1]|$e.value->reprocess($e, $mapping, $mappings, [],$trackPropertyFunction, $extensions);,
-         s:StoreMappingClusteredValueSpecification[1] | $s.val->reprocess($e, $mapping, $mappings, [],$trackPropertyFunction, $extensions);,
+         r:FunctionRoutedValueSpecification[1]|$r.value->reprocess($e, $mapping, $mappings, $r,$trackPropertyFunction, $legacyColumnReturnType, $extensions);,
+         e:StoreMappingRoutedValueSpecification[1]|$e.value->reprocess($e, $mapping, $mappings, [],$trackPropertyFunction, $legacyColumnReturnType, $extensions);,
+         s:StoreMappingClusteredValueSpecification[1] | $s.val->reprocess($e, $mapping, $mappings, [],$trackPropertyFunction, $legacyColumnReturnType, $extensions);,
          v:VariableExpression[1]| let newGenericType = if($v.genericType.rawType->toOne()->instanceOf(Class) && $e.sets->isNotEmpty(),| ^GenericType(rawType=$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass), | $v.genericType);
                                   ^Res(
                                        newExpression = ^$v(genericType=$newGenericType),
                                        vars = newMap(pair($v.name, $newGenericType))
                                   );,
          i:InstanceValue[1]|let results = $i.values->map(v|$v->match([a:Class<Any>[1]|$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass,
-                                                                      l:FunctionRoutedValueSpecification[1]| $l.value->reprocess($e, $mapping, $mappings, $l,$trackPropertyFunction, $extensions),
-                                                                      vs:ValueSpecification[1]|$vs->reprocess($e, $mapping, $mappings, [],$trackPropertyFunction, $extensions),
-                                                                      f:LambdaFunction<Any>[1]| $f->reprocessLambda($e, $mapping, $mappings, $r, $trackPropertyFunction, $extensions),
+                                                                      l:FunctionRoutedValueSpecification[1]| $l.value->reprocess($e, $mapping, $mappings, $l,$trackPropertyFunction, $legacyColumnReturnType, $extensions),
+                                                                      vs:ValueSpecification[1]|$vs->reprocess($e, $mapping, $mappings, [],$trackPropertyFunction, $legacyColumnReturnType, $extensions),
+                                                                      f:LambdaFunction<Any>[1]| $f->reprocessLambda($e, $mapping, $mappings, $r, $trackPropertyFunction, $legacyColumnReturnType, $extensions),
                                                                       agg:meta::pure::functions::collection::AggregateValue<Any,Any,Any>[1]|
                                                                                                            let f = $agg.mapFn;
-                                                                                                           let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions));
+                                                                                                           let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $legacyColumnReturnType, $extensions));
                                                                                                            let varMap = if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())));
                                                                                                            let fType = $f->functionType();
 
@@ -310,7 +322,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                       // TDSv1 col(): the lambda is over the target class and has to be re-sourced like any
                                                                       // other. project(lambdas, names) never reaches here because its lambdas arrive bare.
                                                                       cs:meta::pure::tds::BasicColumnSpecification<Any>[1]|
-                                                                           $cs->reprocessBasicColumnSpecification($e, $mapping, $mappings, $trackPropertyFunction, $extensions),
+                                                                           $cs->reprocessBasicColumnSpecification($e, $mapping, $mappings, $trackPropertyFunction, $legacyColumnReturnType, $extensions),
                                                                       // Window columns: the lambda is over TDSRow, downstream of the chain boundary, so
                                                                       // there is nothing to re-source.
                                                                       ocs:meta::pure::tds::ColumnSpecification<Any>[1]| $ocs,
@@ -318,13 +330,13 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                       c:meta::pure::metamodel::relation::ColSpec<Any>[1]| $c,
                                                                       ca:meta::pure::metamodel::relation::ColSpecArray<Any>[1]| $ca,
                                                                       fcs:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]|
-                                                                           $fcs->reprocessFuncColSpec($e, $mapping, $mappings, $trackPropertyFunction, $extensions),
+                                                                           $fcs->reprocessFuncColSpec($e, $mapping, $mappings, $trackPropertyFunction, $legacyColumnReturnType, $extensions),
                                                                       fca:meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1]|
-                                                                           $fca->reprocessFuncColSpecArray($e, $mapping, $mappings, $trackPropertyFunction, $extensions),
+                                                                           $fca->reprocessFuncColSpecArray($e, $mapping, $mappings, $trackPropertyFunction, $legacyColumnReturnType, $extensions),
                                                                       acs:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|
-                                                                           $acs->reprocessAggColSpec($e, $mapping, $mappings, $trackPropertyFunction, $extensions),
+                                                                           $acs->reprocessAggColSpec($e, $mapping, $mappings, $trackPropertyFunction, $legacyColumnReturnType, $extensions),
                                                                       aca:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]|
-                                                                           $aca->reprocessAggColSpecArray($e, $mapping, $mappings, $trackPropertyFunction, $extensions)
+                                                                           $aca->reprocessAggColSpecArray($e, $mapping, $mappings, $trackPropertyFunction, $legacyColumnReturnType, $extensions)
                                                                      ]););
                             let values = $results->map(r|$r->match([v:Res[1]|$v.newExpression->match([i:InstanceValue[1]|$i.values,a:Any[1]|$a]),k:Any[1]|$k])); 
 
@@ -355,32 +367,34 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
 
 // Reprocessing of a lambda body, lifted out of the InstanceValue arm of reprocess so the column
 // specification arms (TDSv1 col() and the relation ~[] family) can reuse it.
-function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessLambda(f:LambdaFunction<Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], r:FunctionRoutedValueSpecification[0..1], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):Res[1]
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessLambda(f:LambdaFunction<Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], r:FunctionRoutedValueSpecification[0..1], trackPropertyFunction:Boolean[1], legacyColumnReturnType:Boolean[1], extensions:meta::pure::extension::Extension[*]):Res[1]
 {
    let functionParam = if($f->genericType().typeArguments.rawType->cast(@FunctionType).parameters->isNotEmpty(),
                           |let param = $f->genericType().typeArguments.rawType->cast(@FunctionType).parameters->at(0)->cast(@VariableExpression);
                             pair($param.name, $param.genericType);,
                           | []);
    let intermediateRes = $f.expressionSequence->evaluateAndDeactivate()->map(vs|$vs->inlineQualifiedProperties(^Map<VariableExpression, ValueSpecification>(), $f->openVariableValues(),$functionParam ,$extensions));
-   let results = $intermediateRes->map(ir| $ir->reprocessVar($functionParam))->cast(@ValueSpecification)->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions));
+   let results = $intermediateRes->map(ir| $ir->reprocessVar($functionParam))->cast(@ValueSpecification)->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $legacyColumnReturnType, $extensions));
    let varMap = if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())->reprocessVars($functionParam)));
    ^Res(newExpression=^$f(classifierGenericType=$f->buildLambdaType($varMap, $r),
                           expressionSequence=$results.newExpression->cast(@ValueSpecification)),
         propertyFunctions= $results.propertyFunctions);
 }
 
-function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessBasicColumnSpecification(cs:meta::pure::tds::BasicColumnSpecification<Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):Res[1]
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessBasicColumnSpecification(cs:meta::pure::tds::BasicColumnSpecification<Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], legacyColumnReturnType:Boolean[1], extensions:meta::pure::extension::Extension[*]):Res[1]
 {
    // Mirrors the AggregateValue arm above rather than going through buildLambdaType: a col() lambda
    // reaches here still active, and buildLambdaType copies its parameter nodes, which forces an
    // evaluation of the bound variable. functionType() hands back an inert copy instead.
    let f = $cs.func->cast(@LambdaFunction<Any>);
-   let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions));
+   let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $legacyColumnReturnType, $extensions));
    let fType = $f->functionType();
    let fInputType = ^GenericType(rawType = $f.expressionSequence->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass);
    // Read off the reprocessed body, not $f: reprocess can change the effective return type
    // (e.g. manageEnumeration downgrades Enumeration to String).
-   let newReturnType = $results.newExpression->cast(@ValueSpecification)->last()->toOne().genericType;
+   let newReturnType = if($legacyColumnReturnType,
+                          | $f->functionReturnType(),
+                          | $results.newExpression->cast(@ValueSpecification)->last()->toOne().genericType);
    let gen = ^GenericType
              (
                 rawType = LambdaFunction,
@@ -399,12 +413,12 @@ function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessB
         propertyFunctions = $results.propertyFunctions);
 }
 
-function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessFuncColSpec(fcs:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessFuncColSpec(fcs:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], legacyColumnReturnType:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]
 {
    // Rebuilt with dynamicNew rather than copied: re-sourcing rewrites the lambda's input from the
    // target class to the chain's source class, so the col spec's first type argument has to move
    // with it. A ^$fcs(...) copy would keep the stale one and fail to type-check.
-   let res = $fcs.function->cast(@LambdaFunction<Any>)->reprocessLambda($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions);
+   let res = $fcs.function->cast(@LambdaFunction<Any>)->reprocessLambda($e, $mapping, $mappings, [], $trackPropertyFunction, $legacyColumnReturnType, $extensions);
    let newFunc = $res.newExpression->cast(@LambdaFunction<Any>);
    $fcs->genericType()->toOne()->replaceFirstTypeArgument($newFunc.classifierGenericType.typeArguments->at(0))->dynamicNew([
       ^KeyValue(key = 'name', value = $fcs.name),
@@ -412,9 +426,9 @@ function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessF
    ])->cast(@meta::pure::metamodel::relation::FuncColSpec<Any,Any>);
 }
 
-function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessFuncColSpecArray(fca:meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1]
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessFuncColSpecArray(fca:meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], legacyColumnReturnType:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1]
 {
-   let newSpecs = $fca.funcSpecs->map(f | $f->reprocessFuncColSpec($e, $mapping, $mappings, $trackPropertyFunction, $extensions));
+   let newSpecs = $fca.funcSpecs->map(f | $f->reprocessFuncColSpec($e, $mapping, $mappings, $trackPropertyFunction, $legacyColumnReturnType, $extensions));
    if($newSpecs->isEmpty(),
       | $fca,
       | // Read the new type argument off the rebuilt lambda, not off the rebuilt col spec's
@@ -429,9 +443,9 @@ function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessF
 // Only the map side is re-sourced. The reduce side runs over values the map side has already
 // produced, on the target of the chain -- matching how the AggregateValue arm above leaves
 // aggregateFn untouched.
-function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessAggColSpec(acs:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessAggColSpec(acs:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], legacyColumnReturnType:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]
 {
-   let res = $acs.map->cast(@LambdaFunction<Any>)->reprocessLambda($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions);
+   let res = $acs.map->cast(@LambdaFunction<Any>)->reprocessLambda($e, $mapping, $mappings, [], $trackPropertyFunction, $legacyColumnReturnType, $extensions);
    let newMap = $res.newExpression->cast(@LambdaFunction<Any>);
    $acs->genericType()->toOne()->replaceFirstTypeArgument($newMap.classifierGenericType.typeArguments->at(0))->dynamicNew([
       ^KeyValue(key = 'name', value = $acs.name),
@@ -440,9 +454,9 @@ function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessA
    ])->cast(@meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>);
 }
 
-function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessAggColSpecArray(aca:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessAggColSpecArray(aca:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], legacyColumnReturnType:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]
 {
-   let newSpecs = $aca.aggSpecs->map(a | $a->reprocessAggColSpec($e, $mapping, $mappings, $trackPropertyFunction, $extensions));
+   let newSpecs = $aca.aggSpecs->map(a | $a->reprocessAggColSpec($e, $mapping, $mappings, $trackPropertyFunction, $legacyColumnReturnType, $extensions));
    if($newSpecs->isEmpty(),
       | $aca,
       | // See reprocessFuncColSpecArray: read the type argument off the rebuilt lambda, since

@@ -60,7 +60,18 @@ import meta::relational::extension::*;
 // This ensures TableAliasColumns in the compiled condition reference raw Table objects,
 // which is what the union infrastructure's modifyColumnNameInOperation/findFkListForEachSet expect.
 function <<access.private>> meta::relational::functions::pureToSqlQuery::compileModelJoinForBranch(
-  mjpm:ModelJoinPropertyMapping[1],
+  sourceSet:InstanceSetImplementation[1],
+  sourceId:String[1],
+  targetId:String[1],
+  targetSWC:SelectWithCursor[1],
+  // Present only when the target is a genuinely mapped class mapping (classic Association ModelJoin,
+  // inline modelJoin) — used solely to detect filter/groupBy/distinct needing materialization. Empty
+  // for an unmodeled navigationJoin/filterJoin target (a plain Relation expression, never "complex").
+  mappedTargetSet:InstanceSetImplementation[0..1],
+  branchSrcSWC:SelectWithCursor[1],
+  joinCondition:LambdaFunction<{Nil[1],Nil[1]->Boolean[1]}>[1],
+  conditionVariableNames:String[*],
+  joinKind:String[1],
   property:AbstractProperty<Any>[1],
   oldSrcOperation:SelectWithCursor[1],
   state:State[1],
@@ -72,28 +83,32 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
 ):RelationalPropertyMapping[1]
 {
   print(if(!$context.debug, |'',
-          | $context.space + '>ModelJoin: ' + $mjpm.sourceSetImplementationId + ' -> ' + $mjpm.targetSetImplementationId
+          | $context.space + '>ModelJoin: ' + $sourceId + ' -> ' + $targetId
             + ' via .' + $property.name->toOne() + ' nodeId=' + $nodeId + '\n'));
 
-  let sourceSet = $state->getClassMappingById($mjpm.sourceSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
-  let targetSet = $state->getClassMappingById($mjpm.targetSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
-
   // A. Branch-specific source SWC (raw table)
-  // Use '_mj_src' suffix to ensure unique alias names when both sides are RelationFunction mappings
-  let branchSrcSWC = buildBranchSourceSWC($sourceSet, $oldSrcOperation, $joinType, $nodeId + '_mj_src', $state, $context, $extensions);
   let branchSrcAlias = $branchSrcSWC.currentTreeNode->toOne().alias;
 
   // B. Target placeholder (reuse existing helper)
-  // Use '_mj_tgt' suffix to ensure unique alias names when both sides are RelationFunction mappings
-  let placeholderName = $mjpm.sourceSetImplementationId + '_' + $mjpm.targetSetImplementationId + '_mj_ph';
-  let withPlaceholder = buildModelJoinPlaceholder($targetSet, $branchSrcAlias, $placeholderName, $branchSrcSWC, $joinType, $nodeId + '_mj_tgt', $state, $context, $extensions);
+  // Use the join-kind suffix to ensure unique alias names when both sides are RelationFunction mappings
+  let placeholderName = $sourceId + '_' + $targetId + '_' + $joinKind + '_ph';
+  let withPlaceholder = buildModelJoinPlaceholder($targetSWC, $branchSrcAlias, $placeholderName, $branchSrcSWC, $joinType, $nodeId + '_' + $joinKind + '_tgt', $state, $context, $extensions);
 
   // C. Compile condition against branch-specific SWCs
   let vars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>));
-  let varToSelect = newMap([pair('_mj_src', $branchSrcSWC), pair('_mj_tgt', $withPlaceholder)]);
-  let stateWithScope = ^$state(functionReferenceScope = ^FunctionParamScope(parent = $state.functionReferenceScope, varToSelect = $varToSelect));
+  let varToSelect = newMap([pair($conditionVariableNames->at(0), $branchSrcSWC), pair($conditionVariableNames->at(1), $withPlaceholder)]);
+  // The ON condition is compiled in isolation from the enclosing query: an outer filter context (e.g.
+  // isNotEmpty) must not trigger isolation of the anchor/placeholder trees, and a query variable, relation
+  // lambda variable or qualifier $this that shares a name with one of the two sides must not shadow it.
+  let stateWithScope = ^$state(
+    functionReferenceScope = ^FunctionParamScope(varToSelect = $varToSelect),
+    relationVarScope       = [],
+    qualifierBase          = [],
+    inScopeVars            = newMap($state.inScopeVars->keyValues()->filter(kv | !$kv.first->in($conditionVariableNames))),
+    shouldIsolate          = false
+  );
   let resultSWC = processValueSpecification(
-    $mjpm.joinCondition.expressionSequence->evaluateAndDeactivate()->at(0),
+    $joinCondition.expressionSequence->evaluateAndDeactivate()->at(0),
     [], $branchSrcSWC, $vars, $stateWithScope, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions
   )->toOne()->cast(@SelectWithCursor);
 
@@ -112,8 +127,16 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
   );
   let sourceAliasReconciliation = ^OldAliasToNewAlias(first = $branchSrcAlias.name, second = $parentOfTargetAlias);
   let reconciledCompiledCondition = $compiledCondition->reprocessAliases([$sourceAliasReconciliation]);
+  // Fold the condition's own structural fingerprint into the name — not just source/target ids —
+  // so mergeSQLQueryData's name-keyed trie dedups two occurrences of the identical join (shared
+  // across property mappings, the way a classic ###Relational @join is shared by construction)
+  // instead of (a) treating two DIFFERENT conditions to the same target as the same join (silently
+  // keeping only the first one's condition) or (b) treating two occurrences of the SAME condition
+  // as different joins (an unnecessary duplicate JOIN). alias=false recurses into each alias's
+  // underlying table/column rather than its call-site-derived name, so the fingerprint is the same
+  // regardless of which synthetic alias names a given call site happened to generate.
   let realJoin = ^Join(
-    name      = $mjpm.sourceSetImplementationId + '_' + $mjpm.targetSetImplementationId + '_ModelJoin',
+    name      = $sourceId + '_' + $targetId + '_' + $joinKind + '_' + $joinType->toString() + '_' + $reconciledCompiledCondition->buildUniqueName(false, $extensions) + '_ModelJoin',
     operation = $reconciledCompiledCondition->cast(@Operation),
     target    = $compiledTgtAlias,
     aliases   = [pair($parentOfTargetAlias, $compiledTgtAlias), pair($compiledTgtAlias, $parentOfTargetAlias)]
@@ -122,7 +145,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
   // F. Target JTN — materialize if target has children (from compiling $that.nested.prop)
   //    or complex Relational mapping (filter/groupBy/distinct). This ensures currentTreeNode is set correctly.
   let hasChildren = $placeholderJTN->children()->isNotEmpty();
-  let targetHasComplexMapping = $targetSet->match([
+  let targetHasComplexMapping = $mappedTargetSet->isNotEmpty() && $mappedTargetSet->toOne()->match([
     r:RootRelationalInstanceSetImplementation[1] |
       !$r->resolveFilter()->isEmpty() || !$r->resolveGroupBy()->isEmpty() || $r->resolveDistinct() == true,
     a:InstanceSetImplementation[1] | false
@@ -135,9 +158,12 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
             + ', complexTarget=' + $targetHasComplexMapping->toString() + ')\n'));
 
   let targetJTN = if($needsMaterialization,
+    // $mappedTargetSet is always present here: needsMaterialization can only be true via
+    // targetHasComplexMapping (which already requires it) or hasChildren (condition compilation
+    // navigating further properties — only possible against a genuinely mapped target).
     | materializeTargetAsSubselect(
         ^$placeholderJTN(join = $realJoin, joinName = $realJoin.name),
-        $realJoin, $parentOfTargetAlias, $targetSet,
+        $realJoin, $parentOfTargetAlias, $mappedTargetSet->toOne(),
         $joinType, $nodeId, $oldSrcOperation.milestoningContext,
         $state, $context, $extensions
       ),
@@ -157,15 +183,15 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
   );
 
   print(if(!$context.debug, |'',
-          | $context.space + '<End ModelJoin: ' + $mjpm.sourceSetImplementationId + ' -> ' + $mjpm.targetSetImplementationId + '\n'));
+          | $context.space + '<End ModelJoin: ' + $sourceId + ' -> ' + $targetId + '\n'));
 
   // H. Package as synthetic RelationalPropertyMapping
   ^RelationalPropertyMapping(
     owner                      = $sourceSet,
     property                   = $property->cast(@Property<Nil,Any|*>),
     relationalOperationElement = ^RelationalOperationElementWithJoin(joinTreeNode = $fullChainJTN),
-    sourceSetImplementationId  = $mjpm.sourceSetImplementationId,
-    targetSetImplementationId  = $mjpm.targetSetImplementationId
+    sourceSetImplementationId  = $sourceId,
+    targetSetImplementationId  = $targetId
   );
 }
 
@@ -200,6 +226,8 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildBr
       // than the inner un-renamed sub-select.
       let vars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>));
       let rfpmSwc = processRelationFunctionClassMapping($r, $vars, $state, $oldSrcOperation.milestoningContext, $joinType, $nodeId, $context, $extensions);
+      // Keeps the source relation's own alias name: the join is later re-anchored onto the real
+      // source by alias name. Only the target wrapper is suffixed (self-join disambiguation).
       let wrapperAlias = ^TableAlias(
         name              = $rfpmSwc.select.data->toOne().alias.name,
         relationalElement = $rfpmSwc.select
@@ -231,18 +259,17 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::appendA
   );
 }
 
-// Build target SWC and attach it to srcOperation via a placeholder join (ON 1=1).
-// The placeholder allows $this and $that to share one query tree during condition compilation.
-// Uses bare table alias — target processing (filter/groupBy/distinct) is deferred to
-// materializeTargetAsSubselect, called after condition compilation when we know what columns to expose.
-function <<access.private>> meta::relational::functions::pureToSqlQuery::buildModelJoinPlaceholder(
-  targetSet:InstanceSetImplementation[1], srcAlias:TableAlias[1], placeholderName:String[1],
-  oldSrcOperation:SelectWithCursor[1], joinType:JoinType[1], nodeId:String[1],
+// Builds the target-side SWC for a ModelJoin target that is a genuinely mapped
+// InstanceSetImplementation (classic Association ModelJoin, inline modelJoin). Kept separate from
+// buildModelJoinPlaceholder so the latter can also accept a target that is just a plain processed
+// Relation expression (navigationJoin/filterJoin — unmodeled, no mapped-class semantics to apply).
+function <<access.private>> meta::relational::functions::pureToSqlQuery::buildMappedModelJoinTargetSWC(
+  targetSet:InstanceSetImplementation[1], oldSrcOperation:SelectWithCursor[1], joinType:JoinType[1], nodeId:String[1],
   state:State[1], context:DebugContext[1], extensions:Extension[*]
 ):SelectWithCursor[1]
 {
   let vars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>));
-  let targetSWC = $targetSet->match([
+  $targetSet->match([
     r:RootRelationalInstanceSetImplementation[1] |
       print(if(!$context.debug, |'', | $context.space + '  ModelJoin target [Root]: ' + $r.id + '\n'));
       let tgtAlias = $r.mainTableAlias->createJoinTableAlias($joinType, $nodeId, $state, $oldSrcOperation.milestoningContext, $context, $extensions);
@@ -254,7 +281,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildMo
       // target level.
       let rfpmSwc = processRelationFunctionClassMapping($r, $vars, $state, $oldSrcOperation.milestoningContext, $joinType, $nodeId, $context, $extensions);
       let wrapperAlias = ^TableAlias(
-        name              = $rfpmSwc.select.data->toOne().alias.name,
+        name              = $rfpmSwc.select.data->toOne().alias.name + '_' + $nodeId,
         relationalElement = $rfpmSwc.select
       );
       let wrapperRoot = ^RootJoinTreeNode(alias = $wrapperAlias);
@@ -264,6 +291,18 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildMo
         milestoningContext = $oldSrcOperation.milestoningContext
       );
   ]);
+}
+
+// Attaches an already-built target SWC to srcOperation via a placeholder join (ON 1=1).
+// The placeholder allows $this and $that to share one query tree during condition compilation.
+// Uses bare table alias — target processing (filter/groupBy/distinct) is deferred to
+// materializeTargetAsSubselect, called after condition compilation when we know what columns to expose.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::buildModelJoinPlaceholder(
+  targetSWC:SelectWithCursor[1], srcAlias:TableAlias[1], placeholderName:String[1],
+  oldSrcOperation:SelectWithCursor[1], joinType:JoinType[1], nodeId:String[1],
+  state:State[1], context:DebugContext[1], extensions:Extension[*]
+):SelectWithCursor[1]
+{
   let tgtAlias = $targetSWC.select.data->toOne().alias;
 
   let placeholder = ^Join(
@@ -283,6 +322,17 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildMo
     $oldSrcOperation.select.data->toOne(), $oldSrcOperation.currentTreeNode->toOne(),
     $placeholderJTN, $oldSrcOperation, $nodeId, $joinType, true, true, [],
     $state, $context, $extensions
+  );
+}
+
+// Stamps joinType on every node of the tree, including nested joins from navigating further
+// properties inside the join condition itself — they inherit the construct's own chosen kind
+// rather than falling back independently to the ambient default.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::forceJoinTypeTree(node:JoinTreeNode[1], joinType:JoinType[1]):JoinTreeNode[1]
+{
+  ^$node(
+    joinType     = $joinType,
+    childrenData = $node->children()->map(c | forceJoinTypeTree($c->cast(@JoinTreeNode), $joinType))
   );
 }
 

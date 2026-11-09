@@ -18,10 +18,10 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.block.procedure.Procedure2;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -55,7 +55,26 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ParameterValue;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PostValidation;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PostValidationAssertion;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PostValidationAssertion_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PostValidation_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureExecution;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTest;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTestSuite;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTestSuite_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
@@ -92,7 +111,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 Processor.newProcessor(
                         Service.class,
                         Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class, DataElement.class, ExecutionEnvironmentInstance.class, DataSpace.class),
-                        (service, context) -> processserviceFirstPass(service, context),
+                        this::processserviceFirstPass,
                         (service, context) ->
                         {
 
@@ -128,7 +147,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                                     {
                                         Root_meta_legend_service_metamodel_ServiceTest pureServiceTest = (Root_meta_legend_service_metamodel_ServiceTest) pureTest;
 
-                                        if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution_Impl && pureServiceTest._keys().size() != 0)
+                                        if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution && pureServiceTest._keys().size() != 0)
                                         {
                                             throw new EngineException("Service Test cannot have keys for SingleExecution Tests", service.sourceInformation, EngineErrorType.COMPILATION);
                                         }
@@ -164,9 +183,9 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                                                                 ._assertion(HelperValueSpecificationBuilder.buildLambda(assertion.assertion, context))))
                                 ));
 
-                                if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution_Impl)
+                                if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution)
                                 {
-                                    FunctionType executionFunctionType = (FunctionType) ((Root_meta_legend_service_metamodel_PureSingleExecution_Impl) pureService._execution())._func()._classifierGenericType()._typeArguments().getFirst()._rawType();
+                                    FunctionType executionFunctionType = (FunctionType) ((Root_meta_legend_service_metamodel_PureSingleExecution) pureService._execution())._func()._classifierGenericType()._typeArguments().getFirst()._rawType();
                                     pureService._postValidations().forEach(validation ->
                                     {
                                         Assert.assertTrue(executionFunctionType._parameters().size() == validation._parameters().size(),
@@ -175,9 +194,9 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
 
                                 }
 
-                                if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureMultiExecution_Impl)
+                                if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureMultiExecution)
                                 {
-                                    FunctionType executionFunctionType = (FunctionType) ((Root_meta_legend_service_metamodel_PureMultiExecution_Impl) pureService._execution())._func()._classifierGenericType()._typeArguments().getFirst()._rawType();
+                                    FunctionType executionFunctionType = (FunctionType) ((Root_meta_legend_service_metamodel_PureMultiExecution) pureService._execution())._func()._classifierGenericType()._typeArguments().getFirst()._rawType();
                                     int executionFunctionParamCountWithExecutionKey = executionFunctionType._parameters().size() + 1;
 
                                     pureService._postValidations().forEach(validation ->
@@ -188,9 +207,9 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                                 }
 
                                 //validate post validation function parameter type
-                                if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureExecution_Impl)
+                                if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureExecution)
                                 {
-                                    FunctionType executionFunctionType = (FunctionType) ((Root_meta_legend_service_metamodel_PureExecution_Impl) pureService._execution())._func()._classifierGenericType()._typeArguments().getFirst()._rawType();
+                                    FunctionType executionFunctionType = (FunctionType) ((Root_meta_legend_service_metamodel_PureExecution) pureService._execution())._func()._classifierGenericType()._typeArguments().getFirst()._rawType();
                                     pureService._postValidations().flatCollect(Root_meta_legend_service_metamodel_PostValidation::_assertions).collect(Root_meta_legend_service_metamodel_PostValidationAssertion::_assertion).forEach(assertion ->
                                     {
                                         FunctionType fType = (FunctionType) assertion._classifierGenericType()._typeArguments().getFirst()._rawType();

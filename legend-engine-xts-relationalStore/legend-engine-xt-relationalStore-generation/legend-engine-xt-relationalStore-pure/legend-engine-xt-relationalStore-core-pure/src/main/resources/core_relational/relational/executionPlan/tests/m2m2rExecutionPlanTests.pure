@@ -164,7 +164,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
   assertEquals($expected, $response);
 }
 
-// Regression test for chain.pure:76 casting an already-decoded EnumerationMapping value to String.
+// Regression test for executeChain casting an already-decoded EnumerationMapping value to String.
 // Uses router::execute (interpreted, reaches executeChain), not generateAndExecutePlan/executionPlan
 // (compiled plan path, goes through planExecutionChain instead and never touches the buggy code).
 function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::tests::executeProjectWithEnumColumn() : Boolean[1]
@@ -190,6 +190,46 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
                   '{"firstName":"Alice","status":"INACTIVE"}'+
                   ']';
   assertEquals($expected, $result.values->cast(@TabularDataSet)->toOne()->meta::json::tdsToJSONKeyValueObjectString()->makeString());
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ExcludeAlloy>> meta::pure::executionPlan::m2m2r::tests::executeProjectWithEnumColSpecKeepsEnumColumnType() : Boolean[1]
+{
+  let runtime = getM2M2RRuntime();
+  let connection = $runtime.connectionStores->at(1);
+  [
+    'DROP TABLE IF EXISTS Person;',
+    'CREATE TABLE Person(id INT, firstName VARCHAR(200), lastName VARCHAR(200), status VARCHAR(20));',
+    'INSERT INTO Person(id, firstName, lastName, status) values (1, \'Grace\', \'Davis\', \'ACTIVE\');',
+    'INSERT INTO Person(id, firstName, lastName, status) values (2, \'Alice\', \'Johnson\', \'INACTIVE\');'
+  ]->map(sqlString | $sqlString->meta::relational::metamodel::execute::executeInDb($connection));
+
+  let result = meta::pure::router::execute(
+    {|Person.all()->project([col(x|$x.firstName, 'firstName'), col(x|$x.status, 'status')])},
+    ModelToModelMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+  let tds = $result.values->cast(@TabularDataSet)->toOne();
+
+  assertEquals(Status, $tds.columns->filter(c|$c.name == 'status')->toOne().type);
+  let expected = '['+
+                  '{"firstName":"Grace","status":"ACTIVE"},'+
+                  '{"firstName":"Alice","status":"INACTIVE"}'+
+                  ']';
+  assertEquals($expected, $tds->meta::json::tdsToJSONKeyValueObjectString()->makeString());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::tests::planProjectWithEnumColSpecHasStringColumnType() : Boolean[1]
+{
+  let plan = meta::pure::executionPlan::executionPlan(
+    {|Person.all()->project([col(x|$x.firstName, 'firstName'), col(x|$x.status, 'status')])},
+    ModelToModelMapping,
+    getM2M2RRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+  let tdsColumns = $plan.rootExecutionNode.resultType->cast(@meta::pure::executionPlan::TDSResultType).tdsColumns;
+
+  assertEquals(String, $tdsColumns->filter(c|$c.name == 'status')->toOne().type);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::tests::planGraphFetchWithNestedDerivedProperty() : Boolean[1]

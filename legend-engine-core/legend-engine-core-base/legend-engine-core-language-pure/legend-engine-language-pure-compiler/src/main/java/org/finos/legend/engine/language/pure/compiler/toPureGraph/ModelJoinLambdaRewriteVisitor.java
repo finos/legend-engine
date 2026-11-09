@@ -70,10 +70,10 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
  * Coverage:
  * <ul>
  *   <li><b>Recursed / rewritten</b> — {@link Variable}, {@link AppliedProperty},
- *       {@link AppliedFunction}, {@link Collection}, {@link LambdaFunction} (shadow-aware).</li>
+ *       {@link AppliedFunction}, {@link Collection}, {@link LambdaFunction} (shadow-aware),
+ *       {@link KeyExpression} (the value of {@code ^Type(k=v)}).</li>
  *   <li><b>Explicitly unsupported (throws {@link EngineException})</b> —
- *       {@link KeyExpression} ({@code ^Type{k=v}} new-instance syntax); {@link ClassInstance}
- *       when it wraps a {@link ColSpec}/{@link ColSpecArray} ({@code ~[…]} colspec),
+ *       {@link ClassInstance} when it wraps a {@link ColSpec}/{@link ColSpecArray} ({@code ~[…]} colspec),
  *       a {@link Path} ({@code #/…/#}), or a {@link GraphFetchTree} ({@code #{…}#}).
  *       These constructs can carry nested variable references and lambdas but are not
  *       supported inside a Boolean ModelJoin join condition today.</li>
@@ -211,15 +211,20 @@ class ModelJoinLambdaRewriteVisitor implements ValueSpecificationVisitor<ValueSp
         return result;
     }
 
-    // =========================================================================
-    // Explicitly-unsupported arms — throw a clear COMPILATION error.
-    // =========================================================================
-
     @Override
     public ValueSpecification visit(KeyExpression keyExpression)
     {
-        throw unsupported(keyExpression, "KeyExpression (^Type{key = value} new-instance syntax)");
+        KeyExpression result = new KeyExpression();
+        result.add = keyExpression.add;
+        result.key = keyExpression.key;
+        result.sourceInformation = keyExpression.sourceInformation;
+        result.expression = keyExpression.expression == null ? null : keyExpression.expression.accept(this);
+        return result;
     }
+
+    // =========================================================================
+    // Explicitly-unsupported arms — throw a clear COMPILATION error.
+    // =========================================================================
 
     @Override
     public ValueSpecification visit(ClassInstance iv)

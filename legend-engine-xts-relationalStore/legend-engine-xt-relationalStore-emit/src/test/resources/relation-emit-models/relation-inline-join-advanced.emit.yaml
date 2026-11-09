@@ -1,0 +1,62 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-inline-join-advanced
+title: "Relation Function Mapping — Chained, Self, To-Many and Queried Inline Joins"
+description: |
+  End-to-end (SQL pushdown) coverage for navigationJoin / filterJoin / inline modelJoin in the
+  shapes the ###Relational join suites exercise: chains, self-joins, to-many joins, filter /
+  isEmpty / exists / groupBy over join-backed properties, a derived property over a join, joins
+  inside an embedded mapping and inside union branches, a business-temporal source class, an
+  inline modelJoin to a business-temporal target queried at two dates, and
+  the same keyed property resolved at two navigation depths. The seed data includes rows
+  with no join match: the property is empty for them while the row itself is kept.
+
+modelSources:
+  model:
+    root: relation-inline-join-advanced
+    files:
+      - store/joinAdvancedDb.pure
+      - data/joinAdvancedData.pure
+      - mapping/joinAdvancedMapping.pure
+      - mapping/joinAdvancedUnionMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:derived-property
+  - grammar:function
+  - mapping:relation-embedded
+  - mapping:relation-filter-join
+  - mapping:relation-inline-model-join
+  - mapping:relation-navigation-join
+  - mapping:relation-src
+  - mapping:relation-union
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: advanced
+tags:
+  - duckdb
+  - mapping-test
+  - relation
+  - navigationjoin
+  - filterjoin
+  - modeljoin
+  - self-join

@@ -22,9 +22,9 @@ import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
-import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_GenerationFeaturesConfig;
+import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -59,9 +59,9 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "}\n");
 
         Root_meta_external_store_relational_runtime_RelationalDatabaseConnection connection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) result.getTwo().getConnection("simple::StaticConnection", SourceInformation.getUnknownSourceInformation());
-        String baseVaultReference = ((Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl) connection._authenticationStrategy())._baseVaultReference();
-        String userNameVaultReference = ((Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl) connection._authenticationStrategy())._userNameVaultReference();
-        String passwordVaultReference = ((Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl) connection._authenticationStrategy())._passwordVaultReference();
+        String baseVaultReference = ((Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy) connection._authenticationStrategy())._baseVaultReference();
+        String userNameVaultReference = ((Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy) connection._authenticationStrategy())._userNameVaultReference();
+        String passwordVaultReference = ((Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy) connection._authenticationStrategy())._passwordVaultReference();
         assertEquals("value", baseVaultReference);
         assertEquals("value", userNameVaultReference);
         assertEquals("value", passwordVaultReference);

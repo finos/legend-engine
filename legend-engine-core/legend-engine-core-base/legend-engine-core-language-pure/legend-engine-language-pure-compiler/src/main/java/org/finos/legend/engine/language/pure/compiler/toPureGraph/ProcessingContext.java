@@ -30,6 +30,7 @@ public class ProcessingContext
     public Stack<MilestoningDatePropagationContext> milestoningDatePropagationContext = new Stack<>();
     private final Stack<String> tags = new Stack<>();
     public boolean isDatePropagationSupported = true;
+    public boolean isRelationMappingPropertyValue = false;
 
     // Pre-compiled lambda parameters for batch processing (e.g., ColSpecArray).
     // Kept separate from inferredVariableList so that same-named variables from

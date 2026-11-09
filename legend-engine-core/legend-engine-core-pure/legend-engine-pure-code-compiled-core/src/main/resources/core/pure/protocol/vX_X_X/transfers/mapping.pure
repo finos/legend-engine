@@ -209,7 +209,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
       ]),
       sourceLambda = $r.relationFunction->match([
          c:ConcreteFunctionDefinition<Any>[1] | [],
-         l:LambdaFunction<Any>[1]             | $l->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($extensions)
+         l:LambdaFunction<Any>[1]             | $l->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(true, $extensions)
       ]),
       primaryKey = $r.primaryKey.name
    );
@@ -321,6 +321,31 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
   ]);
 }
 
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::untypeParameters(l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
+{
+  ^$l(parameters = $l.parameters->map(v | ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(_type = 'var', name = $v.name)));
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::untypeJoinConditionParameters(vs:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  $vs->match([
+    f:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1] |
+      let parameters = $f.parameters->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::untypeJoinConditionParameters());
+      // A meta-package function transfers under its bare functionName (only user functions are package-qualified).
+      if($f.function->in(['navigationJoin', 'filterJoin']),
+         | ^$f(parameters = $parameters->map(p | $p->match([
+              l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1] | $l->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::untypeParameters(),
+              any:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1] | $any
+            ]))),
+         | ^$f(parameters = $parameters)
+      );,
+    a:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::FunctionApplication[1] | ^$a(parameters = $a.parameters->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::untypeJoinConditionParameters())),
+    c:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection[1] | ^$c(values = $c.values->map(v | $v->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::untypeJoinConditionParameters())),
+    l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1] | ^$l(body = $l.body->map(b | $b->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::untypeJoinConditionParameters())),
+    any:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1] | $any
+  ]);
+}
+
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::transformRelationFunctionPropertyMapping(pm:PropertyMapping[1], mapping : Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping[1]
 {
    $pm->match([
@@ -347,6 +372,26 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
                   propertyMappings = $e.propertyMappings->map(p|$p->transformRelationFunctionPropertyMapping($mapping, $extensions))
                )
          );,
+      m:meta::pure::mapping::modelJoin::ModelJoinPropertyMapping[1]|
+         ^meta::protocols::pure::vX_X_X::metamodel::mapping::relation::InlineModelJoinPropertyMapping
+          (
+             _type = 'modelJoinPropertyMapping',
+             property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+             source = $m.sourceSetImplementationId,
+             target = $m.targetSetImplementationId,
+             localMappingProperty = if ($m.localMappingProperty->isNotEmpty() && $m.localMappingProperty->toOne(),
+                                       | ^meta::protocols::pure::vX_X_X::metamodel::mapping::LocalMappingPropertyInfo
+                                         (
+                                             type = $m.localMappingPropertyType->toOne()->elementToPath(),
+                                             multiplicity = $m.localMappingPropertyMultiplicity->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
+                                         ),
+                                       | []
+                                   ),
+             // The condition's parameters carry the compiler-injected class types at this point -- possibly
+             // a mapping's (non-packageable) MappingClass -- so they're stripped to the parseable (and
+             // re-compilable) untyped form; the parameters are positional, so nothing is lost.
+             joinCondition = $m.joinCondition->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(true, $extensions)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::untypeParameters()
+          );,
       r:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|
          // The Pure metamodel only carries `valueFn`; the engine protocol carries both
          // `column` (the legacy bare-column form `propName: COL`) and `valueFn` (the
@@ -356,11 +401,14 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
          // round-tripping through `valueFn` is lossless and avoids the brittle
          // pattern-match needed to recover the legacy `column` shape from a compiled
          // lambda.
+         // The `row` parameter and the join-condition parameter types are compiler-injected;
+         // they are dropped so the lambda matches its parsed form and recompiles.
+         let rawValueFn = $r.valueFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(true, $extensions);
          ^meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionPropertyMapping
           (
              _type = 'relationFunctionPropertyMapping',
              property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
-             valueFn = $r.valueFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($extensions),
+             valueFn = ^$rawValueFn(parameters = [], body = $rawValueFn.body->map(vs | $vs->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::untypeJoinConditionParameters())),
              source = $r.sourceSetImplementationId,
              target = $r.targetSetImplementationId,
              enumMappingId = $r.transformer->cast(@EnumerationMapping<Any>).name,
@@ -372,7 +420,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
                                          ),
                                        | []
                                    )
-          )
+          );
    ]);
 }
 

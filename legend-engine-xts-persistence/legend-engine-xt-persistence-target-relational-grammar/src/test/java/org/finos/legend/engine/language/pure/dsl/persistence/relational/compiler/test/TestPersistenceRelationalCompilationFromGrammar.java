@@ -21,7 +21,6 @@ import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGr
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_path_Path_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTest;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTestBatch;
@@ -1513,12 +1512,10 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
 
         // path
         assertNotNull(graphFetchServiceOutput._path());
-        assertTrue(graphFetchServiceOutput._path() instanceof Root_meta_pure_metamodel_path_Path_Impl);
 
         // datasetKeys
         assertNotNull(graphFetchServiceOutput._keys());
         assertEquals(1, graphFetchServiceOutput._keys().size());
-        assertTrue(graphFetchServiceOutput._keys().getAny() instanceof Root_meta_pure_metamodel_path_Path_Impl);
 
         // deduplication
         Root_meta_pure_persistence_metamodel_dataset_deduplication_Deduplication deduplication = graphFetchServiceOutput._deduplication();
@@ -1534,7 +1531,6 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
         assertTrue(actionIndicator instanceof Root_meta_pure_persistence_metamodel_dataset_actionindicator_DeleteIndicatorForGraphFetch);
         Root_meta_pure_persistence_metamodel_dataset_actionindicator_DeleteIndicatorForGraphFetch deleteIndicatorForGraphFetch = (Root_meta_pure_persistence_metamodel_dataset_actionindicator_DeleteIndicatorForGraphFetch) actionIndicator;
         assertNotNull(deleteIndicatorForGraphFetch._deleteFieldPath());
-        assertTrue(deleteIndicatorForGraphFetch._deleteFieldPath() instanceof Root_meta_pure_metamodel_path_Path_Impl);
         assertArrayEquals(Lists.mutable.of("Yes", "true", "1").toArray(), deleteIndicatorForGraphFetch._deleteValues().toArray());
 
         // notifier

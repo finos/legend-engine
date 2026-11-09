@@ -75,6 +75,13 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::valueSpe
                                                    property = $fe.func.name->toOne()->cast(@String),
                                                    parameters = $fe.parametersValues->evaluateAndDeactivate()->map(pm|$pm->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions))
                                                 ),
+                                             p:meta::pure::metamodel::relation::Column<Nil,Any|*>[1]|
+                                                ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::application::AppliedProperty
+                                                (
+                                                   _type = 'property',
+                                                   property = $fe.func.name->toOne()->cast(@String),
+                                                   parameters = $fe.parametersValues->evaluateAndDeactivate()->map(pm|$pm->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $useAppliedFunction, $extensions))
+                                                ),
                                              f:Function<Any>[1]|
                                                 let passToTransformAny =
                                                    [

@@ -63,38 +63,38 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityStoreTestData;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityStoreTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPersistenceStrategy;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidation_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTest_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestData;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestData_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestSuite;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestSuite_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparison_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparisonTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparison;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparisonTestData;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparisonTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparisonTestSuite;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparisonTestSuite_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_MD5HashStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparisonTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparison_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidation;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestData;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestData_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestSuite;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestSuite_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidation_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRootGraphFetchTree;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRootGraphFetchTree_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityStoreTestData;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityStoreTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPersistenceStrategy;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataSpaceDataQualityExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataSpaceDataQualityExecutionContext_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_MD5HashStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_MappingAndRuntimeDataQualityExecutionContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_RelationValidation;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_RelationValidation_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_constraint_Constraint_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -103,7 +103,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
-import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.navigation._class._Class;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
@@ -116,8 +116,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers.processRelationAndColSpecParams;
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers.SelectColInference;
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers.processRelationAndColSpecParams;
 
 public class DataQualityCompilerExtension implements CompilerExtension
 {
@@ -222,7 +222,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
                 },
                 (dataqualityRelationValidation, compileContext) ->
                 {
-                    Root_meta_external_dataquality_DataQualityRelationValidation_Impl metamodel = (Root_meta_external_dataquality_DataQualityRelationValidation_Impl) compileContext.pureModel.getPackageableElement(compileContext.pureModel.buildPackageString(dataqualityRelationValidation._package, dataqualityRelationValidation.name));
+                    Root_meta_external_dataquality_DataQualityRelationValidation metamodel = (Root_meta_external_dataquality_DataQualityRelationValidation) compileContext.pureModel.getPackageableElement(compileContext.pureModel.buildPackageString(dataqualityRelationValidation._package, dataqualityRelationValidation.name));
                     LambdaFunction<?> relationValidationQuery = buildRelationLambda(dataqualityRelationValidation.query, compileContext);
                     metamodel._query(relationValidationQuery);
                     metamodel._validations(buildDataQualityRelationValidations(dataqualityRelationValidation.validations, dataqualityRelationValidation.query, relationValidationQuery, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext));
@@ -280,7 +280,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
                 // Third pass: compile lambdas and set properties
                 (relationComparison, compileContext) ->
                 {
-                    Root_meta_external_dataquality_DataQualityRelationComparison_Impl metamodel = (Root_meta_external_dataquality_DataQualityRelationComparison_Impl) compileContext.pureModel.getPackageableElement(compileContext.pureModel.buildPackageString(relationComparison._package, relationComparison.name));
+                    Root_meta_external_dataquality_DataQualityRelationComparison metamodel = (Root_meta_external_dataquality_DataQualityRelationComparison) compileContext.pureModel.getPackageableElement(compileContext.pureModel.buildPackageString(relationComparison._package, relationComparison.name));
 
                     // Compile source lambda
                     LambdaFunction<?> sourceLambda = buildRelationReturningLambda(relationComparison.source, compileContext);
@@ -404,7 +404,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         LambdaFunction<?> relationQuery = HelperValueSpecificationBuilder.buildLambda(lambda, compileContext);
         String relationQueryReturnType = getLambdaFunctionRawReturnTypeName(relationQuery);
-        if (!(relationQuery._expressionSequence().getLast() instanceof Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) && !compileContext.pureModel.taxonomyTypes("cov_relation_Relation").contains(relationQueryReturnType))
+        if (!(relationQuery._expressionSequence().getLast() instanceof SimpleFunctionExpression) && !compileContext.pureModel.taxonomyTypes("cov_relation_Relation").contains(relationQueryReturnType))
         {
             throw new EngineException("Relation expected from lambda", lambda.sourceInformation, EngineErrorType.COMPILATION);
         }
@@ -454,7 +454,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
 
     private void validateAggregateAssertion(RelationValidation relationalValidation, LambdaFunction<?> assertion)
     {
-        if (!(assertion._expressionSequence().getLast() instanceof  Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) || !ASSERTION_END_PERMITTED_FUNC_NAMES.contains(((Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) assertion._expressionSequence().getLast())._functionName))
+        if (!(assertion._expressionSequence().getLast() instanceof SimpleFunctionExpression) || !ASSERTION_END_PERMITTED_FUNC_NAMES.contains(((SimpleFunctionExpression) assertion._expressionSequence().getLast())._functionName()))
         {
             throw new EngineException("Assertion should end in either assertRelationEmpty or assertRelationNotEmpty functions", relationalValidation.assertion.sourceInformation, EngineErrorType.COMPILATION);
         }
@@ -603,7 +603,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
                 ._alias(propertyGraphFetchTree.alias)
                 ._subType(subType)
                 ._subTrees(children);
-        if (returnType instanceof Root_meta_pure_metamodel_type_Class_Impl)
+        if (returnType instanceof Class)
         {
             root_meta_external_dataquality_dataQualityPropertyGraphFetchTree._constraints(resolveNodeConstraints(context, (Class<?>) returnType, propertyGraphFetchTree.constraints));
         }
@@ -654,8 +654,8 @@ public class DataQualityCompilerExtension implements CompilerExtension
         FastList<Constraint> constraints = FastList.newList();
         for (CoreInstance c_type : _Class.computeConstraintsInHierarchy(_class, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {
-            Root_meta_pure_metamodel_constraint_Constraint_Impl constraint = (Root_meta_pure_metamodel_constraint_Constraint_Impl) c_type;
-            if (treeConstraintNames.contains(constraint._name))
+            Constraint constraint = (Constraint) c_type;
+            if (treeConstraintNames.contains(constraint._name()))
             {
                 constraints.add(constraint);
             }
@@ -722,7 +722,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
                 ));
     }
 
-    private static void processDataQualityTestSuites(List<DataQualityRelationValidationTestSuite> testSuites, Root_meta_external_dataquality_DataQualityRelationValidation_Impl metamodel, org.finos.legend.engine.protocol.pure.m3.SourceInformation elementSourceInformation, CompileContext compileContext)
+    private static void processDataQualityTestSuites(List<DataQualityRelationValidationTestSuite> testSuites, Root_meta_external_dataquality_DataQualityRelationValidation metamodel, org.finos.legend.engine.protocol.pure.m3.SourceInformation elementSourceInformation, CompileContext compileContext)
     {
         if (testSuites == null || testSuites.isEmpty())
         {
@@ -747,7 +747,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
         }));
     }
 
-    private static void processDataQualityTestSuites(List<DataQualityRelationComparisonTestSuite> testSuites, Root_meta_external_dataquality_DataQualityRelationComparison_Impl metamodel, org.finos.legend.engine.protocol.pure.m3.SourceInformation elementSourceInformation, CompileContext compileContext)
+    private static void processDataQualityTestSuites(List<DataQualityRelationComparisonTestSuite> testSuites, Root_meta_external_dataquality_DataQualityRelationComparison metamodel, org.finos.legend.engine.protocol.pure.m3.SourceInformation elementSourceInformation, CompileContext compileContext)
     {
         if (testSuites == null || testSuites.isEmpty())
         {
