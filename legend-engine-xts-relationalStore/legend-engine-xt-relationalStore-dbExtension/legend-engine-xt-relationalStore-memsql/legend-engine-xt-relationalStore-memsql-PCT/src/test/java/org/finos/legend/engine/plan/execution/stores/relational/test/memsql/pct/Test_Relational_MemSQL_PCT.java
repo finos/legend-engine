@@ -126,7 +126,7 @@ public class Test_Relational_MemSQL_PCT
     public static class EssentialFunctions extends MemSQLPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = PlatformCodeRepositoryProvider.essentialFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-memsql/EssentialFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_external_test_connection/relational-memsql/EssentialFunctions_manifest.json";
 
         public EssentialFunctions()
         {
@@ -142,7 +142,7 @@ public class Test_Relational_MemSQL_PCT
     public static class GrammarFunctions extends MemSQLPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = PlatformCodeRepositoryProvider.grammarFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-memsql/GrammarFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_external_test_connection/relational-memsql/GrammarFunctions_manifest.json";
 
         public GrammarFunctions()
         {
@@ -158,7 +158,7 @@ public class Test_Relational_MemSQL_PCT
     public static class RelationFunctions extends MemSQLPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = RelationCodeRepositoryProvider.relationFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-memsql/RelationFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_external_test_connection/relational-memsql/RelationFunctions_manifest.json";
 
         public RelationFunctions()
         {
@@ -174,7 +174,7 @@ public class Test_Relational_MemSQL_PCT
     public static class ScenarioQuantFunctions extends MemSQLPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreScenarioQuantCodeRepositoryProvider.scenario_Quant_Functions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-memsql/ScenarioQuantFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_external_test_connection/relational-memsql/ScenarioQuantFunctions_manifest.json";
 
         public ScenarioQuantFunctions()
         {
@@ -190,7 +190,7 @@ public class Test_Relational_MemSQL_PCT
     public static class StandardFunctions extends MemSQLPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreStandardFunctionsCodeRepositoryProvider.standardFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-memsql/StandardFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_external_test_connection/relational-memsql/StandardFunctions_manifest.json";
 
         public StandardFunctions()
         {
@@ -206,7 +206,7 @@ public class Test_Relational_MemSQL_PCT
     public static class UnclassifiedFunctions extends MemSQLPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-memsql/UnclassifiedFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_external_test_connection/relational-memsql/UnclassifiedFunctions_manifest.json";
 
         public UnclassifiedFunctions()
         {
@@ -222,7 +222,7 @@ public class Test_Relational_MemSQL_PCT
     public static class VariantFunctions extends MemSQLPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = VariantCodeRepositoryProvider.variantFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-memsql/VariantFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_external_test_connection/relational-memsql/VariantFunctions_manifest.json";
 
         public VariantFunctions()
         {

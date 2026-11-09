@@ -398,6 +398,24 @@ def test_scoped_run_renders_nested_suites_indented(monkeypatch, capsys):
     assert "2 passed, 0 failed, 0 skipped in 1.2s" in "\n".join(out)
 
 
+def test_scoped_run_prints_warnings_after_the_summary(monkeypatch, capsys):
+    _capture_post(monkeypatch, result={"success": True, "passed": 1, "failed": 0, "skipped": 0,
+                                       "durationMs": 10, "warnings": ["No PCT expected failures applied"],
+                                       "tests": [{"name": "t1", "suitePath": "a::b", "status": "passed"}]})
+    client_cli.cmd_execute(_scope_args(package="a::b"))
+    assert "warning: No PCT expected failures applied" in capsys.readouterr().err
+
+
+def test_scoped_run_without_tests_still_prints_warnings(monkeypatch, capsys):
+    _capture_post(monkeypatch, result={"success": True, "passed": 0, "failed": 0, "skipped": 0,
+                                       "durationMs": 0, "warnings": ["Cannot automatically identify manifest"],
+                                       "tests": []})
+    client_cli.cmd_execute(_scope_args(package="a::b"))
+    captured = capsys.readouterr()
+    assert "no tests found in" in captured.out
+    assert "warning: Cannot automatically identify manifest" in captured.err
+
+
 def test_scoped_run_with_json_flag_prints_raw_payload(monkeypatch, capsys):
     _capture_post(monkeypatch, result={"success": True, "tests": [], "passed": 0, "failed": 0,
                                        "skipped": 0, "durationMs": 0})

@@ -27,7 +27,7 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 public class Test_Compiled_ScnearioQuantFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = CoreScenarioQuantCodeRepositoryProvider.scenario_Quant_Functions;
-    private static final String manifestPath = "/core_scenario_quant/pct-manifests/core-compiled/ScenarioQuantFunctions_manifest.json";
+    private static final String manifestPath = "/core_scenario_quant/core-compiled/ScenarioQuantFunctions_manifest.json";
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "compiled";
 

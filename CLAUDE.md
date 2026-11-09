@@ -137,7 +137,7 @@ Run a single dialect's PCT suite:
 mvn test -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-h2/legend-engine-xt-relationalStore-h2-PCT
 ```
 
-When a PCT test fails on a target, decide: real bug → fix; legitimately unsupported → add the test to that adapter's JSON manifest file under `src/main/resources/pct-manifests/<adapter>/` as an `exclusions` entry with the `test` FQN and `expectedError` string (the test runner prints the copy-paste snippet on failure). See `docs/pct/expected-failures-howto.md`.
+When a PCT test fails on a target, decide: real bug → fix; legitimately unsupported → add the test to that adapter's JSON manifest file under `src/main/resources/<repo-name>/` (directly inside the adapter's Pure repository directory, so it's visible from the Pure IDE; repositories hosting several adapters keep a `<adapter>/` subdirectory per adapter) as an `exclusions` entry with the `test` FQN and `expectedError` string (the test runner prints the copy-paste snippet on failure). See `docs/pct/expected-failures-howto.md`.
 
 Detailed PCT authoring guides: `docs/pct/` (`purefunction-howto.md`, `native-howto.md`, `wiring-howto.md`, `conventions.md`). PCT framework itself is defined in `legend-pure` upstream.
 

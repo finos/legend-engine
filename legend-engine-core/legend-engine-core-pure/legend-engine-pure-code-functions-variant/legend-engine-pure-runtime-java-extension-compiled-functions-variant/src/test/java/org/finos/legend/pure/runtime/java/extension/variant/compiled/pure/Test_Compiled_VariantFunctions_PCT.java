@@ -28,7 +28,7 @@ public class Test_Compiled_VariantFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = VariantCodeRepositoryProvider.variantFunctions;
 
-    private static final String manifestPath = "/core_functions_variant/pct-manifests/core-compiled/VariantFunctions_manifest.json";
+    private static final String manifestPath = "/core_functions_variant/core-compiled/VariantFunctions_manifest.json";
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "compiled";
 
