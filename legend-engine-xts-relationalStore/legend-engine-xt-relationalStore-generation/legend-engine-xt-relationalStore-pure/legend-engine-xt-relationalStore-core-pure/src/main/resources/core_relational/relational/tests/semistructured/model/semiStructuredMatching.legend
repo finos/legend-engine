@@ -291,3 +291,40 @@ function match::semiStructuredMatchWithMultipleProjectUsingCol(): TabularDataSet
             ]),'Order Price')
     ]);
 }
+
+###Pure
+function match::addressText(address: match::model::CustomerAddress[1]): String[1]
+{
+    $address->match(
+        [
+            s: match::model::BillingAddress[1] | $s.billAddress,
+            s: match::model::ShippingAddress[1] | $s.shipAddress,
+            s: Any[1] | 'Default Address'
+        ]
+    )
+}
+
+function match::addressTextViaAnotherFunction(address: match::model::CustomerAddress[1]): String[1]
+{
+    match::addressText($address)
+}
+
+function match::semiStructuredMatchInUserFunction(): TabularDataSet[1]
+{
+    match::model::Order.all()->project([x | $x.customer.customerAddress->match::addressText()], ['Customer Address']);
+}
+
+function match::semiStructuredMatchInNestedUserFunction(): TabularDataSet[1]
+{
+    match::model::Order.all()->project([x | $x.customer.customerAddress->match::addressTextViaAnotherFunction()], ['Customer Address']);
+}
+
+function match::semiStructuredMatchInUserFunctionAfterBindingColumn(): TabularDataSet[1]
+{
+    match::model::Order.all()->project(
+        [
+            col(x | $x.customer.customerId, 'Customer Id'),
+            col(x | $x.customer.customerAddress->match::addressTextViaAnotherFunction(), 'Customer Address')
+        ]
+    );
+}

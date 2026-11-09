@@ -187,14 +187,14 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
                                                   let result = meta::pure::functions::meta::resolve($va, $vars, $inScopeVars);
                                                   if ($result->isEmpty(),
                                                      |$va->resolveVar($state, $debug),
-                                                     |$result->evaluateAndDeactivate()->toOne()->match([v:VariableExpression[1]               | $v->resolveVar($state, $debug),
+                                                     |$result->evaluateAndDeactivate()->toOne()->match([v:VariableExpression[1]               | $v->resolveRenamedVar($va, $state, $vars, $inScopeVars, $debug),
                                                                                                          i:InstanceValue[1]                    | ^$state(value=$i)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug),
                                                                                                          e:ExtendedRoutedValueSpecification[1] | if($va.name->in(['this', '_mj_src', '_mj_tgt']),
                                                                                                                                                   | let vaExtended=^$e(value=$va);
                                                                                                                                                     ^$state(value=$vaExtended, shouldBeRouted=true);,
                                                                                                                                                   | ^$state(value=$e, shouldBeRouted=true)),
                                                                                                          n:NoSetRoutedValueSpecification[1]    | ^$state(value=$n, shouldBeRouted=false),
-                                                                                                        a:ValueSpecification[1]               | ^$state(value=$a)
+                                                                                                        a:ValueSpecification[1]               | ^$state(value=$a, shouldBeRouted=false)
                                                                                                       ]);
                                                   );
       ]
@@ -633,8 +633,9 @@ function <<access.private>> meta::pure::router::routing::routedOfParameterTypeOr
 function <<access.private>> meta::pure::router::routing::routeLambdaBody(i:InstanceValue[1], func:Function<Any>[1], propMap:Pair<String,Any>[*], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    let oldPropMap = $state.propertyMap;
+   let ownParams  = $func->match([f:FunctionDefinition<Any>[1] | $f->functionType().parameters->evaluateAndDeactivate().name, a:Any[1] | []->cast(@String)]);
    ^$state(
-         propertyMap = ^$oldPropMap(v=$propMap->concatenate($oldPropMap.v->filter(p|$p.first != '__propertyOwner'))),
+         propertyMap = ^$oldPropMap(v=$propMap->concatenate($oldPropMap.v->filter(p|($p.first != '__propertyOwner') && !$p.first->in($ownParams)))),
          value=$i,
          lambdaContext = $func->id()
    )->routeSubFunction($executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
@@ -682,7 +683,8 @@ function meta::pure::router::routing::processColumnSpecification(v:ValueSpecific
    $i.values->fold({v,a|
                         $v->match([
                            cs: BasicColumnSpecification<Any>[1] |
-                                          let colSpecState = $cs.func->processAggregationValueFunction($a.routed->cast(@ExtendedRoutedValueSpecification), $a, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                          let columnState  = ^$a(propertyMap = $state.propertyMap, shouldBeRouted = $state.shouldBeRouted, depth = $state.depth);
+         let colSpecState = $cs.func->processAggregationValueFunction($a.routed->cast(@ExtendedRoutedValueSpecification), $columnState, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                           let colSpec      = ^$cs(func = $colSpecState.value->match([
                                                                             e:ExtendedRoutedValueSpecification[1]|$e.value,
                                                                             e:FunctionRoutedValueSpecification [1]|$e
@@ -699,9 +701,10 @@ function meta::pure::router::routing::processColumnSpecification(v:ValueSpecific
                                           // route the function to let this complete
                                           //
                                           //let colSpec = $fe->reactivate($inScopeVars)->evaluateAndDeactivate()->cast(@ColumnSpecification<Any>)->toOne();
-                                          let colSpec  = $fe->processColSpecParams($a, $executionContext, $vars, $inScopeVars, $extensions, $debug);
+                                          let colScope = ^$a(propertyMap = $state.propertyMap, shouldBeRouted = $state.shouldBeRouted, depth = $state.depth);
+                                          let colSpec  = $fe->processColSpecParams($colScope, $executionContext, $vars, $inScopeVars, $extensions, $debug);
                                           let niv      = ^InstanceValue(genericType=$fe.genericType, multiplicity=$fe.multiplicity, values=$colSpec)->evaluateAndDeactivate();
-                                          let subState = processColumnSpecification($niv, $a, $executionContext, $vars, $inScopeVars, $extensions, $debug);
+                                          let subState = processColumnSpecification($niv, $colScope, $executionContext, $vars, $inScopeVars, $extensions, $debug);
 
                                           let iv       = $a.value->cast(@InstanceValue)->toOne();
                                           let r        = ^$subState(value=^$iv(values+=$subState.value));,
@@ -1183,4 +1186,15 @@ function <<access.private>> meta::pure::router::routing::lambdaShouldBeRouted(la
     f:FunctionDefinition<Any>[1] | if($f->functionType().parameters->isEmpty(), | $contextIsRoutable, | $iteratedIsRoutable),
     a:Any[1]                     | $iteratedIsRoutable
   ]);
+}
+
+function <<access.private>> meta::pure::router::routing::resolveRenamedVar(v:VariableExpression[1], original:VariableExpression[1], state:RoutingState[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):RoutingState[1]
+{
+  let viaCaller = if($v.name == $original.name, |[], |meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->evaluateAndDeactivate());
+  let routedType = if($viaCaller->isNotEmpty() && $viaCaller->toOne()->instanceOf(ExtendedRoutedValueSpecification), | $viaCaller->toOne().genericType.rawType, | []);
+  let paramType  = $original.genericType.rawType;
+  let narrowsParam = $routedType->isNotEmpty() && $paramType->isNotEmpty() && ($routedType->toOne() != $paramType->toOne()) && $routedType->toOne()->_subTypeOf($paramType->toOne());
+  if($viaCaller->isNotEmpty() && $viaCaller->toOne()->instanceOf(ExtendedRoutedValueSpecification) && !$narrowsParam,
+     | ^$state(value=$viaCaller->toOne(), shouldBeRouted=true),
+     | $v->resolveVar($state, $debug));
 }
