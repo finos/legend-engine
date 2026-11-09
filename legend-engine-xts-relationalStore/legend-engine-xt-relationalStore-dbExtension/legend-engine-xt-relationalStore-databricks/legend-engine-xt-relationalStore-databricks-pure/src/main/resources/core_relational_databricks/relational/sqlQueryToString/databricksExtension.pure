@@ -117,6 +117,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('isEmpty',                $allStates,            ^ToSql(format='(%s is null)')),
     dynaFnToSql('isNotEmpty',             $allStates,            ^ToSql(format='(%s is not null)')),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDatabricks()})),
+    // Spark returns NaN outside the domain of acos/asin/sqrt, where Pure raises an error.
+    dynaFnToSql('acos',                   $allStates,            ^ToSql(format='%s', transform={p:String[1] | $p->domainCheckedMathFunctionForDatabricks('acos', 'abs(' + $p + ') > 1')})),
+    dynaFnToSql('asin',                   $allStates,            ^ToSql(format='%s', transform={p:String[1] | $p->domainCheckedMathFunctionForDatabricks('asin', 'abs(' + $p + ') > 1')})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateTimeDatabricks()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as STRING)')),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[2..3] | $p->dateDiffDatabricks()})),
@@ -143,8 +146,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'MINUTE\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('hashCode',               $allStates,            ^ToSql(format='hash(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
-    // Spark has no HASH_AGG; summing the per-row hash is an order-independent per-group combiner.
-    dynaFnToSql('hashAgg',                $allStates,            ^ToSql(format='cast(sum(hash(%s)) as int)')),
+    // Spark has no HASH_AGG; summing the per-row hash is an order-independent per-group combiner. sum() of the
+    // INT hashes is a BIGINT, so a group of large hashes cannot overflow.
+    dynaFnToSql('hashAgg',                $allStates,            ^ToSql(format='sum(hash(%s))')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='locate(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='%s', transform={p:String[1]|$p->transformAlphaNumericParamsDatabricks()})),
@@ -178,6 +182,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha2(%s, 256)')),
     dynaFnToSql('split',                  $allStates,            ^ToSql(format='split(%s, %s)')),
+    dynaFnToSql('sqrt',                   $allStates,            ^ToSql(format='%s', transform={p:String[1] | $p->domainCheckedMathFunctionForDatabricks('sqrt', $p + ' < 0')})),
     dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='false')),
     dynaFnToSql('sqlTrue',                $allStates,            ^ToSql(format='true')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
@@ -333,7 +338,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 {
    if($func->isQuantifiedComparisonForDatabricks(),
       | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='%s', transform={p:String[*] | [$func->rewriteQuantifiedComparisonForDatabricks($sgc)]})),
-      | $func->dynaFuncDispatchForDatabricksNonQuantified($sgc, $baseDispatch));
+      | let literalFailure = $func->literalFailureMessageForDatabricks();
+        assert($literalFailure->isEmpty(), | $literalFailure->toOne());
+        if($func.name == 'timeBucket' && $func.parameters->size() == 3,
+           | $func->timeBucketDynaFunctionToSqlForDatabricks(),
+           | $func->dynaFuncDispatchForDatabricksNonQuantified($sgc, $baseDispatch));
+   );
 }
 
 // The shared router lowers equalAny/equalAll/greaterThanAny/greaterThanAll/lessThanAny/lessThanAll/
@@ -433,11 +443,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dynaFuncDispatchForDatabricksNonQuantified(func:DynaFunction[1], sgc:SqlGenerationContext[1], baseDispatch:meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]):DynaFunctionToSql[1]
 {
-   if($func.name == 'timeBucket' && $func.parameters->size() == 3,
-      | $func->timeBucketDynaFunctionToSqlForDatabricks(),
-      | if($func->literalFailureMessageForDatabricks()->isNotEmpty(),
-           | fail($func->literalFailureMessageForDatabricks()->toOne()); ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = ''));,
-           |
    let variantOverride = arrayFunctionVariantOverrideForDatabricks()->get($func.name);
    if($variantOverride->isNotEmpty() && $func.parameters->isNotEmpty() && $func.parameters->at(0)->isSemiStructuredOperandForDatabricks(),
       | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = $variantOverride->toOne()),
@@ -502,8 +507,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
              )
         )
    );
-           )
-   );
 }
 
 // Dispatched here rather than registered with dynaFnToSql because DATE vs TIMESTAMP output depends on the
@@ -515,102 +518,69 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = '%s', transform = {p:String[3] | [$p->timeBucketSqlForDatabricks($isDateOnly)]}));
 }
 
-// Spark's date_trunc has no bucket width, so buckets are computed from the Unix epoch as timeBucket.pure
-// specifies. Week buckets are Monday-aligned (day 0 was a Thursday, hence +3), unlike dateDiff's Sunday-
-// aligned weeks, and month/year indexes count from 1970.
+// Spark's date_trunc has no bucket width, so buckets are counted from the Unix epoch as timeBucket.pure
+// specifies. pmod keeps the remainder non-negative, so dates before 1970 fall into the bucket that starts
+// before them.
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::timeBucketSqlForDatabricks(p:String[3], isDateOnly:Boolean[1]):String[1]
 {
    let d = $p->at(0);
    let q = $p->at(1);
    let unit = $p->at(2)->meta::relational::functions::sqlQueryToString::default::mapToDBUnitType();
-   let dayIdx = 'floor(unix_timestamp(cast(' + $d + ' as timestamp)) / 86400.0)';
-   let dayBucketExpr = 'timestamp_seconds(cast(floor(floor(' + $dayIdx + ') / ' + $q + ') * ' + $q + ' * 86400 as bigint))';
-   let weekIdx = 'floor((floor(' + $dayIdx + ') + 3) / 7.0)';
-   let weekBucketDayExpr = '(floor(' + $weekIdx + ' / ' + $q + ') * ' + $q + ' * 7 - 3)';
-   let weekBucketExpr = 'timestamp_seconds(cast((' + $weekBucketDayExpr + ') * 86400 as bigint))';
-   let monthIdx = '((year(' + $d + ') - 1970) * 12 + (month(' + $d + ') - 1))';
-   let monthBucketExpr = 'add_months(DATE \'1970-01-01\', cast(floor(' + $monthIdx + ' / ' + $q + ') * ' + $q + ' as int))';
-   let yearIdx = '(year(' + $d + ') - 1970)';
-   let yearBucketExpr = 'add_months(DATE \'1970-01-01\', cast(floor(' + $yearIdx + ' / ' + $q + ') * ' + $q + ' * 12 as int))';
-   let bucketExpr =
-      if($unit == 'DAY', | $dayBucketExpr,
-      | if($unit == 'WEEK', | $weekBucketExpr,
-      | if($unit == 'MONTH', | $monthBucketExpr,
-      | if($unit == 'YEAR', | $yearBucketExpr,
-      | ''
-      ))));
-   if ($bucketExpr == '', | fail('The DurationUnit \'' + $unit + '\' is not supported yet for timeBucket'), | '');
+   let secondsPerUnit = [pair('SECOND', 1), pair('MINUTE', 60), pair('HOUR', 3600), pair('DAY', 86400), pair('WEEK', 604800)]->filter(u | $u.first == $unit).second;
+   let monthsPerUnit = [pair('MONTH', 1), pair('YEAR', 12)]->filter(u | $u.first == $unit).second;
+   assert($secondsPerUnit->isNotEmpty() || $monthsPerUnit->isNotEmpty(), | 'The DurationUnit \'' + $unit + '\' is not supported yet for timeBucket');
+   let bucketExpr = if($secondsPerUnit->isNotEmpty(),
+      | let seconds = 'unix_seconds(cast(' + $d + ' as timestamp))';
+        // Week buckets start on Mondays; the epoch was a Thursday, three days (259200 seconds) after one.
+        let offset = if($unit == 'WEEK', | ' + 259200', | '');
+        'timestamp_seconds(' + $seconds + ' - pmod(' + $seconds + $offset + ', ' + $q + ' * ' + $secondsPerUnit->toOne()->toString() + '))';,
+      | let months = '((year(' + $d + ') - 1970) * 12 + month(' + $d + ') - 1)';
+        'add_months(DATE \'1970-01-01\', ' + $months + ' - pmod(' + $months + ', ' + $q + ' * ' + $monthsPerUnit->toOne()->toString() + '))';
+   );
    if($isDateOnly, | 'cast(' + $bucketExpr + ' as date)', | 'cast(' + $bucketExpr + ' as timestamp)');
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::domainCheckedMathFunctionForDatabricks(operand:String[1], name:String[1], outOfDomain:String[1]):String[1]
+{
+   'case when ' + $outOfDomain + ' then raise_error(concat(\'Unable to compute ' + $name + ' of \', cast(' + $operand + ' as string))) else ' + $name + '(' + $operand + ') end';
+}
+
 // A negative literal parses as minus(Literal), not as a negative Literal.
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isNumericLiteralOrNegatedNumericLiteralForDatabricks(op:RelationalOperationElement[1]):Boolean[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::numericLiteralValueForDatabricks(op:RelationalOperationElement[1]):Number[0..1]
 {
-   ($op->instanceOf(Literal) && $op->cast(@Literal).value->instanceOf(Number))
-      || ($op->instanceOf(DynaFunction) && $op->cast(@DynaFunction).name == 'minus'
-           && $op->cast(@DynaFunction).parameters->size() == 1
-           && $op->cast(@DynaFunction).parameters->at(0)->instanceOf(Literal)
-           && $op->cast(@DynaFunction).parameters->at(0)->cast(@Literal).value->instanceOf(Number));
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::numericLiteralOrNegatedNumericLiteralValueForDatabricks(op:RelationalOperationElement[1]):Number[1]
-{
-   if($op->instanceOf(Literal),
+   if($op->instanceOf(Literal) && $op->cast(@Literal).value->instanceOf(Number),
       | $op->cast(@Literal).value->cast(@Number),
-      | 0 - $op->cast(@DynaFunction).parameters->at(0)->cast(@Literal).value->cast(@Number));
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::numericLiteralOrNegatedNumericLiteralDisplayStringForDatabricks(op:RelationalOperationElement[1]):String[1]
-{
-   if($op->instanceOf(Literal),
-      | $op->cast(@Literal).value->toString(),
-      | '-' + $op->cast(@DynaFunction).parameters->at(0)->cast(@Literal).value->toString());
-}
-
-// Spark returns NULL for an out-of-domain acos/asin/sqrt, raises its own [REMAINDER_BY_ZERO] for rem, and
-// surfaces raise_error(...) wrapped in the driver's Thrift response text, so a call whose literal arguments
-// are known to fail raises the stdlib's message during plan generation instead.
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::literalFailureMessageForDatabricks(func:DynaFunction[1]):String[0..1]
-{
-   if($func.name == 'array_slice',
-      | $func->literalSliceFailureMessageForDatabricks(),
-      | if(!$func.parameters->forAll(p | $p->isNumericLiteralOrNegatedNumericLiteralForDatabricks()),
-           | [],
-           | let values = $func.parameters->map(p | $p->numericLiteralOrNegatedNumericLiteralValueForDatabricks());
-             if($func.name->in(['asin', 'acos', 'sqrt']) && ($values->size() == 1) && if($func.name == 'sqrt', | $values->at(0) < 0, | $values->at(0)->abs() > 1),
-                | 'Unable to compute ' + $func.name + ' of ' + $func.parameters->at(0)->numericLiteralOrNegatedNumericLiteralDisplayStringForDatabricks(),
-                | if(($func.name == 'rem') && ($values->size() == 2) && ($values->at(1) == 0),
-                     | 'Cannot divide ' + $func.parameters->at(0)->numericLiteralOrNegatedNumericLiteralDisplayStringForDatabricks() + ' by zero',
-                     | if(($func.name == 'range') && ($values->size() == 3) && ($values->at(2) == 0),
-                          | 'range step must not be 0',
-                          | if($func.name->in(['bitShiftLeft', 'bitShiftRight']) && ($values->size() == 2) && (($values->at(1) < 0) || ($values->at(1) > 62)),
-                               | 'Unsupported number of bits to shift - max bits allowed is 62',
-                               | []
-                            )
-                       )
-                  )
-             );
+      | if($op->instanceOf(DynaFunction) && ($op->cast(@DynaFunction).name == 'minus') && ($op->cast(@DynaFunction).parameters->size() == 1),
+           | let operand = $op->cast(@DynaFunction).parameters->at(0)->numericLiteralValueForDatabricks();
+             if($operand->isEmpty(), | [], | 0 - $operand->toOne());,
+           | []
         )
    );
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::literalSliceFailureMessageForDatabricks(func:DynaFunction[1]):String[0..1]
+// Spark raises its own [REMAINDER_BY_ZERO] for rem and surfaces raise_error(...) wrapped in the driver's Thrift
+// response text, so a call whose literal arguments are known to fail raises the stdlib's message during plan
+// generation instead. Column arguments are checked at run time by domainCheckedMathFunctionForDatabricks.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::literalFailureMessageForDatabricks(func:DynaFunction[1]):String[0..1]
 {
-   let bounds = $func.parameters->tail();
-   if($func.name == 'array_slice' && $bounds->size() == 2 && $bounds->forAll(b | $b->isNumericLiteralOrNegatedNumericLiteralForDatabricks()),
-      | let low = $bounds->at(0)->numericLiteralOrNegatedNumericLiteralValueForDatabricks()->clampedToZeroForDatabricks();
-        let high = $bounds->at(1)->numericLiteralOrNegatedNumericLiteralValueForDatabricks()->clampedToZeroForDatabricks();
-        if($low > $high,
-           | 'The low bound (' + $low->toString() + ') can\'t be higher than the high bound (' + $high->toString() + ') in a slice operation',
-           | []
-        );,
-      | []
-   );
+   let values = $func.parameters->map(p | $p->numericLiteralValueForDatabricks());
+   let n = if($values->size() == $func.parameters->size(), | $values->size(), | -1);
+   $func->literalSliceFailureMessageForDatabricks()
+      ->concatenate(if(($func.name == 'sqrt') && ($n == 1) && ($values->at(0) < 0), | 'Unable to compute sqrt of ' + $values->at(0)->toString(), | []))
+      ->concatenate(if($func.name->in(['asin', 'acos']) && ($n == 1) && ($values->at(0)->abs() > 1), | 'Unable to compute ' + $func.name + ' of ' + $values->at(0)->toString(), | []))
+      ->concatenate(if(($func.name == 'rem') && ($n == 2) && ($values->at(1) == 0), | 'Cannot divide ' + $values->at(0)->toString() + ' by zero', | []))
+      ->concatenate(if(($func.name == 'range') && ($n == 3) && ($values->at(2) == 0), | 'range step must not be 0', | []))
+      ->concatenate(if($func.name->in(['bitShiftLeft', 'bitShiftRight']) && ($n == 2) && (($values->at(1) < 0) || ($values->at(1) > 62)), | 'Unsupported number of bits to shift - max bits allowed is 62', | []))
+      ->first();
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::clampedToZeroForDatabricks(n:Number[1]):Number[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::literalSliceFailureMessageForDatabricks(func:DynaFunction[1]):String[0..1]
 {
-   if($n < 0, | 0, | $n);
+   let bounds = $func.parameters->tail()->map(b | $b->numericLiteralValueForDatabricks())->map(b | if($b < 0, | 0, | $b));
+   if(($func.name == 'array_slice') && ($func.parameters->size() == 3) && ($bounds->size() == 2) && ($bounds->at(0) > $bounds->at(1)),
+      | 'The low bound (' + $bounds->at(0)->toString() + ') can\'t be higher than the high bound (' + $bounds->at(1)->toString() + ') in a slice operation',
+      | []
+   );
 }
 
 // True when the operand's inferred relational type is Integer-like (Integer, BigInt, or a
@@ -941,8 +911,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    let orderByTranslation = if($w.window.sortBy->isNotEmpty(),
         |'Order By '+ $w.window.sortBy->map(s|$sgc.dbConfig.processSortItem($s.sortByElement->toOne()->processOperation($sgc), $s.sortDirection, $s.nullOrder))->joinStrings(', '),
         |'');
-   // Spark rejects any window frame on lag/lead ("Cannot specify window frame for lag function").
-   let windowFrameTranslation = if($w.window.frame->isNotEmpty() && !($w.func->instanceOf(DynaFunction) && $w.func->cast(@DynaFunction).name->in(['lag', 'lead'])),
+   // Ranking and offset functions ignore the frame, and Spark rejects any frame other than the one each implies
+   // ("Cannot specify window frame for lag function", "Window Frame ... must match the required frame").
+   let ignoresFrame = $w.func->instanceOf(DynaFunction) && $w.func->cast(@DynaFunction).name->in(['lag', 'lead', 'rowNumber', 'rank', 'denseRank', 'percentRank', 'ntile', 'cumulativeDistribution']);
+   let windowFrameTranslation = if($w.window.frame->isNotEmpty() && !$ignoresFrame,
         |$w.window.frame->toOne()->processWindowFrameForDatabricks($sgc),
         |'');
    let windowSpec = [$partitionTranslation, $orderByTranslation, $windowFrameTranslation]->filter(s | $s != '')->joinStrings(' ');

@@ -67,15 +67,6 @@
     "test" : "meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""
   }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketHours_Function_1__Boolean_1_",
-    "expectedError" : "The DurationUnit 'HOUR' is not supported yet for timeBucket"
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMinutes_Function_1__Boolean_1_",
-    "expectedError" : "The DurationUnit 'MINUTE' is not supported yet for timeBucket"
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketSeconds_Function_1__Boolean_1_",
-    "expectedError" : "The DurationUnit 'SECOND' is not supported yet for timeBucket"
-  }, {
     "test" : "meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_",
     "expectedError" : "Unused format args. [4] arguments provided to expression \"COVAR_POP(%s, %s)\""
   }, {
