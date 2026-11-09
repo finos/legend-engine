@@ -598,7 +598,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(ModelJoinPropertyMapping propertyMapping)
     {
-        return unsupported(ModelJoinPropertyMapping.class);
+        // Only the relation-mapping form reaches here; association-level ModelJoin renders via
+        // HelperMappingGrammarComposer. The target class mapping is always resolved from the
+        // property's declared type at compile time — there is no explicit target to render.
+        return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(propertyMapping) +
+                ": " + "meta::pure::functions::relation::modelJoin(" + propertyMapping.joinCondition.accept(this) + ")";
     }
 
     @Override

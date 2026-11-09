@@ -80,7 +80,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
                                                 (
                                                    _type = 'property',
                                                    property = $fe.func.name->toOne()->cast(@String),
-                                                   parameters = $fe.parametersValues->evaluateAndDeactivate()->map(pm|$pm->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions))
+                                                   parameters = $fe.parametersValues->evaluateAndDeactivate()->map(pm|$pm->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $useAppliedFunction, $extensions))
                                                 ),
                                              f:Function<Any>[1]|
                                                 let passToTransformAny =

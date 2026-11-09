@@ -283,7 +283,27 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     @Override
     public PropertyMapping visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinPropertyMapping propertyMapping)
     {
-        throw new UnsupportedOperationException("ModelJoinPropertyMapping should be compiled via visitModelJoinPropertyMapping with explicit source/target sets");
+        if (this.immediateParent == null)
+        {
+            throw new UnsupportedOperationException("ModelJoinPropertyMapping should be compiled via visitModelJoinPropertyMapping with explicit source/target sets");
+        }
+
+        SourceInformation sourceInfo = SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation);
+        Property<?, ?> property = resolveRelationFunctionMappedProperty(propertyMapping);
+
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinPropertyMapping mjpm =
+                new Root_meta_pure_mapping_modelJoin_ModelJoinPropertyMapping_Impl("", sourceInfo, context.pureModel.getClass("meta::pure::mapping::modelJoin::ModelJoinPropertyMapping"));
+        mjpm._property(property)
+                ._localMappingProperty(propertyMapping.localMappingProperty != null)
+                ._sourceSetImplementationId(propertyMapping.source == null || propertyMapping.source.isEmpty() ? immediateParent._id() : propertyMapping.source)
+                ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping))
+                ._owner(immediateParent);
+        if (propertyMapping.localMappingProperty != null)
+        {
+            mjpm._localMappingPropertyType(this.context.resolveType(propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation));
+            mjpm._localMappingPropertyMultiplicity(this.context.pureModel.getMultiplicity(propertyMapping.localMappingProperty.multiplicity));
+        }
+        return mjpm;
     }
 
     /**
@@ -293,7 +313,10 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     {
         Property property = HelperMappingBuilder.resolveAssociationPropertyByName(parent._association(), propertyMapping.property.property);
         Assert.assertTrue(property != null, () -> "Can't find property '" + propertyMapping.property.property + "' in association '" + (HelperModelBuilder.getElementFullPath(parent._association(), context.pureModel.getExecutionSupport())) + "'", propertyMapping.property.sourceInformation, EngineErrorType.COMPILATION);
-        LambdaFunction lambda = compileModelJoinBooleanLambda(sourceSet, targetSet, propertyMapping.joinCondition.body, propertyMapping.property.property);
+        Class srcClass = sourceSet._mappingClass() == null ? sourceSet._class() : sourceSet._mappingClass();
+        Class tgtClass = targetSet._mappingClass() == null ? targetSet._class() : targetSet._mappingClass();
+        LambdaFunction lambda = compileModelJoinBooleanLambda(this.context, this.mapping, parent._id() + "." + propertyMapping.property.property,
+                HelperMappingBuilder.MODEL_JOIN_SOURCE_VAR, context.newGenericType(srcClass), HelperMappingBuilder.MODEL_JOIN_TARGET_VAR, context.newGenericType(tgtClass), propertyMapping.joinCondition.body);
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinPropertyMapping mjpm = new Root_meta_pure_mapping_modelJoin_ModelJoinPropertyMapping_Impl("", SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::modelJoin::ModelJoinPropertyMapping"));
 
@@ -306,49 +329,63 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     }
 
     /**
-     * Compiles a ModelJoin join-condition body into a Boolean[1] lambda taking _mj_src / _mj_tgt
-     * variables typed from the given source / target set implementations.
+     * Compiles an inline {@code modelJoin({src, tgt | <condition>})} of a Relation class mapping property: a one-sided
+     * ModelJoin whose condition is model-level -- over the owning class and the property's class, typed (like an association
+     * ModelJoin's) to each set's MappingClass, or its class. The params are positional.
      */
-    private LambdaFunction compileModelJoinBooleanLambda(InstanceSetImplementation sourceSet, InstanceSetImplementation targetSet,
-                                                         List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> body,
-                                                         String propertyName)
+    static void compileRelationModelJoinCondition(CompileContext context, Mapping mapping, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinPropertyMapping mjpm,
+                                                  org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction joinCondition, InstanceSetImplementation sourceSet, InstanceSetImplementation targetSet)
+    {
+        if (joinCondition.parameters == null || joinCondition.parameters.size() != 2)
+        {
+            throw new EngineException("ModelJoin requires a lambda with exactly 2 parameters, e.g. {a:TypeA[1], b:TypeB[1] | $a.prop == $b.prop} (param types optional)", joinCondition.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        ModelJoinLambdaRewriteVisitor rewriter = new ModelJoinLambdaRewriteVisitor(joinCondition.parameters.get(0).name, joinCondition.parameters.get(1).name);
+        List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> rewrittenBody =
+                ListIterate.collect(joinCondition.body, vs -> vs.accept(rewriter));
+        Class<?> srcClass = sourceSet._mappingClass() == null ? sourceSet._class() : sourceSet._mappingClass();
+        Class<?> tgtClass = targetSet._mappingClass() == null ? targetSet._class() : targetSet._mappingClass();
+        mjpm._joinCondition(compileModelJoinBooleanLambda(context, mapping, mapping._name() + "." + mjpm._property()._name(),
+                HelperMappingBuilder.MODEL_JOIN_SOURCE_VAR, context.newGenericType(srcClass),
+                HelperMappingBuilder.MODEL_JOIN_TARGET_VAR, context.newGenericType(tgtClass),
+                rewrittenBody));
+    }
+
+    private static LambdaFunction compileModelJoinBooleanLambda(CompileContext context, Mapping mapping, String lambdaId, String srcName, GenericType srcType, String tgtName, GenericType tgtType,
+                                                                List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> body)
     {
         ProcessingContext ctx = new ProcessingContext("Compile ModelJoin Boolean Lambda");
+        Multiplicity oneMultiplicity = context.pureModel.getMultiplicity("one");
 
-        Class srcClass = sourceSet._mappingClass() == null ? sourceSet._class() : sourceSet._mappingClass();
-        Class tgtClass = targetSet._mappingClass() == null ? targetSet._class() : targetSet._mappingClass();
-
-        Multiplicity oneMultiplicity = this.context.pureModel.getMultiplicity("one");
-
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression srcVariable = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name(HelperMappingBuilder.MODEL_JOIN_SOURCE_VAR);
-        srcVariable._genericType(context.newGenericType(srcClass));
-        srcVariable._multiplicity(oneMultiplicity);
-
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression tgtVariable = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name(HelperMappingBuilder.MODEL_JOIN_TARGET_VAR);
-        tgtVariable._genericType(context.newGenericType(tgtClass));
-        tgtVariable._multiplicity(oneMultiplicity);
+        VariableExpression srcVariable = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass(M3Paths.VariableExpression))
+                ._name(srcName)
+                ._multiplicity(oneMultiplicity)
+                ._genericType(srcType);
+        VariableExpression tgtVariable = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass(M3Paths.VariableExpression))
+                ._name(tgtName)
+                ._multiplicity(oneMultiplicity)
+                ._genericType(tgtType);
 
         MutableList<VariableExpression> pureParameters = FastList.newListWith(srcVariable, tgtVariable);
-
-        ctx.addInferredVariables(HelperMappingBuilder.MODEL_JOIN_SOURCE_VAR, srcVariable);
-        ctx.addInferredVariables(HelperMappingBuilder.MODEL_JOIN_TARGET_VAR, tgtVariable);
+        ctx.addInferredVariables(srcName, srcVariable);
+        ctx.addInferredVariables(tgtName, tgtVariable);
 
         MutableList<String> openVariables = Lists.mutable.empty();
-        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> valueSpecifications = ListIterate.collect(body, p -> p.accept(new ValueSpecificationBuilder(this.context, openVariables, ctx)));
+        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> valueSpecifications = ListIterate.collect(body, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, ctx)));
         MutableList<String> cleanedOpenVariables = openVariables.distinct();
-        cleanedOpenVariables.removeAll(pureParameters.collect(e -> e._name()));
+        cleanedOpenVariables.removeAll(pureParameters.collect(VariableExpressionAccessor::_name));
         GenericType functionType = PureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity(), context.pureModel);
-        String mappingPath = HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()).replace("::", "_");
-        ctx.flushVariable(HelperMappingBuilder.MODEL_JOIN_TARGET_VAR);
-        ctx.flushVariable(HelperMappingBuilder.MODEL_JOIN_SOURCE_VAR);
+        String mappingPath = HelperModelBuilder.getElementFullPath(mapping, context.pureModel.getExecutionSupport()).replace("::", "_");
+        ctx.flushVariable(tgtName);
+        ctx.flushVariable(srcName);
 
         if (!valueSpecifications.getLast()._genericType()._rawType().equals(context.pureModel.getType("Boolean")) || !valueSpecifications.getLast()._multiplicity().equals(context.pureModel.getMultiplicity("one")))
         {
             throw new EngineException("ModelJoin property mapping function should return 'Boolean[1]'", body.get(body.size() - 1).sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        return new Root_meta_pure_metamodel_function_LambdaFunction_Impl(parent._id() + "." + propertyName, new SourceInformation(mappingPath, 0, 0, 0, 0), null)
-                ._classifierGenericType(context.newGenericType(this.context.pureModel.getType(M3Paths.LambdaFunction), FastList.newListWith(functionType)))
+        return new Root_meta_pure_metamodel_function_LambdaFunction_Impl(lambdaId, new SourceInformation(mappingPath, 0, 0, 0, 0), null)
+                ._classifierGenericType(context.newGenericType(context.pureModel.getType(M3Paths.LambdaFunction), FastList.newListWith(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
     }

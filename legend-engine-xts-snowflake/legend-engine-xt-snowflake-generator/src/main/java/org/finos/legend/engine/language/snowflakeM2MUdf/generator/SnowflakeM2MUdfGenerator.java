@@ -19,8 +19,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.generation.FunctionActivatorGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
@@ -51,9 +51,9 @@ import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_DeploymentOwnership;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeM2MUdf_SnowflakeM2MUdf;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl;
 import org.finos.legend.pure.generated.core_snowflake_core_snowflakem2mUdf_generation_generation;
 import org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.slf4j.Logger;
 
@@ -116,7 +116,7 @@ public class SnowflakeM2MUdfGenerator
         deploymentSchema = activator._deploymentSchema();
         deploymentStage = activator._deploymentStage();
         udfName = activator._udfName().toUpperCase();
-        directoryLocation = extractElementPath((Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl) activator._function());
+        directoryLocation = extractElementPath((ConcreteFunctionDefinition<?>) activator._function());
 
         //Check if Variant Type is required
         useVariantType = useVariantType(singleExecutionPlan);
@@ -166,7 +166,7 @@ public class SnowflakeM2MUdfGenerator
         return "(\"" + (((FunctionParametersValidationNode) singleExecutionPlan.rootExecutionNode.executionNodes.get(0)).functionParameters).get(0).name + "\" VARIANT)";
     }
 
-    private static String extractElementPath(Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl function)
+    private static String extractElementPath(ConcreteFunctionDefinition<?> function)
     {
         return "/" + String.join("/",function._functionName().split("::"));
     }

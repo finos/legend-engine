@@ -406,7 +406,6 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
 
         Root_meta_pure_persistence_metamodel_context_PersistencePlatform platform = context._platform();
         assertNotNull(platform);
-        assertTrue(platform instanceof Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl);
 
         List<? extends Root_meta_pure_persistence_metamodel_service_ServiceParameter> serviceParameters = context._serviceParameters().toList();
         assertEquals(4, serviceParameters.size());

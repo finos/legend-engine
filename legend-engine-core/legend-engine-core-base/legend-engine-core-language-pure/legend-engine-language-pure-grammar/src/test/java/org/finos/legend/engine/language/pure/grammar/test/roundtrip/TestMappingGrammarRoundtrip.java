@@ -1051,6 +1051,128 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     }
 
     @Test
+    public void testRelationMappingModelJoin()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc():Any[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    firm: modelJoin({p, f|$p.firmId == $f.id})\n" +
+                "  }\n" +
+                "  *my::Firm[firm]: Relation\n" +
+                "  {\n" +
+                "    ~func my::firmFunc():Any[1]\n" +
+                "    legalName: LEGALNAME\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationMappingQualifiedModelJoin()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc():Any[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    firm: meta::pure::functions::relation::modelJoin({p, f|$p.firmId == $f.id})\n" +
+                "  }\n" +
+                "  *my::Firm[firm]: Relation\n" +
+                "  {\n" +
+                "    ~func my::firmFunc():Any[1]\n" +
+                "    legalName: LEGALNAME\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationMappingModelJoinWithInferredTarget()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc():Any[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    firm: modelJoin({p, f|$p.firmId == $f.id})\n" +
+                "  }\n" +
+                "  *my::Firm[firm]: Relation\n" +
+                "  {\n" +
+                "    ~func my::firmFunc():Any[1]\n" +
+                "    legalName: LEGALNAME\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationMappingLocalPropertyModelJoin()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc():Any[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    +employer: my::Firm[0..1]: modelJoin({p, f|$p.firmId == $f.id})\n" +
+                "  }\n" +
+                "  *my::Firm[firm]: Relation\n" +
+                "  {\n" +
+                "    ~func my::firmFunc():Any[1]\n" +
+                "    legalName: LEGALNAME\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationMappingNavigationJoin()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc():Any[1]\n" +
+                "    firmName: $src->navigationJoin(my::firmRel(), {p, f|$p.FIRMID == $f.ID}).LEGALNAME\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationMappingFilterJoin()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc():Any[1]\n" +
+                "    firstName: $src->filterJoin(my::firmRel(), {p, f|$p.FIRMID == $f.ID}).FIRSTNAME\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationMappingChainedNavigationJoin()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc():Any[1]\n" +
+                "    firmCity: $src->navigationJoin(my::firmRel(), {p, f|$p.FIRMID == $f.ID})->navigationJoin(my::addressRel(), {f, a|$f.ADDRESSID == $a.ID}).CITY\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
     public void testRelationFunctionEmbeddedMapping()
     {
         test("###Mapping\n" +

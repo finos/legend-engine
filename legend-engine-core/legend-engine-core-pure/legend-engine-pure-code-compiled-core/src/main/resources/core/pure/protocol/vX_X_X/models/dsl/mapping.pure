@@ -247,6 +247,11 @@ Class meta::protocols::pure::vX_X_X::metamodel::mapping::relation::EmbeddedRelat
    propertyMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping[*];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::relation::InlineModelJoinPropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
+{
+   joinCondition : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::relation::InlineEmbeddedRelationFunctionPropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
 {
    id : String[1];
