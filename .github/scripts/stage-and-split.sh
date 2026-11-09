@@ -29,13 +29,24 @@
 #                          silently removes a coordinate consumers already
 #                          resolve. Only populate this once the coordinate has
 #                          been confirmed unused downstream.
+#   CENTRAL_MAX_COORD_BYTES  largest single coordinate allowed (1000000000).
+#                          Deliberately separate from max-bytes: a coordinate
+#                          above the packing target but below this cap simply
+#                          gets a bundle of its own, so lowering max-bytes for
+#                          faster validation does not make a large artifact a
+#                          release-breaking risk.
 
 set -euo pipefail
 
 M2_ENGINE_DIR=${1:?usage: stage-and-split.sh <m2-engine-dir> <version> <out-dir> [max-bytes]}
 RELEASE_VERSION=${2:?missing release version}
 OUT_DIR=${3:?missing output dir}
-MAX_BYTES=${4:-1000000000}
+# 300MB rather than ~1GB: the Portal validates a bundle in time roughly
+# proportional to its size, and the 5.1.1 release failed because a single
+# 897MB wave-2 bundle took ~100 minutes to reach VALIDATED. Smaller bundles are
+# validated independently and finish sooner.
+MAX_BYTES=${4:-300000000}
+MAX_COORD_BYTES=${CENTRAL_MAX_COORD_BYTES:-1000000000}
 
 # The Portal rejects anything above 1GiB at the proxy. MAX_BYTES is the packing
 # target; this is the backstop checked against the produced zip.
@@ -208,16 +219,16 @@ pack() { # pack <wave-name> <coordinate-dir>...
     dirsize=$(du -sb "$dir" | cut -f1)
     printf '%s\t%s\n' "$dir" "$dirsize" >> "$COORDS_TSV"
 
-    if [ "$dirsize" -gt "$MAX_BYTES" ]; then
-      echo "ERROR: $dir alone is $(mb "$dirsize") MB, above the ${MAX_BYTES}-byte" >&2
-      echo "ERROR: bundle target. A single coordinate cannot be split across bundles." >&2
+    if [ "$dirsize" -gt "$MAX_COORD_BYTES" ]; then
+      echo "ERROR: $dir alone is $(mb "$dirsize") MB, above the ${MAX_COORD_BYTES}-byte" >&2
+      echo "ERROR: per-coordinate limit. A single coordinate cannot be split across bundles." >&2
       echo "ERROR: shrink the artifact, stop publishing it, or request a Portal limit" >&2
       echo "ERROR: increase from central-support@sonatype.com." >&2
       exit 1
     fi
-    if [ $((dirsize * 100)) -gt $((MAX_BYTES * 80)) ]; then
-      echo "WARNING: $dir is $(mb "$dirsize") MB, $(pct "$dirsize" "$MAX_BYTES")% of the bundle target." >&2
-      echo "WARNING: it will hard-fail the release once it exceeds $((MAX_BYTES / 1000000)) MB." >&2
+    if [ $((dirsize * 100)) -gt $((MAX_COORD_BYTES * 80)) ]; then
+      echo "WARNING: $dir is $(mb "$dirsize") MB, $(pct "$dirsize" "$MAX_COORD_BYTES")% of the per-coordinate limit." >&2
+      echo "WARNING: it will hard-fail the release once it exceeds $((MAX_COORD_BYTES / 1000000)) MB." >&2
     fi
     if [ "$size" -gt 0 ] && [ $((size + dirsize)) -gt "$MAX_BYTES" ]; then
       flush
@@ -251,6 +262,7 @@ LARGEST_ZIP=$(awk -F'\t' 'NR > 1 && $3 > m { m = $3 } END { print m + 0 }' "$BUN
   echo "| Total upload size | $(mb "$TOTAL_ZIP") MB |"
   echo "| Largest bundle | $(mb "$LARGEST_ZIP") MB ($(pct "$LARGEST_ZIP" "$HARD_LIMIT")% of the ${HARD_LIMIT}-byte Portal limit) |"
   echo "| Packing target | $(mb "$MAX_BYTES") MB per bundle |"
+  echo "| Per-coordinate limit | $(mb "$MAX_COORD_BYTES") MB |"
   echo
   echo "### Bundles"
   echo
@@ -262,11 +274,11 @@ LARGEST_ZIP=$(awk -F'\t' 'NR > 1 && $3 > m { m = $3 } END { print m + 0 }' "$BUN
   echo
   echo "### 20 largest coordinates"
   echo
-  echo "| Coordinate | Size | % of packing target |"
+  echo "| Coordinate | Size | % of per-coordinate limit |"
   echo "|---|---:|---:|"
   sorted_coords=$(mktemp)
   tail -n +2 "$COORDS_TSV" | sort -t$'\t' -k2 -rn > "$sorted_coords"
-  head -20 "$sorted_coords" | awk -F'\t' -v tgt="$MAX_BYTES" '{
+  head -20 "$sorted_coords" | awk -F'\t' -v tgt="$MAX_COORD_BYTES" '{
     flag = (100 * $2 / tgt >= 80) ? " :warning:" : ""
     printf "| `%s` | %.1f MB | %.1f%%%s |\n", $1, $2 / 1000000, 100 * $2 / tgt, flag
   }'
@@ -274,7 +286,8 @@ LARGEST_ZIP=$(awk -F'\t' 'NR > 1 && $3 > m { m = $3 } END { print m + 0 }' "$BUN
   sorted_coords=""
   echo
   echo "A coordinate cannot be split across bundles, so any single one reaching"
-  echo "$(mb "$MAX_BYTES") MB fails the release outright."
+  echo "$(mb "$MAX_COORD_BYTES") MB fails the release outright. One above the"
+  echo "$(mb "$MAX_BYTES") MB packing target just gets a bundle of its own."
   echo
   echo "Wave 1 must be published to Central before wave 2 is uploaded: every"
   echo "wave-2 bundle resolves its parent POMs from Central, not from a sibling"
