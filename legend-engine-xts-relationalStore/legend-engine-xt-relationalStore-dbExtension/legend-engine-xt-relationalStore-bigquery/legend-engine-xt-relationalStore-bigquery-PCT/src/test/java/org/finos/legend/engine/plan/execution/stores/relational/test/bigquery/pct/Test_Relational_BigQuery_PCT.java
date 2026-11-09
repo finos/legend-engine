@@ -130,7 +130,7 @@ public class Test_Relational_BigQuery_PCT
     public static class EssentialFunctions extends BigQueryPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = PlatformCodeRepositoryProvider.essentialFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-bigquery/EssentialFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_bigquery_pct/EssentialFunctions_manifest.json";
 
         public EssentialFunctions()
         {
@@ -146,7 +146,7 @@ public class Test_Relational_BigQuery_PCT
     public static class GrammarFunctions extends BigQueryPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = PlatformCodeRepositoryProvider.grammarFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-bigquery/GrammarFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_bigquery_pct/GrammarFunctions_manifest.json";
 
         public GrammarFunctions()
         {
@@ -162,7 +162,7 @@ public class Test_Relational_BigQuery_PCT
     public static class RelationFunctions extends BigQueryPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = RelationCodeRepositoryProvider.relationFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-bigquery/RelationFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_bigquery_pct/RelationFunctions_manifest.json";
 
         public RelationFunctions()
         {
@@ -178,7 +178,7 @@ public class Test_Relational_BigQuery_PCT
     public static class ScenarioQuantFunctions extends BigQueryPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreScenarioQuantCodeRepositoryProvider.scenario_Quant_Functions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-bigquery/ScenarioQuantFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_bigquery_pct/ScenarioQuantFunctions_manifest.json";
 
         public ScenarioQuantFunctions()
         {
@@ -194,7 +194,7 @@ public class Test_Relational_BigQuery_PCT
     public static class StandardFunctions extends BigQueryPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreStandardFunctionsCodeRepositoryProvider.standardFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-bigquery/StandardFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_bigquery_pct/StandardFunctions_manifest.json";
 
         public StandardFunctions()
         {
@@ -210,7 +210,7 @@ public class Test_Relational_BigQuery_PCT
     public static class UnclassifiedFunctions extends BigQueryPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-bigquery/UnclassifiedFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_bigquery_pct/UnclassifiedFunctions_manifest.json";
 
         public UnclassifiedFunctions()
         {
@@ -226,7 +226,7 @@ public class Test_Relational_BigQuery_PCT
     public static class VariantFunctions extends BigQueryPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = VariantCodeRepositoryProvider.variantFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-bigquery/VariantFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_bigquery_pct/VariantFunctions_manifest.json";
 
         public VariantFunctions()
         {

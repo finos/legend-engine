@@ -27,7 +27,7 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 public class Test_Compiled_StandardFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = CoreStandardFunctionsCodeRepositoryProvider.standardFunctions;
-    private static final String manifestPath = "/core_functions_standard/pct-manifests/core-compiled/StandardFunctions_manifest.json";
+    private static final String manifestPath = "/core_functions_standard/core-compiled/StandardFunctions_manifest.json";
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "compiled";
 

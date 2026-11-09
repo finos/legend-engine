@@ -35,7 +35,7 @@ import meta::pure::metamodel::relation::*;
 import meta::relational::tests::pct::process::*;
 import meta::pure::test::pct::*;
 
-function <<PCT.adapter>> {PCT.adapterName='Spanner'} meta::relational::tests::pct::testAdapterForRelationalWithSpannerExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='Spanner', PCT.manifestDirectory='/core_external_test_connection/relational-spanner'} meta::relational::tests::pct::testAdapterForRelationalWithSpannerExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
       $f,
@@ -43,7 +43,7 @@ function <<PCT.adapter>> {PCT.adapterName='Spanner'} meta::relational::tests::pc
   )
 }
 
-function <<PCT.adapter>> {PCT.adapterName='MemSQL'} meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='MemSQL', PCT.manifestDirectory='/core_external_test_connection/relational-memsql'} meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
       $f,
@@ -51,7 +51,7 @@ function <<PCT.adapter>> {PCT.adapterName='MemSQL'} meta::relational::tests::pct
   )
 }
 
-function <<PCT.adapter>> {PCT.adapterName='SqlServer'} meta::relational::tests::pct::testAdapterForRelationalWithSqlServerExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='SqlServer', PCT.manifestDirectory='/core_external_test_connection/relational-sqlserver'} meta::relational::tests::pct::testAdapterForRelationalWithSqlServerExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
       $f,

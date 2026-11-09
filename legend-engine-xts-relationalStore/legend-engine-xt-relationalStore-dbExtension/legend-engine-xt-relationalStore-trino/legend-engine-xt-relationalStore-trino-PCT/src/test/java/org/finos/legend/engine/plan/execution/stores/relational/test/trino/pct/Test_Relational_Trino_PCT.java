@@ -126,7 +126,7 @@ public class Test_Relational_Trino_PCT
     public static class EssentialFunctions extends TrinoPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = PlatformCodeRepositoryProvider.essentialFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-trino/EssentialFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_trino_pct/EssentialFunctions_manifest.json";
 
         public EssentialFunctions()
         {
@@ -142,7 +142,7 @@ public class Test_Relational_Trino_PCT
     public static class GrammarFunctions extends TrinoPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = PlatformCodeRepositoryProvider.grammarFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-trino/GrammarFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_trino_pct/GrammarFunctions_manifest.json";
 
         public GrammarFunctions()
         {
@@ -158,7 +158,7 @@ public class Test_Relational_Trino_PCT
     public static class RelationFunctions extends TrinoPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = RelationCodeRepositoryProvider.relationFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-trino/RelationFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_trino_pct/RelationFunctions_manifest.json";
 
         public RelationFunctions()
         {
@@ -174,7 +174,7 @@ public class Test_Relational_Trino_PCT
     public static class ScenarioQuantFunctions extends TrinoPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreScenarioQuantCodeRepositoryProvider.scenario_Quant_Functions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-trino/ScenarioQuantFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_trino_pct/ScenarioQuantFunctions_manifest.json";
 
         public ScenarioQuantFunctions()
         {
@@ -190,7 +190,7 @@ public class Test_Relational_Trino_PCT
     public static class StandardFunctions extends TrinoPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreStandardFunctionsCodeRepositoryProvider.standardFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-trino/StandardFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_trino_pct/StandardFunctions_manifest.json";
 
         public StandardFunctions()
         {
@@ -206,7 +206,7 @@ public class Test_Relational_Trino_PCT
     public static class UnclassifiedFunctions extends TrinoPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-trino/UnclassifiedFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_trino_pct/UnclassifiedFunctions_manifest.json";
 
         public UnclassifiedFunctions()
         {
@@ -222,7 +222,7 @@ public class Test_Relational_Trino_PCT
     public static class VariantFunctions extends TrinoPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = VariantCodeRepositoryProvider.variantFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-trino/VariantFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_trino_pct/VariantFunctions_manifest.json";
 
         public VariantFunctions()
         {

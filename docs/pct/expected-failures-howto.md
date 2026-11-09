@@ -33,16 +33,22 @@ Expected failures are recorded in **JSON manifest files** — one per function c
 
 ### Finding the Right Manifest
 
-Each PCT module contains manifests under:
+Manifests live directly inside the Pure code-repository directory that owns the adapter's PCT
+function — i.e. the directory named by that module's `<repo-name>.definition.json` — so they are
+browsable/editable from the Pure IDE, not sitting as a loose resource folder next to it:
 
 ```
-src/main/resources/pct-manifests/<adapter-key>/<Category>Functions_manifest.json
+src/main/resources/<repo-name>/<Category>Functions_manifest.json
 ```
 
-For example, for H2:
+Repositories that host several adapters (for example `core_external_test_connection`, which owns
+MemSQL, Spanner and SQL Server) keep one `<adapter-key>` subdirectory per adapter to avoid
+colliding filenames: `src/main/resources/<repo-name>/<adapter-key>/<Category>Functions_manifest.json`.
+
+For example, for H2 (which owns its own repo, `core_relational_h2_pct`, in the same module):
 
 ```
-legend-engine-xt-relationalStore-h2-PCT/src/main/resources/pct-manifests/relational-h2/
+legend-engine-xt-relationalStore-h2-PCT/src/main/resources/core_relational_h2_pct/
     EssentialFunctions_manifest.json
     GrammarFunctions_manifest.json
     RelationFunctions_manifest.json
@@ -52,7 +58,20 @@ legend-engine-xt-relationalStore-h2-PCT/src/main/resources/pct-manifests/relatio
     ScenarioQuantFunctions_manifest.json
 ```
 
+> **Exception — adapters without their own Pure repo.** The SqlServer, Spanner, and MemSQL
+> `-PCT` modules have no `.pure` sources or repo of their own; they exercise the shared generic
+> adapter function that lives in `core_external_test_connection`
+> (`legend-engine-xt-relationalStore-PCT/legend-engine-pure-functions-relationalStore-PCT-pure`).
+> Their manifests live there instead, e.g.
+> `.../legend-engine-pure-functions-relationalStore-PCT-pure/src/main/resources/core_external_test_connection/relational-sqlserver/`.
+> Similarly, the JavaPlatformBinding `-PCT` module's manifests live with its adapter's real repo,
+> `core_java_platform_binding`, in the sibling `legend-engine-xt-javaPlatformBinding-pure` module.
+
 The `MANIFEST_PATH` constants in the adapter's test class (e.g. `Test_Relational_H2_PCT.java`) list the exact paths if you are unsure which file to edit.
+
+Each adapter names its manifest directory with a `PCT.manifestDirectory` tag, so a new adapter needs
+one too. See [Running manifests in Pure IDE Light and the LSP](running-manifests.md) for the
+repository paths, test scopes, and the Surveyor calls that run a manifest with its expected failures.
 
 ### The Manifest Format
 
