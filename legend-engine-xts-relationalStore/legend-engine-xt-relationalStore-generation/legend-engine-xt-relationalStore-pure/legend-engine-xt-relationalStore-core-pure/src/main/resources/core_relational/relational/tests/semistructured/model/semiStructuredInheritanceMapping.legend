@@ -18,6 +18,8 @@ Class inheritance::model::Person
   firstName: String[1];
   lastName: String[1];
   firm: inheritance::model::Firm[1];
+  addressLabel() {$this->inheritance::addressLabelOf()}: String[1];
+  addressLabelIfJohn() {$this->inheritance::addressLabelOfIfJohn()}: String[1];
 }
 
 Class inheritance::model::Firm
@@ -167,4 +169,65 @@ function inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWi
             'Firm Address State'
         ]
     )
+}
+
+function inheritance::streetOf(line: inheritance::model::AddressLine[1]): String[1]
+{
+    $line->subType(@inheritance::model::StreetAddressLine).street
+}
+
+function inheritance::semiStructuredSubTypeOfFunctionParameterBoundToElementAccess(): TabularDataSet[1]
+{
+    inheritance::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(0)->inheritance::streetOf(), 'Firm Address Street')
+    ])
+}
+
+function inheritance::streetOfFirstLine(line: inheritance::model::AddressLine[1]): String[1]
+{
+    if($line.lineno == 1, |$line->subType(@inheritance::model::StreetAddressLine).street, |'none')
+}
+
+function inheritance::semiStructuredSubTypeOfFunctionParameterInIfBranch(): TabularDataSet[1]
+{
+    inheritance::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(0)->inheritance::streetOfFirstLine(), 'Firm Address Street')
+    ])
+}
+
+function inheritance::semiStructuredSubTypeOfFunctionParameterAfterBindingColumn(): TabularDataSet[1]
+{
+    inheritance::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(0)->inheritance::streetOf(), 'Firm Address Street')
+    ])
+}
+
+function inheritance::addressLabelOf(person: inheritance::model::Person[1]): String[1]
+{
+    $person.firm.address.name
+}
+
+function inheritance::addressLabelOfIfJohn(person: inheritance::model::Person[1]): String[1]
+{
+    if($person.firstName == 'John', |$person.firm.address.name, |$person.firm.legalName)
+}
+
+function inheritance::semiStructuredQualifiedPropertyPassingThisToFunction(): TabularDataSet[1]
+{
+    inheritance::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.addressLabel, 'Label')
+    ])
+}
+
+function inheritance::semiStructuredQualifiedPropertyPassingThisToFunctionInIfBranch(): TabularDataSet[1]
+{
+    inheritance::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.addressLabelIfJohn, 'Label')
+    ])
 }

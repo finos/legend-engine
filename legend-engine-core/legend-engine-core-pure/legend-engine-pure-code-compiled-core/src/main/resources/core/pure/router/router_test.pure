@@ -138,3 +138,39 @@ function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestWit
     let firstResult = $businessDate->topLevelFunctionToTestWithClashingParametersProcessingFunc($prevBusinessDate);
     $businessDate->topLevelFunctionToTestWithClashingParametersProcessingFunc($prevBusinessDate);
 }
+// Regression: the arguments of an inlined call are evaluated in the caller's scope, so a caller variable
+// that shares its name with a callee parameter must keep its caller binding. Here midParams swaps the
+// roles of d and p, and leafParams names its second parameter after the caller's d.
+function <<test.Test>> meta::pure::router::tests::testRouterScopeNestedInlinedCallsWithClashingParameterNames():Boolean[1]
+{
+  let ctx = ^GContext(space='');
+
+  let cfg = ^Configuration(fullPath=false, extensions = ^GrammarExtension(
+    extraInstanceValueHandlers = [
+      {x:PlanVarPlaceHolder[1] | '$' + $x.name}
+    ]
+  ));
+
+  let expected = 'd: Date[1]|let p = $d->adjust(-1, meta::pure::functions::date::DurationUnit.DAYS);\n' +
+                 '           $p->adjust(-2, meta::pure::functions::date::DurationUnit.DAYS)->dayOfMonth() - $d->dayOfMonth();\n';
+
+  let a = routeFunction(topLevelFunctionToTestNestedInlinedCalls_Date_1__Any_1_, []);
+  let grammar = $a->evaluateAndDeactivate()->printFunctionDefinition($cfg, $ctx);
+  assertEquals($expected, $grammar);
+}
+
+function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestNestedInlinedCalls(d: Date[1]): Any[1]
+{
+    let p = $d->adjust(-1, DurationUnit.DAYS);
+    $p->topLevelFunctionToTestNestedInlinedCallsMiddle($d);
+}
+
+function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestNestedInlinedCallsMiddle(d: Date[1], p: Date[1]): Any[1]
+{
+    topLevelFunctionToTestNestedInlinedCallsLeaf($d->adjust(-2, DurationUnit.DAYS), $p);
+}
+
+function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestNestedInlinedCallsLeaf(p: Date[1], d: Date[1]): Integer[1]
+{
+    $p->dayOfMonth() - $d->dayOfMonth();
+}

@@ -218,3 +218,15 @@ function typeFunctions::semiStructuredTypeNameFunctionUsageAfterArrayElementAcce
             ]
         );
 }
+
+###Pure
+function typeFunctions::semiStructuredTypeNameInMapWithLambdaReusingEnclosingParameterName(): TabularDataSet[1]
+{
+    typeFunctions::model::Order.all()
+        ->project(
+            [
+                col(x | $x.orderId, 'Order Id'),
+                col(x | $x.customer.products->map(x | $x->typeName()), 'Product Type')
+            ]
+        );
+}
