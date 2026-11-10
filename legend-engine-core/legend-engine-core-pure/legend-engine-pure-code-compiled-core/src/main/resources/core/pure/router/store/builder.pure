@@ -315,7 +315,7 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyRoute
     [
       m:ModelJoinPropertyMapping[1]|
         // Build vars map so the router can resolve $_mj_src and $_mj_tgt with routing context.
-        // For ex. for a property access like $person.firm - $_mj_src = source side (Person), $_mj_tgt = target side (Firm) 
+        // For ex. for a property access like $person.firm - $_mj_src = source side (Person), $_mj_tgt = target side (Firm)
         let srcVar = ^VariableExpression(name='_mj_src', genericType=$sourceRoutedVS.value.genericType, multiplicity=PureOne);
         let tgtVar = ^VariableExpression(name='_mj_tgt', genericType=$propertyRoutedVS.value.genericType, multiplicity=PureOne);
 

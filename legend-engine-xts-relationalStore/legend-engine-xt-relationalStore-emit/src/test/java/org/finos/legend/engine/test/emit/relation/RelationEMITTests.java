@@ -21,7 +21,7 @@ import org.junit.jupiter.api.TestFactory;
 import java.util.stream.Stream;
 
 /**
- * JUnit 5 runner for the relation ({@code ~func}) mapping EMIT suite. Discovers
+ * JUnit 5 runner for the relation mapping EMIT suite. Discovers
  * EMIT models under {@code relation-emit-models/} on the test classpath and yields
  * one dynamic test per granular operation (init/parse/compile, file generation,
  * individual mapping tests, service plans).

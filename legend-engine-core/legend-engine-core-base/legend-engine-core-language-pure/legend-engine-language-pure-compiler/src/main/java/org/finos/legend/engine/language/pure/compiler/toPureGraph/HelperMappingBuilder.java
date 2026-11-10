@@ -95,6 +95,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinAssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStoreAssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
@@ -992,7 +993,7 @@ public class HelperMappingBuilder
         return "Type";
     }
 
-    private static String getVariableTypePath(org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable var)
+    static String getVariableTypePath(org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable var)
     {
         if (var.genericType != null && var.genericType.rawType instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType)
         {
@@ -1003,4 +1004,15 @@ public class HelperMappingBuilder
 
     public static final String MODEL_JOIN_SOURCE_VAR = "_mj_src";
     public static final String MODEL_JOIN_TARGET_VAR = "_mj_tgt";
+
+    // Null when the function has no typed last expression or its type carries no row type.
+    public static GenericType getRelationFunctionRowType(FunctionDefinition<?> relationFunction)
+    {
+        if (relationFunction == null || relationFunction._expressionSequence().isEmpty())
+        {
+            return null;
+        }
+        GenericType relationType = relationFunction._expressionSequence().toList().getLast()._genericType();
+        return relationType == null || relationType._typeArguments().isEmpty() ? null : relationType._typeArguments().getFirst();
+    }
 }

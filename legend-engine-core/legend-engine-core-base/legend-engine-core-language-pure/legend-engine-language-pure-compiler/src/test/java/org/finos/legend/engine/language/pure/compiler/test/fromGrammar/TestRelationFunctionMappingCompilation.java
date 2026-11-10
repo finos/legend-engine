@@ -422,8 +422,8 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
     {
         // no `$src.<col>` syntax for relation mappings — mirrors legend-pure's
         // TestRelationMapping#testRelationMappingRejectsLegacySrcRowAccess. Authored sources
-        // must migrate to `$row.<col>`. Engine's ValueSpecificationBuilder reports an unresolved
-        // variable differently from legend-pure's M3 compiler, hence the different message text.
+        // must migrate to `$row.<col>`. $src is the whole relation (the source of navigationJoin/filterJoin),
+        // and the engine reports the missing property without legend-pure's `use $row.<col>` hint.
         compileErrorContains(STANDARD_FIXTURE +
                         "###Mapping\n" +
                         "Mapping my::testMapping\n" +
@@ -434,7 +434,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                         "    firstName: $src.FIRSTNAME\n" +
                         "  }\n" +
                         ")\n",
-                "Can't find variable class for variable 'src' in the graph");
+                "Can't find property 'FIRSTNAME' in class 'meta::pure::metamodel::relation::Relation'");
     }
 
     // ==================================================================

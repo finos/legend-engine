@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionEmbeddedPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
@@ -34,10 +35,14 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.core_pure_router_operations_router_operations;
 import org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PureInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.OperationSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinPropertyMapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.EmbeddedRelationFunctionSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
@@ -199,6 +204,7 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
         {
             return null;
         }
+        compileRelationModelJoins(classMapping.propertyMappings, setImpl);
 
         // No explicit ~primaryKey → leave empty; runtime auto-infers via RelationElementAccessorExtension.
         if (classMapping.primaryKey == null || classMapping.primaryKey.isEmpty())
@@ -243,36 +249,86 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
         return setImpl;
     }
 
+    private void compileRelationModelJoins(List<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping> protocolPropertyMappings, RelationFunctionInstanceSetImplementation owningSet)
+    {
+        MutableList<? extends PropertyMapping> m3PropertyMappings = Lists.mutable.withAll(owningSet._propertyMappings());
+        for (int i = 0; i < protocolPropertyMappings.size(); i++)
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping protocolPm = protocolPropertyMappings.get(i);
+            PropertyMapping m3Pm = m3PropertyMappings.get(i);
+            if (m3Pm instanceof ModelJoinPropertyMapping)
+            {
+                org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction condition;
+                if (protocolPm instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinPropertyMapping)
+                {
+                    condition = ((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinPropertyMapping) protocolPm).joinCondition;
+                }
+                else
+                {
+                    condition = RelationModelJoinBuilder.resolveJoinCondition((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping) protocolPm);
+                }
+                compileRelationModelJoin(condition, protocolPm.sourceInformation, (ModelJoinPropertyMapping) m3Pm, owningSet);
+            }
+            else if (protocolPm instanceof RelationFunctionEmbeddedPropertyMapping && m3Pm instanceof EmbeddedRelationFunctionSetImplementation)
+            {
+                RelationFunctionEmbeddedPropertyMapping pEmb = (RelationFunctionEmbeddedPropertyMapping) protocolPm;
+                if (pEmb.propertyMappings != null && !pEmb.propertyMappings.isEmpty())
+                {
+                    compileRelationModelJoins(pEmb.propertyMappings, (EmbeddedRelationFunctionSetImplementation) m3Pm);
+                }
+            }
+        }
+    }
+
+    private void compileRelationModelJoin(org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction condition, SourceInformation sourceInformation, ModelJoinPropertyMapping m3Pm, RelationFunctionInstanceSetImplementation sourceSet)
+    {
+        Type propertyType = m3Pm._localMappingPropertyType() != null ? m3Pm._localMappingPropertyType() : m3Pm._property()._genericType()._rawType();
+        InstanceSetImplementation targetSet = inferRelationModelJoinTarget(propertyType, sourceInformation);
+        m3Pm._targetSetImplementationId(targetSet._id());
+        PropertyMappingBuilder.compileRelationModelJoinCondition(this.context, this.parentMapping, m3Pm, condition, sourceSet, targetSet);
+    }
+
+    /**
+     * The single exact (non-embedded) class mapping of the property's class that is a root within its declaring mapping,
+     * across this mapping and its includes: a class's sole class mapping within a mapping is its root even without '*',
+     * otherwise the starred one is. Operation mappings count, as for root validation, so a starred Operation is the root
+     * (and rejected) rather than an unstarred instance class mapping beside it being picked instead.
+     */
+    private InstanceSetImplementation inferRelationModelJoinTarget(Type propertyType, SourceInformation sourceInformation)
+    {
+        MutableList<SetImplementation> candidates = Lists.mutable.empty();
+        for (Mapping mapping : HelperMappingBuilder.getAllIncludedMappings(this.parentMapping))
+        {
+            MutableList<SetImplementation> directClassMappings = Lists.mutable.empty();
+            for (SetImplementation classMapping : mapping._classMappings())
+            {
+                if (!(classMapping instanceof EmbeddedSetImplementation) && classMapping._class() == propertyType)
+                {
+                    directClassMappings.add(classMapping);
+                }
+            }
+            candidates.addAll(directClassMappings.size() == 1 ? directClassMappings : directClassMappings.select(SetImplementation::_root));
+        }
+        if (candidates.size() != 1)
+        {
+            throw new EngineException("modelJoin: expected exactly one root class mapping for type '" + HelperModelBuilder.getTypeFullPath(propertyType, this.context.pureModel.getExecutionSupport())
+                    + "' in this mapping or its includes, found " + candidates.size()
+                    + (candidates.isEmpty() ? "." : ": " + candidates.collect(SetImplementation::_id).sortThis().makeString("[", ", ", "]") + "."), sourceInformation, EngineErrorType.COMPILATION);
+        }
+        SetImplementation root = candidates.get(0);
+        if (root instanceof OperationSetImplementation)
+        {
+            throw new EngineException("modelJoin: Operation mappings are not supported as the target of modelJoin; the root class mapping for type '"
+                    + HelperModelBuilder.getTypeFullPath(propertyType, this.context.pureModel.getExecutionSupport()) + "' ('" + root._id() + "') is an Operation.", sourceInformation, EngineErrorType.COMPILATION);
+        }
+        return (InstanceSetImplementation) root;
+    }
+
     // Columns of the relation function's last-expression RelationType, or [] if Relation<Any>.
     private static RichIterable<? extends Column<?, ?>> getRelationFunctionColumns(RelationFunctionInstanceSetImplementation setImpl)
     {
-        if (setImpl._relationFunction() == null)
-        {
-            return Lists.immutable.empty();
-        }
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> expressions =
-                setImpl._relationFunction()._expressionSequence();
-        if (expressions.isEmpty())
-        {
-            return Lists.immutable.empty();
-        }
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification lastExpr =
-                expressions.toList().getLast();
-        if (lastExpr == null || lastExpr._genericType() == null)
-        {
-            return Lists.immutable.empty();
-        }
-        RichIterable<? extends GenericType> typeArgs = lastExpr._genericType()._typeArguments();
-        if (typeArgs.isEmpty())
-        {
-            return Lists.immutable.empty();
-        }
-        Type rawType = typeArgs.toList().getFirst()._rawType();
-        if (!(rawType instanceof RelationType))
-        {
-            return Lists.immutable.empty();
-        }
-        return ((RelationType<?>) rawType)._columns();
+        GenericType rowType = HelperMappingBuilder.getRelationFunctionRowType(setImpl._relationFunction());
+        return rowType != null && rowType._rawType() instanceof RelationType ? ((RelationType<?>) rowType._rawType())._columns() : Lists.immutable.empty();
     }
 
 

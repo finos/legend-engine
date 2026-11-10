@@ -80,10 +80,10 @@ meta::pure::functions::asserts::assert_Boolean_1__Function_1__Boolean_1_
 meta::pure::functions::asserts::assert_Boolean_1__String_1__Any_MANY__Boolean_1_
 meta::pure::functions::asserts::assert_Boolean_1__String_1__Boolean_1_
 meta::pure::functions::boolean::xor_Boolean_1__Boolean_1__Boolean_1_
-meta::pure::functions::asserts::fail_Function_1__Nil_0_
-meta::pure::functions::asserts::fail_String_1__Any_MANY__Nil_0_
-meta::pure::functions::asserts::fail_String_1__Nil_0_
-meta::pure::functions::asserts::fail__Nil_0_
+meta::pure::functions::asserts::fail_Function_1__Boolean_1_
+meta::pure::functions::asserts::fail_String_1__Any_MANY__Boolean_1_
+meta::pure::functions::asserts::fail_String_1__Boolean_1_
+meta::pure::functions::asserts::fail__Boolean_1_
 meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_
 meta::pure::functions::boolean::eq_Any_1__Any_1__Boolean_1_
 meta::pure::functions::boolean::equalJsonStrings_String_1__String_1__Boolean_1_
@@ -512,6 +512,8 @@ meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Rel
 meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_
 meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_
 meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_
+meta::pure::functions::relation::filterJoin_Relation_1__Relation_1__Function_1__Relation_1_
+meta::pure::functions::relation::filterJoin_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_
 meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_
 meta::pure::functions::relation::greaterThanAll_U_$0_1$__Relation_1__Boolean_1_
 meta::pure::functions::relation::greaterThanAny_U_$0_1$__Relation_1__Boolean_1_
@@ -547,6 +549,8 @@ meta::pure::functions::relation::lessThanAny_U_$0_1$__Relation_1__Boolean_1_
 meta::pure::functions::relation::lessThanEqualAll_U_$0_1$__Relation_1__Boolean_1_
 meta::pure::functions::relation::lessThanEqualAny_U_$0_1$__Relation_1__Boolean_1_
 meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_
+meta::pure::functions::relation::navigationJoin_Relation_1__Relation_1__Function_1__Relation_1_
+meta::pure::functions::relation::navigationJoin_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_
 meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_
 meta::pure::functions::relation::emptyFirst_SortInfo_1__SortInfo_1_
 meta::pure::functions::relation::emptyLast_SortInfo_1__SortInfo_1_

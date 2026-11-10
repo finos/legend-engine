@@ -86,6 +86,11 @@ public class PropertyMappingPrerequisiteElementsBuilder implements PropertyMappi
         {
             this.prerequisiteElements.add(new PackageableElementPointer(null, propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation));
         }
+        if (propertyMapping.valueFn != null)
+        {
+            ValueSpecificationPrerequisiteElementsPassBuilder builder = new ValueSpecificationPrerequisiteElementsPassBuilder(this.context, this.prerequisiteElements);
+            ListIterate.forEach(propertyMapping.valueFn.body, p -> p.accept(builder));
+        }
         return this.prerequisiteElements;
     }
 

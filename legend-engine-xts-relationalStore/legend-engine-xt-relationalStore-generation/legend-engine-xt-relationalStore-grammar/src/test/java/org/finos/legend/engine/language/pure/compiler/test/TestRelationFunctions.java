@@ -974,6 +974,118 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     }
 
     @Test
+    public void testJoinWithoutJoinKindAndConditionIsRejected()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        "   Table tb2(id2 Integer, errr VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->join(#>{a::A.tb2}#)\n" +
+                        "}",
+                "COMPILATION error at [7:18-21]: Can't find a match for function 'join(RelationStoreAccessor<(id:Int, other:Varchar(200))>[1],RelationStoreAccessor<(id2:Int, errr:Varchar(200))>[1])'.\n" +
+                        "Functions that can match if number of parameters are changed:\n" +
+                        "\t\tjoin(Relation<T>[1],Relation<V>[1],JoinKind[1],Function<{T[1], V[1]->Boolean[1]}>[1]):Relation<T+V>[1]\n" +
+                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],Function<{TDSRow[1], TDSRow[1]->Boolean[1]}>[1]):TabularDataSet[1]\n" +
+                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],String[1..*]):TabularDataSet[1]\n" +
+                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],String[1..*],String[1..*]):TabularDataSet[1]\n"
+        );
+    }
+
+    @Test
+    public void testJoinRejectsNonRelationLeftOperand()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        "   Table tb2(id2 Integer, errr VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   1->join(#>{a::A.tb2}#, meta::pure::functions::relation::JoinKind.INNER, {a,b|true})\n" +
+                        "}",
+                "COMPILATION error at [7:4]: join() expects its first argument to be a relation or a TabularDataSet, got Integer"
+        );
+    }
+
+    @Test
+    public void testJoinRejectsNonRelationRightOperand()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        "   Table tb2(id2 Integer, errr VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->join(1, meta::pure::functions::relation::JoinKind.INNER, {a,b|true})\n" +
+                        "}",
+                "COMPILATION error at [7:23]: join() expects its second argument to be a relation, got Integer"
+        );
+    }
+
+    @Test
+    public void testJoinRejectsJoinTypeInPlaceOfJoinKind()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        "   Table tb2(id2 Integer, errr VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::relational::metamodel::join::JoinType.INNER, {a,b|$a.id == $b.id2})\n" +
+                        "}",
+                "COMPILATION error at [7:18-21]: Can't find a match for function 'join(RelationStoreAccessor<(id:Int, other:Varchar(200))>[1],RelationStoreAccessor<(id2:Int, errr:Varchar(200))>[1],JoinType[1],LambdaFunction<{(id:Int, other:Varchar(200))[1], (id2:Int, errr:Varchar(200))[1]->Boolean[1]}>[1])'.\n" +
+                        "Functions that can match if parameter types or multiplicities are changed:\n" +
+                        "\t\tjoin(Relation<T>[1],Relation<V>[1],JoinKind[1],Function<{T[1], V[1]->Boolean[1]}>[1]):Relation<T+V>[1]\n" +
+                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],Function<{TDSRow[1], TDSRow[1]->Boolean[1]}>[1]):TabularDataSet[1]\n" +
+                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],String[1..*]):TabularDataSet[1]\n" +
+                        "Functions that can match if number of parameters are changed:\n" +
+                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],String[1..*],String[1..*]):TabularDataSet[1]\n"
+        );
+    }
+
+    @Test
+    public void testJoinRejectsRelationInPlaceOfCondition()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        "   Table tb2(id2 Integer, errr VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::pure::functions::relation::JoinKind.INNER, #>{a::A.tb2}#)\n" +
+                        "}",
+                "COMPILATION error at [7:18-21]: Can't find a match for function 'join(RelationStoreAccessor<(id:Int, other:Varchar(200))>[1],RelationStoreAccessor<(id2:Int, errr:Varchar(200))>[1],JoinKind[1],RelationStoreAccessor<(id2:Int, errr:Varchar(200))>[1])'.\n" +
+                        "Functions that can match if parameter types or multiplicities are changed:\n" +
+                        "\t\tjoin(Relation<T>[1],Relation<V>[1],JoinKind[1],Function<{T[1], V[1]->Boolean[1]}>[1]):Relation<T+V>[1]\n" +
+                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],Function<{TDSRow[1], TDSRow[1]->Boolean[1]}>[1]):TabularDataSet[1]\n" +
+                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],String[1..*]):TabularDataSet[1]\n" +
+                        "Functions that can match if number of parameters are changed:\n" +
+                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],String[1..*],String[1..*]):TabularDataSet[1]\n"
+        );
+    }
+
+    @Test
     public void testJoinErrorWrongCols()
     {
         test(

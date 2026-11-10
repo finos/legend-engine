@@ -1,0 +1,53 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-inline-self-join
+title: "Relation Function Mapping — Self-Join (person -> manager) via inline navigationJoin / filterJoin"
+description: |
+  SELF-JOIN end-to-end (SQL pushdown) coverage for the inline navigationJoin / filterJoin
+  operators: person -> manager, where BOTH sides of the join are the SAME relation function
+  (employeesRel), i.e. the same physical EmployeeTable. This forces the source and target
+  instances of one table to be aliased distinctly; a person whose manager doesn't exist keeps
+  their row with an empty manager. Fully self-contained (its own single-table SelfJoinDB + SelfJoinData) so the
+  manager column and the self-join do not perturb the shared EmployeeDB fixtures.
+
+modelSources:
+  model:
+    root: relation-inline-self-join
+    files:
+      - store/selfJoinDb.pure          # ###Relational single-table SelfJoinDB (EmployeeTable with MANAGER_ID)
+      - mapping/selfJoinMapping.pure   # ###Pure (Employee + employeesRel join target) + ###Mapping (~src) with self navigationJoin/filterJoin + testSuites
+      - data/selfJoinData.pure         # ###Data SelfJoinData (Alice/Bob/Carol resolve; Dave's manager is empty)
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:function
+  - mapping:relation-filter-join
+  - mapping:relation-navigation-join
+  - mapping:relation-src
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - duckdb
+  - mapping-test
+  - relation
+  - navigationjoin
+  - filterjoin
+  - self-join

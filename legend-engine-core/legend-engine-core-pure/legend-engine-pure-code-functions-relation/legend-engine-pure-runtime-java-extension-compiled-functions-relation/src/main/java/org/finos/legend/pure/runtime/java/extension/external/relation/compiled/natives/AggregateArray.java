@@ -14,8 +14,8 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
@@ -44,7 +44,7 @@ public class AggregateArray extends AbstractNative implements Native
                 "            @Override\n" +
                 "            public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
                 "            {\n" +
-                "                return " + getString(Lists.mutable.with("(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation)vars.get(0)", "((Root_meta_pure_metamodel_relation_AggColSpecArray_Impl)vars.get(1))")) + ";" +
+                "                return " + getString(Lists.mutable.with("(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation)vars.get(0)", "((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpecArray<?, ?, ?>)vars.get(1))")) + ";" +
                 "            }\n" +
                 "        }";
     }
@@ -59,6 +59,4 @@ public class AggregateArray extends AbstractNative implements Native
         result.append(", es)");
         return result.toString();
     }
-
 }
-

@@ -22,6 +22,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -212,6 +213,14 @@ public class HelperValueSpecificationBuilder
             }
 
             Type inferredType = inferredVariable._genericType()._rawType();
+
+            if (processingContext.isRelationMappingPropertyValue
+                    && processedParameters.get(0) instanceof SimpleFunctionExpression
+                    && Handlers.isNavigationOrFilterJoinFunction(((SimpleFunctionExpression) processedParameters.get(0))._func())
+                    && inferredType.equals(context.pureModel.getType(M3Paths.Relation)))
+            {
+                inferredType = inferredVariable._genericType()._typeArguments().getFirst()._rawType();
+            }
 
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> foundFunction;
             if (inferredType instanceof RelationType)
