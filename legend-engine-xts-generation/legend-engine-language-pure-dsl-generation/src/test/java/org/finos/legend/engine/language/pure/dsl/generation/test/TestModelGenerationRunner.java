@@ -18,6 +18,7 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.dsl.generation.model.ModelGenerationException;
 import org.finos.legend.engine.language.pure.dsl.generation.model.ModelGenerationRunner;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
@@ -171,6 +172,58 @@ public class TestModelGenerationRunner
         EngineException e = Assertions.assertThrows(EngineException.class, () -> newRunner(model).run());
 
         Assertions.assertEquals("Generated element '" + generatedPath("SourceA") + "' of type Class can't override existing element of type Class", e.getMessage());
+    }
+
+    @Test
+    void aGenerationFailureNamesItsNodeAndElement()
+    {
+        PureModelContextData model = parse(SOURCE_A
+                + "###GenerationSpecification\n"
+                + "GenerationSpecification test::modelgen::Spec\n"
+                + "{\n"
+                + "  generationNodes: [\n"
+                + "    {\n"
+                + "      generationElement: test::modelgen::SourceA;\n"
+                + "    },\n"
+                + "    {\n"
+                + "      id: 'broken';\n"
+                + "      generationElement: test::modelgen::Missing;\n"
+                + "    }\n"
+                + "  ];\n"
+                + "}\n");
+
+        ModelGenerationRunner runner = newRunner(model);
+        ModelGenerationException e = Assertions.assertThrows(ModelGenerationException.class, runner::run);
+
+        Assertions.assertEquals("broken", e.getGenerationNodeId());
+        Assertions.assertEquals("test::modelgen::Missing", e.getGenerationElement());
+        Assertions.assertEquals(Collections.singletonList(generatedPath("SourceA")), Iterate.collect(runner.getGeneratedModel().getElements(), PackageableElement::getPath), "what the nodes before the failure generated stays readable");
+        Assertions.assertEquals(Collections.singletonMap(generatedPath("SourceA"), "test::modelgen::SourceA"), runner.getGeneratedElementSources());
+    }
+
+    @Test
+    void aMergeFailureKeepsItsMessageAndNamesItsNodeAndElement()
+    {
+        PureModelContextData model = parse(SOURCE_A
+                + "Class " + generatedPath("SourceA") + "\n"
+                + "{\n"
+                + "  name: String[1];\n"
+                + "}\n"
+                + "###GenerationSpecification\n"
+                + "GenerationSpecification test::modelgen::Spec\n"
+                + "{\n"
+                + "  generationNodes: [\n"
+                + "    {\n"
+                + "      generationElement: test::modelgen::SourceA;\n"
+                + "    }\n"
+                + "  ];\n"
+                + "}\n");
+
+        ModelGenerationException e = Assertions.assertThrows(ModelGenerationException.class, () -> newRunner(model).run());
+
+        Assertions.assertEquals("Generated element '" + generatedPath("SourceA") + "' of type Class can't override existing element of type Class", e.getMessage());
+        Assertions.assertEquals("test::modelgen::SourceA", e.getGenerationNodeId(), "a node without an id has the default one, its generation elements");
+        Assertions.assertEquals("test::modelgen::SourceA", e.getGenerationElement());
     }
 
     private static org.finos.legend.engine.protocol.pure.m3.type.Class generatedClass()
