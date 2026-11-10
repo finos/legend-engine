@@ -386,6 +386,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='regexp_like(%s)', transform={p:String[3]|$p->transformRegexpLike()})),
     dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='regexp_replace(%s)', transform={p:String[5]|$p->transformRegexpReplace()})),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('trunc',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformTrunc('cast(trunc(%s) as INTEGER)', 'trunc(%s, %s)')})),
     dynaFnToSql('startsWith',             $allStates,            ^ToSql(format='startswith(%s,%s)', transform={p:String[2]|$p})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha2(%s, 256)')),

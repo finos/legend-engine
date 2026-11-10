@@ -318,6 +318,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('position',               $allStates,            ^ToSql(format='strpos(%s, %s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='extract( quarter from %s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('trunc',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]  $p->transformTrunc('cast(trunc(%s) as INTEGER)', 'trunc(%s, %s)')})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='extract( second from %s)')),
     dynaFnToSql('split',                  $allStates,            ^ToSql(format='split(%s, %s)')),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
