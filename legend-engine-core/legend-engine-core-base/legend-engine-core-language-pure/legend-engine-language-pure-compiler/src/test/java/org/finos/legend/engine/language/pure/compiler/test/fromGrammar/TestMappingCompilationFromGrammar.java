@@ -15,12 +15,12 @@
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.pure.generated.Root_meta_external_store_model_PureInstanceSetImplementation_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PureInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinAssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinPropertyMapping;
@@ -1665,7 +1665,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "\n").getTwo();
 
-        Root_meta_external_store_model_PureInstanceSetImplementation_Impl classA = (Root_meta_external_store_model_PureInstanceSetImplementation_Impl) model.getMapping("test::M1")._classMappings().getFirst();
+        PureInstanceSetImplementation classA = (PureInstanceSetImplementation) model.getMapping("test::M1")._classMappings().getFirst();
         assertEquals("test_B", classA._propertyMappings().getLast()._targetSetImplementationId());
     }
 

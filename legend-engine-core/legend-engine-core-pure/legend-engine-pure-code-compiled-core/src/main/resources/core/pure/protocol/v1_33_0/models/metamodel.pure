@@ -783,6 +783,11 @@ Class meta::protocols::pure::v1_33_0::metamodel::mapping::relation::EmbeddedRela
    propertyMappings : meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping[*];
 }
 
+Class meta::protocols::pure::v1_33_0::metamodel::mapping::relation::InlineModelJoinPropertyMapping extends meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping
+{
+   joinCondition : meta::protocols::pure::v1_33_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
 Class meta::protocols::pure::v1_33_0::metamodel::mapping::relation::InlineEmbeddedRelationFunctionPropertyMapping extends meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping
 {
    id : String[1];

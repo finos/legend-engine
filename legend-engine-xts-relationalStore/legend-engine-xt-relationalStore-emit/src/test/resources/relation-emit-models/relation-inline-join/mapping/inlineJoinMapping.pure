@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::metamodel::relation::*;
+
+Class demo::relation::inline::InlineFirm
+{
+  id: Integer[1];
+  legalName: String[1];
+}
+
+Class demo::relation::inline::InlineEmployee
+{
+  id: Integer[1];
+  firstName: String[1];
+  firm: demo::relation::inline::InlineFirm[1];
+  firmLegalName: String[1];
+  firstNameViaFilterJoin: String[1];
+}
+
+function demo::relation::inline::func::firmsRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], LEGAL_NAME:String[1])>[1]
+{
+  #>{demo::relation::db::EmployeeDB.FirmTable}#
+}
+
+###Mapping
+import demo::relation::inline::func::*;
+
+Mapping demo::relation::mapping::InlineJoinMapping
+(
+  *demo::relation::inline::InlineEmployee[emp]: Relation
+  {
+    ~src #>{demo::relation::db::EmployeeDB.EmployeeTable}#
+    id: ID,
+    firstName: FIRST_NAME,
+    +firmId: Integer[1]: FIRM_ID,
+    firm: modelJoin({e, f | $e.firmId == $f.id}),
+    firmLegalName: $src->navigationJoin(demo::relation::inline::func::firmsRel(), {e, f | $e.FIRM_ID == $f.ID}).LEGAL_NAME,
+    firstNameViaFilterJoin: $src->filterJoin(demo::relation::inline::func::firmsRel(), {e, f | $e.FIRM_ID == $f.ID}).FIRST_NAME
+  }
+
+  *demo::relation::inline::InlineFirm[firm]: Relation
+  {
+    ~src demo::relation::inline::func::firmsRel()
+    ~primaryKey: [ID]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  testSuites:
+  [
+    navigationJoinSuite:
+    {
+      function: |demo::relation::inline::InlineEmployee.all()->project(~[Name: x | $x.firstName, Firm: x | $x.firmLegalName])->sort([~Name->ascending()]);
+      tests:
+      [
+        pullsRightColumn:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnFirmLegalName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Firm":"Acme"},{"Name":"Bob","Firm":"Beta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterJoinSuite:
+    {
+      function: |demo::relation::inline::InlineEmployee.all()->project(~[Name: x | $x.firstNameViaFilterJoin])->sort([~Name->ascending()]);
+      tests:
+      [
+        keepsLeftColumnGatedByJoin:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnSourceColumn:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice"},{"Name":"Bob"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    inlineModelJoinSuite:
+    {
+      function: |demo::relation::inline::InlineEmployee.all()->project(~[Name: x | $x.firstName, Firm: x | $x.firm.legalName])->sort([~Name->ascending()]);
+      tests:
+      [
+        navigatesToFirmClass:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldNavigateInlineModelJoin:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Firm":"Acme"},{"Name":"Bob","Firm":"Beta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

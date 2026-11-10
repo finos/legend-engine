@@ -55,6 +55,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.TaggedValue;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
@@ -507,6 +508,30 @@ public class Handlers
         }
     }
 
+    // Rewrapped as a plain Relation: `$src` can be typed RelationStoreAccessor<RowType>, which the
+    // terminal `.col` unwrap in HelperValueSpecificationBuilder does not accept.
+    public static TypeAndMultiplicity NavigationJoinReturnInference(List<ValueSpecification> ps, PureModel pureModel)
+    {
+        return relationOf(ps.get(1)._genericType(), pureModel);
+    }
+
+    public static TypeAndMultiplicity FilterJoinReturnInference(List<ValueSpecification> ps, PureModel pureModel)
+    {
+        return relationOf(ps.get(0)._genericType(), pureModel);
+    }
+
+    private static TypeAndMultiplicity relationOf(GenericType relationType, PureModel pureModel)
+    {
+        GenericType rowType = relationType._typeArguments().isEmpty() ? pureModel.getGenericType(M3Paths.Any) : relationType._typeArguments().getLast();
+        if (rowType._rawType() instanceof RelationType)
+        {
+            return getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) rowType._rawType()), pureModel);
+        }
+        return res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
+                ._rawType(pureModel.getType(M3Paths.Relation))
+                ._typeArguments(Lists.fixedSize.of(rowType)), "one", pureModel);
+    }
+
     public static TypeAndMultiplicity JoinReturnInference(List<ValueSpecification> ps, PureModel pureModel)
     {
         return getTypeAndMultiplicity(
@@ -949,13 +974,17 @@ public class Handlers
             else if (valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
             {
                 ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
-                org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity one = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
-                updateTwoParamsLambdaDiffTypes(parameters.get(3), firstProcessedParameter._genericType()._typeArguments().getFirst(), secondProcessedParameter._genericType()._typeArguments().getFirst(), one, one);
+                String secondType = secondProcessedParameter._genericType()._rawType()._name();
+                if (!valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_relation_Relation").contains(secondType))
+                {
+                    throw new EngineException("join() expects its second argument to be a relation, got " + secondType, parameters.get(1).sourceInformation, EngineErrorType.COMPILATION);
+                }
+                typeRelationJoinCondition(parameters.get(3), firstProcessedParameter, secondProcessedParameter);
                 result.with(secondProcessedParameter).with(parameters.get(2).accept(valueSpecificationBuilder)).with(parameters.get(3).accept(valueSpecificationBuilder));
             }
             else
             {
-                parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
+                throw new EngineException("join() expects its first argument to be a relation or a TabularDataSet, got " + gt._rawType()._name(), parameters.get(0).sourceInformation, EngineErrorType.COMPILATION);
             }
             return result;
         }
@@ -964,6 +993,42 @@ public class Handlers
             return null;
         }
     };
+
+    public static boolean isNavigationOrFilterJoinFunction(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> function)
+    {
+        return function instanceof ConcreteFunctionDefinition
+                && Lists.immutable.with("navigationJoin", "filterJoin").contains(function._functionName())
+                && "meta::pure::functions::relation".equals(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(((ConcreteFunctionDefinition<?>) function)._package()));
+    }
+
+    public static final ParametersInference NavigationJoinFilterJoinInference = (parameters, valueSpecificationBuilder) ->
+    {
+        // (rel, target, cond) or (rel, target, kind, cond)
+        if (parameters.size() != 3 && parameters.size() != 4)
+        {
+            return null;
+        }
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
+        ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
+        MutableList<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter, secondProcessedParameter);
+        if (parameters.size() == 4)
+        {
+            result.add(parameters.get(2).accept(valueSpecificationBuilder));
+        }
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification condition = parameters.get(parameters.size() - 1);
+        if (condition instanceof LambdaFunction && ((LambdaFunction) condition).parameters.size() == 2)
+        {
+            typeRelationJoinCondition(condition, firstProcessedParameter, secondProcessedParameter);
+        }
+        result.add(condition.accept(valueSpecificationBuilder));
+        return result;
+    };
+
+    private static void typeRelationJoinCondition(Object condition, ValueSpecification left, ValueSpecification right)
+    {
+        org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity one = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
+        updateTwoParamsLambdaDiffTypes(condition, left._genericType()._typeArguments().getFirst(), right._genericType()._typeArguments().getFirst(), one, one);
+    }
 
     public static final ParametersInference TDSAggInference = (parameters, valueSpecificationBuilder) ->
     {
@@ -2387,14 +2452,14 @@ public class Handlers
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::fail__Nil_0_", "fail", false, ps -> res(Nil, "zero"), ps -> ps.size() == 0)
+                            h("meta::pure::functions::asserts::fail__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 0)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::fail_String_1__Nil_0_", "fail", false, ps -> res(Nil, "zero"), ps -> ps.size() == 1 && typeOne(ps.get(0), "String")),
-                            h("meta::pure::functions::asserts::fail_Function_1__Nil_0_", "fail", false, ps -> res(Nil, "zero"), ps -> ps.size() == 1 && !typeOne(ps.get(0), "String"))
+                            h("meta::pure::functions::asserts::fail_String_1__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1 && typeOne(ps.get(0), "String")),
+                            h("meta::pure::functions::asserts::fail_Function_1__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1 && !typeOne(ps.get(0), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::fail_String_1__Any_MANY__Nil_0_", "fail", false, ps -> res(Nil, "zero"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::fail_String_1__Any_MANY__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     )
                 ));
     }
@@ -2499,11 +2564,22 @@ public class Handlers
                 h("meta::pure::tds::emptyLast_SortInformation_1__SortInformation_1_", "emptyLast", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "SortInformation".equals(ps.get(0)._genericType()._rawType()._name()))
         ));
 
-        register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "join", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)));
+        register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "join", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> ps.size() == 4 && typeOneRelation(ps.get(0)) && typeOneRelation(ps.get(1)) && typeOne(ps.get(2), "JoinKind") && typeOne(ps.get(3), pureModel.taxonomyTypes("cov_function_FunctionDefinition")))));
 
         register(grp(AsOfJoinInference,
                         h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", "asOfJoin", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true),
                         h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_", "asOfJoin", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)
+                )
+        );
+
+        register(grp(NavigationJoinFilterJoinInference,
+                        h("meta::pure::functions::relation::navigationJoin_Relation_1__Relation_1__Function_1__Relation_1_", "navigationJoin", false, ps -> NavigationJoinReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::navigationJoin_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "navigationJoin", false, ps -> NavigationJoinReturnInference(ps, this.pureModel), ps -> true)
+                )
+        );
+        register(grp(NavigationJoinFilterJoinInference,
+                        h("meta::pure::functions::relation::filterJoin_Relation_1__Relation_1__Function_1__Relation_1_", "filterJoin", false, ps -> FilterJoinReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::filterJoin_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "filterJoin", false, ps -> FilterJoinReturnInference(ps, this.pureModel), ps -> true)
                 )
         );
 
@@ -3605,6 +3681,16 @@ public class Handlers
     public boolean typeOne(ValueSpecification vs, MutableSet<String> type)
     {
         return isNilOrType(vs, type) && isOne(vs._multiplicity());
+    }
+
+    public boolean typeOneRelation(ValueSpecification vs)
+    {
+        return typeOne(vs, pureModel.taxonomyTypes("cov_relation_Relation"));
+    }
+
+    public boolean typeOneTabularDataSet(ValueSpecification vs)
+    {
+        return typeOne(vs, pureModel.taxonomyTypes("cov_tds_TabularDataSet"));
     }
 
     public boolean typeZeroOne(ValueSpecification vs, String type)

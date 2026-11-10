@@ -1,0 +1,345 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::mapping::relation::inlineJoin::JoinDB
+(
+  Table PersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100) NOT NULL,
+    FIRMID INTEGER NOT NULL
+  )
+  Table FirmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100) NOT NULL
+  )
+  Table ChainPersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100) NOT NULL,
+    FIRMID INTEGER NOT NULL,
+    COUNTRYID INTEGER NOT NULL
+  )
+  Table ChainFirmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100) NOT NULL,
+    COUNTRYID INTEGER NOT NULL
+  )
+  Table CountryTable
+  (
+    ID INTEGER PRIMARY KEY,
+    COUNTRYNAME VARCHAR(100) NOT NULL
+  )
+)
+
+###Pure
+Class meta::relational::tests::mapping::relation::inlineJoin::Person
+{
+  firstName: String[1];
+  firmId: Integer[1];
+  firmName: String[1];
+  firmNameInner: String[1];
+  firmNameDup: String[1];
+  firmNameFiltered: String[1];
+  firmNameFilteredDup: String[1];
+  firmNameFilteredOther: String[1];
+  gatedFirstName: String[1];
+  gatedFirstNameDup: String[1];
+  gatedFirstNameInner: String[1];
+  firmRef: meta::relational::tests::mapping::relation::inlineJoin::Firm[1];
+  countryNameForMatchedFirm: String[1];
+  countryNameForMatchedFirmDup: String[1];
+  firmNameForMatchedCountry: String[1];
+  firmNameForMatchedCountryDup: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::inlineJoin::Firm
+{
+  id: Integer[1];
+  legalName: String[1];
+}
+
+function meta::relational::tests::mapping::relation::inlineJoin::personRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], FIRSTNAME:String[1], FIRMID:Integer[1])>[1]
+{
+  #>{meta::relational::tests::mapping::relation::inlineJoin::JoinDB.PersonTable}#
+}
+
+function meta::relational::tests::mapping::relation::inlineJoin::firmRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], LEGALNAME:String[1])>[1]
+{
+  #>{meta::relational::tests::mapping::relation::inlineJoin::JoinDB.FirmTable}#
+}
+
+function meta::relational::tests::mapping::relation::inlineJoin::chainPersonRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], FIRSTNAME:String[1], FIRMID:Integer[1], COUNTRYID:Integer[1])>[1]
+{
+  #>{meta::relational::tests::mapping::relation::inlineJoin::JoinDB.ChainPersonTable}#
+}
+
+function meta::relational::tests::mapping::relation::inlineJoin::chainFirmRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], LEGALNAME:String[1], COUNTRYID:Integer[1])>[1]
+{
+  #>{meta::relational::tests::mapping::relation::inlineJoin::JoinDB.ChainFirmTable}#
+}
+
+function meta::relational::tests::mapping::relation::inlineJoin::countryRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], COUNTRYNAME:String[1])>[1]
+{
+  #>{meta::relational::tests::mapping::relation::inlineJoin::JoinDB.CountryTable}#
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::inlineJoin::*;
+
+Mapping meta::relational::tests::mapping::relation::inlineJoin::NavigationFilterJoinMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineJoin::personRel():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    firmId: FIRMID,
+    firmName: $src->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    firmNameInner: $src->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), meta::pure::functions::relation::JoinKind.INNER, {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    firmNameDup: $src->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    firmNameFiltered: $src->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel()->filter(f | $f.LEGALNAME->isNotEmpty()), {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    firmNameFilteredDup: $src->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel()->filter(f | $f.LEGALNAME->isNotEmpty()), {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    firmNameFilteredOther: $src->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel()->filter(f | $f.LEGALNAME == 'Firm X'), {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    gatedFirstName: $src->filterJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).FIRSTNAME,
+    gatedFirstNameDup: $src->filterJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).FIRSTNAME,
+    gatedFirstNameInner: $src->filterJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), meta::pure::functions::relation::JoinKind.INNER, {p, f | $p.FIRMID == $f.ID}).FIRSTNAME
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::inlineJoin::InlineModelJoinMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineJoin::personRel():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    firmId: FIRMID,
+    firmRef: modelJoin({p, f | $p.firmId == $f.id})
+  }
+  *Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineJoin::firmRel():Relation<Any>[1]
+    id: ID,
+    legalName: LEGALNAME
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::inlineJoin::ChainedJoinMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineJoin::chainPersonRel():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    firmId: FIRMID,
+    countryNameForMatchedFirm: $src->filterJoin(meta::relational::tests::mapping::relation::inlineJoin::chainFirmRel(), {p, f | $p.FIRMID == $f.ID})->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::countryRel(), {p, c | $p.COUNTRYID == $c.ID}).COUNTRYNAME,
+    countryNameForMatchedFirmDup: $src->filterJoin(meta::relational::tests::mapping::relation::inlineJoin::chainFirmRel(), {p, f | $p.FIRMID == $f.ID})->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::countryRel(), {p, c | $p.COUNTRYID == $c.ID}).COUNTRYNAME,
+    firmNameForMatchedCountry: $src->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::chainFirmRel(), {p, f | $p.FIRMID == $f.ID})->filterJoin(meta::relational::tests::mapping::relation::inlineJoin::countryRel(), {f, c | $f.COUNTRYID == $c.ID}).LEGALNAME,
+    firmNameForMatchedCountryDup: $src->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::chainFirmRel(), {p, f | $p.FIRMID == $f.ID})->filterJoin(meta::relational::tests::mapping::relation::inlineJoin::countryRel(), {f, c | $f.COUNTRYID == $c.ID}).LEGALNAME
+  }
+)
+
+###Pure
+import meta::relational::tests::mapping::relation::inlineJoin::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::execute::*;
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testNavigationJoinDefaultsToLeftOuterJoin():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.firmName], ['firmName'])},
+    NavigationFilterJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    'select "firmtable_0".LEGALNAME as "firmName" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".ID)',
+    $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testNavigationJoinExplicitInnerJoin():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.firmNameInner], ['firmNameInner'])},
+    NavigationFilterJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    'select "persontable_2".LEGALNAME as "firmNameInner" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID, "firmtable_0".LEGALNAME as LEGALNAME from PersonTable as "persontable_1" inner join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_1".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID = "persontable_2".ID)',
+    $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
+  );
+}
+
+// Regression guard for the join-naming fix in legend-engine: firmName and firmNameDup use the
+// identical navigationJoin condition to the same target, so the SQL-gen dedup must collapse them
+// into one JOIN, not generate the join twice.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testNavigationJoinWithIdenticalConditionIsDeduped():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.firmName, p | $p.firmNameDup], ['firmName', 'firmNameDup'])},
+    NavigationFilterJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    'select "firmtable_0".LEGALNAME as "firmName", "firmtable_0".LEGALNAME as "firmNameDup" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".ID)',
+    $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testNavigationJoinWithIdenticalFilteredTargetIsDeduped():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.firmNameFiltered, p | $p.firmNameFilteredDup], ['firmNameFiltered', 'firmNameFilteredDup'])},
+    NavigationFilterJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    'select "firmtable_0".LEGALNAME as "firmNameFiltered", "firmtable_0".LEGALNAME as "firmNameFilteredDup" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1" where "firmtable_1".LEGALNAME is not null) as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".ID)',
+    $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testNavigationJoinWithDifferentlyFilteredTargetsIsNotDeduped():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.firmNameFiltered, p | $p.firmNameFilteredOther], ['firmNameFiltered', 'firmNameFilteredOther'])},
+    NavigationFilterJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    'select "firmtable_0".LEGALNAME as "firmNameFiltered", "firmtable_2".LEGALNAME as "firmNameFilteredOther" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1" where "firmtable_1".LEGALNAME is not null) as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".ID) left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1" where "firmtable_1".LEGALNAME = \'Firm X\') as "firmtable_2" on ("persontable_0".FIRMID = "firmtable_2".ID)',
+    $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testFilterJoinDefaultsToLeftOuterJoin():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.gatedFirstName], ['gatedFirstName'])},
+    NavigationFilterJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  // Keyed by ID, not FIRSTNAME: legend-pure's native Relation mapping grammar has no `~primaryKey`
+  // syntax (engine-only), so the source PK here is inferred from PersonTable's actual declared
+  // PRIMARY KEY column rather than declared explicitly.
+  assertEquals(
+    'select "persontable_2".FIRSTNAME as "gatedFirstName" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "persontable_3".ID as "ID", "persontable_3".FIRSTNAME as "FIRSTNAME", "persontable_3".FIRMID as "FIRMID" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" inner join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testFilterJoinExplicitInnerJoin():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.gatedFirstNameInner], ['gatedFirstNameInner'])},
+    NavigationFilterJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  // Keyed by ID, not FIRSTNAME — see testFilterJoinDefaultsToLeftOuterJoin.
+  assertEquals(
+    'select "persontable_2".FIRSTNAME as "gatedFirstNameInner" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "persontable_3".ID as "ID", "persontable_3".FIRSTNAME as "FIRSTNAME", "persontable_3".FIRMID as "FIRMID" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" inner join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testInlineModelJoinWithTargetResolvedFromPropertyTypeGeneratesAJoin():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.firmRef.legalName], ['firmLegalName'])},
+    InlineModelJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    'select "firmtable_0"."LEGALNAME" as "firmLegalName" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as "ID", "firmtable_1".LEGALNAME as "LEGALNAME" from (select "firmtable_2".ID as ID, "firmtable_2".LEGALNAME as LEGALNAME from FirmTable as "firmtable_2") as "firmtable_1") as "firmtable_0" on ("persontable_0"."FIRMID" = "firmtable_0"."ID")',
+    $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
+  );
+}
+
+// filterJoin->navigationJoin: gate person rows on a matching firm, then navigate (via the
+// person's own COUNTRYID, not through the firm) to the country name.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testChainedFilterJoinThenNavigationJoin():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.countryNameForMatchedFirm], ['countryNameForMatchedFirm'])},
+    ChainedJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    'select "chainpersontable_2".COUNTRYNAME as "countryNameForMatchedFirm" from (select "chainpersontable_1".ID as ID, "chainpersontable_1".FIRSTNAME as FIRSTNAME, "chainpersontable_1".FIRMID as FIRMID, "chainpersontable_1".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_1") as "chainpersontable_0" left outer join (select "chainpersontable_3".ID as relJoinKey_ID, "countrytable_0".ID as "ID", "countrytable_0".COUNTRYNAME as "COUNTRYNAME" from (select "chainpersontable_4".ID as ID, "chainpersontable_4".FIRSTNAME as FIRSTNAME, "chainpersontable_4".FIRMID as FIRMID, "chainpersontable_4".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_4") as "chainpersontable_3" inner join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".LEGALNAME as LEGALNAME, "chainfirmtable_1".COUNTRYID as COUNTRYID from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("chainpersontable_3".FIRMID = "chainfirmtable_0".ID) left outer join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME from CountryTable as "countrytable_1") as "countrytable_0" on ("chainpersontable_3".COUNTRYID = "countrytable_0".ID)) as "chainpersontable_2" on ("chainpersontable_0".ID is not distinct from "chainpersontable_2".relJoinKey_ID)',
+    $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
+  );
+}
+
+// navigationJoin->filterJoin: navigate person to firm, then gate on the firm's own country
+// matching, keeping the firm's shape, then project the firm's legal name.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testChainedNavigationJoinThenFilterJoin():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.firmNameForMatchedCountry], ['firmNameForMatchedCountry'])},
+    ChainedJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    'select "chainpersontable_2".LEGALNAME as "firmNameForMatchedCountry" from (select "chainpersontable_1".ID as ID, "chainpersontable_1".FIRSTNAME as FIRSTNAME, "chainpersontable_1".FIRMID as FIRMID, "chainpersontable_1".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_1") as "chainpersontable_0" left outer join (select "chainpersontable_3".ID as relJoinKey_ID, "chainfirmtable_0".ID as "ID", "chainfirmtable_0".LEGALNAME as "LEGALNAME", "chainfirmtable_0".COUNTRYID as "COUNTRYID" from (select "chainpersontable_4".ID as ID, "chainpersontable_4".FIRSTNAME as FIRSTNAME, "chainpersontable_4".FIRMID as FIRMID, "chainpersontable_4".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_4") as "chainpersontable_3" left outer join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".LEGALNAME as LEGALNAME, "chainfirmtable_1".COUNTRYID as COUNTRYID from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("chainpersontable_3".FIRMID = "chainfirmtable_0".ID) inner join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME from CountryTable as "countrytable_1") as "countrytable_0" on ("chainfirmtable_0".COUNTRYID = "countrytable_0".ID)) as "chainpersontable_2" on ("chainpersontable_0".ID is not distinct from "chainpersontable_2".relJoinKey_ID)',
+    $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testGatedFirstNameWithIdenticalChainIsDeduped():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.gatedFirstName, p | $p.gatedFirstNameDup], ['value', 'duplicate'])},
+    NavigationFilterJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  let sql = $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
+  assertEquals('from FirmTable as'->length(), $sql->length() - $sql->replace('from FirmTable as', '')->length());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testCountryNameForMatchedFirmWithIdenticalChainIsDeduped():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.countryNameForMatchedFirm, p | $p.countryNameForMatchedFirmDup], ['value', 'duplicate'])},
+    ChainedJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  let sql = $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
+  assertEquals('from CountryTable as'->length(), $sql->length() - $sql->replace('from CountryTable as', '')->length());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testFirmNameForMatchedCountryWithIdenticalChainIsDeduped():Boolean[1]
+{
+  let result = executionPlan(
+    {|Person.all()->project([p | $p.firmNameForMatchedCountry, p | $p.firmNameForMatchedCountryDup], ['value', 'duplicate'])},
+    ChainedJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  let sql = $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
+  assertEquals('from ChainFirmTable as'->length(), $sql->length() - $sql->replace('from ChainFirmTable as', '')->length());
+}

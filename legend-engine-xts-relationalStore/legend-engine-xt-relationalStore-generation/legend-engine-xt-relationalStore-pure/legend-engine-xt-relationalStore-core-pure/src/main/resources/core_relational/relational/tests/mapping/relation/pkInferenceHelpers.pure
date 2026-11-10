@@ -92,6 +92,16 @@ function meta::relational::tests::mapping::relation::pkTestJoin(): meta::pure::m
     ->join(#>{meta::relational::tests::mapping::relation::testDB.firmTable}#->rename(~ID, ~FIRM_ID), JoinKind.INNER, {x, y | $x.FIRMID == $y.FIRM_ID})
 }
 
+function meta::relational::tests::mapping::relation::pkTestSelfJoin(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->join(
+        #>{meta::relational::tests::mapping::relation::testDB.personTable}#->select(~[ID])->rename(~ID, ~MGR_ID),
+        JoinKind.INNER,
+        {x, y | $x.FIRMID == $y.MGR_ID}
+      )
+}
+
 // --- B. Unsupported / negative scenarios ---------------------------------
 function meta::relational::tests::mapping::relation::pkTestConcatenate(): meta::pure::metamodel::relation::Relation<Any>[1]
 {

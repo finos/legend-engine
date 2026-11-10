@@ -13,9 +13,8 @@
 // limitations under the License.
 
 // The classes of relational-shared-dates, shaped for relation function
-// mappings. Such a mapping cannot map a property through a join, so a Trade
-// carries the keys of its product and account, and reaches them through
-// associations that the mapping implements with ModelJoin.
+// mappings. A Trade carries the keys of its product and account, and reaches
+// them through associations that the mapping implements with ModelJoin.
 
 ###Pure
 Class <<temporal.businesstemporal>> demo::relation::dates::Product

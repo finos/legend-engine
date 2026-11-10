@@ -16,6 +16,7 @@
 
 package org.finos.legend.engine.service.post.validation.runner;
 
+import jakarta.ws.rs.core.Response;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.map.MutableMap;
@@ -26,25 +27,24 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PostValidation;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PostValidationAssertion;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 
+import javax.security.auth.Subject;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
@@ -52,8 +52,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.security.auth.Subject;
-import jakarta.ws.rs.core.Response;
 
 abstract class ServicePostValidationRunner
 {
@@ -95,14 +93,14 @@ abstract class ServicePostValidationRunner
 
     private void instantiateQueryMappingAndRuntime(Pair<RichIterable<?>, LambdaFunction<?>> paramsWithAssertion)
     {
-        if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution_Impl)
+        if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution)
         {
             Root_meta_legend_service_metamodel_PureSingleExecution singleExecution = (Root_meta_legend_service_metamodel_PureSingleExecution) pureService._execution();
             this.queryFunc = (LambdaFunction<?>) singleExecution._func();
             this.mapping = singleExecution._mapping();
             this.runtime = singleExecution._runtime();
         }
-        else if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureMultiExecution_Impl)
+        else if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureMultiExecution)
         {
             Root_meta_legend_service_metamodel_PureMultiExecution multiExecution = (Root_meta_legend_service_metamodel_PureMultiExecution) pureService._execution();
             // Check execution key param exists in service path
