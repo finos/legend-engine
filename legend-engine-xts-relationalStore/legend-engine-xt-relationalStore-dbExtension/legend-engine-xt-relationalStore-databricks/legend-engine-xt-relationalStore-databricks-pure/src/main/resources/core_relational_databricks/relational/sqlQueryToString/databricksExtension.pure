@@ -905,9 +905,22 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 // Spark requires both RANGE bounds to use the same interval unit. Fixed-length units are converted to the
 // finer of the two; YEARS and MONTHS have no fixed length and stay unsupported.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::fixedDurationRangeIntervalUnitsMicrosecondsForDatabricks():Map<DurationUnit,Integer>[1]
+{
+   [
+      pair(DurationUnit.MICROSECONDS, 1),
+      pair(DurationUnit.MILLISECONDS, 1000),
+      pair(DurationUnit.SECONDS,      1000000),
+      pair(DurationUnit.MINUTES,      60000000),
+      pair(DurationUnit.HOURS,        3600000000),
+      pair(DurationUnit.DAYS,         86400000000),
+      pair(DurationUnit.WEEKS,        604800000000)
+   ]->newMap();
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isFixedDurationRangeIntervalUnitForDatabricks(unit:DurationUnit[1]):Boolean[1]
 {
-   $unit != DurationUnit.YEARS && $unit != DurationUnit.MONTHS;
+   fixedDurationRangeIntervalUnitsMicrosecondsForDatabricks()->get($unit)->isNotEmpty();
 }
 
 // Only an integer literal offset can be rescaled while the SQL is generated. A parameter or expression offset
@@ -920,15 +933,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::fixedDurationRangeIntervalUnitMicrosecondsForDatabricks(unit:DurationUnit[1]):Integer[1]
 {
-   if($unit == DurationUnit.MICROSECONDS, | 1,
-   | if($unit == DurationUnit.MILLISECONDS, | 1000,
-   | if($unit == DurationUnit.SECONDS, | 1000000,
-   | if($unit == DurationUnit.MINUTES, | 60000000,
-   | if($unit == DurationUnit.HOURS, | 3600000000,
-   | if($unit == DurationUnit.DAYS, | 86400000000,
-   | if($unit == DurationUnit.WEEKS, | 604800000000,
-   | fail('Unsupported DurationUnit for range-frame unit normalization: ' + $unit->toString()); -1;
-   )))))));
+   fixedDurationRangeIntervalUnitsMicrosecondsForDatabricks()->get($unit)
+    ->toOne('Unsupported DurationUnit for range-frame unit normalization: ' + $unit->toString());
 }
 
 // Each unit is an exact multiple of the finer ones, so the ratio is always a whole number.
@@ -941,23 +947,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processWindowFrameForDatabricks(frame:meta::relational::metamodel::Frame[1], sgc:SqlGenerationContext[1]):String[1]
 {
    let frameType = if($frame.frameType == meta::relational::metamodel::FrameType.ROWS, | 'ROWS BETWEEN', | 'RANGE BETWEEN');
-   if($frame.offsetFrom->instanceOf(meta::relational::metamodel::FrameIntervalValue)
-        && $frame.offsetTo->instanceOf(meta::relational::metamodel::FrameIntervalValue)
-        && $frame.offsetFrom->cast(@meta::relational::metamodel::FrameIntervalValue).durationUnit != $frame.offsetTo->cast(@meta::relational::metamodel::FrameIntervalValue).durationUnit,
-      | let from = $frame.offsetFrom->cast(@meta::relational::metamodel::FrameIntervalValue);
-        let to = $frame.offsetTo->cast(@meta::relational::metamodel::FrameIntervalValue);
-        if($from->isConvertibleRangeIntervalForDatabricks() && $to->isConvertibleRangeIntervalForDatabricks(),
-           | let commonUnit = if($from.durationUnit->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks() < $to.durationUnit->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks(), | $from.durationUnit, | $to.durationUnit);
-             $frameType + ' '
-                + $from->normalizeFrameIntervalValueUnitForDatabricks($commonUnit)->processFrameValueForDatabricks($sgc)
-                + ' AND '
-                + $to->normalizeFrameIntervalValueUnitForDatabricks($commonUnit)->processFrameValueForDatabricks($sgc);
-           ,
-           | fail('Window function with range frame using interval is not supported for this database type: ' + $sgc.dbConfig.dbType->toString()); '';
-          );
-      ,
-      | $frameType + ' ' + $frame.offsetFrom->processFrameValueForDatabricks($sgc) + ' AND ' + $frame.offsetTo->processFrameValueForDatabricks($sgc);
+   let intervals = [$frame.offsetFrom, $frame.offsetTo]->filter(v | $v->instanceOf(meta::relational::metamodel::FrameIntervalValue))->cast(@meta::relational::metamodel::FrameIntervalValue);
+   let hasMixedIntervalUnits = $intervals.durationUnit->removeDuplicates()->size() == 2;
+   assert(!$hasMixedIntervalUnits || $intervals->forAll(i | $i->isConvertibleRangeIntervalForDatabricks()),
+      | 'Window function with range frame using interval is not supported for this database type: ' + $sgc.dbConfig.dbType->toString());
+   let bounds = if($hasMixedIntervalUnits,
+      | let commonUnit = $intervals.durationUnit->sortBy(u | $u->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks())->at(0);
+        $intervals->map(i | $i->normalizeFrameIntervalValueUnitForDatabricks($commonUnit));,
+      | [$frame.offsetFrom, $frame.offsetTo]
    );
+   $frameType + ' ' + $bounds->at(0)->processFrameValueForDatabricks($sgc) + ' AND ' + $bounds->at(1)->processFrameValueForDatabricks($sgc);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSelectSQLQueryForDatabricks(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
