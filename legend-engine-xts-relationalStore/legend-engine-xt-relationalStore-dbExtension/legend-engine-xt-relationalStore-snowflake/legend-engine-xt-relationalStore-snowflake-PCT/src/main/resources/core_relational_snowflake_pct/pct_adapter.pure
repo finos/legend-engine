@@ -20,7 +20,7 @@ import meta::relational::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::functions::sqlQueryToString::*;
 
-function <<PCT.adapter>> {PCT.adapterName='Snowflake'} meta::relational::tests::pct::snowflake::testAdapterForRelationalWithSnowflakeExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='Snowflake', PCT.manifestDirectory='/core_relational_snowflake_pct'} meta::relational::tests::pct::snowflake::testAdapterForRelationalWithSnowflakeExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
     $f,

@@ -18,7 +18,7 @@ import meta::pure::executionPlan::platformBinding::localBinding::*;
 import meta::pure::executionPlan::platformBinding::*;
 import meta::pure::test::pct::*;
 
-function <<PCT.adapter>> {PCT.adapterName='Java Platform Binding'} meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution<X|o>(rawF:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='Java Platform Binding', PCT.manifestDirectory='/core_java_platform_binding'} meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution<X|o>(rawF:Function<{->X[o]}>[1]):X[o]
 {
     let debug = if(meta::core::runtime::isOptionSet('ExecDebug'), | debug(), | noDebug());
 

@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::test::pct::utils::*;
+import meta::pure::test::surveyor::*;
+
+Class meta::pure::test::pct::utils::PCTScope
+{
+    keyword          : String[1];
+    sourceDirectory  : String[1];
+    manifestName     : String[1];
+    inMemoryManifest : String[1];
+}
+
+function meta::pure::test::pct::utils::runPCTTestsFor(path:String[1], filter:String[1], adapter:Function<Any>[1]):TestReport[1]
+{
+    let manifestPath = discoverPCTManifestPath($filter, $adapter);
+    let manifest = loadPCTManifest($manifestPath);
+    assert($manifest.adapter->elementToPath() == $adapter->elementToPath(),
+           | 'PCT manifest \'' + $manifestPath + '\' is for adapter \'' + $manifest.adapter->elementToPath() + '\', not \'' + $adapter->elementToPath() + '\'');
+    $path->pathToElement()->runPCTTests($filter->pctTestSelection(), $adapter, $manifest.exclusions);
+}
+
+function meta::pure::test::pct::utils::runPCTTestsFor(path:String[1], filter:String[1], manifestPath:String[1]):TestReport[1]
+{
+    runPCTTestsFromPath($path, $filter->pctTestSelection(), $manifestPath);
+}
+
+// The In-Memory adapter has no PCT.manifestDirectory: its manifests live in each scope's own repository,
+// and the interpreted one is chosen because the Pure IDE and the LSP both execute interpreted.
+function <<PCT.manifestResolver>> meta::pure::test::pct::utils::discoverPCTManifestPath(filter:String[1], adapter:Function<Any>[1]):String[1]
+{
+    let manifestPath = $filter->pctScope()->map(scope | $adapter->pctManifestPath($scope));
+    assert($manifestPath->isNotEmpty(),
+           | 'Cannot automatically identify manifest file to use for filter \'' + $filter + '\' and adapter \'' + $adapter->elementToPath() + '\'. ' +
+             'The filter must name one PCT scope (essential, grammar, standard, relation, unclassified, variant or scenario_quant, in any case, e.g. EssentialFunctions or a source path), ' +
+             'and the adapter must carry a PCT.manifestDirectory tag; otherwise pass the manifest path explicitly.');
+    $manifestPath->toOne();
+}
+
+function <<access.private>> meta::pure::test::pct::utils::pctScope(filter:String[1]):PCTScope[0..1]
+{
+    let name = $filter->toLower();
+    pctScopes()->filter(scope | if($name->startsWith('/'), | $name->startsWith($scope.sourceDirectory), | $name->contains($scope.keyword)))->first();
+}
+
+function <<access.private>> meta::pure::test::pct::utils::pctScopes():PCTScope[*]
+{
+    [
+        ^PCTScope(keyword='essential', sourceDirectory='/platform/pure/essential/', manifestName='EssentialFunctions', inMemoryManifest='/platform/pure/essential/pct_essential_native.json'),
+        ^PCTScope(keyword='grammar', sourceDirectory='/platform/pure/grammar/functions/', manifestName='GrammarFunctions', inMemoryManifest='/platform/pure/grammar/functions/pct_grammar_native.json'),
+        ^PCTScope(keyword='standard', sourceDirectory='/core_functions_standard/', manifestName='StandardFunctions', inMemoryManifest='/core_functions_standard/core-interpreted/StandardFunctions_manifest.json'),
+        ^PCTScope(keyword='relation', sourceDirectory='/core_functions_relation/', manifestName='RelationFunctions', inMemoryManifest='/core_functions_relation/core-interpreted/RelationFunctions_manifest.json'),
+        ^PCTScope(keyword='unclassified', sourceDirectory='/core_functions_unclassified/', manifestName='UnclassifiedFunctions', inMemoryManifest='/core_functions_unclassified/core-interpreted/UnclassifiedFunctions_manifest.json'),
+        ^PCTScope(keyword='variant', sourceDirectory='/core_functions_variant/functions/', manifestName='VariantFunctions', inMemoryManifest='/core_functions_variant/core-interpreted/VariantFunctions_manifest.json'),
+        ^PCTScope(keyword='scenario', sourceDirectory='/core_scenario_quant/', manifestName='ScenarioQuantFunctions', inMemoryManifest='/core_scenario_quant/core-interpreted/ScenarioQuantFunctions_manifest.json')
+    ]
+}
+
+// The Surveyor selects tests by source path prefix, so a scope named any other way selects its directory
+function <<access.private>> meta::pure::test::pct::utils::pctTestSelection(filter:String[1]):String[1]
+{
+    let scope = $filter->pctScope();
+    if($filter->startsWith('/') || $scope->isEmpty(), | $filter, | $scope.sourceDirectory->toOne());
+}
+
+function <<access.private>> meta::pure::test::pct::utils::pctManifestPath(adapter:Function<Any>[1], scope:PCTScope[1]):String[0..1]
+{
+    if($adapter == meta::pure::test::pct::testAdapterForInMemoryExecution_Function_1__X_o_,
+       | $scope.inMemoryManifest,
+       | $adapter->cast(@AnnotatedElement).taggedValues
+             ->filter(t | $t.tag.value == 'manifestDirectory' && $t.tag.profile == meta::pure::test::pct::PCT)
+             ->first()
+             ->map(t | $t.value + '/' + $scope.manifestName + '_manifest.json')
+    )
+}

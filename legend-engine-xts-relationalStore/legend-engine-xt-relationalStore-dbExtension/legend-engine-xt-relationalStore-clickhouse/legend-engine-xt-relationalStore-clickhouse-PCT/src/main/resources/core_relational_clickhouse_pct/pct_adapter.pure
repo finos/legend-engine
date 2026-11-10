@@ -18,7 +18,7 @@ import meta::relational::tests::pct::*;
 import meta::pure::test::pct::*;
 import meta::relational::runtime::*;
 
-function <<PCT.adapter>> {PCT.adapterName='ClickHouse'} meta::relational::tests::pct::clickhouse::testAdapterForRelationalWithClickHouseExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='ClickHouse', PCT.manifestDirectory='/core_relational_clickhouse_pct'} meta::relational::tests::pct::clickhouse::testAdapterForRelationalWithClickHouseExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
       $f,

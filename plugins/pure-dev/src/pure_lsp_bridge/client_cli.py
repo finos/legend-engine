@@ -277,6 +277,7 @@ def _render_tests(result):
     tests = result.get("tests") or []
     if not tests:
         print("no tests found in %s" % (result.get("scope") or "the requested scope"))
+        _render_warnings(result)
         return
 
     base = min(_depth(t.get("suitePath")) for t in tests)
@@ -304,6 +305,12 @@ def _render_tests(result):
     print("%d passed, %d failed, %d skipped in %.1fs"
           % (result.get("passed") or 0, result.get("failed") or 0, result.get("skipped") or 0,
              (result.get("durationMs") or 0) / 1000.0))
+    _render_warnings(result)
+
+
+def _render_warnings(result):
+    for warning in result.get("warnings") or []:
+        print("warning: %s" % warning, file=sys.stderr)
 
 
 def _cancel_run(args, run_id):

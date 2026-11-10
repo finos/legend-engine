@@ -191,7 +191,7 @@ exactly as today.
 - **11 relational-store PCT manifests** — `testSimpleIn_Negated` exclusion entry removed from
   `relational-h2`, `-postgres`, `-oracle`, `-sqlserver`, `-trino`, `-snowflake`, `-spanner`,
   `-databricks`, `-clickhouse`, `-memsql`, `-duckdb`
-  (all under `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/<adapter>/<adapter>-PCT/src/main/resources/pct-manifests/<adapter>/RelationFunctions_manifest.json`).
+  (each under its adapter's Pure repository directory, e.g. `.../core_relational_h2_pct/RelationFunctions_manifest.json`; the shared `core_external_test_connection` repository keeps a `<adapter>/` subdirectory for MemSQL, Spanner and SQL Server).
 
 - **`java` and `deephaven` PCT manifests** — their pre-existing `testSimpleIn_Negated` exclusions are
   **kept**: they record unrelated limitations (the Java binding cannot translate a `#TDS` literal;

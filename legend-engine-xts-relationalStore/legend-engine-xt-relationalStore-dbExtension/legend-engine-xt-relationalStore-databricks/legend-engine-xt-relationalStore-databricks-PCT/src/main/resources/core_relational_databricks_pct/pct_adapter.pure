@@ -21,7 +21,7 @@ import meta::relational::metamodel::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::functions::sqlQueryToString::databricks::*;
 
-function <<PCT.adapter>> {PCT.adapterName='Databricks'} meta::relational::tests::pct::databricks::testAdapterForRelationalWithDatabricksExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='Databricks', PCT.manifestDirectory='/core_relational_databricks_pct'} meta::relational::tests::pct::databricks::testAdapterForRelationalWithDatabricksExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
     $f,
