@@ -137,7 +137,18 @@ public class ProjectGenerationRunner
      */
     public void validate()
     {
-        Set<String> unknown = ProjectArtifactGenerator.unknownIncludedExtensionKeys(this.artifactGenerationConfig);
+        validate(this.artifactGenerationConfig);
+    }
+
+    /**
+     * Checks a request's artifact generation config before anything is loaded or run.
+     *
+     * @throws IllegalArgumentException when an included artifact extension key is not one this
+     *                                  server has
+     */
+    public static void validate(ArtifactGenerationConfig artifactGenerationConfig)
+    {
+        Set<String> unknown = ProjectArtifactGenerator.unknownIncludedExtensionKeys(artifactGenerationConfig);
         if (!unknown.isEmpty())
         {
             throw new IllegalArgumentException("Unknown artifact extension keys: " + String.join(", ", unknown) + ". Available: " + String.join(", ", ProjectArtifactGenerator.availableExtensionKeys()));
