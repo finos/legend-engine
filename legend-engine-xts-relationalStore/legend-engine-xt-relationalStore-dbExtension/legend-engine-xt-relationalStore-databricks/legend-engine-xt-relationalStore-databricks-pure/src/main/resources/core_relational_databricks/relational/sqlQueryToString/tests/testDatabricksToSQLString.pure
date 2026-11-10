@@ -385,6 +385,20 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
   assertEquals('select MAX_BY(\'a\', 1, 1) as `highest` from personTable as `root` group by `root`.ID', $sql);
 }
 
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testVariancePopulationOverColumnUsesVarPopDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName], agg(p|$p.age, y|$y->variancePopulation()), ['firstName', 'ageVariance']),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select `root`.FIRSTNAME as `firstName`, var_pop(`root`.AGE) as `ageVariance` from personTable as `root` group by `root`.FIRSTNAME', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testVariancePopulationOverLiteralCollectionDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Person.all()->project(p|variancePopulation([1.0, 2.0, 3.0]), 'variance'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select aggregate(array(1.0,2.0,3.0), cast(0 as double), (acc, x) -> acc + power(x - (aggregate(array(1.0,2.0,3.0), cast(0 as double), (acc, x) -> acc + x) / 3), 2)) / 3 as `variance` from personTable as `root`', $sql);
+}
+
 function <<access.private>> meta::relational::tests::functions::sqlstring::databricks::rangeIntervalWindowColumnSql(from:meta::relational::metamodel::FrameIntervalValue[1], to:meta::relational::metamodel::FrameIntervalValue[1]):String[1]
 {
   let window = ^meta::relational::metamodel::Window(
