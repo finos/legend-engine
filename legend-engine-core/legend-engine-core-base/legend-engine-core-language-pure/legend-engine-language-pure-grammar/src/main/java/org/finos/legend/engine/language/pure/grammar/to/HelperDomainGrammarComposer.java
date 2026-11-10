@@ -167,8 +167,9 @@ public class HelperDomainGrammarComposer
      * Whether a value survives a documentation block unchanged. Documentation has no escape mechanism at all, so
      * anything the parser's canonicalization would consume has to stay a tagged value instead: an embedded `'''`,
      * a carriage return, trailing whitespace on a line, and the leading and trailing blank lines it drops. A line
-     * starting with `###` is excluded too - the section splitter runs before any grammar and is not string-aware,
-     * so it would re-split the file.
+     * that opens a section (`###` straight into a name, as in `###Pure`) is excluded too - the section splitter runs
+     * before any grammar and is not string-aware, so it would re-split the file. Anything else that starts with
+     * `###`, such as a Markdown heading (`### Rule 1`), is not a section header and is safe.
      */
     private static boolean isRenderableAsDocumentation(String value)
     {
@@ -178,12 +179,26 @@ public class HelperDomainGrammarComposer
         }
         for (String line : value.split("\n", -1))
         {
-            if (line.startsWith("###") || (!line.isEmpty() && Character.isWhitespace(line.charAt(line.length() - 1))))
+            if (isSectionHeader(line) || (!line.isEmpty() && Character.isWhitespace(line.charAt(line.length() - 1))))
             {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Mirrors the lexer's `SECTION_START` (`\n###` followed by a name that starts with a letter, digit or underscore)
+     * - only that shape is split out as a section, so `### Rule 1`, `####Rule` and a bare `###` are left alone.
+     */
+    private static boolean isSectionHeader(String line)
+    {
+        if (!line.startsWith("###") || line.length() == 3)
+        {
+            return false;
+        }
+        char first = line.charAt(3);
+        return (first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z') || (first >= '0' && first <= '9') || first == '_';
     }
 
     public static String renderEnumValue(EnumValue enumValue)

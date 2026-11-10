@@ -350,6 +350,66 @@ public class TestDocumentationRoundtrip extends TestGrammarRoundtrip.TestGrammar
         assertFallsBack("text\\n###Pure\\nmore", "text\\n###Pure\\nmore");
     }
 
+    @Test
+    public void testAMarkdownHeadingLineIsNotASectionHeader()
+    {
+        // a section header is `###` immediately followed by a name; Markdown headings have a space (or more #s)
+        // after the marker, so the section splitter leaves them alone and the block form is kept
+        assertStaysABlock("text\\n### Rule 1\\nmore");
+        assertStaysABlock("text\\n####Rule 1\\nmore");
+        assertStaysABlock("text\\n###\\nmore");
+    }
+
+    @Test
+    public void testFewerOrMoreThanThreeHashesStayABlock()
+    {
+        // only a run of exactly three `#` directly followed by a name can open a section; every other Markdown
+        // heading shape is ordinary text
+        for (String line : new String[]{"#", "# Title", "#Title", "##", "## Title", "##Title", "####", "#### Title", "####Title", "#####"})
+        {
+            assertStaysABlock("text\\n" + line + "\\nmore");
+        }
+    }
+
+    @Test
+    public void testMarkdownDocumentationWithShallowHeadingsStaysABlock()
+    {
+        test("'''\n" +
+                "# Title\n" +
+                "\n" +
+                "## Section\n" +
+                "#Tight\n" +
+                "##Tighter\n" +
+                "text\n" +
+                "'''\n" +
+                "Class model::Report\n" +
+                "{\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testMarkdownDocumentationWithHeadingsStaysABlock()
+    {
+        test("'''\n" +
+                "## Overview\n" +
+                "\n" +
+                "### Rules \u2014 current vs prior\n" +
+                "1. Compare the current period against the prior period.\n" +
+                "2. For 'Avg' variants use the annualized figure.\n" +
+                "3. Always include a `Pct%` column and a `Diff$` column.\n" +
+                "'''\n" +
+                "Class model::Report\n" +
+                "{\n" +
+                "  '''\n" +
+                "  # Context\n" +
+                "\n" +
+                "  ### Aliases\n" +
+                "  - `report id`\n" +
+                "  '''\n" +
+                "  reportId: String[0..1];\n" +
+                "}\n");
+    }
+
     /**
      * A doc value flagged multi-line whose content a documentation block cannot represent composes as an ordinary
      * tagged value. Both arguments are JSON-escaped; the expected one is additionally grammar-escaped.
@@ -357,6 +417,18 @@ public class TestDocumentationRoundtrip extends TestGrammarRoundtrip.TestGrammar
     private static void assertFallsBack(String jsonEscapedValue, String grammarEscapedValue)
     {
         Assert.assertEquals("Class {meta::pure::profiles::doc.doc = '" + grammarEscapedValue + "'} model::A\n" +
+                        "{\n" +
+                        "}\n",
+                composeClassWhoseDocValueIs("{\"_type\":\"string\",\"multiLine\":true,\"value\":\"" + jsonEscapedValue + "\"}"));
+    }
+
+    /**
+     * A doc value flagged multi-line whose content a documentation block can represent composes as a block. The
+     * argument is JSON-escaped, and carries nothing else that needs escaping in the block.
+     */
+    private static void assertStaysABlock(String jsonEscapedValue)
+    {
+        Assert.assertEquals("'''\n" + jsonEscapedValue.replace("\\n", "\n") + "\n'''\nClass model::A\n" +
                         "{\n" +
                         "}\n",
                 composeClassWhoseDocValueIs("{\"_type\":\"string\",\"multiLine\":true,\"value\":\"" + jsonEscapedValue + "\"}"));
