@@ -101,7 +101,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testCreateTableForMe
   );
   let createTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $table);
   let result = $createTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
-  assertEquals('Create Table hr.allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float FLOAT,col_double DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_numeric NUMERIC(12, 4),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_binary BINARY(512),col_json JSON,col_ubigint BIGINT UNSIGNED,col_uint INT UNSIGNED,col_utinyint TINYINT UNSIGNED);', $result->toOne());
+  assertEquals('Create Table hr.allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float FLOAT,col_double DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_numeric NUMERIC(12, 4),col_timestamp DATETIME(6),col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_binary BINARY(512),col_json JSON,col_ubigint BIGINT UNSIGNED,col_uint INT UNSIGNED,col_utinyint TINYINT UNSIGNED);', $result->toOne());
 
   // Default schema -> no schema prefix
   let defaultTable = ^meta::relational::metamodel::relation::Table(
@@ -111,7 +111,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testCreateTableForMe
   );
   let defaultCreateTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $defaultTable);
   let defaultResult = $defaultCreateTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
-  assertEquals('Create Table allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float FLOAT,col_double DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_numeric NUMERIC(12, 4),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_binary BINARY(512),col_json JSON,col_ubigint BIGINT UNSIGNED,col_uint INT UNSIGNED,col_utinyint TINYINT UNSIGNED);', $defaultResult->toOne());
+  assertEquals('Create Table allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float FLOAT,col_double DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_numeric NUMERIC(12, 4),col_timestamp DATETIME(6),col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_binary BINARY(512),col_json JSON,col_ubigint BIGINT UNSIGNED,col_uint INT UNSIGNED,col_utinyint TINYINT UNSIGNED);', $defaultResult->toOne());
 }
 
 ###Relational
