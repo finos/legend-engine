@@ -574,12 +574,28 @@ function <<access.private>> meta::pure::lineage::scanProperties::scanConstructed
                         assignments = $scanned.first.values,
                         base        = if($isCopy, |$baseState.current->orElseEmptyPath(), |[])
                      );
+   let replaced = $scanned.first.values->filter(a | !$a.add).propertyName;
    let copiedValuesRead = if($isCopy,
-                             | $scanned.first.values->filter(a | $a.add)->map(a | $constructedClass->allProperties()->filter(p | $p->instanceOf(Property) && ($p.name == $a.propertyName))->first()
-                                                                                    ->map(p | list($baseState.current->orElseEmptyPath().values->concatenate(^PropertyPathNode(class = $constructedClass, property = $p)))->resolveConstructedNavigation())),
+                             | $constructedClass->copiedValueReads($replaced)->map(n | list($baseState.current->orElseEmptyPath().values->concatenate($n))->resolveConstructedNavigation()),
                              | []
                           );
    makeScanPropertiesState(list($constructed->cast(@PropertyPathNode)), $scanned.second.result->concatenate($copiedValuesRead), $scanned.second.visitedFunctions);
+}
+
+// The generated copy rebuilds the object of the copied value's runtime class, so it reads every property not replaced
+// of every concrete class the value can be. Properties of the copied class are read through it, as a plain read of them
+// would be; only the properties a subclass adds are read through that subclass.
+function <<access.private>> meta::pure::lineage::scanProperties::copiedValueReads(copied:Class<Any>[1], replaced:String[*]):PropertyPathNode[*]
+{
+   let copiedProperties = $copied->dataProperties();
+   $copiedProperties->map(p | ^PropertyPathNode(class = $copied, property = $p))
+      ->concatenate($copied->concreteClassesMostSpecificFirst()->map(c | $c->dataProperties()->filter(p | !$p->in($copiedProperties))->map(p | ^PropertyPathNode(class = $c, property = $p))))
+      ->filter(n | !$n.property.name->toOne()->in($replaced));
+}
+
+function <<access.private>> meta::pure::lineage::scanProperties::dataProperties(class:Class<Any>[1]):Property<Nil,Any|*>[*]
+{
+   $class->hierarchicalProperties()->concatenate($class->hierarchicalPropertiesFromAssociations());
 }
 
 function <<access.private>> meta::pure::lineage::scanProperties::firstMeaningfulCurrent(paths:List<PropertyPathNode>[*]):List<PropertyPathNode>[1]

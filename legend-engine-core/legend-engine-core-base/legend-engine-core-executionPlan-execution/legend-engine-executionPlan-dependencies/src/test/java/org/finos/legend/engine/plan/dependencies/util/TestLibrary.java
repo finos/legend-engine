@@ -20,8 +20,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class TestLibrary
@@ -166,5 +170,29 @@ public class TestLibrary
         // generated code never takes this path for unary minus (it uses plain negation instead),
         // so this exercises the method's own fallback, which widens through double
         Assert.assertEquals(-7.0, Library.minus(Arrays.asList(7L)));
+    }
+
+    @Test
+    public void testCopyOneTakesTheChangeOrTheCurrentValue()
+    {
+        Map<String, Object> set = Library.copyChanges("name", "Rex", "nickname", null);
+        Supplier<String> notProvided = () ->
+        {
+            throw new IllegalStateException("Property 'name' is not provided by this plan");
+        };
+        Assert.assertEquals("Rex", Library.copyOne(set, "name", notProvided));
+        Assert.assertNull(Library.copyOne(set, "nickname", () -> "Fi"));
+        Assert.assertEquals("Collie", Library.copyOne(set, "breed", () -> "Collie"));
+    }
+
+    @Test
+    public void testCopyManyReplacesAppendsOrCopies()
+    {
+        List<String> current = new ArrayList<>(Arrays.asList("good"));
+        Map<String, Object> none = Collections.emptyMap();
+        Assert.assertEquals(Arrays.asList("new"), Library.copyMany(Library.copyChanges("tags", Arrays.asList("new")), none, "tags", () -> current));
+        Assert.assertEquals(Collections.emptyList(), Library.copyMany(Library.copyChanges("tags", null), none, "tags", () -> current));
+        Assert.assertEquals(Arrays.asList("good", "copied"), Library.copyMany(none, Library.copyChanges("tags", Arrays.asList("copied")), "tags", () -> current));
+        Assert.assertNotSame(current, Library.copyMany(none, none, "tags", () -> current));
     }
 }

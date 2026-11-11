@@ -90,6 +90,12 @@ public class TestDomainGrammarParser extends TestGrammarParser.TestGrammarParser
     }
 
     @Test
+    public void testCopyOfVariableRejectsNestedPropertyPath()
+    {
+        test("function my::test(p: my::A[1]): Any[*]\n{\n  ^$p(b.c = 'x')\n}\n", "PARSER error at [3:7-15]: Nested property paths are not supported when copying an instance with ^$variable(...)");
+    }
+
+    @Test
     public void testClass()
     {
         PureModelContextData pureModelContextData = test("Class <<temporal.businesstemporal>> {doc.doc = 'something'} A extends B\n" +

@@ -59,15 +59,15 @@
     },
     {
       "test" : "meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_",
-      "expectedError" : "Error in 'test::testFunction': Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'"
+      "expectedError" : "Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person"
     },
     {
       "test" : "meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_",
-      "expectedError" : "Error in 'test::testFunction': Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'"
+      "expectedError" : "Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person"
     },
     {
       "test" : "meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_",
-      "expectedError" : "Error in 'test::testFunction': Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'"
+      "expectedError" : "Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person"
     },
     {
       "test" : "meta::pure::functions::collection::tests::forall::testforAllOnEmptySet_Function_1__Boolean_1_",

@@ -98,13 +98,13 @@
     "expectedError" : "\"[unsupported-api] relational lambda processing not supported for Database Type: ClickHouse\""
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_",
-    "expectedError" : "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'"
+    "expectedError" : "No relational processor matched function 'fold'. The function is registered in getContextBasedSupportedFunctions as a context-only entry; reaching this catchall means none of its earlier applicability predicates matched the current State during plan generation. FE: [1 FO_Person/[1 FO_Person/Class FO_Person].all()] -> fold([1 FO_Person/[Routed Func:p1:meta::pure::functions::collection::tests::fold::FO_Person[1],p2:meta::pure::functions::collection::tests::fold::FO_Person[1] | [1 FO_Person/[1 @lastName(FO_Person->)@ FO_Person/[1 FO_Person/$p1].lastName] == 'Smith' -> not() -> if([1 FO_Person/[Routed Func: | [1 FO_Person/[1 FO_Person/$p2] -> copy('', Class KeyExpression.all() -> toOne())];]], [1 FO_Person/[Routed Func: | [1 FO_Person/$p2];]])];]], [1 FO_Person/[1 FO_Person/[1 FO_Person/Class FO_Person].all()] -> toOne()])"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldMixedAccumulatorTypes_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] relational lambda processing not supported for Database Type: ClickHouse\""
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_",
-    "expectedError" : "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'"
+    "expectedError" : "No relational processor matched function 'fold'. The function is registered in getContextBasedSupportedFunctions as a context-only entry; reaching this catchall means none of its earlier applicability predicates matched the current State during plan generation. FE: [1 FO_Person/[1 FO_Person/Class FO_Person].all()] -> fold([1 FO_Person/[Routed Func:p1:meta::pure::functions::collection::tests::fold::FO_Person[1],p2:meta::pure::functions::collection::tests::fold::FO_Person[1] | [1 FO_Person/[1 FO_Person/$p2] -> copy('', Class KeyExpression.all() -> toOne())];]], [1 FO_Person/[1 FO_Person/[1 FO_Person/Class FO_Person].all()] -> toOne()])"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldWithEmptyAccumulator_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] relational lambda processing not supported for Database Type: ClickHouse\""
@@ -113,7 +113,7 @@
     "expectedError" : "\"[unsupported-api] relational lambda processing not supported for Database Type: ClickHouse\""
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_",
-    "expectedError" : "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'"
+    "expectedError" : "No relational processor matched function 'fold'. The function is registered in getContextBasedSupportedFunctions as a context-only entry; reaching this catchall means none of its earlier applicability predicates matched the current State during plan generation. FE: [1 FO_Person/[1 FO_Person/Class FO_Person].all()] -> fold([1 FO_Person/[Routed Func:p1:meta::pure::functions::collection::tests::fold::FO_Person[1],p2:meta::pure::functions::collection::tests::fold::FO_Person[1] | [1 FO_Person/[1 FO_Person/$p2] -> copy('', Class KeyExpression.all() -> toOne())];]], [1 FO_Person/[1 FO_Person/[1 FO_Person/Class FO_Person].all()] -> toOne()])"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testIntegerSum_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] relational lambda processing not supported for Database Type: ClickHouse\""

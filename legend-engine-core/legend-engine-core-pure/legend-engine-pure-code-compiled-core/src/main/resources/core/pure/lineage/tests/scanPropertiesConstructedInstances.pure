@@ -121,15 +121,22 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties
 function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testCopyOverrideResolvesToNewValue():Boolean[1]
 {
   let res = scanResolving({d:Data[1] | $d.child->map(c | ^$c(a=$d.b).a)});
-  assertEquals('Data->b\nData->child', $res.result->printPropertyNodeLists());
+  assertEquals('Data->b\nData->child\nData->child, Data->b\nData->child, Data->child\nData->child, Data->tags\nData->child, Sub1->one\nData->child, Sub2->two', $res.result->printPropertyNodeLists());
   assertEquals('Data->b', $res.current->printPropertyNodeLists());
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testCopyUnassignedPropertyResolvesThroughCopiedObject():Boolean[1]
 {
   let res = scanResolving({d:Data[1] | $d.child->map(c | ^$c(a='k').b)});
-  assertEquals('Data->child\nData->child, Data->b', $res.result->printPropertyNodeLists());
+  assertEquals('Data->child\nData->child, Data->b\nData->child, Data->child\nData->child, Data->tags\nData->child, Sub1->one\nData->child, Sub2->two', $res.result->printPropertyNodeLists());
   assertEquals('Data->child, Data->b', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testCopyOfSubclassRecordsItsInheritedProperties():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | $d.child->cast(@Sub1)->map(c | ^$c(one='k').a)});
+  assertEquals('Data->child\nData->child, Sub1->a\nData->child, Sub1->b\nData->child, Sub1->child\nData->child, Sub1->tags', $res.result->printPropertyNodeLists());
+  assertEquals('Data->child, Sub1->a', $res.current->printPropertyNodeLists());
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testReadAfterConditionalConstructionRecordsBothSources():Boolean[1]
@@ -232,14 +239,14 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties
 function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testCopyAddRecordsCopiedObjectsExistingValues():Boolean[1]
 {
   let res = scanResolving({d:Data[1] | $d.child->map(c | ^$c(tags += $d.a).tags)});
-  assertEquals('Data->a\nData->child\nData->child, Data->tags', $res.result->printPropertyNodeLists());
+  assertEquals('Data->a\nData->child\nData->child, Data->a\nData->child, Data->b\nData->child, Data->child\nData->child, Data->tags\nData->child, Sub1->one\nData->child, Sub2->two', $res.result->printPropertyNodeLists());
   assertEquals('Data->a', $res.current->printPropertyNodeLists());
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testCopyAddOfLiteralResolvesThroughCopiedObject():Boolean[1]
 {
   let res = scanResolving({d:Data[1] | $d.child->map(c | ^$c(tags += 'k').tags)});
-  assertEquals('Data->child\nData->child, Data->tags', $res.result->printPropertyNodeLists());
+  assertEquals('Data->child\nData->child, Data->a\nData->child, Data->b\nData->child, Data->child\nData->child, Data->tags\nData->child, Sub1->one\nData->child, Sub2->two', $res.result->printPropertyNodeLists());
   assertEquals('Data->child, Data->tags', $res.current->printPropertyNodeLists());
 }
 

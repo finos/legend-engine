@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1185,6 +1186,51 @@ public class Library
             }
         }
         throw new RuntimeException("Match failure for object:" + object);
+    }
+
+    public static Map<String, Object> copyChanges(Object... keysAndValues)
+    {
+        if (keysAndValues.length % 2 != 0)
+        {
+            throw new IllegalArgumentException("Expected property name and value pairs, got " + keysAndValues.length + " arguments");
+        }
+        Map<String, Object> changes = new LinkedHashMap<>();
+        for (int i = 0; i < keysAndValues.length; i += 2)
+        {
+            changes.put((String) keysAndValues[i], keysAndValues[i + 1]);
+        }
+        return changes;
+    }
+
+    // current is only read when the property is not replaced: a plan does not provide properties it never reads
+    @SuppressWarnings("unchecked")
+    public static <T> T copyOne(Map<String, ?> set, String property, Supplier<? extends T> current)
+    {
+        return set.containsKey(property) ? (T) set.get(property) : current.get();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> copyMany(Map<String, ?> set, Map<String, ?> add, String property, Supplier<? extends List<? extends T>> current)
+    {
+        List<T> result = new ArrayList<>();
+        if (set.containsKey(property))
+        {
+            if (set.get(property) != null)
+            {
+                result.addAll((List<? extends T>) set.get(property));
+            }
+            return result;
+        }
+        List<? extends T> existing = current.get();
+        if (existing != null)
+        {
+            result.addAll(existing);
+        }
+        if (add.containsKey(property) && add.get(property) != null)
+        {
+            result.addAll((List<? extends T>) add.get(property));
+        }
+        return result;
     }
 
     public static <T> T toOne(T in)

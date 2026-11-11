@@ -339,6 +339,7 @@ meta::pure::functions::hash::hash_String_1__HashType_1__String_1_
 meta::pure::functions::hash::hashCode_Any_MANY__Integer_1_
 meta::pure::functions::lang::cast_Any_m__T_1__T_m_
 meta::pure::functions::lang::compare_T_1__T_1__Integer_1_
+meta::pure::functions::lang::copy_T_1__String_1__KeyExpression_MANY__T_1_
 meta::pure::functions::lang::eval_Function_1__T_n__U_p__V_m_
 meta::pure::functions::lang::eval_Function_1__T_n__V_m_
 meta::pure::functions::lang::eval_Function_1__V_m_

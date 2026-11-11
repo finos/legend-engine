@@ -1990,6 +1990,7 @@ public class Handlers
         register("meta::pure::functions::multiplicity::toOneMany_T_MANY__T_$1_MANY$_", "toOneMany", true, ps -> res(ps.get(0)._genericType(), "oneMany"));
         register("meta::pure::functions::lang::letFunction_String_1__T_m__T_m_", "letFunction", true, ps -> res(ps.get(1)._genericType(), ps.get(1)._multiplicity()));
         register("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_", "new", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
+        register("meta::pure::functions::lang::copy_T_1__String_1__KeyExpression_MANY__T_1_", "copy", true, ps -> res(ps.get(0)._genericType(), "one"));
         register("meta::pure::functions::collection::count_Any_MANY__Integer_1_", "count", false, ps -> res("Integer", "one"));
 
         register(m(m(h("meta::pure::functions::collection::getAll_Class_1__T_MANY_", "getAll", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 1)),

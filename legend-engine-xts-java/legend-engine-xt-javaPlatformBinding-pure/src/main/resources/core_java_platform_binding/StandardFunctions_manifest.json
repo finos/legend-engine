@@ -350,10 +350,6 @@
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::math::tests::mode::testMode_Float_Function_1__Boolean_1_",
-      "expectedError": "\"copy_T_1__String_1__KeyExpression_MANY__T_1_ is prohibited!\""
-    },
-    {
       "test": "meta::pure::functions::math::tests::mode::testMode_Floats_Relation_Aggregate_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
@@ -362,20 +358,12 @@
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::math::tests::mode::testMode_Integer_Function_1__Boolean_1_",
-      "expectedError": "\"copy_T_1__String_1__KeyExpression_MANY__T_1_ is prohibited!\""
-    },
-    {
       "test": "meta::pure::functions::math::tests::mode::testMode_Integer_Relation_Aggregate_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
       "test": "meta::pure::functions::math::tests::mode::testMode_Integer_Relation_Window_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
-    },
-    {
-      "test": "meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_",
-      "expectedError": "\"copy_T_1__String_1__KeyExpression_MANY__T_1_ is prohibited!\""
     },
     {
       "test": "meta::pure::functions::math::tests::mode::testMode_Number_Relation_Aggregate_Function_1__Boolean_1_",
