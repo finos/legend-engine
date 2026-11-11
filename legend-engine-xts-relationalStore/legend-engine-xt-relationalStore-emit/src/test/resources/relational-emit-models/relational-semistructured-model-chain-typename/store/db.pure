@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The source model: the JSON document held in the SEMISTRUCTURED column, typed through a binding.
+// Terms is a small hierarchy so that typeName() has something to discriminate.
+###Pure
+Class demo::mct::source::DocumentRow
+{
+  id: String[1];
+  version: Integer[1];
+  content: demo::mct::source::Content[1];
+}
+
+Class demo::mct::source::Content
+{
+  ref: String[0..1];
+  terms: demo::mct::source::Terms[*];
+}
+
+Class demo::mct::source::Terms
+{
+  termId: String[1];
+}
+
+Class demo::mct::source::CashTerms extends demo::mct::source::Terms
+{
+}
+
+Class demo::mct::source::SecurityTerms extends demo::mct::source::Terms
+{
+}
+
+Class demo::mct::model::Document
+{
+  id: String[1];
+  version: Integer[1];
+  ref: String[0..1];
+  termTypes: String[*];
+}
+
+
+###Relational
+Database demo::mct::store::DocumentDB
+(
+  Schema DOC
+  (
+    Table DOCUMENT
+    (
+      ID VARCHAR(50) PRIMARY KEY,
+      VERSION INTEGER,
+      CONTENT SEMISTRUCTURED
+    )
+  )
+)
+
+
+###ExternalFormat
+Binding demo::mct::store::ContentBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::mct::source::Content,
+    demo::mct::source::Terms,
+    demo::mct::source::CashTerms,
+    demo::mct::source::SecurityTerms
+  ];
+}

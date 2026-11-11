@@ -130,7 +130,7 @@ public class Test_Relational_Databricks_PCT
     public static class EssentialFunctions extends DatabricksPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = PlatformCodeRepositoryProvider.essentialFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-databricks/EssentialFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_databricks_pct/EssentialFunctions_manifest.json";
 
         public EssentialFunctions()
         {
@@ -146,7 +146,7 @@ public class Test_Relational_Databricks_PCT
     public static class GrammarFunctions extends DatabricksPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = PlatformCodeRepositoryProvider.grammarFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-databricks/GrammarFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_databricks_pct/GrammarFunctions_manifest.json";
 
         public GrammarFunctions()
         {
@@ -162,7 +162,7 @@ public class Test_Relational_Databricks_PCT
     public static class RelationFunctions extends DatabricksPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = RelationCodeRepositoryProvider.relationFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-databricks/RelationFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_databricks_pct/RelationFunctions_manifest.json";
 
         public RelationFunctions()
         {
@@ -178,7 +178,7 @@ public class Test_Relational_Databricks_PCT
     public static class ScenarioQuantFunctions extends DatabricksPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreScenarioQuantCodeRepositoryProvider.scenario_Quant_Functions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-databricks/ScenarioQuantFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_databricks_pct/ScenarioQuantFunctions_manifest.json";
 
         public ScenarioQuantFunctions()
         {
@@ -194,7 +194,7 @@ public class Test_Relational_Databricks_PCT
     public static class StandardFunctions extends DatabricksPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreStandardFunctionsCodeRepositoryProvider.standardFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-databricks/StandardFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_databricks_pct/StandardFunctions_manifest.json";
 
         public StandardFunctions()
         {
@@ -210,7 +210,7 @@ public class Test_Relational_Databricks_PCT
     public static class UnclassifiedFunctions extends DatabricksPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-databricks/UnclassifiedFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_databricks_pct/UnclassifiedFunctions_manifest.json";
 
         public UnclassifiedFunctions()
         {
@@ -226,7 +226,7 @@ public class Test_Relational_Databricks_PCT
     public static class VariantFunctions extends DatabricksPCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = VariantCodeRepositoryProvider.variantFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-databricks/VariantFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_databricks_pct/VariantFunctions_manifest.json";
 
         public VariantFunctions()
         {

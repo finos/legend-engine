@@ -77,6 +77,13 @@ For a whole package's PCT tests prefer `--package ... --pct-only --pct-adapter <
 resolving one function's mangled id by hand — the daemon discovers the tests and needs no mangled
 id from you at all.
 
+Scoped and `execute-parallel` runs apply the adapter's expected-failure manifest, found per test
+source by the engine's `meta::pure::test::pct::utils::discoverPCTManifestPath` (`docs/pct/running-manifests.md`): a manifest-listed test
+that fails with its `expectedError` reports PASS, and one that now passes reports FAIL so the stale
+entry gets removed. Tests whose manifest can't be identified run without expected failures, with a
+`warning:` line after the summary saying why. Single-function `pure-lsp execute` applies no
+manifest.
+
 ## Know when to stop and run Maven instead
 
 A scoped run is **interpreted** and holds the graph read lock for its whole duration, so every

@@ -43,7 +43,6 @@ import org.finos.legend.engine.ide.api.find.FindPureFile;
 import org.finos.legend.engine.ide.api.find.FindTextPreview;
 import org.finos.legend.engine.ide.api.source.UpdateSource;
 import org.finos.legend.engine.ide.session.PureSession;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
@@ -126,13 +125,9 @@ public class PureIDELight_NoExtension extends Application<ServerConfiguration>
 
     private MutableList<RepositoryCodeStorage> getRepositories(SourceLocationConfiguration sourceLocationConfiguration)
     {
-        MutableList<String> coreRepositories = CodeRepositorySet.newBuilder().withCodeRepositories(CodeRepositoryProviderHelper.findCodeRepositories()).build().subset("core", "pure_ide").getRepositories().collect(CodeRepository::getName).toList();
-        // NOTE: here we make the IDE start with a very simple set of modules, we could make this richer, by including everything in the class paths
-        // so that we have capabilities to do more advanced execution in Pure IDE, but even then, we should consider filter out some repos which are
-        // not necessary but for some reasons, included
-        ClassLoaderCodeStorage classPathCodeStorage = new ClassLoaderCodeStorage(CodeRepositoryProviderHelper.findCodeRepositories().toList().select((x) ->
-                coreRepositories.contains(x.getName())));
-        return Lists.mutable.with(classPathCodeStorage);
+        CodeRepositorySet available = CodeRepositorySet.newBuilder().withCodeRepositories(CodeRepositoryProviderHelper.findCodeRepositories()).build();
+        ClassLoaderCodeStorage classPathCodeStorage = new ClassLoaderCodeStorage(available.getRepositories());
+        return Lists.mutable.with(new ClassLoaderCodeStorage(PCTManifestRepositories.selectRepositories(available, classPathCodeStorage).getRepositories()));
     }
 
     public PureSession getPureSession()

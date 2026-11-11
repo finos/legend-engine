@@ -18,7 +18,7 @@ import meta::relational::tests::pct::*;
 import meta::pure::test::pct::*;
 import meta::relational::runtime::*;
 
-function <<PCT.adapter>> {PCT.adapterName='Postgres'} meta::relational::tests::pct::postgres::testAdapterForRelationalWithPostgresExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='Postgres', PCT.manifestDirectory='/core_relational_postgres_pct'} meta::relational::tests::pct::postgres::testAdapterForRelationalWithPostgresExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
       $f,

@@ -1,0 +1,60 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+
+name: relational-semistructured-binding-union-user-functions
+title: "User Functions over a Binding-Mapped Hierarchy, through a Union of Two Feeds"
+description: |
+  Two relational feeds with the same shape are unioned into one class through an Operation mapping.
+  Each carries a typed JSON document in a SEMISTRUCTURED column. A query reads the first element of a
+  binding-mapped array and hands it to a user function that branches on typeName(), narrows with
+  subType(), indexes into a further array, and delegates to a second user function that matches on
+  the subtypes.
+
+  Every step is routed by inlining a function body, so the arguments and the lambda parameters of the
+  enclosing query have to stay in the right scope. The combination - a binding, a union, an array
+  element passed as a function argument, and subType/match/typeName inside the function - had no
+  coverage: the semi-structured suites test each of these on a single set and with the operations
+  written inline in the query.
+
+  The mapping's own test suite runs the relation form of the query. Names are generic.
+
+modelSources:
+  model:
+    root: relational-semistructured-binding-union-user-functions
+    files:
+      - store/db.pure
+      - mapping/mapping.pure
+      - data/testData.pure
+
+features:
+  - execution:data-element
+  - execution:external-format-binding
+  - execution:test-data
+  - mapping:operation-mapping
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-semistructured
+  - store:relational-semistructured-binding
+  - store:relational-semistructured-array-index
+stores:
+  - relational
+complexity: advanced
+tags:
+  - semi-structured
+  - json
+  - union
+  - user-function
+  - sub-type
+  - type-functions
+  - duckdb
