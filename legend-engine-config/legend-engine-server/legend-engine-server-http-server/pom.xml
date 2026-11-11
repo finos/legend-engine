@@ -1346,6 +1346,12 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-pct-utils</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>

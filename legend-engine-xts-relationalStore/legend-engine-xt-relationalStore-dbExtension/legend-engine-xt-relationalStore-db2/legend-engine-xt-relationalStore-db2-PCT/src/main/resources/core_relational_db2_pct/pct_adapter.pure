@@ -18,7 +18,7 @@ import meta::relational::tests::pct::*;
 import meta::pure::test::pct::*;
 import meta::relational::runtime::*;
 
-function <<PCT.adapter>> {PCT.adapterName='DB2'} meta::relational::tests::pct::db2::testAdapterForRelationalWithDB2Execution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='DB2', PCT.manifestDirectory='/core_relational_db2_pct'} meta::relational::tests::pct::db2::testAdapterForRelationalWithDB2Execution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
       $f,

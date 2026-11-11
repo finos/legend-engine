@@ -22,7 +22,7 @@ import meta::pure::extension::*;
 import meta::external::store::deephaven::tests::pct::*;
 import meta::external::store::deephaven::tests::pct::process::*;
 
-function <<PCT.adapter>> {PCT.adapterName='Deephaven'} meta::external::store::deephaven::tests::pct::testAdapterForDeephavenExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='Deephaven', PCT.manifestDirectory='/core_deephaven_pct'} meta::external::store::deephaven::tests::pct::testAdapterForDeephavenExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::external::store::deephaven::tests::pct::testAdapterForExecution(
       $f,
