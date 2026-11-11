@@ -1,0 +1,7 @@
+{
+  "name": "core_pct_utils",
+  "pattern": "(meta::pure::test::pct::utils)(::.*)?",
+  "dependencies": [
+    "platform"
+  ]
+}

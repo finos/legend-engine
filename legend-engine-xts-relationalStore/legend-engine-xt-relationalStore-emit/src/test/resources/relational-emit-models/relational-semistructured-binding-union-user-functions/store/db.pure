@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Two feeds with the same shape: a JSON document in a SEMISTRUCTURED column, typed through a binding.
+// Terms is a hierarchy, and BasketTerms carries further Terms, so reaching the amount of a basket
+// takes a subType cast and a second hop.
+###Pure
+Class demo::ssu::Terms
+{
+  termId: String[1];
+}
+
+Class demo::ssu::FixedTerms extends demo::ssu::Terms
+{
+  amount: Float[0..1];
+}
+
+Class demo::ssu::BasketTerms extends demo::ssu::Terms
+{
+  components: demo::ssu::Terms[*];
+}
+
+Class demo::ssu::Contract
+{
+  terms: demo::ssu::Terms[*];
+}
+
+Class demo::ssu::Event
+{
+  eventId: String[1];
+  version: Integer[1];
+  content: demo::ssu::Contract[1];
+}
+
+
+###Relational
+Database demo::ssu::store::FeedDB
+(
+  Schema FEED_A
+  (
+    Table EVENT
+    (
+      EVENT_ID VARCHAR(50) PRIMARY KEY,
+      VERSION INTEGER PRIMARY KEY,
+      CONTENT SEMISTRUCTURED
+    )
+  )
+  Schema FEED_B
+  (
+    Table EVENT
+    (
+      EVENT_ID VARCHAR(50) PRIMARY KEY,
+      VERSION INTEGER PRIMARY KEY,
+      CONTENT SEMISTRUCTURED
+    )
+  )
+)
+
+
+###ExternalFormat
+Binding demo::ssu::store::ContractBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::ssu::Contract,
+    demo::ssu::Terms,
+    demo::ssu::FixedTerms,
+    demo::ssu::BasketTerms
+  ];
+}

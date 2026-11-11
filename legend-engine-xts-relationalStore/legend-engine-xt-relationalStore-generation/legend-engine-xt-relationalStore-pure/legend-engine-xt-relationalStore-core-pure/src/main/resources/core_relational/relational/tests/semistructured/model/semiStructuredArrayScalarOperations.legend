@@ -536,3 +536,13 @@ function flatten::semiStructuredPrimitiveArrayConcatenate(): TabularDataSet[1]
         ])
     )
 }
+
+###Pure
+function flatten::semiStructuredArrayFilterWithLambdaReusingEnclosingParameterName(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.addresses->filter(x | $x.name->startsWith('A1'))->first().name, 'First Matching Address Name')
+    ])
+}

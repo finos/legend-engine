@@ -27,7 +27,7 @@ import org.finos.legend.pure.runtime.java.interpreted.testHelper.PureTestBuilder
 public class Test_Interpreted_VariantFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = VariantCodeRepositoryProvider.variantFunctions;
-    private static final String manifestPath = "/core_functions_variant/pct-manifests/core-interpreted/VariantFunctions_manifest.json";
+    private static final String manifestPath = "/core_functions_variant/core-interpreted/VariantFunctions_manifest.json";
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "interpreted";
 

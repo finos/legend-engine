@@ -143,3 +143,133 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance
 {
   testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctionsHelper($conn, 'inheritance::relationFunctionMapping::H2Mapping')
 }
+
+function meta::relational::tests::semistructured::inheritance::testSemiStructuredSubTypeOfFunctionParameterBoundToElementAccessHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'inheritance::semiStructuredSubTypeOfFunctionParameterBoundToElementAccess__TabularDataSet_1_',
+    $mapping,
+    'First Name,Firm Address Street\n' +
+    'Peter,s1\n' +
+    'John,s1\n' +
+    'John,s1\n' +
+    'Anthony,s1\n' +
+    'Fabrice,s2\n' +
+    'Oliver,s3\n' +
+    'David,s3\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredSubTypeOfFunctionParameterBoundToElementAccess(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredSubTypeOfFunctionParameterBoundToElementAccessHelper($conn, 'inheritance::mapping::H2Mapping');
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredSubTypeOfFunctionParameterBoundToElementAccess(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredSubTypeOfFunctionParameterBoundToElementAccessHelper($conn, 'inheritance::relationFunctionMapping::H2Mapping');
+}
+
+function meta::relational::tests::semistructured::inheritance::testSemiStructuredSubTypeOfFunctionParameterInIfBranchHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'inheritance::semiStructuredSubTypeOfFunctionParameterInIfBranch__TabularDataSet_1_',
+    $mapping,
+    'First Name,Firm Address Street\n' +
+    'Peter,s1\n' +
+    'John,s1\n' +
+    'John,s1\n' +
+    'Anthony,s1\n' +
+    'Fabrice,s2\n' +
+    'Oliver,s3\n' +
+    'David,s3\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredSubTypeOfFunctionParameterInIfBranch(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredSubTypeOfFunctionParameterInIfBranchHelper($conn, 'inheritance::mapping::H2Mapping');
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredSubTypeOfFunctionParameterInIfBranch(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredSubTypeOfFunctionParameterInIfBranchHelper($conn, 'inheritance::relationFunctionMapping::H2Mapping');
+}
+
+function meta::relational::tests::semistructured::inheritance::testSemiStructuredSubTypeOfFunctionParameterAfterBindingColumnHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'inheritance::semiStructuredSubTypeOfFunctionParameterAfterBindingColumn__TabularDataSet_1_',
+    $mapping,
+    'First Name,Firm Name,Firm Address Street\n' +
+    'Peter,Firm X,s1\n' +
+    'John,Firm X,s1\n' +
+    'John,Firm X,s1\n' +
+    'Anthony,Firm X,s1\n' +
+    'Fabrice,Firm A,s2\n' +
+    'Oliver,Firm B,s3\n' +
+    'David,Firm B,s3\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredSubTypeOfFunctionParameterAfterBindingColumn(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredSubTypeOfFunctionParameterAfterBindingColumnHelper($conn, 'inheritance::mapping::H2Mapping');
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredSubTypeOfFunctionParameterAfterBindingColumn(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredSubTypeOfFunctionParameterAfterBindingColumnHelper($conn, 'inheritance::relationFunctionMapping::H2Mapping');
+}
+
+function meta::relational::tests::semistructured::inheritance::testSemiStructuredQualifiedPropertyPassingThisToFunctionHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'inheritance::semiStructuredQualifiedPropertyPassingThisToFunction__TabularDataSet_1_',
+    $mapping,
+    'First Name,Label\n' +
+    'Peter,A1\n' +
+    'John,A1\n' +
+    'John,A1\n' +
+    'Anthony,A1\n' +
+    'Fabrice,A2\n' +
+    'Oliver,A3\n' +
+    'David,A3\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredQualifiedPropertyPassingThisToFunction(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredQualifiedPropertyPassingThisToFunctionHelper($conn, 'inheritance::mapping::H2Mapping');
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredQualifiedPropertyPassingThisToFunction(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredQualifiedPropertyPassingThisToFunctionHelper($conn, 'inheritance::relationFunctionMapping::H2Mapping');
+}
+
+function meta::relational::tests::semistructured::inheritance::testSemiStructuredQualifiedPropertyPassingThisToFunctionInIfBranchHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'inheritance::semiStructuredQualifiedPropertyPassingThisToFunctionInIfBranch__TabularDataSet_1_',
+    $mapping,
+    'First Name,Label\n' +
+    'Peter,Firm X\n' +
+    'John,A1\n' +
+    'John,A1\n' +
+    'Anthony,Firm X\n' +
+    'Fabrice,Firm A\n' +
+    'Oliver,Firm B\n' +
+    'David,Firm B\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredQualifiedPropertyPassingThisToFunctionInIfBranch(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredQualifiedPropertyPassingThisToFunctionInIfBranchHelper($conn, 'inheritance::mapping::H2Mapping');
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredQualifiedPropertyPassingThisToFunctionInIfBranch(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredQualifiedPropertyPassingThisToFunctionInIfBranchHelper($conn, 'inheritance::relationFunctionMapping::H2Mapping');
+}

@@ -228,9 +228,22 @@ CENTRAL_EXCLUDE_GLOBS='*-tests.jar' bash "$SCRIPT" "$M2" "$VERSION" "$TMP/out-ex
 check "CENTRAL_EXCLUDE_GLOBS drops matching files" \
   "$(find "$TMP/out-excl/central-staging" -name '*-tests.jar' | wc -l)" 0
 
-# a single oversized coordinate must fail loudly rather than emit a bad bundle
+# a coordinate above the packing target but under the per-coordinate limit
+# gets a bundle of its own instead of aborting the release
 head -c $((40 * 1000 * 1000)) /dev/urandom > "$M2/legend-engine-xt-mod01/$VERSION/big.jar"
-if bash "$SCRIPT" "$M2" "$VERSION" "$TMP/out2" "$MAX" >/dev/null 2>&1; then
+if CENTRAL_MAX_COORD_BYTES=$((60 * 1000 * 1000)) bash "$SCRIPT" "$M2" "$VERSION" "$TMP/out-big" "$MAX" >/dev/null 2>&1; then
+  echo "ok   coordinate above packing target but under limit is packed"
+  contents="$TMP/out-big/central-publishing/bundle-contents.tsv"
+  big_bundle=$(awk -F'\t' '$2 ~ /legend-engine-xt-mod01\// { print $1 }' "$contents")
+  check "oversized-but-allowed coordinate is alone in its bundle" \
+    "$(awk -F'\t' -v b="$big_bundle" '$1 == b' "$contents" | wc -l)" 1
+else
+  echo "FAIL coordinate above packing target but under limit aborted"; fail=1
+fi
+
+# a single coordinate above the per-coordinate limit must fail loudly rather
+# than emit a bad bundle
+if CENTRAL_MAX_COORD_BYTES="$MAX" bash "$SCRIPT" "$M2" "$VERSION" "$TMP/out2" "$MAX" >/dev/null 2>&1; then
   echo "FAIL oversized coordinate did not abort"; fail=1
 else
   echo "ok   oversized single coordinate aborts"

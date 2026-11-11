@@ -18,7 +18,7 @@ import meta::relational::tests::pct::*;
 import meta::pure::test::pct::*;
 import meta::relational::runtime::*;
 
-function <<PCT.adapter>> {PCT.adapterName='DuckDB'} meta::relational::tests::pct::duckDB::testAdapterForRelationalWithDuckDBExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='DuckDB', PCT.manifestDirectory='/core_relational_duckdb_pct'} meta::relational::tests::pct::duckDB::testAdapterForRelationalWithDuckDBExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
       $f,

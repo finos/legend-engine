@@ -27,7 +27,7 @@ import org.finos.legend.pure.runtime.java.interpreted.testHelper.PureTestBuilder
 public class Test_Interpreted_ScnearioQuantFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = CoreScenarioQuantCodeRepositoryProvider.scenario_Quant_Functions;
-    private static final String manifestPath = "/core_scenario_quant/pct-manifests/core-interpreted/ScenarioQuantFunctions_manifest.json";
+    private static final String manifestPath = "/core_scenario_quant/core-interpreted/ScenarioQuantFunctions_manifest.json";
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "interpreted";
 

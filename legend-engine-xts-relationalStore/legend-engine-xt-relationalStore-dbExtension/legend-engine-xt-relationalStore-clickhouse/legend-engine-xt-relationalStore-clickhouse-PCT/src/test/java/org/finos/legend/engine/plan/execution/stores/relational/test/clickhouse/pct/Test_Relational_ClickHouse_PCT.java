@@ -126,7 +126,7 @@ public class Test_Relational_ClickHouse_PCT
     public static class EssentialFunctions extends ClickHousePCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = PlatformCodeRepositoryProvider.essentialFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-clickhouse/EssentialFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_clickhouse_pct/EssentialFunctions_manifest.json";
 
         public EssentialFunctions()
         {
@@ -142,7 +142,7 @@ public class Test_Relational_ClickHouse_PCT
     public static class GrammarFunctions extends ClickHousePCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = PlatformCodeRepositoryProvider.grammarFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-clickhouse/GrammarFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_clickhouse_pct/GrammarFunctions_manifest.json";
 
         public GrammarFunctions()
         {
@@ -158,7 +158,7 @@ public class Test_Relational_ClickHouse_PCT
     public static class RelationFunctions extends ClickHousePCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = RelationCodeRepositoryProvider.relationFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-clickhouse/RelationFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_clickhouse_pct/RelationFunctions_manifest.json";
 
         public RelationFunctions()
         {
@@ -174,7 +174,7 @@ public class Test_Relational_ClickHouse_PCT
     public static class ScenarioQuantFunctions extends ClickHousePCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreScenarioQuantCodeRepositoryProvider.scenario_Quant_Functions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-clickhouse/ScenarioQuantFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_clickhouse_pct/ScenarioQuantFunctions_manifest.json";
 
         public ScenarioQuantFunctions()
         {
@@ -190,7 +190,7 @@ public class Test_Relational_ClickHouse_PCT
     public static class StandardFunctions extends ClickHousePCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreStandardFunctionsCodeRepositoryProvider.standardFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-clickhouse/StandardFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_clickhouse_pct/StandardFunctions_manifest.json";
 
         public StandardFunctions()
         {
@@ -206,7 +206,7 @@ public class Test_Relational_ClickHouse_PCT
     public static class UnclassifiedFunctions extends ClickHousePCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-clickhouse/UnclassifiedFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_clickhouse_pct/UnclassifiedFunctions_manifest.json";
 
         public UnclassifiedFunctions()
         {
@@ -222,7 +222,7 @@ public class Test_Relational_ClickHouse_PCT
     public static class VariantFunctions extends ClickHousePCTReportConfiguration
     {
         private static final ReportScope REPORT_SCOPE = VariantCodeRepositoryProvider.variantFunctions;
-        private static final String MANIFEST_PATH = "pct-manifests/relational-clickhouse/VariantFunctions_manifest.json";
+        private static final String MANIFEST_PATH = "/core_relational_clickhouse_pct/VariantFunctions_manifest.json";
 
         public VariantFunctions()
         {

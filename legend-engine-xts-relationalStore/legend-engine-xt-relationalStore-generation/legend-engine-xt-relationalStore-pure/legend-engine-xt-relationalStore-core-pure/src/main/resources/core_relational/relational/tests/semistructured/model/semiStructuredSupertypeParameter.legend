@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// A qualified property passes $this to a user function whose parameter is typed as the base class, and the
+// query runs on a subclass whose set does not map the base class's properties. The function's property
+// accesses are resolved against the parameter's declared type, as they are when $this is not passed on.
+###Pure
+Class supertype::model::Item
+{
+  id: Integer[1];
+  name: String[0..1];
+  parent: supertype::model::Item[0..1];
+  label() {$this->supertype::labelOf()}: String[0..1];
+}
+
+Class supertype::model::SubItem extends supertype::model::Item
+{
+  rank: Integer[1];
+}
+
+function supertype::labelOf(item: supertype::model::Item[1]): String[0..1]
+{
+  if($item.parent.id->isNotEmpty(), |$item.parent.name, |$item.name)
+}
+
+function supertype::labelOfSubItems(): TabularDataSet[1]
+{
+  supertype::model::SubItem.all()->project([
+    col(x | $x.id, 'Id'),
+    col(x | $x.label, 'Label')
+  ])
+}
+
+function supertype::labelOfBaseItems(): TabularDataSet[1]
+{
+  supertype::model::Item.all()->project([
+    col(x | $x.id, 'Id'),
+    col(x | $x.label, 'Label')
+  ])
+}
+
+###Relational
+Database supertype::store::H2DB
+(
+  Schema ITEM_SCHEMA
+  (
+    Table ITEM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      PARENT_ID INTEGER
+    )
+  )
+  Join ItemParent(ITEM_SCHEMA.ITEM_TABLE.PARENT_ID = {target}.ID)
+)
+
+###Mapping
+Mapping supertype::mapping::BaseMapping
+(
+  supertype::model::Item: Relational
+  {
+    ~primaryKey
+    (
+      [supertype::store::H2DB]ITEM_SCHEMA.ITEM_TABLE.ID
+    )
+    ~mainTable [supertype::store::H2DB]ITEM_SCHEMA.ITEM_TABLE
+    id: [supertype::store::H2DB]ITEM_SCHEMA.ITEM_TABLE.ID,
+    name: [supertype::store::H2DB]ITEM_SCHEMA.ITEM_TABLE.NAME,
+    parent: [supertype::store::H2DB]@ItemParent
+  }
+)
+
+Mapping supertype::mapping::H2Mapping
+(
+  include supertype::mapping::BaseMapping
+
+  supertype::model::SubItem: Relational
+  {
+    ~primaryKey
+    (
+      [supertype::store::H2DB]ITEM_SCHEMA.ITEM_TABLE.ID
+    )
+    ~mainTable [supertype::store::H2DB]ITEM_SCHEMA.ITEM_TABLE
+    id: [supertype::store::H2DB]ITEM_SCHEMA.ITEM_TABLE.ID,
+    rank: [supertype::store::H2DB]ITEM_SCHEMA.ITEM_TABLE.ID
+  }
+)
