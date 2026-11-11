@@ -346,6 +346,80 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    );
 }
 
+// Dispatched here rather than registered with dynaFnToSql because DATE vs TIMESTAMP output depends on the
+// first operand's inferred type, which a ToSql transform cannot see.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::timeBucketDynaFunctionToSqlForDatabricks(func:DynaFunction[1]):DynaFunctionToSql[1]
+{
+   let inferred = meta::relational::functions::typeInference::inferRelationalType($func.parameters->at(0), false);
+   let isDateOnly = $inferred->isNotEmpty() && $inferred->toOne()->instanceOf(meta::relational::metamodel::datatype::Date);
+   ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = '%s', transform = {p:String[3] | [$p->timeBucketSqlForDatabricks($isDateOnly)]}));
+}
+
+// Spark's date_trunc has no bucket width, so buckets are counted from the Unix epoch as timeBucket.pure
+// specifies. pmod keeps the remainder non-negative, so dates before 1970 fall into the bucket that starts
+// before them.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::timeBucketSqlForDatabricks(p:String[3], isDateOnly:Boolean[1]):String[1]
+{
+   let d = $p->at(0);
+   let q = $p->at(1);
+   let unit = $p->at(2)->meta::relational::functions::sqlQueryToString::default::mapToDBUnitType();
+   let secondsPerUnit = [pair('SECOND', 1), pair('MINUTE', 60), pair('HOUR', 3600), pair('DAY', 86400), pair('WEEK', 604800)]->filter(u | $u.first == $unit).second;
+   let monthsPerUnit = [pair('MONTH', 1), pair('YEAR', 12)]->filter(u | $u.first == $unit).second;
+   assert($secondsPerUnit->isNotEmpty() || $monthsPerUnit->isNotEmpty(), | 'The DurationUnit \'' + $unit + '\' is not supported yet for timeBucket');
+   let bucketExpr = if($secondsPerUnit->isNotEmpty(),
+      | let seconds = 'unix_seconds(cast(' + $d + ' as timestamp))';
+        // Week buckets start on Mondays; the epoch was a Thursday, three days (259200 seconds) after one.
+        let offset = if($unit == 'WEEK', | ' + 259200', | '');
+        'timestamp_seconds(' + $seconds + ' - pmod(' + $seconds + $offset + ', ' + $q + ' * ' + $secondsPerUnit->toOne()->toString() + '))';,
+      | let months = '((year(' + $d + ') - 1970) * 12 + month(' + $d + ') - 1)';
+        'add_months(DATE \'1970-01-01\', ' + $months + ' - pmod(' + $months + ', ' + $q + ' * ' + $monthsPerUnit->toOne()->toString() + '))';
+   );
+   if($isDateOnly, | 'cast(' + $bucketExpr + ' as date)', | 'cast(' + $bucketExpr + ' as timestamp)');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::domainCheckedMathFunctionForDatabricks(operand:String[1], name:String[1], outOfDomain:String[1]):String[1]
+{
+   'case when ' + $outOfDomain + ' then raise_error(concat(\'Unable to compute ' + $name + ' of \', cast(' + $operand + ' as string))) else ' + $name + '(' + $operand + ') end';
+}
+
+// A negative literal parses as minus(Literal), not as a negative Literal.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::numericLiteralValueForDatabricks(op:RelationalOperationElement[1]):Number[0..1]
+{
+   if($op->instanceOf(Literal) && $op->cast(@Literal).value->instanceOf(Number),
+      | $op->cast(@Literal).value->cast(@Number),
+      | if($op->instanceOf(DynaFunction) && ($op->cast(@DynaFunction).name == 'minus') && ($op->cast(@DynaFunction).parameters->size() == 1),
+           | let operand = $op->cast(@DynaFunction).parameters->at(0)->numericLiteralValueForDatabricks();
+             if($operand->isEmpty(), | [], | 0 - $operand->toOne());,
+           | []
+        )
+   );
+}
+
+// Spark raises its own [REMAINDER_BY_ZERO] for rem and surfaces raise_error(...) wrapped in the driver's Thrift
+// response text, so a call whose literal arguments are known to fail raises the stdlib's message during plan
+// generation instead. Column arguments are checked at run time by domainCheckedMathFunctionForDatabricks.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::literalFailureMessageForDatabricks(func:DynaFunction[1]):String[0..1]
+{
+   let values = $func.parameters->map(p | $p->numericLiteralValueForDatabricks());
+   let n = if($values->size() == $func.parameters->size(), | $values->size(), | -1);
+   $func->literalSliceFailureMessageForDatabricks()
+      ->concatenate(if(($func.name == 'sqrt') && ($n == 1) && ($values->at(0) < 0), | 'Unable to compute sqrt of ' + $values->at(0)->toString(), | []))
+      ->concatenate(if($func.name->in(['asin', 'acos']) && ($n == 1) && ($values->at(0)->abs() > 1), | 'Unable to compute ' + $func.name + ' of ' + $values->at(0)->toString(), | []))
+      ->concatenate(if(($func.name == 'rem') && ($n == 2) && ($values->at(1) == 0), | 'Cannot divide ' + $values->at(0)->toString() + ' by zero', | []))
+      ->concatenate(if(($func.name == 'range') && ($n == 3) && ($values->at(2) == 0), | 'range step must not be 0', | []))
+      ->concatenate(if($func.name->in(['bitShiftLeft', 'bitShiftRight']) && ($n == 2) && (($values->at(1) < 0) || ($values->at(1) > 62)), | 'Unsupported number of bits to shift - max bits allowed is 62', | []))
+      ->first();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::literalSliceFailureMessageForDatabricks(func:DynaFunction[1]):String[0..1]
+{
+   let bounds = $func.parameters->tail()->map(b | $b->numericLiteralValueForDatabricks())->map(b | if($b < 0, | 0, | $b));
+   if(($func.name == 'array_slice') && ($func.parameters->size() == 3) && ($bounds->size() == 2) && ($bounds->at(0) > $bounds->at(1)),
+      | 'The low bound (' + $bounds->at(0)->toString() + ') can\'t be higher than the high bound (' + $bounds->at(1)->toString() + ') in a slice operation',
+      | []
+   );
+}
+
 // The shared router lowers equalAny/equalAll/greaterThanAny/greaterThanAll/lessThanAny/lessThanAll/
 // greaterThanEqualAny/greaterThanEqualAll/lessThanEqualAny/lessThanEqualAll to ANSI quantified-comparison
 // syntax (`value = any (subquery)` / `value > all (subquery)`) - processRelationQuantifiedComparison in
@@ -506,80 +580,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
                   )
              )
         )
-   );
-}
-
-// Dispatched here rather than registered with dynaFnToSql because DATE vs TIMESTAMP output depends on the
-// first operand's inferred type, which a ToSql transform cannot see.
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::timeBucketDynaFunctionToSqlForDatabricks(func:DynaFunction[1]):DynaFunctionToSql[1]
-{
-   let inferred = meta::relational::functions::typeInference::inferRelationalType($func.parameters->at(0), false);
-   let isDateOnly = $inferred->isNotEmpty() && $inferred->toOne()->instanceOf(meta::relational::metamodel::datatype::Date);
-   ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = '%s', transform = {p:String[3] | [$p->timeBucketSqlForDatabricks($isDateOnly)]}));
-}
-
-// Spark's date_trunc has no bucket width, so buckets are counted from the Unix epoch as timeBucket.pure
-// specifies. pmod keeps the remainder non-negative, so dates before 1970 fall into the bucket that starts
-// before them.
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::timeBucketSqlForDatabricks(p:String[3], isDateOnly:Boolean[1]):String[1]
-{
-   let d = $p->at(0);
-   let q = $p->at(1);
-   let unit = $p->at(2)->meta::relational::functions::sqlQueryToString::default::mapToDBUnitType();
-   let secondsPerUnit = [pair('SECOND', 1), pair('MINUTE', 60), pair('HOUR', 3600), pair('DAY', 86400), pair('WEEK', 604800)]->filter(u | $u.first == $unit).second;
-   let monthsPerUnit = [pair('MONTH', 1), pair('YEAR', 12)]->filter(u | $u.first == $unit).second;
-   assert($secondsPerUnit->isNotEmpty() || $monthsPerUnit->isNotEmpty(), | 'The DurationUnit \'' + $unit + '\' is not supported yet for timeBucket');
-   let bucketExpr = if($secondsPerUnit->isNotEmpty(),
-      | let seconds = 'unix_seconds(cast(' + $d + ' as timestamp))';
-        // Week buckets start on Mondays; the epoch was a Thursday, three days (259200 seconds) after one.
-        let offset = if($unit == 'WEEK', | ' + 259200', | '');
-        'timestamp_seconds(' + $seconds + ' - pmod(' + $seconds + $offset + ', ' + $q + ' * ' + $secondsPerUnit->toOne()->toString() + '))';,
-      | let months = '((year(' + $d + ') - 1970) * 12 + month(' + $d + ') - 1)';
-        'add_months(DATE \'1970-01-01\', ' + $months + ' - pmod(' + $months + ', ' + $q + ' * ' + $monthsPerUnit->toOne()->toString() + '))';
-   );
-   if($isDateOnly, | 'cast(' + $bucketExpr + ' as date)', | 'cast(' + $bucketExpr + ' as timestamp)');
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::domainCheckedMathFunctionForDatabricks(operand:String[1], name:String[1], outOfDomain:String[1]):String[1]
-{
-   'case when ' + $outOfDomain + ' then raise_error(concat(\'Unable to compute ' + $name + ' of \', cast(' + $operand + ' as string))) else ' + $name + '(' + $operand + ') end';
-}
-
-// A negative literal parses as minus(Literal), not as a negative Literal.
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::numericLiteralValueForDatabricks(op:RelationalOperationElement[1]):Number[0..1]
-{
-   if($op->instanceOf(Literal) && $op->cast(@Literal).value->instanceOf(Number),
-      | $op->cast(@Literal).value->cast(@Number),
-      | if($op->instanceOf(DynaFunction) && ($op->cast(@DynaFunction).name == 'minus') && ($op->cast(@DynaFunction).parameters->size() == 1),
-           | let operand = $op->cast(@DynaFunction).parameters->at(0)->numericLiteralValueForDatabricks();
-             if($operand->isEmpty(), | [], | 0 - $operand->toOne());,
-           | []
-        )
-   );
-}
-
-// Spark raises its own [REMAINDER_BY_ZERO] for rem and surfaces raise_error(...) wrapped in the driver's Thrift
-// response text, so a call whose literal arguments are known to fail raises the stdlib's message during plan
-// generation instead. Column arguments are checked at run time by domainCheckedMathFunctionForDatabricks.
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::literalFailureMessageForDatabricks(func:DynaFunction[1]):String[0..1]
-{
-   let values = $func.parameters->map(p | $p->numericLiteralValueForDatabricks());
-   let n = if($values->size() == $func.parameters->size(), | $values->size(), | -1);
-   $func->literalSliceFailureMessageForDatabricks()
-      ->concatenate(if(($func.name == 'sqrt') && ($n == 1) && ($values->at(0) < 0), | 'Unable to compute sqrt of ' + $values->at(0)->toString(), | []))
-      ->concatenate(if($func.name->in(['asin', 'acos']) && ($n == 1) && ($values->at(0)->abs() > 1), | 'Unable to compute ' + $func.name + ' of ' + $values->at(0)->toString(), | []))
-      ->concatenate(if(($func.name == 'rem') && ($n == 2) && ($values->at(1) == 0), | 'Cannot divide ' + $values->at(0)->toString() + ' by zero', | []))
-      ->concatenate(if(($func.name == 'range') && ($n == 3) && ($values->at(2) == 0), | 'range step must not be 0', | []))
-      ->concatenate(if($func.name->in(['bitShiftLeft', 'bitShiftRight']) && ($n == 2) && (($values->at(1) < 0) || ($values->at(1) > 62)), | 'Unsupported number of bits to shift - max bits allowed is 62', | []))
-      ->first();
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::literalSliceFailureMessageForDatabricks(func:DynaFunction[1]):String[0..1]
-{
-   let bounds = $func.parameters->tail()->map(b | $b->numericLiteralValueForDatabricks())->map(b | if($b < 0, | 0, | $b));
-   if(($func.name == 'array_slice') && ($func.parameters->size() == 3) && ($bounds->size() == 2) && ($bounds->at(0) > $bounds->at(1)),
-      | 'The low bound (' + $bounds->at(0)->toString() + ') can\'t be higher than the high bound (' + $bounds->at(1)->toString() + ') in a slice operation',
-      | []
    );
 }
 
