@@ -46,7 +46,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    let baseDynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
      getDynaFunctionToSqlForDatabricks()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
    // VARIANT array operands need a `cast(... as array<variant>)`; typed arrays stay bare (Snowflake-matching).
-   let dynaFuncDispatch = {func:DynaFunction[1], sgc:SqlGenerationContext[1] | $func->dynaFuncDispatchForDatabricks($sgc, $baseDynaFuncDispatch)};
+   let dynaFuncDispatch = {func:DynaFunction[1], sgc:SqlGenerationContext[1] | $func->dynaFuncDispatchWithDateLiteralOverridesForDatabricks($sgc, $baseDynaFuncDispatch)};
 
    ^DbExtension(
       setOperationSupport = standardSetOperationSupport(),
@@ -181,6 +181,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
              )
         )
    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dynaFuncDispatchWithDateLiteralOverridesForDatabricks(func:DynaFunction[1], sgc:SqlGenerationContext[1], baseDispatch:meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]):DynaFunctionToSql[1]
+{
+   let dateLiteralOverride = $func->dateLiteralOverrideForDatabricks();
+   if($dateLiteralOverride->isNotEmpty(),
+      | $dateLiteralOverride->toOne(),
+      | $func->dynaFuncDispatchForDatabricks($sgc, $baseDispatch));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::getDynaFunctionToSqlForDatabricks(): DynaFunctionToSql[*]
@@ -416,11 +424,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 {
    if($func->isQuantifiedComparisonForDatabricks(),
       | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='%s', transform={p:String[*] | [$func->rewriteQuantifiedComparisonForDatabricks($sgc)]})),
-      | let dateLiteralOverride = $func->dateLiteralOverrideForDatabricks();
-        if($dateLiteralOverride->isNotEmpty(),
-           | $dateLiteralOverride->toOne(),
-           | $func->dynaFuncDispatchForDatabricksNonQuantified($sgc, $baseDispatch));
-   );
+      | $func->dynaFuncDispatchForDatabricksNonQuantified($sgc, $baseDispatch));
 }
 
 // The shared router lowers equalAny/equalAll/greaterThanAny/greaterThanAll/lessThanAny/lessThanAll/
