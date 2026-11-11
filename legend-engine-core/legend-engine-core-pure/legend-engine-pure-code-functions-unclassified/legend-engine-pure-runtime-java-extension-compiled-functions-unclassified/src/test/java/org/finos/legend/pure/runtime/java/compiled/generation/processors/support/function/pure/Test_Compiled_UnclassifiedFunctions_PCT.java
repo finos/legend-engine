@@ -28,7 +28,7 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 public class Test_Compiled_UnclassifiedFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
-    private static final String manifestPath = "/core_functions_unclassified/pct-manifests/core-compiled/UnclassifiedFunctions_manifest.json";
+    private static final String manifestPath = "/core_functions_unclassified/core-compiled/UnclassifiedFunctions_manifest.json";
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "compiled";
 

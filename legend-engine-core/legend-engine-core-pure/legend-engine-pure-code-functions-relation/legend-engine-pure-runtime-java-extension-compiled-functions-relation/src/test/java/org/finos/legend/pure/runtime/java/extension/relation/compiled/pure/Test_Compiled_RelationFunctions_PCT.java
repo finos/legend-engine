@@ -27,7 +27,7 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 public class Test_Compiled_RelationFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = RelationCodeRepositoryProvider.relationFunctions;
-    private static final String manifestPath = "/core_functions_relation/pct-manifests/core-compiled/RelationFunctions_manifest.json";
+    private static final String manifestPath = "/core_functions_relation/core-compiled/RelationFunctions_manifest.json";
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "compiled";
 

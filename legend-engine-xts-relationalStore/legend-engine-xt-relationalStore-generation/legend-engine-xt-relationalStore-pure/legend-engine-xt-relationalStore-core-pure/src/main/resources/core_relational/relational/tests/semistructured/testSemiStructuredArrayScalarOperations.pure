@@ -442,3 +442,19 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
     'Fabrice,O4\n'
   );
 }
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterWithLambdaReusingEnclosingParameterName(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute($conn,
+    'flatten::semiStructuredArrayFilterWithLambdaReusingEnclosingParameterName__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,First Matching Address Name\n' +
+    'Anthony,null\n' +
+    'David,null\n' +
+    'Fabrice,null\n' +
+    'John,null\n' +
+    'John,null\n' +
+    'Oliver,null\n' +
+    'Peter,A1\n'
+  );
+}

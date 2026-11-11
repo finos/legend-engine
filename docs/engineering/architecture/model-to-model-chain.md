@@ -310,6 +310,8 @@ same plan's `resultColumns` line always reported.
 |---|---|
 | `meta::relational::tests::semistructured::modelChain` | 12 parameterised tests — TDSv1, `col()`, Relation and graph-fetch shapes over one fixture. Runs on every dialect the parameterised suite covers. Model: `core_relational/relational/tests/semistructured/model/semiStructuredModelChain.legend` |
 | `relational-emit-models/relational-semistructured-model-chain` | EMIT model, one Service |
+| `meta::relational::tests::semistructured::modelChainTypeName` | 2 parameterised tests — `typeName()` inside a `map` whose lambda reuses the query's parameter name (`x`), in the two-list and `col()` forms. Model: `core_relational/relational/tests/semistructured/model/semiStructuredModelChainTypeName.legend`. |
+| `relational-emit-models/relational-semistructured-model-chain-typename` | EMIT model, one relation Service over the same shape. A `sort()` after the projection is not used: the chain's reprocessing does not handle `SortInfo` (`Match failure: SortInfoObject instanceOf SortInfo` at `core/store/m2m/chain.pure`). |
 | `core/store/m2m/tests/legend/chain/` | Non-semi-structured chain tests: simple, filter, parameters, data quality |
 
 The four graph-fetch tests are parked with `<<paramTest.Ignore>>`, keeping their expected output as

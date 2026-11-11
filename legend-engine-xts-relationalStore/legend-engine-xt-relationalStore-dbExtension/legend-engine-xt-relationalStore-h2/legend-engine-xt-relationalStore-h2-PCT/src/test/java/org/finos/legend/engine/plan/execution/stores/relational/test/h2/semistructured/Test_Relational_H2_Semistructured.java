@@ -90,6 +90,7 @@ public class Test_Relational_H2_Semistructured
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterOnly_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterSize_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterWithIsEmpty_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterWithLambdaReusingEnclosingParameterName_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testMultiArrayOlapWithNestedIfExists_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstWithEnumComparison_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstJoinStrings_Connection_1__Boolean_1_",

@@ -244,3 +244,71 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::match::rela
 {
   testSemiStructuredMatchWithMultipleProjectUsingColHelper($conn, 'match::relationFunctionMapping::H2Mapping');
 }
+
+function meta::relational::tests::semistructured::match::testSemiStructuredMatchInUserFunctionHelper(conn: Connection[1], mapping:String[1], func: String[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    $func,
+    $mapping,
+    'Customer Address\n' +
+    'B1\n' +
+    'B2\n' +
+    'B3\n' +
+    'Default Address\n' +
+    'S2\n' +
+    'S1\n' +
+    'S3\n' +
+    'S4\n' +
+    'Default Address\n' +
+    'Default Address\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchInUserFunction(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredMatchInUserFunctionHelper($conn, 'match::mapping::H2Mapping', 'match::semiStructuredMatchInUserFunction__TabularDataSet_1_')
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::relationFunctionMapping::testSemiStructuredMatchInUserFunction(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredMatchInUserFunctionHelper($conn, 'match::relationFunctionMapping::H2Mapping', 'match::semiStructuredMatchInUserFunction__TabularDataSet_1_')
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchInNestedUserFunction(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredMatchInUserFunctionHelper($conn, 'match::mapping::H2Mapping', 'match::semiStructuredMatchInNestedUserFunction__TabularDataSet_1_')
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::relationFunctionMapping::testSemiStructuredMatchInNestedUserFunction(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredMatchInUserFunctionHelper($conn, 'match::relationFunctionMapping::H2Mapping', 'match::semiStructuredMatchInNestedUserFunction__TabularDataSet_1_')
+}
+
+function meta::relational::tests::semistructured::match::testSemiStructuredMatchInUserFunctionAfterBindingColumnHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'match::semiStructuredMatchInUserFunctionAfterBindingColumn__TabularDataSet_1_',
+    $mapping,
+    'Customer Id,Customer Address\n' +
+    'Customer1,B1\n' +
+    'Customer2,B2\n' +
+    'Customer3,B3\n' +
+    'Customer4,Default Address\n' +
+    'Customer6,S2\n' +
+    'Customer5,S1\n' +
+    'Customer7,S3\n' +
+    'Customer8,S4\n' +
+    'Customer9,Default Address\n' +
+    'Customer10,Default Address\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchInUserFunctionAfterBindingColumn(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredMatchInUserFunctionAfterBindingColumnHelper($conn, 'match::mapping::H2Mapping')
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::relationFunctionMapping::testSemiStructuredMatchInUserFunctionAfterBindingColumn(conn: Connection[1]):Boolean[1]
+{
+  testSemiStructuredMatchInUserFunctionAfterBindingColumnHelper($conn, 'match::relationFunctionMapping::H2Mapping')
+}
