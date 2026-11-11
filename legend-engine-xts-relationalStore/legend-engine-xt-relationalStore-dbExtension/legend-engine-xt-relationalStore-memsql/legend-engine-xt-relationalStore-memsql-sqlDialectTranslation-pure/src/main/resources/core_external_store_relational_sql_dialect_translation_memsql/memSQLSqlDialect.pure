@@ -1564,6 +1564,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Mod, simpleFunctionProcessor('mod')),
     pair(Power, simpleFunctionProcessor('power')),
     pair(Round, simpleFunctionProcessor('round')),
+    pair(Trunc, argTransformFunctionProcessor('truncate', {n:Node[*]| if($n->size() == 1, |$n->concatenate(^IntegerLiteral(value = 0)), |$n)})),
     pair(Sign, customFunctionProcessor(processorForSign_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Sin, simpleFunctionProcessor('sin')),
     pair(Sqrt, simpleFunctionProcessor('sqrt')),

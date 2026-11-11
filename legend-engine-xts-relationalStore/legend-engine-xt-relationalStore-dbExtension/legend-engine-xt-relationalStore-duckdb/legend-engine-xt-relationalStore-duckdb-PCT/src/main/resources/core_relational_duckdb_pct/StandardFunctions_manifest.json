@@ -176,6 +176,10 @@
     {
       "test" : "meta::pure::functions::math::tests::toRadians::testToRadians_Function_1__Boolean_1_",
       "expectedError" : "java.sql.SQLException: Out of Range Error: Overflow in multiplication of DECIMAL(18) (10 * 565486677646162740). You might want to add an explicit cast to a bigger decimal."
+    },
+    {
+      "test" : "meta::pure::functions::math::tests::trunc::testTruncDecimalWithNegativeScale_Function_1__Boolean_1_",
+      "expectedError" : "\nexpected: 1200D\nactual:   1200.0D"
     }
   ]
 }

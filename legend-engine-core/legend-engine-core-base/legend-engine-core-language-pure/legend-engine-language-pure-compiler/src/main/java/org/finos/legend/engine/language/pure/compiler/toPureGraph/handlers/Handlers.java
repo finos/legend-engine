@@ -3144,6 +3144,15 @@ public class Handlers
                             h("meta::pure::functions::math::round_Number_1__Integer_1_", "round", true, ps -> res("Integer", "one"), ps -> true)
                     )
                 ));
+        register(m(
+                    m(
+                            h("meta::pure::functions::math::trunc_Float_1__Integer_1__Float_1_", "trunc", false, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Float")),
+                            h("meta::pure::functions::math::trunc_Decimal_1__Integer_1__Decimal_1_", "trunc", false, ps -> res("Decimal", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Decimal"))
+                    ),
+                    m(
+                            h("meta::pure::functions::math::trunc_Number_1__Integer_1_", "trunc", false, ps -> res("Integer", "one"), ps -> true)
+                    )
+                ));
         register("meta::pure::functions::math::toFloat_Number_1__Float_1_", "toFloat", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::toDecimal_Number_1__Decimal_1_", "toDecimal", true, ps -> res("Decimal", "one"));
     }

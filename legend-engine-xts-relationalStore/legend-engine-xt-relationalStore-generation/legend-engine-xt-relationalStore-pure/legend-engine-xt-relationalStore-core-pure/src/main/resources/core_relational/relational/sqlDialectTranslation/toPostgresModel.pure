@@ -444,6 +444,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('md5',                       functionCall('md5')),
     pair('today',                     {p:meta::external::query::sql::metamodel::Expression[*]| castExpression(functionCall('now', $p), 'date')}),
     pair('round',                     {p:meta::external::query::sql::metamodel::Expression[*]| if($p->size() == 1, | castExpression(functionCall('round', $p), 'bigint'), | functionCall('round', $p))}),
+    pair('trunc',                     {p:meta::external::query::sql::metamodel::Expression[*]| if($p->size() == 1, | castExpression(functionCall('trunc', $p), 'bigint'), | functionCall('trunc', $p))}),
     pair('reverseString',             functionCall('reverse')),
     pair('length',                    functionCall('char_length')),
     pair('toTimestamp',               {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_timestamp', if($p->size() == 1, | $p->concatenate(literal('YYYY-MM-DD HH:MI:SS')), | $p))}),

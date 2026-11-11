@@ -185,6 +185,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('repeatString',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | 'rpad(\'\', char_length(' + $p->at(0) + ') * ' + $p->at(1) + ', ' +  $p->at(0) + ')'})),
     dynaFnToSql('right',                     $allStates,            ^ToSql(format='right(%s, %s)')),
     dynaFnToSql('round',                     $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('trunc',                     $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformTrunc('truncate(%s, 0)', 'truncate(%s, %s)')})),
     dynaFnToSql('rpad',                      $allStates,            ^ToSql(format='rpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
     dynaFnToSql('rtrim',                     $allStates,            ^ToSql(format='rtrim(%s)')),
     dynaFnToSql('second',                    $allStates,            ^ToSql(format='second(%s)')),

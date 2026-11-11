@@ -1721,6 +1721,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   toJson,
   today,
   trim,
+  trunc,
   values,
   variance,
   variancePopulation,
