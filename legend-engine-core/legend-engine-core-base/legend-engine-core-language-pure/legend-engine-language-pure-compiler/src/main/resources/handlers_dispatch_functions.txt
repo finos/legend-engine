@@ -452,6 +452,9 @@ meta::pure::functions::math::toDecimal_Number_1__Decimal_1_
 meta::pure::functions::math::toDegrees_Number_1__Float_1_
 meta::pure::functions::math::toFloat_Number_1__Float_1_
 meta::pure::functions::math::toRadians_Number_1__Float_1_
+meta::pure::functions::math::trunc_Decimal_1__Integer_1__Decimal_1_
+meta::pure::functions::math::trunc_Float_1__Integer_1__Float_1_
+meta::pure::functions::math::trunc_Number_1__Integer_1_
 meta::pure::functions::math::variancePopulation_Number_MANY__Number_1_
 meta::pure::functions::math::varianceSample_Number_MANY__Number_1_
 meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_

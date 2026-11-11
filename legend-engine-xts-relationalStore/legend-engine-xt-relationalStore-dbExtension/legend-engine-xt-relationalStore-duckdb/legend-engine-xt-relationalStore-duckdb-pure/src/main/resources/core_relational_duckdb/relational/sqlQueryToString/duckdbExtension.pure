@@ -280,6 +280,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='regexp_replace(%s)', transform={p:String[5]|$p->transformRegexpReplace()})),
     dynaFnToSql('reverseString',          $allStates,            ^ToSql(format='reverse(%s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='%s', transform={p:String[1..2]|$p->transformRoundForDuckDB()})),
+    dynaFnToSql('trunc',                  $allStates,            ^ToSql(format='%s', transform=transformTruncForDuckDB_String_MANY__String_1_)),
     dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='rpad(%s,%s,%s)', transform=processPaddingParams_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='sha1(%s)')),
@@ -929,6 +930,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
    if ($p->size() == 2,
        | 'round(%s, %s)'->format([$p->at(0), $p->at(1)]),
        | 'cast(round(%s, 0) as BIGINT)'->format($p->at(0));
+   )
+}
+
+// DuckDB has no two-argument trunc; shifting in DECIMAL keeps e.g. 0.29 * 100 from becoming 28.999999999999996
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformTruncForDuckDB(p:String[*]):String[1]
+{
+   if ($p->size() == 1,
+       | 'cast(trunc(%s) as BIGINT)'->format($p->at(0)),
+       | truncWithScaleFallback('cast(' + $p->at(0) + ' as DECIMAL(38, 9))', 'cast(power(10, ' + $p->at(1) + ') as DECIMAL(38, 9))')
    )
 }
 

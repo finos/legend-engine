@@ -115,6 +115,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
     dynaFnToSql('right',                  $allStates,            ^ToSql(format='substr(%s,-%s)')),
     dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='rpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),    
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('trunc',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1, | format('cast(truncate(%s) as INTEGER)', $p), | $p->transformTruncFallback())})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='lower(to_hex(sha1(to_utf8(%s))))')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='lower(to_hex(sha256(to_utf8(%s))))')),

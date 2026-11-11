@@ -175,16 +175,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       math('sqrt', sqrt_Number_1__Float_1_),
       math('tan', tan_Number_1__Float_1_),
       math('tanh', tanh_Number_1__Float_1_),
-      math('trunc', Integer, {args, fc, expCtx, ctx |
-        //TODO replace with pure trunc function when implemented;
-        unsupported($args->size() == 1, | 'trunc with defined decimal places is not currently supported');
-
-        let condition = nullOrSfe(greaterThan_Number_1__Number_1__Boolean_1_, [$args->at(0), iv(0)])->evaluateAndDeactivate();
-        let truth = nullOrSfe(floor_Number_1__Integer_1_, $args->at(0))->evaluateAndDeactivate();
-        let else = nullOrSfe(ceiling_Number_1__Integer_1_, $args->at(0))->evaluateAndDeactivate();
-
-        createIfStatement($condition, $truth, $else);
-      }),
+      math('trunc', Number, {args, fc, expCtx, ctx | processTrunc($args)}),
 
       //STRING
       string('ascii', ascii_String_1__Integer_1_),

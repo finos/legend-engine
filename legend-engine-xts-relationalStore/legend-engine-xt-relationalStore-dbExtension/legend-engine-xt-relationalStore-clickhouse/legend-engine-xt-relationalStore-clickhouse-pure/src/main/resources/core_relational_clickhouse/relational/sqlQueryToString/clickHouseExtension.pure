@@ -135,6 +135,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('percentile',             $allStates,            ^ToSql(format='%s', transform = {p:String[4] | $p->transformPercentileForClickHouse()})),
     dynaFnToSql('range',                  $allStates,            ^ToSql(format='range(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('trunc',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformTrunc('cast(trunc(%s) as INTEGER)', 'trunc(%s, %s)')})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='toSecond(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='lower(hex(SHA1(%s)))')), 
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='lower(hex(SHA256(%s)))')), 

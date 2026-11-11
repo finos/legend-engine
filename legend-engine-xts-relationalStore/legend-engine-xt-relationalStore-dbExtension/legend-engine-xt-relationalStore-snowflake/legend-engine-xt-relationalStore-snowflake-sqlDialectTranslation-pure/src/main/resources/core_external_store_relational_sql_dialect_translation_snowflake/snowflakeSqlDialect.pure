@@ -504,6 +504,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Mod, simpleFunctionProcessor('mod')),
     pair(Power, simpleFunctionProcessor('power')),
     pair(Round, simpleFunctionProcessor('round')),
+    pair(Trunc, simpleFunctionProcessor('trunc')),
     pair(Sign, simpleFunctionProcessor('sign')),
     pair(Sin, simpleFunctionProcessor('sin')),
     pair(Sinh, simpleFunctionProcessor('sinh')),    
