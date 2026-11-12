@@ -187,8 +187,7 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
                                                   let result = meta::pure::functions::meta::resolve($va, $vars, $inScopeVars);
                                                   if ($result->isEmpty(),
                                                      |$va->resolveVar($state, $debug),
-                                                     |$result->evaluateAndDeactivate()->toOne()->match([v:VariableExpression[1]               | $v->resolveRenamedVar($va, $state, $vars, $inScopeVars, $debug),
-                                                                                                         i:InstanceValue[1]                    | ^$state(value=$i)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug),
+                                                     |$result->evaluateAndDeactivate()->toOne()->match([i:InstanceValue[1]                    | ^$state(value=$i)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug),
                                                                                                          e:ExtendedRoutedValueSpecification[1] | if($va.name->in(['this', '_mj_src', '_mj_tgt']),
                                                                                                                                                   | let vaExtended=^$e(value=$va);
                                                                                                                                                     ^$state(value=$vaExtended, shouldBeRouted=true);,
@@ -516,7 +515,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
 
         let fullRes = ^$fe(parametersValues = $secondPass.value->cast(@ValueSpecification));
 
-        let newVars = $fullRes->mapVariables(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $inScopeVars);
+        let newVars = $fullRes->calleeScope();
 
         if($f->instanceOf(QualifiedProperty) && ($f->cast(@QualifiedProperty<Any>)->evaluateAndDeactivate().expressionSequence->size() == 1),
             | let qp = $f->cast(@QualifiedProperty<Any>)->evaluateAndDeactivate();
@@ -530,7 +529,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                let thisVe = ^VariableExpression(name='this', genericType=$qpSrcVal.genericType, multiplicity=$qpSrcVal.multiplicity);
                                                                                $newVarsWithSfePropsRemoved->put($thisVe->evaluateAndDeactivate(), $qpSrcExtended);,
                                                                               |$newVarsWithSfePropsRemoved);
-                                                      let routedExprSeq=$feExprSeq->routeFunctionExpression(^$lastSecondPass(pathPrefix=$pathPrefix, shouldBeRouted=$qpSrcState.shouldBeRouted), $executionContext, $vars->putAll($newVarsWithThis), $inScopeVars, $extensions, $debug);
+                                                      let routedExprSeq=$feExprSeq->routeFunctionExpression(^$lastSecondPass(pathPrefix=$pathPrefix, shouldBeRouted=$qpSrcState.shouldBeRouted), $executionContext, $newVarsWithThis, $inScopeVars, $extensions, $debug);
                                                       $routedExprSeq.value->evaluateAndDeactivate()->match([
                                                           n:NoSetRoutedValueSpecification[1]    | ^$lastSecondPass(value=$fullRes, pathPrefix=$state.pathPrefix),
                                                           s:SimpleFunctionExpression[1]         | let newQp = ^$qp(expressionSequence=$s, owner=^PropertyOwner());
@@ -553,9 +552,8 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                     // Routable when a routed input of the return type flows into the result: the inputs that wrap it above.
                     let shouldBeRouted = $f != letFunction_String_1__T_m__T_m_ && $routedValueSpecForReturnClass->isNotEmpty();
                     ^$lastSecondPass(shouldBeRouted = $shouldBeRouted, value=$possiblyWrapperd, pathPrefix=$state.pathPrefix);,
-                  | let newVars = $fullRes->mapVariables(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),$inScopeVars);
-                    assert($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1, | 'Function ' +$f->cast(@FunctionDefinition<Any>)->elementToPath() + ' is not yet supported as functions with more than one expression can not be routed');
-                    ^$lastSecondPass(value=$f->cast(@FunctionDefinition<Any>).expressionSequence->at(0), shouldBeRouted=$state.shouldBeRouted)->routeValueSpecification($executionContext, $vars->putAll($newVars), $inScopeVars, $extensions, $debug);
+                  | assert($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1, | 'Function ' +$f->cast(@FunctionDefinition<Any>)->elementToPath() + ' is not yet supported as functions with more than one expression can not be routed');
+                    ^$lastSecondPass(value=$f->cast(@FunctionDefinition<Any>).expressionSequence->at(0), shouldBeRouted=$state.shouldBeRouted)->routeValueSpecification($executionContext, $newVars, $inScopeVars, $extensions, $debug);
               );
         );
   );
@@ -642,11 +640,17 @@ function <<access.private>> meta::pure::router::routing::routeLambdaBody(i:Insta
 }
 
 // A lambda's own parameters shadow outer variables of the same name, e.g. a match arm `s:` inside
-// a query that also captures an `s`.
+// a query that also captures an `s`, or a lambda `x|` inside a function inlined with an argument named `x`.
 function <<access.private>> meta::pure::router::routing::lambdaBodyScope(f:FunctionDefinition<Any>[1], inScopeVars:Map<String, List<Any>>[1]):Map<String, List<Any>>[1]
 {
   let params = $f->functionType().parameters->evaluateAndDeactivate().name;
   newMap($inScopeVars->putAll($f->openVariableValues())->keyValues()->filter(kv | !$kv.first->in($params)));
+}
+
+function <<access.private>> meta::pure::router::routing::lambdaBodyVars(f:FunctionDefinition<Any>[1], vars:Map<VariableExpression, ValueSpecification>[1]):Map<VariableExpression, ValueSpecification>[1]
+{
+  let params = $f->functionType().parameters->evaluateAndDeactivate().name;
+  $vars->replaceAll($vars->keyValues()->evaluateAndDeactivate()->filter(kv | !$kv.first->evaluateAndDeactivate().name->in($params)));
 }
 
 function meta::pure::router::routing::routeSubFunction(state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
@@ -655,7 +659,7 @@ function meta::pure::router::routing::routeSubFunction(state:RoutingState[1], ex
    $i.values->at(0)->match(
       [
          f:FunctionDefinition<Any>[1] |
-            let results = processCollection($state, $f.expressionSequence->evaluateAndDeactivate()->toOne(), $executionContext, $vars, $f->lambdaBodyScope($inScopeVars), v:Any[1]|true, $extensions, ^$debug(space = $debug.space+'  '))->evaluateAndDeactivate();
+            let results = processCollection($state, $f.expressionSequence->evaluateAndDeactivate()->toOne(), $executionContext, $f->lambdaBodyVars($vars), $f->lambdaBodyScope($inScopeVars), v:Any[1]|true, $extensions, ^$debug(space = $debug.space+'  '))->evaluateAndDeactivate();
 
             let last = $results->last()->toOne();
 
@@ -1188,13 +1192,14 @@ function <<access.private>> meta::pure::router::routing::lambdaShouldBeRouted(la
   ]);
 }
 
-function <<access.private>> meta::pure::router::routing::resolveRenamedVar(v:VariableExpression[1], original:VariableExpression[1], state:RoutingState[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):RoutingState[1]
+// An inlined body sees only its own parameters, bound to the arguments exactly as the caller routed them.
+// A variable argument is therefore already resolved in the caller's scope and is never looked up again by name
+// in the callee's, where the caller's names may mean something else.
+function <<access.private>> meta::pure::router::routing::calleeScope(fe:FunctionExpression[1]):Map<VariableExpression, ValueSpecification>[1]
 {
-  let viaCaller = if($v.name == $original.name, |[], |meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->evaluateAndDeactivate());
-  let routedType = if($viaCaller->isNotEmpty() && $viaCaller->toOne()->instanceOf(ExtendedRoutedValueSpecification), | $viaCaller->toOne().genericType.rawType, | []);
-  let paramType  = $original.genericType.rawType;
-  let narrowsParam = $routedType->isNotEmpty() && $paramType->isNotEmpty() && ($routedType->toOne() != $paramType->toOne()) && $routedType->toOne()->_subTypeOf($paramType->toOne());
-  if($viaCaller->isNotEmpty() && $viaCaller->toOne()->instanceOf(ExtendedRoutedValueSpecification) && !$narrowsParam,
-     | ^$state(value=$viaCaller->toOne(), shouldBeRouted=true),
-     | $v->resolveVar($state, $debug));
+  let skipThis   = $fe.func->instanceOf(QualifiedProperty);
+  let parameters = $fe.func->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate();
+  let params     = if($skipThis, | $parameters->tail(), | $parameters);
+  let arguments  = if($skipThis, | $fe.parametersValues->tail(), | $fe.parametersValues);
+  newMap($params->zip($arguments), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>));
 }
