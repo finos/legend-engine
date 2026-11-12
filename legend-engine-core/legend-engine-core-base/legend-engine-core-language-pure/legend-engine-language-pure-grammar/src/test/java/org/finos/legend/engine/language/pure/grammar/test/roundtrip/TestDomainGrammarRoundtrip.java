@@ -1132,6 +1132,26 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testFunctionWithNestedCopyAndAppend()
+    {
+        test("Class anything::goes\n" +
+                "{\n" +
+                "  v: String[*];\n" +
+                "}\n" +
+                "\n" +
+                "Class anything::goes2\n" +
+                "{\n" +
+                "  v2: anything::goes[1];\n" +
+                "}\n" +
+                "\n" +
+                "function f(x: anything::goes2[1]): Any[1]\n" +
+                "{\n" +
+                "  let inner = $x.v2;\n" +
+                "  ^$x(v2=^$inner(v+='value'));\n" +
+                "}\n");
+    }
+
+    @Test
     public void testMetaNewFunctionWithSingleParameter()
     {
         test("Class modelA::Firm\n" +

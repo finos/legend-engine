@@ -415,6 +415,16 @@ function meta::external::language::java::transform::implClassName(conventions: C
    $conventions->generateClassName($pe, 'internal', '_Impl');
 }
 
+function meta::external::language::java::transform::copyClassName(conventions: Conventions[1], type:meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Class[1]
+{
+   $conventions->generateClassName($type, 'internal', '_Copy');
+}
+
+function meta::external::language::java::transform::cloneClassName(conventions: Conventions[1], type:meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Class[1]
+{
+   $conventions->generateClassName($type, 'internal', '_Clone');
+}
+
 function <<access.private>> meta::external::language::java::transform::generateClassName(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1], zone:String[1], suffix:String[1]): meta::external::language::java::metamodel::Class[1]
 {
    assert(!$conventions->isProvidedType($type), 'Cannot provide implementation for provided types');
@@ -1225,8 +1235,6 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
 {
    let prohibitedFunctions = [
       // Instances
-      copy_T_1__String_1__KeyExpression_MANY__T_1_,
-      copy_T_1__String_1__T_1_,
       dynamicNew_Class_1__KeyValue_MANY__Any_1_,
       dynamicNew_Class_1__KeyValue_MANY__Function_$0_1$__Function_$0_1$__Any_$0_1$__Any_1_,
       dynamicNew_Class_1__KeyValue_MANY__Function_$0_1$__Function_$0_1$__Any_$0_1$__Function_$0_1$__Any_1_,

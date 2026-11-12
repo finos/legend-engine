@@ -39,6 +39,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
 
          // ----------------- Move to Grammar when possible ------------------------
          fc(new_Class_1__String_1__KeyExpression_MANY__T_1_,   processNew_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         fc(copy_T_1__String_1__KeyExpression_MANY__T_1_,      processCopy_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         fc(copy_T_1__String_1__T_1_,                          processCopy_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
          // ----------------- Move to Grammar when possible ------------------------
 
          fc2(orElse_T_$0_1$__T_1__T_1_,                                                  {ctx,maybe,dflt | $ctx->coalesce($maybe, $dflt)}),
@@ -187,21 +189,52 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
                                 let e = $k.expression->generateJava($conventions, $debug);
                                 pair($s,$e););
          
+   let typeInfo = $cls->newImplTypeInfo();
+   let props = $typeInfo->meta::pure::executionPlan::platformBinding::typeInfo::allProperties($cls);
+   let proto = $conventions->implClassName($cls)->addModifiers(['public']);
+   let dep = $cls->newImplDependency($typeInfo, $conventions, $debug);
+      
+    let processed_args = $processedKV->map(arg | let prop = $props->filter(p| $p.name == $arg.first)->toOne();
+                                                  let propType = $conventions->pureTypeToJavaType($prop);
+                                                  let value = $arg.second->castExpressionToReturnType($propType);
+                                                  pair($prop, $value););
+                                     
+    let invoke = $processed_args
+                  ->fold({p,code |let arg= $p.second; let prop = $p.first;
+                                  $code->j_invoke([], $conventions->setterName($prop), $arg, $proto);
+                        }, j_new($proto, []));
+
+    let setProperties = $processedKV->map(k| $k.first);
+    let unsetListProperties = $props->filter(p| !$p.name->in($setProperties) && $p.multiplicity->isListMultiplicity());
+
+    let newInvoke = $unsetListProperties->fold({prop, code |
+      let javaType = $conventions->pureTypeToJavaType($prop);
+      $code->j_invoke([], $conventions->setterName($prop), j_emptyList($javaType), $proto);
+    }, $invoke);
+
+   $newInvoke->dependsOn($dep);
+      }
+   );
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::newImplTypeInfo(cls:meta::pure::metamodel::type::Class<Any>[1]): meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1]
+{
    let typeInfoWithoutConstraints = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->enrichTypeInfos($cls, []);
-   let typeInfo = $typeInfoWithoutConstraints->
+   $typeInfoWithoutConstraints->
                            meta::pure::executionPlan::platformBinding::typeInfo::forClass($cls).supertypes
                            ->concatenate($cls)
                            ->fold(
                               {class, infos | $infos->meta::pure::executionPlan::platformBinding::typeInfo::addConstraints($class)},
                               $typeInfoWithoutConstraints
                            );
-    
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::newImplDependency(cls:meta::pure::metamodel::type::Class<Any>[1], typeInfo:meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1], conventions:Conventions[1], debug:meta::pure::tools::DebugContext[1]): CodeDependency[1]
+{
    let props = $typeInfo->meta::pure::executionPlan::platformBinding::typeInfo::allProperties($cls);
-
    let proto = $conventions->implClassName($cls)->addModifiers(['public']);
-
    let name = 'new_' + $cls->elementToPath();
-   let dep = newDependency(
+   newDependency(
       $name,
         {state |
             let clsTypeInfo = $typeInfo.typeInfos->filter(t | $t->instanceOf(meta::pure::executionPlan::platformBinding::typeInfo::ClassTypeInfo))
@@ -251,28 +284,90 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
             let interfaceProject = if($cls->in($conventions.planInterfaceClasses), | [], | newProject()->addClass($interface));
             let project = mergeProjects($interfaceProject->concatenate($implementationProject)->concatenate($nestedDeps)->concatenate($planInterfaceDefaultGetters)->toOneMany());
             $state->addDependencyProject($name, $project);});
-      
-    let processed_args = $processedKV->map(arg | let prop = $props->filter(p| $p.name == $arg.first)->toOne();
-                                                  let propType = $conventions->pureTypeToJavaType($prop);
-                                                  let value = $arg.second->castExpressionToReturnType($propType);
-                                                  pair($prop, $value););
-                                     
-    let invoke = $processed_args
-                  ->fold({p,code |let arg= $p.second; let prop = $p.first;
-                                  $code->j_invoke([], $conventions->setterName($prop), $arg, $proto);
-                        }, j_new($proto, []));
+}
 
-    let setProperties = $processedKV->map(k| $k.first);
-    let unsetListProperties = $props->filter(p| !$p.name->in($setProperties) && $p.multiplicity->isListMultiplicity());
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::processCopy(fe: FunctionExpression[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
+{
+   let args = $fe.parametersValues->evaluateAndDeactivate();
+   let type = $fe.genericType.rawType->toOne();
+   assert($type->instanceOf(meta::pure::metamodel::type::Class), |'Can only copy an instance of a class, not ' + $type->elementToPath());
+   let cls = $type->cast(@meta::pure::metamodel::type::Class<Any>);
+   assert($cls.typeParameters->isEmpty(), |'Copying an instance of a class with type parameters is not supported: ' + $cls->elementToPath());
+   let concrete = $cls->concreteClassesMostSpecificFirst();
+   assert($concrete->isNotEmpty(), |'Cannot copy an instance of abstract class ' + $cls->elementToPath() + ': it has no concrete subclass');
 
-    let newInvoke = $unsetListProperties->fold({prop, code |
-      let javaType = $conventions->pureTypeToJavaType($prop);
-      $code->j_invoke([], $conventions->setterName($prop), j_emptyList($javaType), $proto);
-    }, $invoke);
+   let props = $cls->newImplTypeInfo()->meta::pure::executionPlan::platformBinding::typeInfo::allProperties($cls);
+   let changes = if($args->size() > 2, |$args->at(2)->cast(@InstanceValue).values->cast(@KeyExpression), |[]);
+   // += appends to a to-many property; on a to-one property it replaces the value, as legacy compiled Pure does
+   let appends = $changes->filter(k | $k.add->orElse(false) && $props->filter(p | $p.name == $k.key.values->toOne())->toOne().multiplicity->isToMany());
+   let set = $changes->filter(k | !$k->in($appends))->copyChanges($props, $conventions, $debug);
+   let add = $appends->copyChanges($props, $conventions, $debug);
 
-   $newInvoke->dependsOn($dep);
-      }
+   let dependencies = $cls->copyDispatchDependency($concrete, $conventions)
+                         ->concatenate($concrete->map(c | $c->copyCloneDependency($conventions)))
+                         ->concatenate($concrete->map(c | $c->newImplDependency($c->newImplTypeInfo(), $conventions, $debug)));
+   $conventions->copyClassName($cls)
+      ->j_invoke('copy', [$args->at(0)->generateJava($conventions, $debug), $set, $add], $conventions->className($cls))
+      ->dependsOn($dependencies);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::lang::copyChangesType(): meta::external::language::java::metamodel::Type[1]
+{
+   javaMap(javaString(), javaObject());
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::lang::copyChanges(changes:KeyExpression[*], props:meta::pure::metamodel::function::property::Property<Nil,Any|*>[*], conventions:Conventions[1], debug:meta::pure::tools::DebugContext[1]): Code[1]
+{
+   if($changes->isEmpty(),
+      | javaCollections()->j_invoke('emptyMap', [], copyChangesType()),
+      | $conventions->className(Library)->j_invoke('copyChanges', $changes->map(k |
+           let name = $k.key.values->toOne()->cast(@String);
+           let prop = $props->filter(p | $p.name == $name)->toOne();
+           [j_string($name), $k.expression->generateJava($conventions, $debug)->castExpressionToReturnType($conventions->pureTypeToJavaType($prop))];
+        ), copyChangesType())
    );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::lang::copyCloneDependency(cls:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1]): CodeDependency[1]
+{
+   let name = 'copyOf_' + $cls->elementToPath();
+   newDependency($name, {state | $state->addProjectIfMissing($name, {|
+      let props = $cls->newImplTypeInfo()->meta::pure::executionPlan::platformBinding::typeInfo::allProperties($cls);
+      let impl = $conventions->implClassName($cls);
+      let library = $conventions->className(Library);
+      let source = j_parameter($conventions->className($cls), 'o');
+      let set = j_parameter(copyChangesType(), 'set');
+      let add = j_parameter(copyChangesType(), 'add');
+      let build = $props->fold({p, code |
+         let javaType = $conventions->pureTypeToJavaType($p);
+         let current = j_lambda([]->cast(@Code), $source->j_invoke($conventions->getterName($p), [], $javaType), javaSupplier($javaType->toBoxed()));
+         let value = if($p.multiplicity->isToMany(),
+                        | $library->j_invoke('copyMany', [$set, $add, j_string($p.name->toOne()), $current], $javaType),
+                        | $library->j_invoke('copyOne', [$set, j_string($p.name->toOne()), $current], $javaType));
+         $code->j_invoke([], $conventions->setterName($p), $value, $impl);
+      }, j_new($impl, []));
+      newProject()->addClass($conventions->cloneClassName($cls)->addModifiers(['public'])
+         ->addMethod(javaMethod(['public', 'static'], $impl, 'of', [$source, $set, $add], j_return($build)))
+         ->usingKnownPackages($conventions->knownPackages())
+         ->imports($conventions->standardImports()));
+   })});
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::lang::copyDispatchDependency(cls:meta::pure::metamodel::type::Class<Any>[1], concrete:meta::pure::metamodel::type::Class<Any>[*], conventions:Conventions[1]): CodeDependency[1]
+{
+   let name = 'copy_' + $cls->elementToPath();
+   newDependency($name, {state | $state->addProjectIfMissing($name, {|
+      let source = j_parameter($conventions->className($cls), 'o');
+      let set = j_parameter(copyChangesType(), 'set');
+      let add = j_parameter(copyChangesType(), 'add');
+      let dispatch = $concrete->map(c | j_if($source->j_instanceof($conventions->className($c)),
+                                             j_return($conventions->cloneClassName($c)->j_invoke('of', [$source->j_cast($conventions->className($c)), $set, $add], $conventions->implClassName($c)))));
+      let fail = j_throw(j_new(javaClass('java.lang.IllegalStateException'), j_string('Cannot copy an instance of ' + $cls->elementToPath() + ' that is none of its concrete classes')));
+      newProject()->addClass($conventions->copyClassName($cls)->addModifiers(['public'])
+         ->addMethod(javaMethod(['public', 'static'], $conventions->className($cls), 'copy', [$source, $set, $add], $dispatch->concatenate($fail)))
+         ->usingKnownPackages($conventions->knownPackages())
+         ->imports($conventions->standardImports()));
+   })});
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::lang::enrichTypeInfos(infos:meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1], for:meta::pure::metamodel::type::Class<Any>[1], seen:meta::pure::metamodel::type::Class<Any>[*]): meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1]

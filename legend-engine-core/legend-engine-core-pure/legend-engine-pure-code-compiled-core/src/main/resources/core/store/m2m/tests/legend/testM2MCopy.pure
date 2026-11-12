@@ -1,0 +1,479 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, meta::pure::executionPlan::engine::java::roadmap::feature.M2MBasics>>
+{  serverVersion.start='v1_20_0',
+   doc.doc='copy of constructed instances keeps their runtime class: through a parent-typed parameter, an abstract parent, +=, no changes, and a copy of a copy'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::copyFunction::copyOfConstructedInstances() : Boolean[1]
+{
+  let grammar = '###Pure\n'+
+    'Class test::model::Animal\n'+
+    '{\n'+
+    '  name: String[1];\n'+
+    '  tags: String[*];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Dog extends test::model::Animal\n'+
+    '{\n'+
+    '  breed: String[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class <<meta::pure::profiles::typemodifiers.abstract>> test::model::Shape\n'+
+    '{\n'+
+    '  label: String[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Circle extends test::model::Shape\n'+
+    '{\n'+
+    '  radius: Float[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Square extends test::model::Shape\n'+
+    '{\n'+
+    '  side: Float[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Source\n'+
+    '{\n'+
+    '  name: String[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Target\n'+
+    '{\n'+
+    '  dogKind: String[1];\n'+
+    '  dogName: String[1];\n'+
+    '  dogBreed: String[1];\n'+
+    '  animalKind: String[1];\n'+
+    '  tags: String[*];\n'+
+    '  shapeKind: String[1];\n'+
+    '  radius: Float[1];\n'+
+    '  sameName: String[1];\n'+
+    '  twiceTags: String[*];\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::dog(s: test::model::Source[1]): test::model::Animal[1]\n'+
+    '{\n'+
+    '  ^test::model::Dog(name = $s.name, breed = \'Collie\', tags = [\'good\'])\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::animal(s: test::model::Source[1]): test::model::Animal[1]\n'+
+    '{\n'+
+    '  ^test::model::Animal(name = $s.name)\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::circle(s: test::model::Source[1]): test::model::Shape[1]\n'+
+    '{\n'+
+    '  ^test::model::Circle(label = $s.name, radius = 2.5)\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::rename(a: test::model::Animal[1]): test::model::Animal[1]\n'+
+    '{\n'+
+    '  ^$a(name = \'Rex\')\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::tag(a: test::model::Animal[1]): test::model::Animal[1]\n'+
+    '{\n'+
+    '  ^$a(tags += \'copied\')\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::relabel(s: test::model::Shape[1]): test::model::Shape[1]\n'+
+    '{\n'+
+    '  ^$s(label = \'relabelled\')\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::same(a: test::model::Animal[1]): test::model::Animal[1]\n'+
+    '{\n'+
+    '  ^$a()\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::twice(a: test::model::Animal[1]): test::model::Animal[1]\n'+
+    '{\n'+
+    '  let once = ^$a(tags += \'one\');\n'+
+    '  ^$once(tags += \'two\');\n'+
+    '}\n'+
+    '\n'+
+    'function test::query::getCopies(): String[1]\n'+
+    '{\n'+
+    '  test::model::Target.all()->graphFetch(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        dogKind, dogName, dogBreed, animalKind, tags, shapeKind, radius, sameName, twiceTags\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->serialize(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        dogKind, dogName, dogBreed, animalKind, tags, shapeKind, radius, sameName, twiceTags\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->from(test::mapping::M2MUseCopy, test::runtime::testRuntime)\n'+
+    '}\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping test::mapping::M2MUseCopy\n'+
+    '(\n'+
+    '  *test::model::Target: Pure\n'+
+    '  {\n'+
+    '    ~src test::model::Source\n'+
+    '    dogKind: $src->test::model::dog()->test::model::rename()->meta::pure::functions::meta::typeName(),\n'+
+    '    dogName: $src->test::model::dog()->test::model::rename().name,\n'+
+    '    dogBreed: $src->test::model::dog()->test::model::rename()->cast(@test::model::Dog).breed,\n'+
+    '    animalKind: $src->test::model::animal()->test::model::rename()->meta::pure::functions::meta::typeName(),\n'+
+    '    tags: $src->test::model::dog()->test::model::tag().tags,\n'+
+    '    shapeKind: $src->test::model::circle()->test::model::relabel()->meta::pure::functions::meta::typeName(),\n'+
+    '    radius: $src->test::model::circle()->test::model::relabel()->cast(@test::model::Circle).radius,\n'+
+    '    sameName: $src->test::model::dog()->test::model::same().name,\n'+
+    '    twiceTags: $src->test::model::dog()->test::model::twice().tags\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'JsonModelConnection test::connection::testConnection\n'+
+    '{\n'+
+    '  class: test::model::Source;\n'+
+    '  url: \'data:application/json,{"name":"Fido"}\';\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime test::runtime::testRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    test::mapping::M2MUseCopy\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    ModelStore:\n'+
+    '    [\n'+
+    '      connection_1: test::connection::testConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}';
+
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition) && $e->cast(@PackageableElement)->elementToPath() == 'test::query::getCopies__String_1_')->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::legend::executeLegendQuery($function, [], meta::pure::extension::defaultExtensions());
+
+  assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"dogKind":"Dog","dogName":"Rex","dogBreed":"Collie","animalKind":"Animal","tags":["good","copied"],"shapeKind":"Circle","radius":2.5,"sameName":"Fido","twiceTags":["good","one","two"]}}'->parseJSON(), $result->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, meta::pure::executionPlan::engine::java::roadmap::feature.M2MBasics>>
+{  serverVersion.start='v1_20_0',
+   doc.doc='copy of an input instance read as a subclass keeps the subclass and the properties read later'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::copyFunction::copyOfInputInstance() : Boolean[1]
+{
+  let grammar = '###Pure\n'+
+    'Class test::model::Animal\n'+
+    '{\n'+
+    '  name: String[1];\n'+
+    '  tags: String[*];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Dog extends test::model::Animal\n'+
+    '{\n'+
+    '  breed: String[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Zoo\n'+
+    '{\n'+
+    '  pet: test::model::Animal[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Target\n'+
+    '{\n'+
+    '  kind: String[1];\n'+
+    '  name: String[1];\n'+
+    '  breed: String[1];\n'+
+    '  tags: String[*];\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::rename(a: test::model::Animal[1]): test::model::Animal[1]\n'+
+    '{\n'+
+    '  ^$a(name = \'Rex\', tags += \'copied\')\n'+
+    '}\n'+
+    '\n'+
+    'function test::query::getCopy(): String[1]\n'+
+    '{\n'+
+    '  test::model::Target.all()->graphFetch(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        kind, name, breed, tags\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->serialize(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        kind, name, breed, tags\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->from(test::mapping::M2MCopyInput, test::runtime::testRuntime)\n'+
+    '}\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping test::mapping::M2MCopyInput\n'+
+    '(\n'+
+    '  *test::model::Target: Pure\n'+
+    '  {\n'+
+    '    ~src test::model::Zoo\n'+
+    '    kind: $src.pet->test::model::rename()->meta::pure::functions::meta::typeName(),\n'+
+    '    name: $src.pet->test::model::rename().name,\n'+
+    '    breed: $src.pet->test::model::rename()->cast(@test::model::Dog).breed,\n'+
+    '    tags: $src.pet->test::model::rename().tags\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'JsonModelConnection test::connection::testConnection\n'+
+    '{\n'+
+    '  class: test::model::Zoo;\n'+
+    '  url: \'data:application/json,{"pet":{"@type":"Dog","name":"Fido","breed":"Collie","tags":["good"]}}\';\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime test::runtime::testRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    test::mapping::M2MCopyInput\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    ModelStore:\n'+
+    '    [\n'+
+    '      connection_1: test::connection::testConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}';
+
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition) && $e->cast(@PackageableElement)->elementToPath() == 'test::query::getCopy__String_1_')->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::legend::executeLegendQuery($function, [], meta::pure::extension::defaultExtensions());
+
+  assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"kind":"Dog","name":"Rex","breed":"Collie","tags":["good","copied"]}}'->parseJSON(), $result->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, meta::pure::executionPlan::engine::java::roadmap::feature.M2MBasics>>
+{  serverVersion.start='v1_20_0',
+   doc.doc='copy of an input instance read through a subclass fetches the properties the subclass inherits, though only the copy reads them'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::copyFunction::copyOfInputSubclassReadsInheritedProperties() : Boolean[1]
+{
+  let grammar = '###Pure\n'+
+    'Class test::model::Terms\n'+
+    '{\n'+
+    '  secName: String[0..1];\n'+
+    '  id: String[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Product extends test::model::Terms\n'+
+    '{\n'+
+    '  components: String[*];\n'+
+    '  quantity: Integer[0..1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Contract\n'+
+    '{\n'+
+    '  terms: test::model::Terms[0..1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Target\n'+
+    '{\n'+
+    '  quantity: Integer[0..1];\n'+
+    '  componentCount: Integer[1];\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::strip(c: test::model::Contract[1]): test::model::Product[1]\n'+
+    '{\n'+
+    '  let product = $c.terms->toOne()->cast(@test::model::Product);\n'+
+    '  ^$product(components = []);\n'+
+    '}\n'+
+    '\n'+
+    'function test::query::getCopy(): String[1]\n'+
+    '{\n'+
+    '  test::model::Target.all()->graphFetch(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        quantity, componentCount\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->serialize(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        quantity, componentCount\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->from(test::mapping::M2MCopyInherited, test::runtime::testRuntime)\n'+
+    '}\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping test::mapping::M2MCopyInherited\n'+
+    '(\n'+
+    '  *test::model::Target: Pure\n'+
+    '  {\n'+
+    '    ~src test::model::Contract\n'+
+    '    quantity: $src->test::model::strip().quantity,\n'+
+    '    componentCount: $src->test::model::strip().components->size()\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'JsonModelConnection test::connection::testConnection\n'+
+    '{\n'+
+    '  class: test::model::Contract;\n'+
+    '  url: \'data:application/json,{"terms":{"@type":"Product","id":"T1","secName":"SEC","components":["a","b"],"quantity":3}}\';\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime test::runtime::testRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    test::mapping::M2MCopyInherited\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    ModelStore:\n'+
+    '    [\n'+
+    '      connection_1: test::connection::testConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}';
+
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition) && $e->cast(@PackageableElement)->elementToPath() == 'test::query::getCopy__String_1_')->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::legend::executeLegendQuery($function, [], meta::pure::extension::defaultExtensions());
+
+  assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"quantity":3,"componentCount":0}}'->parseJSON(), $result->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, meta::pure::executionPlan::engine::java::roadmap::feature.M2MBasics>>
+{  serverVersion.start='v1_20_0',
+   doc.doc='copy of a milestoned instance keeps its business date, and copy of an instance with a milestoned property keeps the property'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::copyFunction::copyOfMilestonedInstances() : Boolean[1]
+{
+  let grammar = '###Pure\n'+
+    'Class <<temporal.businesstemporal>> test::model::Price\n'+
+    '{\n'+
+    '  value: Float[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Holder\n'+
+    '{\n'+
+    '  name: String[1];\n'+
+    '  price: test::model::Price[0..1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Source\n'+
+    '{\n'+
+    '  v: Float[1];\n'+
+    '  name: String[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Target\n'+
+    '{\n'+
+    '  value: Float[1];\n'+
+    '  date: Date[0..1];\n'+
+    '  holderName: String[1];\n'+
+    '  held: Float[0..1];\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::price(s: test::model::Source[1]): test::model::Price[1]\n'+
+    '{\n'+
+    '  ^test::model::Price(value = $s.v, businessDate = %2024-01-01)\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::holder(s: test::model::Source[1]): test::model::Holder[1]\n'+
+    '{\n'+
+    '  ^test::model::Holder(name = $s.name, priceAllVersions = $s->test::model::price())\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::reprice(p: test::model::Price[1]): test::model::Price[1]\n'+
+    '{\n'+
+    '  ^$p(value = 2.0)\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::rename(h: test::model::Holder[1]): test::model::Holder[1]\n'+
+    '{\n'+
+    '  ^$h(name = \'renamed\')\n'+
+    '}\n'+
+    '\n'+
+    'function test::query::getCopies(): String[1]\n'+
+    '{\n'+
+    '  test::model::Target.all()->graphFetch(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        value, date, holderName, held\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->serialize(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        value, date, holderName, held\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->from(test::mapping::M2MCopyMilestoned, test::runtime::testRuntime)\n'+
+    '}\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping test::mapping::M2MCopyMilestoned\n'+
+    '(\n'+
+    '  *test::model::Target: Pure\n'+
+    '  {\n'+
+    '    ~src test::model::Source\n'+
+    '    value: $src->test::model::price()->test::model::reprice().value,\n'+
+    '    date: $src->test::model::price()->test::model::reprice().businessDate,\n'+
+    '    holderName: $src->test::model::holder()->test::model::rename().name,\n'+
+    '    held: $src->test::model::holder()->test::model::rename().priceAllVersions->toOne().value\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'JsonModelConnection test::connection::testConnection\n'+
+    '{\n'+
+    '  class: test::model::Source;\n'+
+    '  url: \'data:application/json,{"v":1.5,"name":"n"}\';\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime test::runtime::testRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    test::mapping::M2MCopyMilestoned\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    ModelStore:\n'+
+    '    [\n'+
+    '      connection_1: test::connection::testConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}';
+
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition) && $e->cast(@PackageableElement)->elementToPath() == 'test::query::getCopies__String_1_')->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::legend::executeLegendQuery($function, [], meta::pure::extension::defaultExtensions());
+
+  assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"value":2.0,"date":"2024-01-01","holderName":"renamed","held":1.5}}'->parseJSON(), $result->toOne()->parseJSON()));
+}

@@ -19,8 +19,10 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -132,6 +134,7 @@ import org.finos.legend.pure.m4.coreinstance.primitive.date.LatestDate;
 import org.finos.legend.pure.m4.coreinstance.primitive.strictTime.StrictTimeFormat;
 
 import java.io.ByteArrayInputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -922,6 +925,75 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                 }));
     }
 
+    private static boolean isCopyToValidate(AppliedFunction appliedFunction)
+    {
+        if (!("copy".equals(appliedFunction.function) || "meta::pure::functions::lang::copy".equals(appliedFunction.function))
+                || appliedFunction.parameters.size() != 3
+                || !(appliedFunction.parameters.get(0) instanceof Variable))
+        {
+            return false;
+        }
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification keys = appliedFunction.parameters.get(2);
+        return keys instanceof KeyExpression
+                || (keys instanceof Collection && ((Collection) keys).values.stream().allMatch(v -> v instanceof KeyExpression));
+    }
+
+    // ^$x(p = v) builds the runtime class of $x, so plan generation must be able to build every concrete class in the
+    // hierarchy of $x's declared class; these checks report what it cannot build on the copy itself.
+    private void validateCopy(AppliedFunction copy)
+    {
+        Variable source = (Variable) copy.parameters.get(0);
+        ValueSpecification compiledSource = source.accept(this);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type rawType = compiledSource._genericType()._rawType();
+        Assert.assertTrue(rawType instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class, () -> "Can only copy an instance of a class with ^$" + source.name + "(...)", copy.sourceInformation, EngineErrorType.COMPILATION);
+        Assert.assertTrue(rawType != this.context.pureModel.getType(M3Paths.Any), () -> "Can't copy a variable declared as Any with ^$" + source.name + "(...): declare $" + source.name + " with its class", copy.sourceInformation, EngineErrorType.COMPILATION);
+        Assert.assertTrue(isExactlyOne(compiledSource._multiplicity()), () -> "Can only copy a single instance with ^$" + source.name + "(...): $" + source.name + " has multiplicity " + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(compiledSource._multiplicity()), copy.sourceInformation, EngineErrorType.COMPILATION);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> declaredClass = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) rawType;
+        String declaredPath = classPath(declaredClass);
+        Assert.assertTrue(declaredClass._typeParameters().isEmpty(), () -> "Copying an instance of a class with type parameters is not supported: " + declaredPath, copy.sourceInformation, EngineErrorType.COMPILATION);
+
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification keys = copy.parameters.get(2);
+        List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> keyExpressions = keys instanceof Collection ? ((Collection) keys).values : Collections.singletonList(keys);
+        MutableSet<String> unknown = ListIterate.collect(keyExpressions, k -> ((CString) ((KeyExpression) k).key).value).toSet().withoutAll(dataProperties(declaredClass).collect(AbstractProperty::_name));
+        Assert.assertTrue(unknown.isEmpty(), () -> (unknown.size() == 1 ? "Can't find property '" : "Can't find properties '") + unknown.toSortedList().makeString("', '") + "' in class '" + declaredPath + "'", copy.sourceInformation, EngineErrorType.COMPILATION);
+
+        Assert.assertTrue(hasConcreteClass(declaredClass, Sets.mutable.empty()), () -> "Can't copy an instance of abstract class '" + declaredPath + "': it has no concrete subclass", copy.sourceInformation, EngineErrorType.COMPILATION);
+    }
+
+    private MutableList<AbstractProperty<?>> dataProperties(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> cls)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type any = this.context.pureModel.getType(M3Paths.Any);
+        MutableList<AbstractProperty<?>> result = Lists.mutable.empty();
+        for (Object p : org.finos.legend.pure.m3.navigation._class._Class.getSimpleProperties(cls, this.context.pureModel.getExecutionSupport().getProcessorSupport()))
+        {
+            // classifierGenericType and elementOverride, which every class inherits from Any, are not data
+            if (((AbstractProperty<?>) p)._owner() != any)
+            {
+                result.add((AbstractProperty<?>) p);
+            }
+        }
+        return result;
+    }
+
+    private static boolean hasConcreteClass(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> cls, MutableSet<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>> visited)
+    {
+        if (!visited.add(cls))
+        {
+            return false;
+        }
+        return !isAbstract(cls) || cls._specializations().anySatisfy(s -> s._specific() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class && hasConcreteClass((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) s._specific(), visited));
+    }
+
+    private static boolean isAbstract(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> cls)
+    {
+        return cls._stereotypes().anySatisfy(s -> "abstract".equals(s._value()) && "typemodifiers".equals(s._profile()._name()));
+    }
+
+    private String classPath(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> cls)
+    {
+        return HelperModelBuilder.getElementFullPath(cls, this.context.pureModel.getExecutionSupport());
+    }
+
     private static boolean isExactlyOne(Multiplicity m)
     {
         Long lb = m._lowerBound()._value();
@@ -932,6 +1004,10 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     @Override
     public ValueSpecification visit(AppliedFunction appliedFunction)
     {
+        if (isCopyToValidate(appliedFunction))
+        {
+            this.validateCopy(appliedFunction);
+        }
         processingContext.push("Applying " + appliedFunction.function);
         MilestoningDatePropagationHelper.isValidSource(appliedFunction, processingContext);
         boolean isLetFunction = appliedFunction.function.equals("letFunction");

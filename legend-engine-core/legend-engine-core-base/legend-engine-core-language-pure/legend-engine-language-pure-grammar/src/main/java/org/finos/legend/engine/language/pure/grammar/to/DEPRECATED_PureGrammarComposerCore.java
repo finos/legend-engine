@@ -971,6 +971,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             }
             return "^" + type + "(" + Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ") + ")";
         }
+        else if ("copy".equals(function) && parameters.size() == 3 && parameters.get(0) instanceof Variable)
+        {
+            ValueSpecification param = parameters.get(2);
+            List<ValueSpecification> values = param instanceof Collection ? ((Collection) param).values : Collections.singletonList(param);
+            return "^" + parameters.get(0).accept(this) + "(" + Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ") + ")";
+        }
         else if ("not".equals(function))
         {
             if (parameters.get(0) instanceof AppliedFunction && ((AppliedFunction) parameters.get(0)).function.equals("equal"))
@@ -1255,7 +1261,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(KeyExpression keyExpression)
     {
-        return PureGrammarParserUtility.removeQuotes(keyExpression.key.accept(this)) + "=" + keyExpression.expression.accept(this);
+        return PureGrammarParserUtility.removeQuotes(keyExpression.key.accept(this)) + (keyExpression.add ? "+=" : "=") + keyExpression.expression.accept(this);
     }
 
     @Override

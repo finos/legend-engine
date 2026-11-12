@@ -965,6 +965,10 @@ public class DomainParseTreeWalker
 
     private AppliedFunction newFunction(DomainParserGrammar.ExpressionInstanceContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
+        if (ctx.variable() != null)
+        {
+            return this.copyFunction(ctx, typeParametersNames, lambdaContext, addLines, space);
+        }
         GenericTypeInstance generic = new GenericTypeInstance(
                 new GenericType(new PackageableType("meta::pure::metamodel::type::Class"),
                         Lists.mutable.of(
@@ -997,6 +1001,28 @@ public class DomainParseTreeWalker
             Collection valueAssignments = new Collection(keyExpressions);
             return this.createAppliedFunction(Lists.mutable.with(generic, new CString(""), valueAssignments), "new");
         }
+    }
+
+    private AppliedFunction copyFunction(DomainParserGrammar.ExpressionInstanceContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
+    {
+        if (ctx.typeVariableValues() != null || ctx.typeArguments() != null || ctx.multiplicityArguments() != null)
+        {
+            throw new EngineException("Type arguments are not supported when copying an instance with ^$variable(...)", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        List<DomainParserGrammar.ExpressionInstanceParserPropertyAssignmentContext> assignments = ctx.expressionInstanceParserPropertyAssignment();
+        for (DomainParserGrammar.ExpressionInstanceParserPropertyAssignmentContext assignment : assignments)
+        {
+            if (assignment.identifier().size() > 1)
+            {
+                throw new EngineException("Nested property paths are not supported when copying an instance with ^$variable(...)", walkerSourceInformation.getSourceInformation(assignment), EngineErrorType.PARSER);
+            }
+        }
+        MutableList<ValueSpecification> keyExpressions = processExpressionInstanceParserPropertyAssignments(assignments, typeParametersNames, lambdaContext, addLines, space);
+        for (int i = 0; i < assignments.size(); i++)
+        {
+            ((KeyExpression) keyExpressions.get(i)).add = assignments.get(i).PLUS() != null;
+        }
+        return this.createAppliedFunction(Lists.mutable.with(this.variable(ctx.variable()), new CString(""), new Collection(keyExpressions)), "copy", walkerSourceInformation.getSourceInformation(ctx));
     }
 
     private ValueSpecification find(String name, MutableList<ValueSpecification> keyExpressions)

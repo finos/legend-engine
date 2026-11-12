@@ -832,6 +832,15 @@ function meta::pure::functions::meta::allSpecializations( class:Class<Any>[1] ) 
    );
 }
 
+function {doc.doc = 'The class and all its specializations, each before the classes it extends'}
+meta::pure::functions::meta::concreteClassesMostSpecificFirst(class:Class<Any>[1]):Class<Any>[*]
+{
+   $class->allSpecializations()
+      ->map(c | pair($c, $c->getAllClassGeneralisations()->removeDuplicates()->size()))
+      ->sort({a, b | if($a.second != $b.second, |$b.second - $a.second, |$a.first->elementToPath()->compare($b.first->elementToPath()))})
+      .first->cast(@Class<Any>);
+}
+
 function meta::pure::functions::meta::isAnyClass( rawType:Type[*] ) : Boolean[1]
 {
    let type = $rawType->toOne();

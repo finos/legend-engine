@@ -3445,4 +3445,54 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "}\n",
                 "COMPILATION error at [9:35-38]: Can't find a match for function 'plus(Any[2])'");
     }
+
+    @Test
+    public void testCopyOfVariableCompilesToCopyWithOnlyTheChanges()
+    {
+        PureModel pureModel = test("Class test::B\n" +
+                "{\n" +
+                "  id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::A extends test::B\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  tags: String[*];\n" +
+                "  size: Integer[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "function test::rename(x: test::A[1]): test::A[1]\n" +
+                "{\n" +
+                "  ^$x(name = 'renamed', tags += 'copied')\n" +
+                "}\n").getTwo();
+        SimpleFunctionExpression copy = (SimpleFunctionExpression) pureModel.getConcreteFunctionDefinition("test::rename_A_1__A_1_", null)._expressionSequence().toList().get(0);
+        Assert.assertEquals("copy_T_1__String_1__KeyExpression_MANY__T_1_", copy._func()._name());
+        Assert.assertSame(pureModel.getClass("test::A"), copy._genericType()._rawType());
+        Assert.assertEquals("$x", describe(copy._parametersValues().toList().get(0)));
+        Map<String, String> changes = new TreeMap<>();
+        for (Object value : ((InstanceValue) copy._parametersValues().toList().get(2))._values())
+        {
+            KeyExpression keyExpression = (KeyExpression) (value instanceof InstanceValue ? ((InstanceValue) value)._values().getAny() : value);
+            changes.put((String) keyExpression._key()._values().getAny(), (keyExpression._add() ? "+= " : "= ") + describe(keyExpression._expression()));
+        }
+        Map<String, String> expected = new TreeMap<>();
+        expected.put("name", "= 'renamed'");
+        expected.put("tags", "+= 'copied'");
+        Assert.assertEquals(expected, changes);
+    }
+
+    @Test
+    public void testCopyOfVariableWithUnknownPropertyFails()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "function test::f(x: test::A[1]): test::A[1]\n" +
+                "{\n" +
+                "  ^$x(nmae = 'x')\n" +
+                "}\n",
+                "COMPILATION error at [8:3-17]: Can't find property 'nmae' in class 'test::A'");
+    }
 }
