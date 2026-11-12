@@ -210,6 +210,32 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testLogicalBinaryPrecedenceRequiresParens()
+    {
+        checkExpression("(col1 = 1 OR col2 = 1) AND col3 = 1");
+        checkExpression("col1 = 1 AND (col2 = 1 OR col3 = 1)");
+        checkExpression("(col1 = 1 OR col2 = 1) AND (col3 = 1 OR col4 = 1)");
+    }
+
+    @Test
+    public void testLogicalBinarySamePrecedenceDropsRedundantParens()
+    {
+        checkExpression("(col1 = 1 AND col2 = 1) AND col3 = 1", "col1 = 1 AND col2 = 1 AND col3 = 1");
+        checkExpression("col1 = 1 AND (col2 = 1 AND col3 = 1)", "col1 = 1 AND col2 = 1 AND col3 = 1");
+        checkExpression("(col1 = 1 OR col2 = 1) OR col3 = 1", "col1 = 1 OR col2 = 1 OR col3 = 1");
+        checkExpression("col1 = 1 OR (col2 = 1 OR col3 = 1)", "col1 = 1 OR col2 = 1 OR col3 = 1");
+        checkExpression("(col1 = 1 AND col2 = 1) OR col3 = 1", "col1 = 1 AND col2 = 1 OR col3 = 1");
+    }
+
+    @Test
+    public void testNotOverLogicalBinaryRequiresParens()
+    {
+        checkExpression("NOT (col1 = 1 AND col2 = 1)");
+        checkExpression("NOT (col1 = 1 OR col2 = 1)");
+        checkExpression("NOT col1 = 1 AND col2 = 1");
+    }
+
+    @Test
     public void testGroupBy()
     {
         check("SELECT COUNT(col) FROM myTable GROUP BY col1");
