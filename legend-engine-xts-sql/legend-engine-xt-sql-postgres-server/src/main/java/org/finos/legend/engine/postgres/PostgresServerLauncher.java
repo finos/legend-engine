@@ -29,6 +29,9 @@ import io.opentelemetry.semconv.ResourceAttributes;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.factory.Lists;
@@ -127,17 +130,19 @@ public class PostgresServerLauncher
 
     public static String resolveEnv(String value)
     {
-        if (value != null && value.startsWith("${") && value.endsWith("}"))
+        if (value == null)
         {
-            String var = value.substring(2, value.length() - 1);
-            String resolved = System.getenv(var);
-            if (resolved == null)
-            {
-                throw new IllegalStateException("Environment variable '" + var + "' referenced by ssl config is not set");
-            }
-            return resolved;
+            return null;
         }
-        return value;
+        try
+        {
+            // Trim trailing newline(s) so the secret file can be a simple one-line file.
+            return Files.readString(Paths.get(value)).stripTrailing();
+        }
+        catch (IOException e)
+        {
+            throw new IllegalStateException("Failed to read ssl secret from file '" + value + "': " + e.getMessage(), e);
+        }
     }
 
     private void setupOpenTelemetry(OpenTelemetryConfig otelConfig)

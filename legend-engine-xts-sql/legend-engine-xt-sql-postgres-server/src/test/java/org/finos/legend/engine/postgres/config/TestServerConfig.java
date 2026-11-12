@@ -101,23 +101,29 @@ public class TestServerConfig
     }
 
     @Test
-    public void resolvesLiteralPassword()
+    public void resolvesSecretFromFile() throws Exception
     {
-        Assert.assertEquals("literal", PostgresServerLauncher.resolveEnv("literal"));
+        File secretFile = File.createTempFile("resolveEnvTest", ".secret");
+        secretFile.deleteOnExit();
+        try (java.io.FileWriter writer = new java.io.FileWriter(secretFile))
+        {
+            writer.write("supersecret\n");
+        }
+        Assert.assertEquals("supersecret", PostgresServerLauncher.resolveEnv(secretFile.getAbsolutePath()));
         Assert.assertNull(PostgresServerLauncher.resolveEnv(null));
     }
 
     @Test
-    public void missingEnvVarFailsClosed()
+    public void missingSecretFileFailsClosed()
     {
         try
         {
-            PostgresServerLauncher.resolveEnv("${A_DEFINITELY_UNSET_ENV_VAR_FOR_TEST}");
-            Assert.fail("expected failure for unset env var");
+            PostgresServerLauncher.resolveEnv("/no/such/path/to/secret-file-for-test");
+            Assert.fail("expected failure for missing secret file");
         }
         catch (IllegalStateException e)
         {
-            Assert.assertTrue(e.getMessage().contains("A_DEFINITELY_UNSET_ENV_VAR_FOR_TEST"));
+            Assert.assertTrue(e.getMessage().contains("/no/such/path/to/secret-file-for-test"));
         }
     }
 }
