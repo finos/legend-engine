@@ -1,0 +1,20 @@
+name: m2m-subtype-cast-child-set
+title: "M2M child set reached through a subtype cast maps a property to a further child set"
+description: |
+  The Row mapping with ~src Base reaches the TExtra child set through
+  $src->cast(@Sub).extra, and TExtra maps detail to the TDetail child set
+  through $src.detail. The source tree must carry
+  items->subType(Sub){extra{value, detail{code}}}, so Detail is fetched and
+  gets an interface in the generated plan.
+modelSources:
+  model:
+    root: m2m-subtype-cast-child-set
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - subtype
