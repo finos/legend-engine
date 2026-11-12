@@ -205,12 +205,11 @@ public class GraphQLStoreCompilerExtension implements IGraphQLStoreCompilerExten
         );
     }
 
-    // Dev version only - a brand-new store with no historical client versions to register.
     @Override
     public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
     {
         return Collections.singletonList(registerElementForPathToElement ->
-                PureClientVersions.versionsSinceExclusive(PureClientVersions.production).forEach(v ->
+                PureClientVersions.versionsSince("v1_33_0").forEach(v ->
                         registerElementForPathToElement.value("meta::protocols::pure::" + v + "::extension::store::graphQL",
                                 Lists.mutable.with("getGraphQLStoreExtension_String_1__SerializerExtension_1_"))));
     }
