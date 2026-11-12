@@ -16,6 +16,7 @@ package org.finos.legend.engine.query.graphQL.api.test;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import net.javacrumbs.jsonunit.JsonAssert;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -543,6 +544,91 @@ public class TestGraphQLAPI extends TestGraphQLApiAbstract
 
         String expected = "{\"result\":{\"\\\"Success - 1 rows updated!\\\"\"}}";
         Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_VariablesResolveAndReuseCachedPlan() throws Exception
+    {
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(cache);
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query($legalName: String!) {\n" +
+                "  firmByLegalName(legalName: $legalName) {\n" +
+                "      legalName,\n" +
+                "      employees {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }";
+        query.variables = "{\"legalName\": \"Firm X\"}";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{" +
+                "\"data\":{" +
+                "\"firmByLegalName\":" +
+                "{\"legalName\":\"Firm X\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}]}" +
+                "}" +
+                "}";
+        JsonAssert.assertJsonEquals(expected, responseAsString(response));
+        Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        query.variables = "{\"legalName\": \"Firm A\"}";
+        Response response2 = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+        JsonAssert.assertJsonEquals("{\"data\":{\"firmByLegalName\":{\"legalName\":\"Firm A\",\"employees\":[{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\"}]}}}", responseAsString(response2));
+        Assert.assertEquals(1, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_MissingRequiredVariableReturnsGraphQLError() throws Exception
+    {
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query($legalName: String!) {\n" +
+                "  firmByLegalName(legalName: $legalName) {\n" +
+                "      legalName\n" +
+                "    }\n" +
+                "  }";
+        query.variables = "{}";
+
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        JsonAssert.assertJsonPartEquals("Missing value for required variable '$legalName'", responseAsString(response), "errors[0].message");
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_VariablesInWhereAreRejectedEvenWhenPlanIsCached() throws Exception
+    {
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(cache);
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  allFirms(where: {legalName: {_eq: \"Firm X\"}}) {\n" +
+                "      legalName\n" +
+                "    }\n" +
+                "  }";
+        Response literalResponse = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+        Assert.assertTrue(responseAsString(literalResponse).contains("\"legalName\":\"Firm X\""));
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        query.query = "query Query($legalName: String!) {\n" +
+                "  allFirms(where: {legalName: {_eq: $legalName}}) {\n" +
+                "      legalName\n" +
+                "    }\n" +
+                "  }";
+        query.variables = "{\"legalName\": \"Firm X\"}";
+        Response variableResponse = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        JsonAssert.assertJsonPartEquals("Variables are not supported inside the 'where' argument; provide the filter values inline in the query (field 'allFirms')", responseAsString(variableResponse), "errors[0].message");
+        Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
     }
 
     @Test

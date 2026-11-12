@@ -463,6 +463,31 @@ The production URL requires the maven coordinates of the released metadata (grou
 </div>
 </div>
 
+###### Variables
+
+The execute endpoints accept the standard GraphQL request body, with the arguments passed separately from the query text:
+
+<div align="center" style="width:100%">
+<div style="width:90%" align="left">
+
+    {
+        "query": "query($legalName: String!) { firmByLegalName(legalName: $legalName) { legalName } }",
+        "variables": { "legalName": "Firm X" }
+    }
+
+</div>
+</div>
+
+Because the query text does not change between calls, the generated execution plan is cached once and reused for every value.
+
+- `variables` must be a JSON object keyed by variable name. Each value is checked against the declared type (`Int`, `Float`, `String`, `Boolean`, `ID`, lists, and non-null markers); enums, custom scalars and the fields of input objects are passed through unchecked (`{firstName: 1}` is not rejected).
+- A variable can be used for any scalar argument, and for a list argument either as the whole list (`names: $names`) or as an element (`names: ["John", $second]`).
+- Input-object arguments (a class-typed parameter of a qualified property) accept variables at any depth, including the whole object: `filter: {firstName: $n}` or `filter: $f`. The class must be part of the mapping used for execution, otherwise the router rejects it.
+- Properties of an input-object argument's class are limited to primitives, other classes, and (for lists of objects) nothing used in SQL: enumeration, date and collection-typed properties and superclasses are not supported. An enumeration property fails to compile the plan unless the same enumeration also appears in the selected result.
+- A declared default is used when the variable is omitted. An explicit `null` is not replaced by the default and is rejected for non-null types.
+- **Variables are not supported inside the `where` argument**, for example `where: {id: {_eq: $id}}` or `where: $filter`. The filter's shape determines the generated plan, so its values must be written inline in the query. Such requests are rejected with an error before any plan is generated.
+- For mutations, `variables` is the payload deserialized through the binding and is not interpreted as GraphQL variables.
+
 ###### External Format
 
 The query module also contains the 'external format' <a href='https://github.com/finos/legend-engine/blob/master/legend-engine-xt-graphQL-query/src/main/java/org/finos/legend/engine/query/graphQL/api/format/GraphQLFormatExtension.java'>plugin integration</a> which enables Studio to parse and generate GraphQL schemas.   

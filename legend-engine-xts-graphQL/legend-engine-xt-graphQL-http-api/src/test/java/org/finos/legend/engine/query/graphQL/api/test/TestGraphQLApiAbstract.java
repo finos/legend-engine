@@ -91,6 +91,9 @@ public abstract class TestGraphQLApiAbstract
                 buildPMCDMetadataHandler("/api/projects/Project5/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project5_Workspace1.pure"),
                 buildJsonHandler("/api/projects/Project5/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]]"),
 
+                buildPMCDMetadataHandler("/api/projects/Project6/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project6_Workspace1.pure"),
+                buildJsonHandler("/api/projects/Project6/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]"),
+
                 buildPMCDMetadataHandler("/api/projects/ExtendedPrimitivesProject/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/ExtendedPrimitivesProject_Workspace1.pure"),
                 buildJsonHandler("/api/projects/ExtendedPrimitivesProject/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]")
         );

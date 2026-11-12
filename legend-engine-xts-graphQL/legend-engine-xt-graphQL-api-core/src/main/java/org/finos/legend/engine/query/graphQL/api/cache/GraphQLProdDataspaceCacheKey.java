@@ -23,7 +23,12 @@ public class GraphQLProdDataspaceCacheKey extends GraphQLProdCacheKey
 
     public GraphQLProdDataspaceCacheKey(String groupID, String artifactId, String versionId, String dataspacePath, String executionContext, String queryClassPath, String query)
     {
-        super(groupID, artifactId, versionId, queryClassPath, query);
+        this(groupID, artifactId, versionId, dataspacePath, executionContext, queryClassPath, query, null);
+    }
+
+    public GraphQLProdDataspaceCacheKey(String groupID, String artifactId, String versionId, String dataspacePath, String executionContext, String queryClassPath, String query, String variables)
+    {
+        super(groupID, artifactId, versionId, queryClassPath, query, variables, null);
         this.dataspacePath = dataspacePath;
         this.executionContext = executionContext;
     }
