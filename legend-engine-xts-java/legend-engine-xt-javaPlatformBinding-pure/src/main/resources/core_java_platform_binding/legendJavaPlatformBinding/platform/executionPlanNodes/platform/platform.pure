@@ -203,7 +203,9 @@ function meta::pure::executionPlan::platformBinding::legendJava::platform::gener
       debug = $debug->indent()
     );
 
-  $javaContext->meta::external::language::java::generation::featureBased::generateJavaModel();
+  let project = $javaContext->meta::external::language::java::generation::featureBased::generateJavaModel();
+  let platformGeneratedClassNames = $context.typeInfos->allClassInfos()->filter(ti | !$context.conventions->isProvidedType($ti.type))->map(ti | $context.conventions->className($ti.type)->typeToString());
+  $project->meta::external::language::java::metamodel::project::allClasses()->filter(c | !$c->typeToString()->in($platformGeneratedClassNames))->fold({c, p | $p->meta::external::language::java::factory::project::replaceClass($c->meta::pure::executionPlan::platformBinding::legendJava::shared::addAlloyStoreObjectReferenceMethodsForClass($context))}, $project);
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementionForNow(conventions:Conventions[1]):GeneratedCode[1]

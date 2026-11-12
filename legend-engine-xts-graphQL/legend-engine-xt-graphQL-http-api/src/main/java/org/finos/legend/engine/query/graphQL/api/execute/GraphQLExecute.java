@@ -102,6 +102,7 @@ import jakarta.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -259,6 +260,7 @@ public class GraphQLExecute extends GraphQL
         PureModel pureModel = null;
         try
         {
+            GraphQLExecutionHelper.rejectVariablesInWhereArguments(graphQLQuery);
             if (isQueryIntrospection(graphQLQuery))
             {
                 pureModel = modelLoader.call();
@@ -330,6 +332,18 @@ public class GraphQLExecute extends GraphQL
     @Prometheus(name = "graphql execution", labels = {"projectBasePath", "mappingPath", "runtimePath", "queryClassPath"})
     public Response execute(Identity identity, List<SerializedNamedPlans> planWithSerialized, OperationDefinition graphQLQuery, GraphQLCacheKey graphQLCacheKey)
     {
+        GraphQLExecutionHelper.VariableContext variableContext = GraphQLExecutionHelper.VariableContext.from(graphQLQuery, graphQLCacheKey.getVariables());
+        // Built before streaming starts so an invalid variable fails as a GraphQL error rather than mid-response
+        Map<SerializedNamedPlans, Map<String, Result>> rootFieldParameterMaps = new LinkedHashMap<>();
+        planWithSerialized.stream().filter(serializedNamedPlans -> GraphQLExecutionHelper.isARootField(serializedNamedPlans.propertyName, graphQLQuery)).forEach(p ->
+        {
+            Map<String, Result> parameterMap = GraphQLExecutionHelper.getParameterMap(graphQLQuery, p.propertyName, variableContext);
+            if (graphQLCacheKey.getVariables() != null && graphQLQuery.type == OperationType.mutation)
+            {
+                parameterMap.put("variable", new ConstantResult(graphQLCacheKey.getVariables()));
+            }
+            rootFieldParameterMaps.put(p, parameterMap);
+        });
         return Response.ok(
                 (StreamingOutput) outputStream ->
                 {
@@ -341,17 +355,11 @@ public class GraphQLExecute extends GraphQL
                         generator.writeStartObject();
                         generator.setCodec(new ObjectMapper());
 
-                        planWithSerialized.stream().filter(serializedNamedPlans -> GraphQLExecutionHelper.isARootField(serializedNamedPlans.propertyName, graphQLQuery)).forEach(p ->
+                        rootFieldParameterMaps.forEach((p, parameterMap) ->
                         {
                             Result  result = null;
                             try
                             {
-                                Map<String, Result> parameterMap = GraphQLExecutionHelper.getParameterMap(graphQLQuery, p.propertyName);
-                                if (graphQLCacheKey.getVariables() != null && graphQLQuery.type == OperationType.mutation)
-                                {
-                                    parameterMap.put("variable", new ConstantResult(graphQLCacheKey.getVariables()));
-                                }
-                                
                                 result = planExecutor.execute(p.serializedPlan, parameterMap, null, identity);
 
                                 if (result instanceof JsonStreamingResult)
@@ -391,7 +399,7 @@ public class GraphQLExecute extends GraphQL
                             }
                         });
                         generator.writeEndObject();
-                        Map<String, ?> extensions = this.computeExtensionsField(graphQLQuery, planWithSerialized, identity);
+                        Map<String, ?> extensions = this.computeExtensionsField(graphQLQuery, planWithSerialized, identity, variableContext);
                         if (!extensions.isEmpty())
                         {
                             generator.writeFieldName("extensions");
@@ -409,7 +417,7 @@ public class GraphQLExecute extends GraphQL
                 }).build();
     }
 
-    private Map<String, ?> computeExtensionsField(OperationDefinition query, List<SerializedNamedPlans> serializedNamedPlans, Identity identity)
+    private Map<String, ?> computeExtensionsField(OperationDefinition query, List<SerializedNamedPlans> serializedNamedPlans, Identity identity, GraphQLExecutionHelper.VariableContext variableContext)
     {
         Map<String, Map<String, Object>> m = new HashMap<>();
         List<Directive> directives = GraphQLExecutionHelper.findDirectives(query);
@@ -420,7 +428,7 @@ public class GraphQLExecute extends GraphQL
             directives.forEach(directive ->
             {
                 SingleExecutionPlan plan = serializedNamedPlans.stream().filter(serializedNamedPlan -> serializedNamedPlan.propertyName.equals(GraphQLExecutionHelper.getPlanNameForDirective(rootFieldName, directive))).findFirst().get().serializedPlan;
-                Map<String, Result> parameterMap = GraphQLExecutionHelper.getParameterMap(query, rootFieldName);
+                Map<String, Result> parameterMap = GraphQLExecutionHelper.getParameterMap(query, rootFieldName, variableContext);
                 Object object = getExtensionForDirective(directive).executeDirective(directive, plan, planExecutor, parameterMap, identity);
                 m.get(rootFieldName).put(directive.name, object);
             });
@@ -619,7 +627,7 @@ public class GraphQLExecute extends GraphQL
             long startTime = System.currentTimeMillis();
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
             Document cachableGraphQLQuery = createCachableGraphQLQuery(document);
-            GraphQLDevCacheKey key = new GraphQLDevCacheKey(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, objectMapper.writeValueAsString(cachableGraphQLQuery));
+            GraphQLDevCacheKey key = new GraphQLDevCacheKey(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, null, objectMapper.writeValueAsString(cachableGraphQLQuery), query.variables);
 
             Response response = this.executeGraphQLQuery(document, key, identity, () -> loadSDLCProjectModel(identity, request, projectId, workspaceId, isGroupWorkspace));
             MetricsHandler.observe("graphql plan generation", startTime, System.currentTimeMillis(),
@@ -681,7 +689,7 @@ public class GraphQLExecute extends GraphQL
         {
             long startTime = System.currentTimeMillis();
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
-            GraphQLProdMappingRuntimeCacheKey key = new GraphQLProdMappingRuntimeCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
+            GraphQLProdMappingRuntimeCacheKey key = new GraphQLProdMappingRuntimeCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, null, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)), query.variables);
 
             Response response = this.executeGraphQLQuery(document, key, identity, () -> loadProjectModel(identity, groupId, artifactId, versionId));
             MetricsHandler.observe("graphql plan generation", startTime, System.currentTimeMillis(),
@@ -737,7 +745,7 @@ public class GraphQLExecute extends GraphQL
         {
             long startTime = System.currentTimeMillis();
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
-            GraphQLProdDataspaceCacheKey key = new GraphQLProdDataspaceCacheKey(groupId, artifactId, versionId, dataspacePath, executionContext, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
+            GraphQLProdDataspaceCacheKey key = new GraphQLProdDataspaceCacheKey(groupId, artifactId, versionId, dataspacePath, executionContext, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)), query.variables);
 
             Response response = this.executeGraphQLQuery(document, key, identity, () -> loadProjectModel(identity, groupId, artifactId, versionId));
             MetricsHandler.observe("graphql plan generation", startTime, System.currentTimeMillis(), key.getProjectBasePath(), key.getMappingPath(), key.getRuntimePath(), key.getQueryClassPath());
