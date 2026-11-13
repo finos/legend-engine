@@ -5,10 +5,10 @@
   "identityType": "ANONYMOUS",
   "ssl": {
     "keyStorePath": "keystore.p12",
-    "keyStorePassword": "${KEYSTORE_PASSWORD}",
+    "keyStorePassword": "/run/secrets/keystore-password",
     "keyStoreType": "PKCS12",
     "trustStorePath": "truststore.p12",
-    "trustStorePassword": "${TRUSTSTORE_PASSWORD}",
+    "trustStorePassword": "/run/secrets/truststore-password",
     "trustStoreType": "PKCS12",
     "needClientAuth": false,
     "requireSsl": true,
