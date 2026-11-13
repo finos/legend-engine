@@ -542,13 +542,14 @@ This phase covers both types of file generation:
 
 ### 4.6 Phase 5: Test Execution
 
-- **Run Testable tests**: Find all `Testable` elements in the compiled `PureModel`. A Testable's tests may be grouped into **test suites** (services, mappings, functions) or be **top-level atomic tests** with no enclosing suite (e.g., `Persistence`); both shapes are discovered and executed.
+- **Run Testable tests**: Find all `Testable` elements in the compiled `PureModel`. A Testable's tests may be grouped into **test suites** (services, mappings, functions) or be **top-level atomic tests** with no enclosing suite (e.g., `Persistence`); both shapes are discovered and executed. A function's top-level tests are compiled into a suite named `default`.
+- **Require a runner**: Each Testable's tests run through the `TestableRunnerExtension` that claims its element type. The framework supplies the mapping, service, and function runners; any other (e.g., persistence) must be on the hosting module's test classpath. A Testable with tests that no runner claims fails the phase rather than being skipped, and the JUnit integration reports it as a failing `<element> / No Test Runner` task.
 - **Run Legacy Mapping tests**: Find `Mapping` elements with legacy `MappingTest` / `MappingTestSuite` elements.
 - **Run Legacy Service tests**: Find `Service` elements with legacy `ServiceTest` elements.
 - **Dependency Exclusion**: Only execute tests for elements defined in the primary `model`. Any test defined in an element loaded via `dependencies` MUST be ignored.
 - Use `TestableRunner.doTests(...)`, the legacy `MappingTestRunner`, and the legacy `ServiceTestRunner` to execute the in-scope tests, producing their respective result objects.
 - **Success criteria**: All in-scope tests (Testable and legacy) pass.
-- **Failure mode**: Failed/error `TestResult`, `RichMappingTestResult`, or `RichServiceTestResult` entries.
+- **Failure mode**: Failed/error `TestResult`, `RichMappingTestResult`, or `RichServiceTestResult` entries, or a Testable with tests and no runner on the classpath.
 - **Skipped if**: No test elements (Testable or legacy) exist in the primary model.
 
 ### 4.7 Phase 6: Plan Generation
