@@ -1547,7 +1547,8 @@ function meta::relational::functions::sqlQueryToString::databricks::tabularFunct
 {
    let renderedArgs = $args.value->map(v | $v->match([
       ll:LiteralList[1] | 'array(' + $ll.values->map(e | $e->processOperation($sgc))->joinStrings(', ') + ')',
-      r:RelationalOperationElement[1] | $r->processOperation($sgc)
+      // A correlated scalar subquery is not allowed as a table function argument (UNSUPPORTED_CORRELATED_SCALAR_SUBQUERY)
+      r:RelationalOperationElement[1] | $r->inlineTableFunctionParamsForDatabricks()->processOperation($sgc)
    ]))->joinStrings(', ');
    let qualified = if($schema == '', | $functionName, | $schema + '.' + $functionName);
    $qualified + '(' + $renderedArgs + ')';
