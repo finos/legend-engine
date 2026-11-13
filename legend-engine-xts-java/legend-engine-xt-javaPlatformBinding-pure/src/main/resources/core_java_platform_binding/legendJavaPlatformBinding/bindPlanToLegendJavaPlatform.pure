@@ -28,20 +28,25 @@ import meta::pure::extension::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
+import meta::pure::executionPlan::platformBinding::legendJava::missingTypes::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegendJavaPlatform(plan: ExecutionPlan[1], platformBindingConfig: PlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionPlan[1]
 {
    let legendJavaConfig   = $platformBindingConfig->convertToLegendJavaPlatformBindingConfigIfPossible();
    let generationContext  = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
 
-   let baseProject        = $generationContext->generateTypes($debug);
    let seededContext      = ^$generationContext(resolutionState = ^CodeDependencyResolutionState(projectsByDependency=^Map<String, Project>()));
    let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $seededContext, $extensions, $debug);
-   let generatedProject   = $baseProject->concatenate($generatedNode.project)->toOneMany()->mergeProjects();
+   let result             = if($plan->isM2MMigrationMissingJavaTypesEnabled(),
+                               | $plan.rootExecutionNode->generateWithMissingJavaTypes($seededContext, $generatedNode, $extensions, $debug),
+                               | pair($generationContext.typeInfos, $generatedNode)
+                            );
+   let baseProject        = ^$generationContext(typeInfos = $result.first)->generateTypes($debug);
+   let generatedProject   = $baseProject->concatenate($result.second.project)->toOneMany()->mergeProjects();
 
    ^$plan
    (
-      rootExecutionNode = $generatedNode.node,
+      rootExecutionNode = $result.second.node,
       globalImplementationSupport = if ($generatedProject->allClasses()->isEmpty(),
                                         | [],
                                         | $generatedProject->projectToImplementation()

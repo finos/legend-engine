@@ -26,7 +26,8 @@ Enum  meta::pure::executionPlan::features::Feature
     CORRECT_SQL_SUBSTRING_INDEXING,
     USE_DB_NATIVE_IMPLICIT_NULL_ORDERING,
     USE_TABULAR_FUNCTION_CALL_TRANSLATION,
-    USE_LEGACY_TABULAR_FUNCTION_CALL_TRANSLATION
+    USE_LEGACY_TABULAR_FUNCTION_CALL_TRANSLATION,
+    M2M_MIGRATION_MISSING_JAVA_TYPES
 }
 
 function  meta::pure::executionPlan::featureFlag::withFeatureFlags<T>(object:T[*],e:Enum[*]):T[*]
