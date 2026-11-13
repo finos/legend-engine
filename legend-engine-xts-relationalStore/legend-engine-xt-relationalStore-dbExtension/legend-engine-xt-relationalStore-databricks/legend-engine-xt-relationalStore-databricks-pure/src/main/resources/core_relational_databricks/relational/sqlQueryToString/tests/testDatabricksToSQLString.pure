@@ -356,3 +356,24 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
     simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
   assertEquals('select concat(`root`.FIRSTNAME, \' \', `root`.LASTNAME) as `fullName` from personTable as `root`', $sql);
 }
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testFunctionPassesItsOwnParameterToAnotherFunctionByName():Boolean[1]
+{
+  let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.Databricks);
+  let extensions = meta::relational::extension::relationalExtensions();
+  let param = ^meta::relational::metamodel::relation::FunctionParameter(name = 'param1', type = ^meta::relational::metamodel::datatype::Varchar(size = 200));
+  let innerFunc = ^meta::relational::metamodel::relation::TabularFunction(schema = ^meta::relational::metamodel::Schema(database = ^meta::relational::metamodel::Database(name = 'db'), name = 'test_schema'), name = 'inner_func', parameters = $param);
+  let callToInnerFunc = ^meta::relational::metamodel::relation::TabularFunctionCall(function = $innerFunc, arguments = ^meta::relational::metamodel::relation::TabularFunctionCallArgument(parameter = $param,
+    value = ^meta::relational::functions::pureToSqlQuery::metamodel::TableFunctionParamPlaceHolder(var = ^meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder(name = 'param1', type = String, multiplicity = PureOne))));
+  let outerFunc = ^meta::relational::metamodel::CreateFunctionSQL(
+    name = 'outer_func',
+    schemaName = 'test_schema',
+    typedParameters = ^meta::relational::metamodel::SQLParameter(name = 'param1', type = ^meta::relational::metamodel::datatype::Varchar(size = 200)),
+    typedReturn = ^meta::relational::metamodel::SQLParameter(name = 'name', type = ^meta::relational::metamodel::datatype::Varchar(size = 200)),
+    generatedSQL = 'SELECT t.name AS name FROM ' + meta::relational::functions::sqlQueryToString::processOperation($callToInnerFunc, $dbConfig, ^meta::relational::functions::sqlQueryToString::Format(newLine = '', indent = ''), ^meta::relational::functions::sqlQueryToString::Config(), $extensions) + ' AS t',
+    secure = false,
+    copyGrants = false
+  );
+  assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`outer_func`(param1 STRING) \nRETURNS TABLE(name STRING) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT param1 AS param_param1) \nSELECT t.name AS name FROM test_schema.inner_func(param1) AS t;',
+               meta::relational::functions::sqlQueryToString::databricks::createFunction($outerFunc, $dbConfig, $extensions));
+}
