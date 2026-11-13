@@ -39,7 +39,11 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutionException;
@@ -72,6 +76,8 @@ public class ModelGenerationRunner
     private final PureModelContextData.Builder fullModelBuilder;
     private final PureModelContextData.Builder generatedModelBuilder;
     private final MutableMap<String, String> generatedElementSources = Maps.mutable.empty();
+    private final MutableMap<String, MutableMap<String, MutableList<String>>> generatedPathsByNode = Maps.mutable.empty();
+    private final MutableList<Warning> warnings = Lists.mutable.empty();
     private PureModel pureModel;
     private boolean recompileNeeded;
 
@@ -146,21 +152,44 @@ public class ModelGenerationRunner
         }
         LOGGER.info("Running generation specification '{}'", this.generationSpecification.getPath());
         int generationCount = 0;
+        GenerationTreeNode previousNode = null;
         for (GenerationTreeNode node : this.generationSpecification.generationNodes)
         {
             List<String> generationElements = GenerationTreeNodeHelper.generationElements(node);
             generationCount += generationElements.size();
-            CompileContext context = currentPureModel().getContext();
+            CompileContext context = compileOutputOf(previousNode).getContext();
             List<PureModelContextData> generated = ((generationElements.size() > 1) && (this.forkJoinPool != null))
                     ? generateConcurrently(node, generationElements, context)
                     : ListIterate.collect(generationElements, generationElement -> generate(node, generationElement, context));
-            mergeNodeOutput(generationElements, generated);
+            mergeNodeOutput(node, generationElements, generated);
+            previousNode = node;
         }
         // the last node's output would otherwise never be compiled, and compiling is the only check that what was generated is valid
-        currentPureModel();
+        compileOutputOf(previousNode);
         PureModelContextData generatedModel = this.generatedModelBuilder.build();
         LOGGER.info("Finished running generation specification '{}'. Generated {} elements", this.generationSpecification.getPath(), generatedModel.getElements().size());
-        return new Result(this.fullModelBuilder.build(), generatedModel, generationCount);
+        return new Result(this.fullModelBuilder.build(), generatedModel, generationCount, getGeneratedElementSources(), getGeneratedPathsByNode(), getWarnings());
+    }
+
+    /**
+     * Compiles what the given node generated, so a failure to compile it is reported against that
+     * node. Before the first node there is nothing generated to blame, so the failure is the core
+     * model's and passes through as it is.
+     */
+    private PureModel compileOutputOf(GenerationTreeNode node)
+    {
+        try
+        {
+            return currentPureModel();
+        }
+        catch (RuntimeException e)
+        {
+            if (node == null)
+            {
+                throw e;
+            }
+            throw ModelGenerationException.wrap(e, nodeId(node), null);
+        }
     }
 
     /**
@@ -169,7 +198,7 @@ public class ModelGenerationRunner
      */
     public ModelGenerationRunner addGeneratedModel(String generationElement, PureModelContextData generated)
     {
-        merge(generationElement, generated, Maps.mutable.empty());
+        merge(null, generationElement, generated, Maps.mutable.empty());
         normalize();
         return this;
     }
@@ -188,6 +217,42 @@ public class ModelGenerationRunner
     public PureModelContextData getGeneratedModel()
     {
         return this.generatedModelBuilder.build();
+    }
+
+    /**
+     * The generation element each element generated so far came from. A path generated more than
+     * once keeps the generation element that generated it first, as the generated model keeps
+     * the first element.
+     */
+    public Map<String, String> getGeneratedElementSources()
+    {
+        return Collections.unmodifiableMap(new HashMap<>(this.generatedElementSources));
+    }
+
+    /**
+     * For each generation node run so far, keyed by its id, the paths each of its generation
+     * elements contributed to the generated model, in the order they were generated. A path an
+     * earlier node had already generated is not listed again: it is a warning instead.
+     */
+    public Map<String, Map<String, List<String>>> getGeneratedPathsByNode()
+    {
+        Map<String, Map<String, List<String>>> copy = new HashMap<>();
+        this.generatedPathsByNode.forEachKeyValue((nodeId, pathsByElement) ->
+        {
+            Map<String, List<String>> elementsCopy = new HashMap<>();
+            pathsByElement.forEachKeyValue((element, paths) -> elementsCopy.put(element, Collections.unmodifiableList(new ArrayList<>(paths))));
+            copy.put(nodeId, Collections.unmodifiableMap(elementsCopy));
+        });
+        return Collections.unmodifiableMap(copy);
+    }
+
+    /**
+     * What the run deduped rather than failed on, so far: a generation element generating a path
+     * twice, or generating a path an earlier node had generated. Each is also logged.
+     */
+    public List<Warning> getWarnings()
+    {
+        return Collections.unmodifiableList(new ArrayList<>(this.warnings));
     }
 
     /**
@@ -234,10 +299,16 @@ public class ModelGenerationRunner
             LOGGER.info("Finished generating model for '{}', {} elements generated", generationElementPath, generated.getElements().size());
             return generated;
         }
-        catch (Throwable t)
+        catch (RuntimeException e)
         {
-            LOGGER.info("Error generating element '{}'", generationElementPath, t);
-            throw t;
+            LOGGER.info("Error generating element '{}'", generationElementPath, e);
+            // the message stays the one raised, as callers such as the build log it; this only adds where it was raised
+            throw ModelGenerationException.wrap(e, nodeId(node), generationElementPath);
+        }
+        catch (Error e)
+        {
+            LOGGER.info("Error generating element '{}'", generationElementPath, e);
+            throw e;
         }
     }
 
@@ -273,12 +344,20 @@ public class ModelGenerationRunner
         }
     }
 
-    private void mergeNodeOutput(List<String> generationElements, List<PureModelContextData> generated)
+    private void mergeNodeOutput(GenerationTreeNode node, List<String> generationElements, List<PureModelContextData> generated)
     {
         MutableMap<String, String> elementSources = Maps.mutable.empty();
         for (int i = 0; i < generated.size(); i++)
         {
-            merge(generationElements.get(i), generated.get(i), elementSources);
+            String generationElement = generationElements.get(i);
+            try
+            {
+                merge(node, generationElement, generated.get(i), elementSources);
+            }
+            catch (RuntimeException e)
+            {
+                throw ModelGenerationException.wrap(e, nodeId(node), generationElement);
+            }
         }
         normalize();
     }
@@ -293,7 +372,7 @@ public class ModelGenerationRunner
         this.generatedModelBuilder.distinct().sorted();
     }
 
-    private void merge(String generationElement, PureModelContextData generated, MutableMap<String, String> nodeElementSources)
+    private void merge(GenerationTreeNode node, String generationElement, PureModelContextData generated, MutableMap<String, String> nodeElementSources)
     {
         if (generated.getElements().isEmpty())
         {
@@ -319,12 +398,21 @@ public class ModelGenerationRunner
                     throw new EngineException("Generation elements '" + sameNodeGenerationElement + "' and '" + generationElement + "' of the same generation node both generated element '" + path + "'", EngineErrorType.COMPILATION);
                 }
                 LOGGER.warn("Generation element '{}' generated element '{}' more than once, keeping the first", generationElement, path);
+                this.warnings.add(new Warning(nodeId(node), generationElement, path, "Generation element '" + generationElement + "' generated element '" + path + "' more than once, keeping the first"));
                 return;
             }
-            String earlierGenerationElement = this.generatedElementSources.put(path, generationElement);
+            // the generated model keeps the first element generated at a path, so the source kept is the first one too
+            String earlierGenerationElement = this.generatedElementSources.get(path);
             if (earlierGenerationElement != null)
             {
                 LOGGER.warn("Generation element '{}' generated element '{}', which generation element '{}' already generated in an earlier node, keeping the first", generationElement, path, earlierGenerationElement);
+                this.warnings.add(new Warning(nodeId(node), generationElement, path, "Generation element '" + generationElement + "' generated element '" + path + "', which generation element '" + earlierGenerationElement + "' already generated in an earlier node, keeping the first"));
+                return;
+            }
+            this.generatedElementSources.put(path, generationElement);
+            if (node != null)
+            {
+                this.generatedPathsByNode.getIfAbsentPut(nodeId(node), Maps.mutable::empty).getIfAbsentPut(generationElement, Lists.mutable::empty).add(path);
             }
         });
         this.fullModelBuilder.withPureModelContextData(generated);
@@ -332,17 +420,96 @@ public class ModelGenerationRunner
         this.recompileNeeded = true;
     }
 
+    private static String nodeId(GenerationTreeNode node)
+    {
+        if (node == null)
+        {
+            return null;
+        }
+        return (node.id == null) ? GenerationTreeNodeHelper.defaultId(node) : node.id;
+    }
+
+    /**
+     * Something the run deduped rather than failed on. The node is the one being merged when it
+     * happened, and is null for a model added with {@link #addGeneratedModel}.
+     */
+    public static final class Warning
+    {
+        private final String generationNodeId;
+        private final String generationElement;
+        private final String generatedElement;
+        private final String message;
+
+        private Warning(String generationNodeId, String generationElement, String generatedElement, String message)
+        {
+            this.generationNodeId = generationNodeId;
+            this.generationElement = generationElement;
+            this.generatedElement = generatedElement;
+            this.message = message;
+        }
+
+        public String getGenerationNodeId()
+        {
+            return this.generationNodeId;
+        }
+
+        public String getGenerationElement()
+        {
+            return this.generationElement;
+        }
+
+        public String getGeneratedElement()
+        {
+            return this.generatedElement;
+        }
+
+        public String getMessage()
+        {
+            return this.message;
+        }
+    }
+
     public static final class Result
     {
         private final PureModelContextData fullModel;
         private final PureModelContextData generatedModel;
         private final int generationCount;
+        private final Map<String, String> generatedElementSources;
+        private final Map<String, Map<String, List<String>>> generatedPathsByNode;
+        private final List<Warning> warnings;
 
-        private Result(PureModelContextData fullModel, PureModelContextData generatedModel, int generationCount)
+        private Result(PureModelContextData fullModel, PureModelContextData generatedModel, int generationCount, Map<String, String> generatedElementSources, Map<String, Map<String, List<String>>> generatedPathsByNode, List<Warning> warnings)
         {
             this.fullModel = fullModel;
             this.generatedModel = generatedModel;
             this.generationCount = generationCount;
+            this.generatedElementSources = generatedElementSources;
+            this.generatedPathsByNode = generatedPathsByNode;
+            this.warnings = warnings;
+        }
+
+        /**
+         * See {@link ModelGenerationRunner#getGeneratedElementSources()}.
+         */
+        public Map<String, String> getGeneratedElementSources()
+        {
+            return this.generatedElementSources;
+        }
+
+        /**
+         * See {@link ModelGenerationRunner#getGeneratedPathsByNode()}.
+         */
+        public Map<String, Map<String, List<String>>> getGeneratedPathsByNode()
+        {
+            return this.generatedPathsByNode;
+        }
+
+        /**
+         * See {@link ModelGenerationRunner#getWarnings()}.
+         */
+        public List<Warning> getWarnings()
+        {
+            return this.warnings;
         }
 
         /**

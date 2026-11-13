@@ -29,6 +29,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.language.pure.dsl.generation.project.ProjectGenerationResult;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
@@ -80,6 +81,33 @@ public class ArtifactGenerationExtensionApi
         {
             return ExceptionTool.exceptionManager(ex,SCHEMA_GENERATION_ERROR, identity.getName());
 
+        }
+    }
+
+    @POST
+    @Path("generateProject")
+    @Operation(summary = "Generates what a project's build generates from its model, as legend-sdlc's build does: its model generations, its file generations and its artifacts. "
+            + "A step that fails is reported in the result rather than as an error, with what was generated before it")
+    @Consumes({MediaType.APPLICATION_JSON, InflateInterceptor.APPLICATION_ZLIB})
+    public Response generateProject(ProjectGenerationInput projectGenerationInput, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Project").startActive(true))
+        {
+            LOGGER.info(new LogInfo(identity.getName(), ArtifactGenerationLoggingEventType.GENERATE_PROJECT_START).toString());
+            ProjectGenerationResult result = new GenerateProjectRunner(modelManager).run(projectGenerationInput, identity);
+            LOGGER.info(new LogInfo(identity.getName(), ArtifactGenerationLoggingEventType.GENERATE_PROJECT_STOP).toString());
+            return ManageConstantResult.manageResult(identity.getName(), result, objectMapper);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            // a request that can't run, rejected before anything ran
+            return ExceptionTool.exceptionManager(ex, SCHEMA_GENERATION_ERROR, Response.Status.BAD_REQUEST, identity.getName());
+        }
+        catch (Exception ex)
+        {
+            return ExceptionTool.exceptionManager(ex, SCHEMA_GENERATION_ERROR, identity.getName());
         }
     }
 
