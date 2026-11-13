@@ -151,8 +151,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('regexpIndexOf',          $allStates,            ^ToSql(format='%s', transform={p:String[4]|$p->transformRegexpIndexOfDatabricks()})),
     dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpLikeDatabricks()})),
     dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpReplaceDatabricks()})),
-    dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='MAX_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
-    dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='MIN_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    // The shared SQL generation flattens maxBy/minBy's two collections into one argument list,
+    // [values..., keys..., n?], and drops the boundary between them. The aggregate forms (a value column, a key column
+    // and an optional n) render at most 3 arguments, so more than 3 can only be the collection form, which the
+    // MAX_BY/MIN_BY aggregates cannot take. Single-element collections stay on the aggregates, which give the same result.
+    dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        [if($p->size() > 3, | $p->maxByOrMinByOverCollectionsForDatabricks(true), | 'MAX_BY(' + $p->joinStrings(', ') + ')')]
+    })),
+    dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        [if($p->size() > 3, | $p->maxByOrMinByOverCollectionsForDatabricks(false), | 'MIN_BY(' + $p->joinStrings(', ') + ')')]
+    })),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
@@ -192,6 +200,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     })),
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] |
         [variancePopulationOrSampleDatabricks($p, true)]
+    })),
+    // The shared default has the same literal-collection bracket-wrapping problem as 'variance' above.
+    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        [variancePopulationOrSampleDatabricks($p, false)]
     })),
     // Neither 'corr' nor 'mode' has native Spark aggregates that accept a literal Pure collection
     // argument (same literal-array-vs-real-column ambiguity as variance/average above) - see
@@ -755,6 +767,27 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    $result.numMax;
 }
 
+// An odd argument count means a trailing n (the top-N overload). With the boundary between the collections lost,
+// splitting the rest in half assumes they are the same length; only keeping collection arguments grouped in the
+// shared SQL generation would lift that. Ties keep their original order, as in maxBy.pure/minBy.pure, and null keys
+// are dropped, as the MAX_BY/MIN_BY aggregates skip them.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::maxByOrMinByOverCollectionsForDatabricks(args:String[*], isMax:Boolean[1]):String[1]
+{
+   let hasN = $args->size()->rem(2) == 1;
+   let pairs = if($hasN, | $args->init(), | $args);
+   let half = ($pairs->size() / 2)->floor();
+   let values = 'array(' + $pairs->take($half)->joinStrings(', ') + ')';
+   let keys = 'array(' + $pairs->drop($half)->joinStrings(', ') + ')';
+   let ranksFirst = if($isMax, | '>', | '<');
+   let ranksLast = if($isMax, | '<', | '>');
+   let sorted = 'array_sort(filter(transform(' + $values + ', (v, i) -> named_struct(\'v\', v, \'k\', try_element_at(' + $keys + ', i + 1), \'i\', i)), x -> x.k is not null), '
+      + '(l, r) -> case when l.k ' + $ranksFirst + ' r.k then -1 when l.k ' + $ranksLast + ' r.k then 1 else l.i - r.i end)';
+   if($hasN,
+      | 'transform(slice(' + $sorted + ', 1, ' + $args->last()->toOne() + '), x -> x.v)',
+      | 'try_element_at(' + $sorted + ', 1).v'
+   );
+}
+
 function meta::relational::functions::sqlQueryToString::databricks::loadValuesToDbTableForDatabricks(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
 {
   $l->insertValuesToDbTableForDatabricks($dbConfig);
@@ -870,21 +903,60 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    ]);
 }
 
+// Spark requires both RANGE bounds to use the same interval unit. Fixed-length units are converted to the
+// finer of the two; YEARS and MONTHS have no fixed length and stay unsupported.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::fixedDurationRangeIntervalUnitsMicrosecondsForDatabricks():Map<DurationUnit,Integer>[1]
+{
+   [
+      pair(DurationUnit.MICROSECONDS, 1),
+      pair(DurationUnit.MILLISECONDS, 1000),
+      pair(DurationUnit.SECONDS,      1000000),
+      pair(DurationUnit.MINUTES,      60000000),
+      pair(DurationUnit.HOURS,        3600000000),
+      pair(DurationUnit.DAYS,         86400000000),
+      pair(DurationUnit.WEEKS,        604800000000)
+   ]->newMap();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isFixedDurationRangeIntervalUnitForDatabricks(unit:DurationUnit[1]):Boolean[1]
+{
+   fixedDurationRangeIntervalUnitsMicrosecondsForDatabricks()->get($unit)->isNotEmpty();
+}
+
+// Only an integer literal offset can be rescaled while the SQL is generated. A parameter or expression offset
+// keeps the unsupported error.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isConvertibleRangeIntervalForDatabricks(i:meta::relational::metamodel::FrameIntervalValue[1]):Boolean[1]
+{
+   $i.durationUnit->isFixedDurationRangeIntervalUnitForDatabricks()
+      && $i.value->instanceOf(Literal) && $i.value->cast(@Literal).value->instanceOf(Integer);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::fixedDurationRangeIntervalUnitMicrosecondsForDatabricks(unit:DurationUnit[1]):Integer[1]
+{
+   fixedDurationRangeIntervalUnitsMicrosecondsForDatabricks()->get($unit)
+    ->toOne('Unsupported DurationUnit for range-frame unit normalization: ' + $unit->toString());
+}
+
+// Each unit is an exact multiple of the finer ones, so the ratio is always a whole number.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::normalizeFrameIntervalValueUnitForDatabricks(i:meta::relational::metamodel::FrameIntervalValue[1], commonUnit:DurationUnit[1]):meta::relational::metamodel::FrameIntervalValue[1]
+{
+   let ratio = ($i.durationUnit->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks() / $commonUnit->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks())->floor();
+   ^$i(value = ^Literal(value = $i.value->cast(@Literal).value->cast(@Integer) * $ratio), durationUnit = $commonUnit);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processWindowFrameForDatabricks(frame:meta::relational::metamodel::Frame[1], sgc:SqlGenerationContext[1]):String[1]
 {
    let frameType = if($frame.frameType == meta::relational::metamodel::FrameType.ROWS, | 'ROWS BETWEEN', | 'RANGE BETWEEN');
-   // Spark requires both RANGE frame bounds to be the same interval type (e.g. both SECOND, or
-   // both DAY) - 'RANGE BETWEEN INTERVAL 1 SECOND FOLLOWING AND INTERVAL 1 DAY FOLLOWING' fails
-   // with DATATYPE_MISMATCH.SPECIFIED_WINDOW_FRAME_DIFF_TYPES. There is no single-unit rewrite that
-   // preserves both bounds' distinct calendar semantics (a DAY offset isn't a fixed number of
-   // SECONDs), so mixed-unit interval frames keep the original "not supported" behavior.
-   if($frame.offsetFrom->instanceOf(meta::relational::metamodel::FrameIntervalValue)
-        && $frame.offsetTo->instanceOf(meta::relational::metamodel::FrameIntervalValue)
-        && $frame.offsetFrom->cast(@meta::relational::metamodel::FrameIntervalValue).durationUnit != $frame.offsetTo->cast(@meta::relational::metamodel::FrameIntervalValue).durationUnit,
-      | fail('Window function with range frame using interval is not supported for this database type: ' + $sgc.dbConfig.dbType->toString()); '';
-      ,
-      | $frameType + ' ' + $frame.offsetFrom->processFrameValueForDatabricks($sgc) + ' AND ' + $frame.offsetTo->processFrameValueForDatabricks($sgc);
+   let intervals = [$frame.offsetFrom, $frame.offsetTo]->filter(v | $v->instanceOf(meta::relational::metamodel::FrameIntervalValue))->cast(@meta::relational::metamodel::FrameIntervalValue);
+   let hasMixedIntervalUnits = $intervals.durationUnit->removeDuplicates()->size() == 2;
+   assert(!$hasMixedIntervalUnits || $intervals->forAll(i | $i->isConvertibleRangeIntervalForDatabricks()),
+      | 'Window function with range frame using interval is not supported for this database type: ' + $sgc.dbConfig.dbType->toString());
+   let bounds = if($hasMixedIntervalUnits,
+      | let commonUnit = $intervals.durationUnit->sortBy(u | $u->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks())->at(0);
+        $intervals->map(i | $i->normalizeFrameIntervalValueUnitForDatabricks($commonUnit));,
+      | [$frame.offsetFrom, $frame.offsetTo]
    );
+   $frameType + ' ' + $bounds->at(0)->processFrameValueForDatabricks($sgc) + ' AND ' + $bounds->at(1)->processFrameValueForDatabricks($sgc);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSelectSQLQueryForDatabricks(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
