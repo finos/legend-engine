@@ -59,8 +59,10 @@ function meta::relational::functions::sqlQueryToString::databricks::createFuncti
     let paramString = $createFunc.typedParameters->map(p | $p.name + ' ' + $p.type->meta::relational::functions::sqlQueryToString::databricks::dataTypeToFuncSqlText($dbConfig))->joinStrings(', ');  
     let paramNames = $createFunc.typedParameters.name;  
   
-    // Build return string from typed pairs, mapping Varchar/Char to STRING  
-    let returnString = $createFunc.typedReturn->map(p | $p.name + ' ' + $p.type->meta::relational::functions::sqlQueryToString::databricks::dataTypeToFuncSqlText($dbConfig))->joinStrings(', ');  
+    // Build return string from typed pairs, mapping Varchar/Char to STRING. Column names are quoted
+    // when reserved or not plain identifiers (ORDER, company:Id), as the view path does - unquoted,
+    // such a name makes the whole CREATE FUNCTION unparseable.
+    let returnString = $createFunc.typedReturn->map(p | $p.name->meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName($dbConfig) + ' ' + $p.type->meta::relational::functions::sqlQueryToString::databricks::dataTypeToFuncSqlText($dbConfig))->joinStrings(', ');
           
     // Build CTE: WITH func_param_table AS (SELECT val AS param_val, id AS param_id)      
     let cteColumns = $paramNames->map(name | $name + ' AS param_' + $name)->joinStrings(', ');      
@@ -75,6 +77,13 @@ function meta::relational::functions::sqlQueryToString::databricks::createFuncti
     'CREATE OR REPLACE FUNCTION ' + $funcBody;    
 }  
   
+function meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName(name:String[1], dbConfig:DbConfig[1]):String[1]
+{
+    if($name->matches('[A-Za-z_][A-Za-z0-9_]*') && !$dbConfig.isDbReservedIdentifier($name) && !$dbConfig.isDbReservedIdentifier($name->toLower()),
+       | $name,
+       | '`' + $name->replace('`', '``') + '`')
+}
+
 // Converts DataType to SQL text for Databricks CREATE FUNCTION.  
 // Varchar and Char are explicitly mapped to STRING; all other types  
 // delegate to the standard dbConfig.dataTypeToSqlText converter.  

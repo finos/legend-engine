@@ -51,7 +51,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testWeekOfYear() : B
         meta::relational::runtime::DatabaseType.MemSQL,
         meta::relational::extension::relationalExtensions());
 
-    assertEquals('select weekofyear(date(`root`.dateTime)) as `week` from dataTable as `root`', $result);
+    assertEquals('select weekofyear(date(`root`.`dateTime`)) as `week` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::db::testDayOfYear() : Boolean[1]
@@ -62,7 +62,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testDayOfYear() : Bo
         meta::relational::runtime::DatabaseType.MemSQL,
         meta::relational::extension::relationalExtensions());
 
-    assertEquals('select dayofyear(date(`root`.dateTime)) as `doy` from dataTable as `root`', $result);
+    assertEquals('select dayofyear(date(`root`.`dateTime`)) as `doy` from dataTable as `root`', $result);
 }
 
 function meta::relational::memsql::tests::db::allTypesColumnsForMemSQL() : meta::relational::metamodel::Column[*]
@@ -133,3 +133,27 @@ Mapping meta::relational::memsql::tests::db::simpleRelationalMappingForMemSQLWin
       )
    }
 )
+
+###Pure
+// USmallInt widens to INT UNSIGNED: the relational metamodel has no unsigned SMALLINT.
+function <<test.Test>> meta::relational::memsql::tests::db::testUnsignedTypes() : Boolean[1]
+{
+   let sqlType = {t:String[1] | meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSqlTextMemSQL(meta::relational::functions::sqlQueryToString::memsql::convert(^GenericType(rawType = ('meta::pure::precisePrimitives::' + $t)->pathToElement()->cast(@Type))))};
+   assertEquals('TINYINT UNSIGNED', $sqlType->eval('UTinyInt'));
+   assertEquals('INT UNSIGNED', $sqlType->eval('USmallInt'));
+   assertEquals('INT UNSIGNED', $sqlType->eval('UInt'));
+}
+
+// A JSON column's test data has to be a quoted string literal; unquoted, MemSQL rejects the insert.
+function <<test.Test>> meta::relational::memsql::tests::db::testTestDataLoaderQuotesJson() : Boolean[1]
+{
+   let table = ^meta::relational::metamodel::relation::Table(name = 'Doc', columns = [
+                  ^meta::relational::metamodel::Column(name = 'id', type = ^meta::relational::metamodel::datatype::Integer()),
+                  ^meta::relational::metamodel::Column(name = 'payload', type = ^meta::relational::metamodel::datatype::Json())],
+                  schema = ^meta::relational::metamodel::Schema(name = 'default', database = ^meta::relational::metamodel::Database(name = 'db')));
+   let sql = meta::relational::functions::sqlQueryToString::memsql::loadValuesToDbTableMemSQL(
+                ^meta::relational::metamodel::LoadTableSQL(table = $table, columnsToLoad = $table.columns->cast(@meta::relational::metamodel::Column),
+                   parsedData = list(list(['1', '[{"a":1}]']))),
+                meta::relational::functions::sqlQueryToString::createDbConfig(meta::relational::runtime::DatabaseType.MemSQL));
+   assertEquals('insert into Doc (id,payload) values (1,\'[{"a":1}]\');', $sql);
+}
