@@ -1,0 +1,21 @@
+name: m2m-wide-source-reader
+title: "M2M JSON reader for a wide source tree, generated as one class and split through a feature flag"
+description: |
+  The source tree reaches 161 source classes, one read method each. WideService
+  stays within the constant-pool budget, so its reader is generated as one class.
+  WideServiceSplit adds withFeatureFlags([JsonReaderSplit.BY_COUNT]), so the same
+  reader is generated as an abstract base and parts of 150 read methods chained
+  by inheritance. The test data is read by methods in the first and in the last
+  part.
+modelSources:
+  model:
+    root: m2m-wide-source-reader
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - graph-fetch

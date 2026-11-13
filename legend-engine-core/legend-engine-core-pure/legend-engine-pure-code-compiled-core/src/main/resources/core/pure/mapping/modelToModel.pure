@@ -222,6 +222,21 @@ Class meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamR
    connection        : Connection[1];
    enableConstraints : Boolean[1];
    checked           : Boolean[1];
+   maxJsonReadMethodsPerClass : Integer[0..1];
+}
+
+Enum meta::pure::mapping::modelToModel::JsonReaderSplit
+{
+   NONE,
+   BY_COUNT
+}
+
+function meta::pure::mapping::modelToModel::jsonReaderMaxReadMethodsPerClass(exeCtx:meta::pure::runtime::ExecutionContext[1]):Integer[0..1]
+{
+   if($exeCtx->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::mapping::modelToModel::JsonReaderSplit.NONE),
+      | 0,
+      | if($exeCtx->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::mapping::modelToModel::JsonReaderSplit.BY_COUNT), | 150, | [])
+   );
 }
 
 Class <<typemodifiers.abstract>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode extends LocalGraphFetchExecutionNode
@@ -330,7 +345,8 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
         store             = $store,
         connection        = $updatedConnection,
         enableConstraints = $enableConstraints,
-        checked           = $checked
+        checked           = $checked,
+        maxJsonReadMethodsPerClass = $exeCtx->meta::pure::mapping::modelToModel::jsonReaderMaxReadMethodsPerClass()
       )
    };
 
@@ -445,7 +461,8 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCross
          store             = $store,
          connection        = $updatedConnection,
          enableConstraints = $enableConstraints,
-         checked           = $checked
+         checked           = $checked,
+         maxJsonReadMethodsPerClass = $exeCtx->meta::pure::mapping::modelToModel::jsonReaderMaxReadMethodsPerClass()
       )
    };
 

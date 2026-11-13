@@ -50,6 +50,99 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       ->addMavenDependency('com.fasterxml.jackson.core', 'jackson-core', '2.10.3');
 }
 
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::createSplittableJsonReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], maxReadMethodsPerClass:Integer[0..1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+   let readerClass = $context.conventions->jsonReaderClass($path, $pureClass);
+   let groups      = jsonReadMethodGroups($readableClasses->map(c | $c->jsonReadMethodWeight($context.typeInfos)), if(meta::core::runtime::isOptionSet('DisableM2MJsonReaderSplit'), | 0, | $maxReadMethodsPerClass));
+   let classes     = if($groups->size() <= 1,
+                        | $readerClass->buildJsonReadingClass($pureClass, $javaInterface, $path, [], $readableClasses, $readableEnums, $context, $debug),
+                        {|
+                           let base = ^$readerClass(simpleName = $readerClass.simpleName + '_Base')->buildJsonReadingClass($pureClass, $javaInterface, $path, [], $readableClasses, $readableEnums, $context, $debug);
+                           $base->splitIntoClassChain($readerClass.simpleName, $groups->map(g | ^List<String>(values = $g.values->map(i | $readableClasses->at($i)->readMethodName($context.conventions)))));
+                        }
+                     );
+   newProject()
+      ->addClasses($classes)
+      ->addMavenDependency('com.fasterxml.jackson.core', 'jackson-core', '2.10.3');
+}
+
+// A class's constant pool is capped at 65535 entries. javap on generated readers measured up to 67 entries per read
+// method and 15 per property (each property's defect lambda and messages are unique), so these weights stay above
+// every measured pool, and the budget keeps a part well below the cap.
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::jsonReadMethodWeight(class:meta::pure::metamodel::type::Class<Any>[1], typeInfos:TypeInfoSet[1]):Integer[1]
+{
+   70 + 16 * $typeInfos->allProperties($class)->size();
+}
+
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::jsonReaderConstantPoolBudget():Integer[1]
+{
+   50000
+}
+
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::jsonReadMethodGroups(weights:Integer[*], maxReadMethodsPerClass:Integer[0..1]):List<Integer>[*]
+{
+   let indices = range(0, $weights->size());
+   if($maxReadMethodsPerClass->isEmpty(),
+      | if($weights->sum() <= jsonReaderConstantPoolBudget(),
+           | ^List<Integer>(values = $indices),
+           | $indices->fold({i, groups |
+                let last = $groups.values->last();
+                if($last->isNotEmpty() && ($last.values->map(j | $weights->at($j))->sum() + $weights->at($i) <= jsonReaderConstantPoolBudget()),
+                   | ^$groups(values = $groups.values->slice(0, $groups.values->size() - 1)->concatenate(^List<Integer>(values = $last.values->concatenate($i)))),
+                   | ^$groups(values = $groups.values->concatenate(^List<Integer>(values = $i)))
+                );
+             }, ^List<List<Integer>>(values = [])).values
+        ),
+      | if($maxReadMethodsPerClass->toOne() <= 0,
+           | ^List<Integer>(values = $indices),
+           | range(0, $weights->size(), $maxReadMethodsPerClass->toOne())->map(start | ^List<Integer>(values = range($start, min($start + $maxReadMethodsPerClass->toOne(), $weights->size()))))
+        )
+   );
+}
+
+// The read methods are grouped into abstract classes of an inheritance chain ending in the reader class, so their
+// bodies keep reaching each other and the shared members through this. The base declares every read method, so
+// classMethodsCache built from its declared methods still finds them all for subtype dispatch.
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::splitIntoClassChain(base:meta::external::language::java::metamodel::Class[1], readerSimpleName:String[1], readMethodNameGroups:List<String>[*]): meta::external::language::java::metamodel::Class[*]
+{
+   let classReadMethodNames = $readMethodNameGroups.values;
+   let classReadMethods     = $base.methods->filter(m | $m.name->in($classReadMethodNames));
+   let toProtected          = {modifiers:Modifier[*] | $modifiers->map(x | if($x == Modifier.Private, | Modifier.Protected, | $x))};
+
+   let abstractBase = ^$base(
+                         modifiers    = [Modifier.Public, Modifier.Abstract],
+                         constructors = [],
+                         fields       = $base.fields->map(f | ^$f(modifiers = $toProtected->eval($f.modifiers))),
+                         methods      = $base.methods->filter(m | !$m.name->in($classReadMethodNames))->map(m | ^$m(modifiers = $toProtected->eval($m.modifiers)))
+                                           ->concatenate($classReadMethods->map(m | javaMethod(['public', 'abstract'], $m.returnType, $m.name, $m.parameters)))
+                      );
+
+   let chain = $readMethodNameGroups->fold({group, classes |
+                  let part = ^$base(
+                                simpleName   = $readerSimpleName + '_Part' + $classes.values->size()->toString(),
+                                modifiers    = [Modifier.Public, Modifier.Abstract],
+                                interfaces   = [],
+                                superType    = $classes.values->last()->toOne(),
+                                constructors = [],
+                                fields       = [],
+                                methods      = $classReadMethods->filter(m | $m.name->in($group.values))
+                             );
+                  ^$classes(values = $classes.values->concatenate($part));
+               },
+               ^List<meta::external::language::java::metamodel::Class>(values = $abstractBase)
+            ).values;
+
+   let reader = ^$base(
+                   simpleName   = $readerSimpleName,
+                   interfaces   = [],
+                   superType    = $chain->last()->toOne(),
+                   constructors = javaConstructor([], j_parameter(javaInputStream(), 'in'), 'this.in = in;'),
+                   fields       = [],
+                   methods      = []
+                );
+   $chain->concatenate($reader);
+}
+
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::hasDecimal(typeInfos:TypeInfoSet[1]):Boolean[1]
 {
   $typeInfos.typeInfos->filter(ti | $ti->instanceOf(ClassTypeInfo))->cast(@ClassTypeInfo)->exists(cti| $cti.properties->exists(p | $p.genericType.rawType == Decimal));
@@ -57,7 +150,12 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
 
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::createJsonReadingClass(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], pathOffset:String[0..1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
-   let proto = $context.conventions->jsonReaderClass($path, $pureClass)
+   $context.conventions->jsonReaderClass($path, $pureClass)->buildJsonReadingClass($pureClass, $javaInterface, $path, $pathOffset, $readableClasses, $readableEnums, $context, $debug);
+}
+
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::buildJsonReadingClass(readerClass:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], pathOffset:String[0..1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let proto = $readerClass
       ->implements($context.conventions->className(StoreStreamReader))
       ->usingKnownPackages($context.conventions->knownPackages())
       ->imports($context.conventions->constrainedImports())
