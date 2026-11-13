@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::external::store::model::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::featureFlag::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::simple::*;
+import meta::pure::mapping::modelToModel::test::alloy::jsonReaderSplit::*;
+
+function <<access.private>> meta::pure::mapping::modelToModel::test::alloy::jsonReaderSplit::maxJsonReadMethodsPerClass(query:FunctionDefinition<Any>[1]):Integer[0..1]
+{
+   let extensions = meta::pure::extension::defaultExtensions()->concatenate(ExecutionPlanFeatureFlagExtension());
+   let runtime    = ^Runtime(connectionStores = ^ConnectionStore(element = ^ModelStore(), connection = ^JsonModelConnection(class = _S_Person, url = 'data:application/json,{"fullName":"John Doe"}')));
+   executionPlan($query, simpleModelMapping, $runtime, $extensions).rootExecutionNode->allNodes($extensions)
+      ->filter(n | $n->instanceOf(StoreStreamReadingExecutionNode))->cast(@StoreStreamReadingExecutionNode)->toOne().maxJsonReadMethodsPerClass;
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::jsonReaderSplit::testReaderSplitIsLeftToTheBudgetWithoutFlag():Boolean[1]
+{
+   assertEmpty(maxJsonReadMethodsPerClass(|Person.all()->graphFetch(#{Person {firstName}}#)->serialize(#{Person {firstName}}#)));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::jsonReaderSplit::testReaderSplitFlagsReachTheReadingNode():Boolean[1]
+{
+   assertEquals(150, maxJsonReadMethodsPerClass(|Person.all()->graphFetch(#{Person {firstName}}#)->serialize(#{Person {firstName}}#)->withFeatureFlags([JsonReaderSplit.BY_COUNT])));
+   assertEquals(0, maxJsonReadMethodsPerClass(|Person.all()->graphFetch(#{Person {firstName}}#)->serialize(#{Person {firstName}}#)->withFeatureFlags([JsonReaderSplit.NONE])));
+}

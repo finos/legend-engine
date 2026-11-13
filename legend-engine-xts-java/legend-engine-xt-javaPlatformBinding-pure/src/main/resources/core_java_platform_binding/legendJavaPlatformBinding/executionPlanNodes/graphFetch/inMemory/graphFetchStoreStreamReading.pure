@@ -98,7 +98,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    let dataClassesProject = $readableClasses->map(rc | $rc->createStreamReadingDataClass($path, $context, $constraintContext, $debug->indent()));
 
    let storeReaderProject = $connection->match([
-      json  : JsonModelConnection[1] | createJsonReading($pureClass, $conventions->className($pureClass), $path, $readableClasses, $readableEnums, $context, $debug->indent()),
+      json  : JsonModelConnection[1] | createSplittableJsonReading($pureClass, $conventions->className($pureClass), $path, $readableClasses, $readableEnums, $node.maxJsonReadMethodsPerClass, $context, $debug->indent()),
       xml   : XmlModelConnection[1]  | createXmlReading($pureClass, $conventions->className($pureClass), $path, $readableClasses, $readableEnums, $context, $debug->indent()),
       model : ModelConnection[1]     | createStreamReading($pureClass, $conventions->className($pureClass), $path, $context, $debug->indent()),
       other : Any[1]                 | []

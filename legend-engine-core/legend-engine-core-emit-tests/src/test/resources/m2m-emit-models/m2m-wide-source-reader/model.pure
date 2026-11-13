@@ -1,0 +1,1424 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::m2m::wideReader::SRoot { group0: demo::m2m::wideReader::SGroup0[0..1]; group1: demo::m2m::wideReader::SGroup1[0..1]; group2: demo::m2m::wideReader::SGroup2[0..1]; group3: demo::m2m::wideReader::SGroup3[0..1]; group4: demo::m2m::wideReader::SGroup4[0..1]; group5: demo::m2m::wideReader::SGroup5[0..1]; group6: demo::m2m::wideReader::SGroup6[0..1]; group7: demo::m2m::wideReader::SGroup7[0..1]; }
+Class demo::m2m::wideReader::SGroup0 { member0: demo::m2m::wideReader::SMember0_0[0..1]; member1: demo::m2m::wideReader::SMember0_1[0..1]; member2: demo::m2m::wideReader::SMember0_2[0..1]; member3: demo::m2m::wideReader::SMember0_3[0..1]; member4: demo::m2m::wideReader::SMember0_4[0..1]; member5: demo::m2m::wideReader::SMember0_5[0..1]; member6: demo::m2m::wideReader::SMember0_6[0..1]; member7: demo::m2m::wideReader::SMember0_7[0..1]; member8: demo::m2m::wideReader::SMember0_8[0..1]; member9: demo::m2m::wideReader::SMember0_9[0..1]; member10: demo::m2m::wideReader::SMember0_10[0..1]; member11: demo::m2m::wideReader::SMember0_11[0..1]; member12: demo::m2m::wideReader::SMember0_12[0..1]; member13: demo::m2m::wideReader::SMember0_13[0..1]; member14: demo::m2m::wideReader::SMember0_14[0..1]; member15: demo::m2m::wideReader::SMember0_15[0..1]; member16: demo::m2m::wideReader::SMember0_16[0..1]; member17: demo::m2m::wideReader::SMember0_17[0..1]; member18: demo::m2m::wideReader::SMember0_18[0..1]; }
+Class demo::m2m::wideReader::SMember0_0 { s0_0: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_1 { s0_1: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_2 { s0_2: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_3 { s0_3: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_4 { s0_4: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_5 { s0_5: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_6 { s0_6: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_7 { s0_7: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_8 { s0_8: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_9 { s0_9: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_10 { s0_10: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_11 { s0_11: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_12 { s0_12: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_13 { s0_13: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_14 { s0_14: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_15 { s0_15: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_16 { s0_16: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_17 { s0_17: String[0..1]; }
+Class demo::m2m::wideReader::SMember0_18 { s0_18: String[0..1]; }
+Class demo::m2m::wideReader::SGroup1 { member0: demo::m2m::wideReader::SMember1_0[0..1]; member1: demo::m2m::wideReader::SMember1_1[0..1]; member2: demo::m2m::wideReader::SMember1_2[0..1]; member3: demo::m2m::wideReader::SMember1_3[0..1]; member4: demo::m2m::wideReader::SMember1_4[0..1]; member5: demo::m2m::wideReader::SMember1_5[0..1]; member6: demo::m2m::wideReader::SMember1_6[0..1]; member7: demo::m2m::wideReader::SMember1_7[0..1]; member8: demo::m2m::wideReader::SMember1_8[0..1]; member9: demo::m2m::wideReader::SMember1_9[0..1]; member10: demo::m2m::wideReader::SMember1_10[0..1]; member11: demo::m2m::wideReader::SMember1_11[0..1]; member12: demo::m2m::wideReader::SMember1_12[0..1]; member13: demo::m2m::wideReader::SMember1_13[0..1]; member14: demo::m2m::wideReader::SMember1_14[0..1]; member15: demo::m2m::wideReader::SMember1_15[0..1]; member16: demo::m2m::wideReader::SMember1_16[0..1]; member17: demo::m2m::wideReader::SMember1_17[0..1]; member18: demo::m2m::wideReader::SMember1_18[0..1]; }
+Class demo::m2m::wideReader::SMember1_0 { s1_0: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_1 { s1_1: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_2 { s1_2: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_3 { s1_3: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_4 { s1_4: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_5 { s1_5: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_6 { s1_6: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_7 { s1_7: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_8 { s1_8: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_9 { s1_9: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_10 { s1_10: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_11 { s1_11: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_12 { s1_12: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_13 { s1_13: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_14 { s1_14: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_15 { s1_15: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_16 { s1_16: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_17 { s1_17: String[0..1]; }
+Class demo::m2m::wideReader::SMember1_18 { s1_18: String[0..1]; }
+Class demo::m2m::wideReader::SGroup2 { member0: demo::m2m::wideReader::SMember2_0[0..1]; member1: demo::m2m::wideReader::SMember2_1[0..1]; member2: demo::m2m::wideReader::SMember2_2[0..1]; member3: demo::m2m::wideReader::SMember2_3[0..1]; member4: demo::m2m::wideReader::SMember2_4[0..1]; member5: demo::m2m::wideReader::SMember2_5[0..1]; member6: demo::m2m::wideReader::SMember2_6[0..1]; member7: demo::m2m::wideReader::SMember2_7[0..1]; member8: demo::m2m::wideReader::SMember2_8[0..1]; member9: demo::m2m::wideReader::SMember2_9[0..1]; member10: demo::m2m::wideReader::SMember2_10[0..1]; member11: demo::m2m::wideReader::SMember2_11[0..1]; member12: demo::m2m::wideReader::SMember2_12[0..1]; member13: demo::m2m::wideReader::SMember2_13[0..1]; member14: demo::m2m::wideReader::SMember2_14[0..1]; member15: demo::m2m::wideReader::SMember2_15[0..1]; member16: demo::m2m::wideReader::SMember2_16[0..1]; member17: demo::m2m::wideReader::SMember2_17[0..1]; member18: demo::m2m::wideReader::SMember2_18[0..1]; }
+Class demo::m2m::wideReader::SMember2_0 { s2_0: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_1 { s2_1: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_2 { s2_2: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_3 { s2_3: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_4 { s2_4: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_5 { s2_5: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_6 { s2_6: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_7 { s2_7: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_8 { s2_8: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_9 { s2_9: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_10 { s2_10: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_11 { s2_11: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_12 { s2_12: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_13 { s2_13: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_14 { s2_14: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_15 { s2_15: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_16 { s2_16: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_17 { s2_17: String[0..1]; }
+Class demo::m2m::wideReader::SMember2_18 { s2_18: String[0..1]; }
+Class demo::m2m::wideReader::SGroup3 { member0: demo::m2m::wideReader::SMember3_0[0..1]; member1: demo::m2m::wideReader::SMember3_1[0..1]; member2: demo::m2m::wideReader::SMember3_2[0..1]; member3: demo::m2m::wideReader::SMember3_3[0..1]; member4: demo::m2m::wideReader::SMember3_4[0..1]; member5: demo::m2m::wideReader::SMember3_5[0..1]; member6: demo::m2m::wideReader::SMember3_6[0..1]; member7: demo::m2m::wideReader::SMember3_7[0..1]; member8: demo::m2m::wideReader::SMember3_8[0..1]; member9: demo::m2m::wideReader::SMember3_9[0..1]; member10: demo::m2m::wideReader::SMember3_10[0..1]; member11: demo::m2m::wideReader::SMember3_11[0..1]; member12: demo::m2m::wideReader::SMember3_12[0..1]; member13: demo::m2m::wideReader::SMember3_13[0..1]; member14: demo::m2m::wideReader::SMember3_14[0..1]; member15: demo::m2m::wideReader::SMember3_15[0..1]; member16: demo::m2m::wideReader::SMember3_16[0..1]; member17: demo::m2m::wideReader::SMember3_17[0..1]; member18: demo::m2m::wideReader::SMember3_18[0..1]; }
+Class demo::m2m::wideReader::SMember3_0 { s3_0: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_1 { s3_1: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_2 { s3_2: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_3 { s3_3: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_4 { s3_4: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_5 { s3_5: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_6 { s3_6: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_7 { s3_7: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_8 { s3_8: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_9 { s3_9: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_10 { s3_10: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_11 { s3_11: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_12 { s3_12: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_13 { s3_13: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_14 { s3_14: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_15 { s3_15: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_16 { s3_16: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_17 { s3_17: String[0..1]; }
+Class demo::m2m::wideReader::SMember3_18 { s3_18: String[0..1]; }
+Class demo::m2m::wideReader::SGroup4 { member0: demo::m2m::wideReader::SMember4_0[0..1]; member1: demo::m2m::wideReader::SMember4_1[0..1]; member2: demo::m2m::wideReader::SMember4_2[0..1]; member3: demo::m2m::wideReader::SMember4_3[0..1]; member4: demo::m2m::wideReader::SMember4_4[0..1]; member5: demo::m2m::wideReader::SMember4_5[0..1]; member6: demo::m2m::wideReader::SMember4_6[0..1]; member7: demo::m2m::wideReader::SMember4_7[0..1]; member8: demo::m2m::wideReader::SMember4_8[0..1]; member9: demo::m2m::wideReader::SMember4_9[0..1]; member10: demo::m2m::wideReader::SMember4_10[0..1]; member11: demo::m2m::wideReader::SMember4_11[0..1]; member12: demo::m2m::wideReader::SMember4_12[0..1]; member13: demo::m2m::wideReader::SMember4_13[0..1]; member14: demo::m2m::wideReader::SMember4_14[0..1]; member15: demo::m2m::wideReader::SMember4_15[0..1]; member16: demo::m2m::wideReader::SMember4_16[0..1]; member17: demo::m2m::wideReader::SMember4_17[0..1]; member18: demo::m2m::wideReader::SMember4_18[0..1]; }
+Class demo::m2m::wideReader::SMember4_0 { s4_0: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_1 { s4_1: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_2 { s4_2: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_3 { s4_3: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_4 { s4_4: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_5 { s4_5: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_6 { s4_6: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_7 { s4_7: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_8 { s4_8: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_9 { s4_9: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_10 { s4_10: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_11 { s4_11: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_12 { s4_12: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_13 { s4_13: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_14 { s4_14: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_15 { s4_15: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_16 { s4_16: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_17 { s4_17: String[0..1]; }
+Class demo::m2m::wideReader::SMember4_18 { s4_18: String[0..1]; }
+Class demo::m2m::wideReader::SGroup5 { member0: demo::m2m::wideReader::SMember5_0[0..1]; member1: demo::m2m::wideReader::SMember5_1[0..1]; member2: demo::m2m::wideReader::SMember5_2[0..1]; member3: demo::m2m::wideReader::SMember5_3[0..1]; member4: demo::m2m::wideReader::SMember5_4[0..1]; member5: demo::m2m::wideReader::SMember5_5[0..1]; member6: demo::m2m::wideReader::SMember5_6[0..1]; member7: demo::m2m::wideReader::SMember5_7[0..1]; member8: demo::m2m::wideReader::SMember5_8[0..1]; member9: demo::m2m::wideReader::SMember5_9[0..1]; member10: demo::m2m::wideReader::SMember5_10[0..1]; member11: demo::m2m::wideReader::SMember5_11[0..1]; member12: demo::m2m::wideReader::SMember5_12[0..1]; member13: demo::m2m::wideReader::SMember5_13[0..1]; member14: demo::m2m::wideReader::SMember5_14[0..1]; member15: demo::m2m::wideReader::SMember5_15[0..1]; member16: demo::m2m::wideReader::SMember5_16[0..1]; member17: demo::m2m::wideReader::SMember5_17[0..1]; member18: demo::m2m::wideReader::SMember5_18[0..1]; }
+Class demo::m2m::wideReader::SMember5_0 { s5_0: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_1 { s5_1: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_2 { s5_2: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_3 { s5_3: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_4 { s5_4: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_5 { s5_5: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_6 { s5_6: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_7 { s5_7: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_8 { s5_8: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_9 { s5_9: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_10 { s5_10: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_11 { s5_11: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_12 { s5_12: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_13 { s5_13: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_14 { s5_14: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_15 { s5_15: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_16 { s5_16: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_17 { s5_17: String[0..1]; }
+Class demo::m2m::wideReader::SMember5_18 { s5_18: String[0..1]; }
+Class demo::m2m::wideReader::SGroup6 { member0: demo::m2m::wideReader::SMember6_0[0..1]; member1: demo::m2m::wideReader::SMember6_1[0..1]; member2: demo::m2m::wideReader::SMember6_2[0..1]; member3: demo::m2m::wideReader::SMember6_3[0..1]; member4: demo::m2m::wideReader::SMember6_4[0..1]; member5: demo::m2m::wideReader::SMember6_5[0..1]; member6: demo::m2m::wideReader::SMember6_6[0..1]; member7: demo::m2m::wideReader::SMember6_7[0..1]; member8: demo::m2m::wideReader::SMember6_8[0..1]; member9: demo::m2m::wideReader::SMember6_9[0..1]; member10: demo::m2m::wideReader::SMember6_10[0..1]; member11: demo::m2m::wideReader::SMember6_11[0..1]; member12: demo::m2m::wideReader::SMember6_12[0..1]; member13: demo::m2m::wideReader::SMember6_13[0..1]; member14: demo::m2m::wideReader::SMember6_14[0..1]; member15: demo::m2m::wideReader::SMember6_15[0..1]; member16: demo::m2m::wideReader::SMember6_16[0..1]; member17: demo::m2m::wideReader::SMember6_17[0..1]; member18: demo::m2m::wideReader::SMember6_18[0..1]; }
+Class demo::m2m::wideReader::SMember6_0 { s6_0: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_1 { s6_1: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_2 { s6_2: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_3 { s6_3: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_4 { s6_4: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_5 { s6_5: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_6 { s6_6: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_7 { s6_7: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_8 { s6_8: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_9 { s6_9: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_10 { s6_10: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_11 { s6_11: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_12 { s6_12: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_13 { s6_13: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_14 { s6_14: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_15 { s6_15: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_16 { s6_16: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_17 { s6_17: String[0..1]; }
+Class demo::m2m::wideReader::SMember6_18 { s6_18: String[0..1]; }
+Class demo::m2m::wideReader::SGroup7 { member0: demo::m2m::wideReader::SMember7_0[0..1]; member1: demo::m2m::wideReader::SMember7_1[0..1]; member2: demo::m2m::wideReader::SMember7_2[0..1]; member3: demo::m2m::wideReader::SMember7_3[0..1]; member4: demo::m2m::wideReader::SMember7_4[0..1]; member5: demo::m2m::wideReader::SMember7_5[0..1]; member6: demo::m2m::wideReader::SMember7_6[0..1]; member7: demo::m2m::wideReader::SMember7_7[0..1]; member8: demo::m2m::wideReader::SMember7_8[0..1]; member9: demo::m2m::wideReader::SMember7_9[0..1]; member10: demo::m2m::wideReader::SMember7_10[0..1]; member11: demo::m2m::wideReader::SMember7_11[0..1]; member12: demo::m2m::wideReader::SMember7_12[0..1]; member13: demo::m2m::wideReader::SMember7_13[0..1]; member14: demo::m2m::wideReader::SMember7_14[0..1]; member15: demo::m2m::wideReader::SMember7_15[0..1]; member16: demo::m2m::wideReader::SMember7_16[0..1]; member17: demo::m2m::wideReader::SMember7_17[0..1]; member18: demo::m2m::wideReader::SMember7_18[0..1]; }
+Class demo::m2m::wideReader::SMember7_0 { s7_0: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_1 { s7_1: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_2 { s7_2: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_3 { s7_3: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_4 { s7_4: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_5 { s7_5: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_6 { s7_6: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_7 { s7_7: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_8 { s7_8: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_9 { s7_9: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_10 { s7_10: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_11 { s7_11: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_12 { s7_12: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_13 { s7_13: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_14 { s7_14: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_15 { s7_15: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_16 { s7_16: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_17 { s7_17: String[0..1]; }
+Class demo::m2m::wideReader::SMember7_18 { s7_18: String[0..1]; }
+Class demo::m2m::wideReader::TRoot { group0: demo::m2m::wideReader::TGroup0[0..1]; group1: demo::m2m::wideReader::TGroup1[0..1]; group2: demo::m2m::wideReader::TGroup2[0..1]; group3: demo::m2m::wideReader::TGroup3[0..1]; group4: demo::m2m::wideReader::TGroup4[0..1]; group5: demo::m2m::wideReader::TGroup5[0..1]; group6: demo::m2m::wideReader::TGroup6[0..1]; group7: demo::m2m::wideReader::TGroup7[0..1]; }
+Class demo::m2m::wideReader::TGroup0 { member0: demo::m2m::wideReader::TMember0_0[0..1]; member1: demo::m2m::wideReader::TMember0_1[0..1]; member2: demo::m2m::wideReader::TMember0_2[0..1]; member3: demo::m2m::wideReader::TMember0_3[0..1]; member4: demo::m2m::wideReader::TMember0_4[0..1]; member5: demo::m2m::wideReader::TMember0_5[0..1]; member6: demo::m2m::wideReader::TMember0_6[0..1]; member7: demo::m2m::wideReader::TMember0_7[0..1]; member8: demo::m2m::wideReader::TMember0_8[0..1]; member9: demo::m2m::wideReader::TMember0_9[0..1]; member10: demo::m2m::wideReader::TMember0_10[0..1]; member11: demo::m2m::wideReader::TMember0_11[0..1]; member12: demo::m2m::wideReader::TMember0_12[0..1]; member13: demo::m2m::wideReader::TMember0_13[0..1]; member14: demo::m2m::wideReader::TMember0_14[0..1]; member15: demo::m2m::wideReader::TMember0_15[0..1]; member16: demo::m2m::wideReader::TMember0_16[0..1]; member17: demo::m2m::wideReader::TMember0_17[0..1]; member18: demo::m2m::wideReader::TMember0_18[0..1]; }
+Class demo::m2m::wideReader::TMember0_0 { t0_0: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_1 { t0_1: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_2 { t0_2: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_3 { t0_3: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_4 { t0_4: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_5 { t0_5: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_6 { t0_6: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_7 { t0_7: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_8 { t0_8: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_9 { t0_9: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_10 { t0_10: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_11 { t0_11: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_12 { t0_12: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_13 { t0_13: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_14 { t0_14: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_15 { t0_15: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_16 { t0_16: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_17 { t0_17: String[0..1]; }
+Class demo::m2m::wideReader::TMember0_18 { t0_18: String[0..1]; }
+Class demo::m2m::wideReader::TGroup1 { member0: demo::m2m::wideReader::TMember1_0[0..1]; member1: demo::m2m::wideReader::TMember1_1[0..1]; member2: demo::m2m::wideReader::TMember1_2[0..1]; member3: demo::m2m::wideReader::TMember1_3[0..1]; member4: demo::m2m::wideReader::TMember1_4[0..1]; member5: demo::m2m::wideReader::TMember1_5[0..1]; member6: demo::m2m::wideReader::TMember1_6[0..1]; member7: demo::m2m::wideReader::TMember1_7[0..1]; member8: demo::m2m::wideReader::TMember1_8[0..1]; member9: demo::m2m::wideReader::TMember1_9[0..1]; member10: demo::m2m::wideReader::TMember1_10[0..1]; member11: demo::m2m::wideReader::TMember1_11[0..1]; member12: demo::m2m::wideReader::TMember1_12[0..1]; member13: demo::m2m::wideReader::TMember1_13[0..1]; member14: demo::m2m::wideReader::TMember1_14[0..1]; member15: demo::m2m::wideReader::TMember1_15[0..1]; member16: demo::m2m::wideReader::TMember1_16[0..1]; member17: demo::m2m::wideReader::TMember1_17[0..1]; member18: demo::m2m::wideReader::TMember1_18[0..1]; }
+Class demo::m2m::wideReader::TMember1_0 { t1_0: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_1 { t1_1: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_2 { t1_2: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_3 { t1_3: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_4 { t1_4: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_5 { t1_5: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_6 { t1_6: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_7 { t1_7: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_8 { t1_8: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_9 { t1_9: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_10 { t1_10: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_11 { t1_11: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_12 { t1_12: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_13 { t1_13: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_14 { t1_14: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_15 { t1_15: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_16 { t1_16: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_17 { t1_17: String[0..1]; }
+Class demo::m2m::wideReader::TMember1_18 { t1_18: String[0..1]; }
+Class demo::m2m::wideReader::TGroup2 { member0: demo::m2m::wideReader::TMember2_0[0..1]; member1: demo::m2m::wideReader::TMember2_1[0..1]; member2: demo::m2m::wideReader::TMember2_2[0..1]; member3: demo::m2m::wideReader::TMember2_3[0..1]; member4: demo::m2m::wideReader::TMember2_4[0..1]; member5: demo::m2m::wideReader::TMember2_5[0..1]; member6: demo::m2m::wideReader::TMember2_6[0..1]; member7: demo::m2m::wideReader::TMember2_7[0..1]; member8: demo::m2m::wideReader::TMember2_8[0..1]; member9: demo::m2m::wideReader::TMember2_9[0..1]; member10: demo::m2m::wideReader::TMember2_10[0..1]; member11: demo::m2m::wideReader::TMember2_11[0..1]; member12: demo::m2m::wideReader::TMember2_12[0..1]; member13: demo::m2m::wideReader::TMember2_13[0..1]; member14: demo::m2m::wideReader::TMember2_14[0..1]; member15: demo::m2m::wideReader::TMember2_15[0..1]; member16: demo::m2m::wideReader::TMember2_16[0..1]; member17: demo::m2m::wideReader::TMember2_17[0..1]; member18: demo::m2m::wideReader::TMember2_18[0..1]; }
+Class demo::m2m::wideReader::TMember2_0 { t2_0: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_1 { t2_1: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_2 { t2_2: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_3 { t2_3: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_4 { t2_4: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_5 { t2_5: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_6 { t2_6: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_7 { t2_7: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_8 { t2_8: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_9 { t2_9: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_10 { t2_10: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_11 { t2_11: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_12 { t2_12: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_13 { t2_13: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_14 { t2_14: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_15 { t2_15: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_16 { t2_16: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_17 { t2_17: String[0..1]; }
+Class demo::m2m::wideReader::TMember2_18 { t2_18: String[0..1]; }
+Class demo::m2m::wideReader::TGroup3 { member0: demo::m2m::wideReader::TMember3_0[0..1]; member1: demo::m2m::wideReader::TMember3_1[0..1]; member2: demo::m2m::wideReader::TMember3_2[0..1]; member3: demo::m2m::wideReader::TMember3_3[0..1]; member4: demo::m2m::wideReader::TMember3_4[0..1]; member5: demo::m2m::wideReader::TMember3_5[0..1]; member6: demo::m2m::wideReader::TMember3_6[0..1]; member7: demo::m2m::wideReader::TMember3_7[0..1]; member8: demo::m2m::wideReader::TMember3_8[0..1]; member9: demo::m2m::wideReader::TMember3_9[0..1]; member10: demo::m2m::wideReader::TMember3_10[0..1]; member11: demo::m2m::wideReader::TMember3_11[0..1]; member12: demo::m2m::wideReader::TMember3_12[0..1]; member13: demo::m2m::wideReader::TMember3_13[0..1]; member14: demo::m2m::wideReader::TMember3_14[0..1]; member15: demo::m2m::wideReader::TMember3_15[0..1]; member16: demo::m2m::wideReader::TMember3_16[0..1]; member17: demo::m2m::wideReader::TMember3_17[0..1]; member18: demo::m2m::wideReader::TMember3_18[0..1]; }
+Class demo::m2m::wideReader::TMember3_0 { t3_0: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_1 { t3_1: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_2 { t3_2: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_3 { t3_3: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_4 { t3_4: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_5 { t3_5: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_6 { t3_6: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_7 { t3_7: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_8 { t3_8: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_9 { t3_9: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_10 { t3_10: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_11 { t3_11: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_12 { t3_12: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_13 { t3_13: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_14 { t3_14: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_15 { t3_15: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_16 { t3_16: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_17 { t3_17: String[0..1]; }
+Class demo::m2m::wideReader::TMember3_18 { t3_18: String[0..1]; }
+Class demo::m2m::wideReader::TGroup4 { member0: demo::m2m::wideReader::TMember4_0[0..1]; member1: demo::m2m::wideReader::TMember4_1[0..1]; member2: demo::m2m::wideReader::TMember4_2[0..1]; member3: demo::m2m::wideReader::TMember4_3[0..1]; member4: demo::m2m::wideReader::TMember4_4[0..1]; member5: demo::m2m::wideReader::TMember4_5[0..1]; member6: demo::m2m::wideReader::TMember4_6[0..1]; member7: demo::m2m::wideReader::TMember4_7[0..1]; member8: demo::m2m::wideReader::TMember4_8[0..1]; member9: demo::m2m::wideReader::TMember4_9[0..1]; member10: demo::m2m::wideReader::TMember4_10[0..1]; member11: demo::m2m::wideReader::TMember4_11[0..1]; member12: demo::m2m::wideReader::TMember4_12[0..1]; member13: demo::m2m::wideReader::TMember4_13[0..1]; member14: demo::m2m::wideReader::TMember4_14[0..1]; member15: demo::m2m::wideReader::TMember4_15[0..1]; member16: demo::m2m::wideReader::TMember4_16[0..1]; member17: demo::m2m::wideReader::TMember4_17[0..1]; member18: demo::m2m::wideReader::TMember4_18[0..1]; }
+Class demo::m2m::wideReader::TMember4_0 { t4_0: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_1 { t4_1: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_2 { t4_2: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_3 { t4_3: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_4 { t4_4: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_5 { t4_5: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_6 { t4_6: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_7 { t4_7: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_8 { t4_8: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_9 { t4_9: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_10 { t4_10: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_11 { t4_11: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_12 { t4_12: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_13 { t4_13: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_14 { t4_14: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_15 { t4_15: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_16 { t4_16: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_17 { t4_17: String[0..1]; }
+Class demo::m2m::wideReader::TMember4_18 { t4_18: String[0..1]; }
+Class demo::m2m::wideReader::TGroup5 { member0: demo::m2m::wideReader::TMember5_0[0..1]; member1: demo::m2m::wideReader::TMember5_1[0..1]; member2: demo::m2m::wideReader::TMember5_2[0..1]; member3: demo::m2m::wideReader::TMember5_3[0..1]; member4: demo::m2m::wideReader::TMember5_4[0..1]; member5: demo::m2m::wideReader::TMember5_5[0..1]; member6: demo::m2m::wideReader::TMember5_6[0..1]; member7: demo::m2m::wideReader::TMember5_7[0..1]; member8: demo::m2m::wideReader::TMember5_8[0..1]; member9: demo::m2m::wideReader::TMember5_9[0..1]; member10: demo::m2m::wideReader::TMember5_10[0..1]; member11: demo::m2m::wideReader::TMember5_11[0..1]; member12: demo::m2m::wideReader::TMember5_12[0..1]; member13: demo::m2m::wideReader::TMember5_13[0..1]; member14: demo::m2m::wideReader::TMember5_14[0..1]; member15: demo::m2m::wideReader::TMember5_15[0..1]; member16: demo::m2m::wideReader::TMember5_16[0..1]; member17: demo::m2m::wideReader::TMember5_17[0..1]; member18: demo::m2m::wideReader::TMember5_18[0..1]; }
+Class demo::m2m::wideReader::TMember5_0 { t5_0: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_1 { t5_1: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_2 { t5_2: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_3 { t5_3: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_4 { t5_4: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_5 { t5_5: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_6 { t5_6: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_7 { t5_7: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_8 { t5_8: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_9 { t5_9: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_10 { t5_10: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_11 { t5_11: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_12 { t5_12: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_13 { t5_13: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_14 { t5_14: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_15 { t5_15: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_16 { t5_16: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_17 { t5_17: String[0..1]; }
+Class demo::m2m::wideReader::TMember5_18 { t5_18: String[0..1]; }
+Class demo::m2m::wideReader::TGroup6 { member0: demo::m2m::wideReader::TMember6_0[0..1]; member1: demo::m2m::wideReader::TMember6_1[0..1]; member2: demo::m2m::wideReader::TMember6_2[0..1]; member3: demo::m2m::wideReader::TMember6_3[0..1]; member4: demo::m2m::wideReader::TMember6_4[0..1]; member5: demo::m2m::wideReader::TMember6_5[0..1]; member6: demo::m2m::wideReader::TMember6_6[0..1]; member7: demo::m2m::wideReader::TMember6_7[0..1]; member8: demo::m2m::wideReader::TMember6_8[0..1]; member9: demo::m2m::wideReader::TMember6_9[0..1]; member10: demo::m2m::wideReader::TMember6_10[0..1]; member11: demo::m2m::wideReader::TMember6_11[0..1]; member12: demo::m2m::wideReader::TMember6_12[0..1]; member13: demo::m2m::wideReader::TMember6_13[0..1]; member14: demo::m2m::wideReader::TMember6_14[0..1]; member15: demo::m2m::wideReader::TMember6_15[0..1]; member16: demo::m2m::wideReader::TMember6_16[0..1]; member17: demo::m2m::wideReader::TMember6_17[0..1]; member18: demo::m2m::wideReader::TMember6_18[0..1]; }
+Class demo::m2m::wideReader::TMember6_0 { t6_0: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_1 { t6_1: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_2 { t6_2: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_3 { t6_3: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_4 { t6_4: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_5 { t6_5: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_6 { t6_6: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_7 { t6_7: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_8 { t6_8: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_9 { t6_9: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_10 { t6_10: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_11 { t6_11: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_12 { t6_12: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_13 { t6_13: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_14 { t6_14: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_15 { t6_15: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_16 { t6_16: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_17 { t6_17: String[0..1]; }
+Class demo::m2m::wideReader::TMember6_18 { t6_18: String[0..1]; }
+Class demo::m2m::wideReader::TGroup7 { member0: demo::m2m::wideReader::TMember7_0[0..1]; member1: demo::m2m::wideReader::TMember7_1[0..1]; member2: demo::m2m::wideReader::TMember7_2[0..1]; member3: demo::m2m::wideReader::TMember7_3[0..1]; member4: demo::m2m::wideReader::TMember7_4[0..1]; member5: demo::m2m::wideReader::TMember7_5[0..1]; member6: demo::m2m::wideReader::TMember7_6[0..1]; member7: demo::m2m::wideReader::TMember7_7[0..1]; member8: demo::m2m::wideReader::TMember7_8[0..1]; member9: demo::m2m::wideReader::TMember7_9[0..1]; member10: demo::m2m::wideReader::TMember7_10[0..1]; member11: demo::m2m::wideReader::TMember7_11[0..1]; member12: demo::m2m::wideReader::TMember7_12[0..1]; member13: demo::m2m::wideReader::TMember7_13[0..1]; member14: demo::m2m::wideReader::TMember7_14[0..1]; member15: demo::m2m::wideReader::TMember7_15[0..1]; member16: demo::m2m::wideReader::TMember7_16[0..1]; member17: demo::m2m::wideReader::TMember7_17[0..1]; member18: demo::m2m::wideReader::TMember7_18[0..1]; }
+Class demo::m2m::wideReader::TMember7_0 { t7_0: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_1 { t7_1: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_2 { t7_2: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_3 { t7_3: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_4 { t7_4: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_5 { t7_5: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_6 { t7_6: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_7 { t7_7: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_8 { t7_8: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_9 { t7_9: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_10 { t7_10: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_11 { t7_11: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_12 { t7_12: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_13 { t7_13: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_14 { t7_14: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_15 { t7_15: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_16 { t7_16: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_17 { t7_17: String[0..1]; }
+Class demo::m2m::wideReader::TMember7_18 { t7_18: String[0..1]; }
+
+###Mapping
+Mapping demo::m2m::wideReader::WideMapping
+(
+  *demo::m2m::wideReader::TRoot: Pure
+  {
+    ~src demo::m2m::wideReader::SRoot
+    group0[G0]: $src.group0,
+    group1[G1]: $src.group1,
+    group2[G2]: $src.group2,
+    group3[G3]: $src.group3,
+    group4[G4]: $src.group4,
+    group5[G5]: $src.group5,
+    group6[G6]: $src.group6,
+    group7[G7]: $src.group7
+  }
+  demo::m2m::wideReader::TGroup0[G0]: Pure
+  {
+    ~src demo::m2m::wideReader::SGroup0
+    member0[M0_0]: $src.member0,
+    member1[M0_1]: $src.member1,
+    member2[M0_2]: $src.member2,
+    member3[M0_3]: $src.member3,
+    member4[M0_4]: $src.member4,
+    member5[M0_5]: $src.member5,
+    member6[M0_6]: $src.member6,
+    member7[M0_7]: $src.member7,
+    member8[M0_8]: $src.member8,
+    member9[M0_9]: $src.member9,
+    member10[M0_10]: $src.member10,
+    member11[M0_11]: $src.member11,
+    member12[M0_12]: $src.member12,
+    member13[M0_13]: $src.member13,
+    member14[M0_14]: $src.member14,
+    member15[M0_15]: $src.member15,
+    member16[M0_16]: $src.member16,
+    member17[M0_17]: $src.member17,
+    member18[M0_18]: $src.member18
+  }
+  demo::m2m::wideReader::TMember0_0[M0_0]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_0
+    t0_0: $src.s0_0
+  }
+  demo::m2m::wideReader::TMember0_1[M0_1]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_1
+    t0_1: $src.s0_1
+  }
+  demo::m2m::wideReader::TMember0_2[M0_2]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_2
+    t0_2: $src.s0_2
+  }
+  demo::m2m::wideReader::TMember0_3[M0_3]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_3
+    t0_3: $src.s0_3
+  }
+  demo::m2m::wideReader::TMember0_4[M0_4]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_4
+    t0_4: $src.s0_4
+  }
+  demo::m2m::wideReader::TMember0_5[M0_5]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_5
+    t0_5: $src.s0_5
+  }
+  demo::m2m::wideReader::TMember0_6[M0_6]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_6
+    t0_6: $src.s0_6
+  }
+  demo::m2m::wideReader::TMember0_7[M0_7]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_7
+    t0_7: $src.s0_7
+  }
+  demo::m2m::wideReader::TMember0_8[M0_8]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_8
+    t0_8: $src.s0_8
+  }
+  demo::m2m::wideReader::TMember0_9[M0_9]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_9
+    t0_9: $src.s0_9
+  }
+  demo::m2m::wideReader::TMember0_10[M0_10]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_10
+    t0_10: $src.s0_10
+  }
+  demo::m2m::wideReader::TMember0_11[M0_11]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_11
+    t0_11: $src.s0_11
+  }
+  demo::m2m::wideReader::TMember0_12[M0_12]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_12
+    t0_12: $src.s0_12
+  }
+  demo::m2m::wideReader::TMember0_13[M0_13]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_13
+    t0_13: $src.s0_13
+  }
+  demo::m2m::wideReader::TMember0_14[M0_14]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_14
+    t0_14: $src.s0_14
+  }
+  demo::m2m::wideReader::TMember0_15[M0_15]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_15
+    t0_15: $src.s0_15
+  }
+  demo::m2m::wideReader::TMember0_16[M0_16]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_16
+    t0_16: $src.s0_16
+  }
+  demo::m2m::wideReader::TMember0_17[M0_17]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_17
+    t0_17: $src.s0_17
+  }
+  demo::m2m::wideReader::TMember0_18[M0_18]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember0_18
+    t0_18: $src.s0_18
+  }
+  demo::m2m::wideReader::TGroup1[G1]: Pure
+  {
+    ~src demo::m2m::wideReader::SGroup1
+    member0[M1_0]: $src.member0,
+    member1[M1_1]: $src.member1,
+    member2[M1_2]: $src.member2,
+    member3[M1_3]: $src.member3,
+    member4[M1_4]: $src.member4,
+    member5[M1_5]: $src.member5,
+    member6[M1_6]: $src.member6,
+    member7[M1_7]: $src.member7,
+    member8[M1_8]: $src.member8,
+    member9[M1_9]: $src.member9,
+    member10[M1_10]: $src.member10,
+    member11[M1_11]: $src.member11,
+    member12[M1_12]: $src.member12,
+    member13[M1_13]: $src.member13,
+    member14[M1_14]: $src.member14,
+    member15[M1_15]: $src.member15,
+    member16[M1_16]: $src.member16,
+    member17[M1_17]: $src.member17,
+    member18[M1_18]: $src.member18
+  }
+  demo::m2m::wideReader::TMember1_0[M1_0]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_0
+    t1_0: $src.s1_0
+  }
+  demo::m2m::wideReader::TMember1_1[M1_1]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_1
+    t1_1: $src.s1_1
+  }
+  demo::m2m::wideReader::TMember1_2[M1_2]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_2
+    t1_2: $src.s1_2
+  }
+  demo::m2m::wideReader::TMember1_3[M1_3]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_3
+    t1_3: $src.s1_3
+  }
+  demo::m2m::wideReader::TMember1_4[M1_4]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_4
+    t1_4: $src.s1_4
+  }
+  demo::m2m::wideReader::TMember1_5[M1_5]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_5
+    t1_5: $src.s1_5
+  }
+  demo::m2m::wideReader::TMember1_6[M1_6]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_6
+    t1_6: $src.s1_6
+  }
+  demo::m2m::wideReader::TMember1_7[M1_7]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_7
+    t1_7: $src.s1_7
+  }
+  demo::m2m::wideReader::TMember1_8[M1_8]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_8
+    t1_8: $src.s1_8
+  }
+  demo::m2m::wideReader::TMember1_9[M1_9]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_9
+    t1_9: $src.s1_9
+  }
+  demo::m2m::wideReader::TMember1_10[M1_10]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_10
+    t1_10: $src.s1_10
+  }
+  demo::m2m::wideReader::TMember1_11[M1_11]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_11
+    t1_11: $src.s1_11
+  }
+  demo::m2m::wideReader::TMember1_12[M1_12]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_12
+    t1_12: $src.s1_12
+  }
+  demo::m2m::wideReader::TMember1_13[M1_13]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_13
+    t1_13: $src.s1_13
+  }
+  demo::m2m::wideReader::TMember1_14[M1_14]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_14
+    t1_14: $src.s1_14
+  }
+  demo::m2m::wideReader::TMember1_15[M1_15]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_15
+    t1_15: $src.s1_15
+  }
+  demo::m2m::wideReader::TMember1_16[M1_16]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_16
+    t1_16: $src.s1_16
+  }
+  demo::m2m::wideReader::TMember1_17[M1_17]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_17
+    t1_17: $src.s1_17
+  }
+  demo::m2m::wideReader::TMember1_18[M1_18]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember1_18
+    t1_18: $src.s1_18
+  }
+  demo::m2m::wideReader::TGroup2[G2]: Pure
+  {
+    ~src demo::m2m::wideReader::SGroup2
+    member0[M2_0]: $src.member0,
+    member1[M2_1]: $src.member1,
+    member2[M2_2]: $src.member2,
+    member3[M2_3]: $src.member3,
+    member4[M2_4]: $src.member4,
+    member5[M2_5]: $src.member5,
+    member6[M2_6]: $src.member6,
+    member7[M2_7]: $src.member7,
+    member8[M2_8]: $src.member8,
+    member9[M2_9]: $src.member9,
+    member10[M2_10]: $src.member10,
+    member11[M2_11]: $src.member11,
+    member12[M2_12]: $src.member12,
+    member13[M2_13]: $src.member13,
+    member14[M2_14]: $src.member14,
+    member15[M2_15]: $src.member15,
+    member16[M2_16]: $src.member16,
+    member17[M2_17]: $src.member17,
+    member18[M2_18]: $src.member18
+  }
+  demo::m2m::wideReader::TMember2_0[M2_0]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_0
+    t2_0: $src.s2_0
+  }
+  demo::m2m::wideReader::TMember2_1[M2_1]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_1
+    t2_1: $src.s2_1
+  }
+  demo::m2m::wideReader::TMember2_2[M2_2]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_2
+    t2_2: $src.s2_2
+  }
+  demo::m2m::wideReader::TMember2_3[M2_3]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_3
+    t2_3: $src.s2_3
+  }
+  demo::m2m::wideReader::TMember2_4[M2_4]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_4
+    t2_4: $src.s2_4
+  }
+  demo::m2m::wideReader::TMember2_5[M2_5]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_5
+    t2_5: $src.s2_5
+  }
+  demo::m2m::wideReader::TMember2_6[M2_6]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_6
+    t2_6: $src.s2_6
+  }
+  demo::m2m::wideReader::TMember2_7[M2_7]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_7
+    t2_7: $src.s2_7
+  }
+  demo::m2m::wideReader::TMember2_8[M2_8]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_8
+    t2_8: $src.s2_8
+  }
+  demo::m2m::wideReader::TMember2_9[M2_9]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_9
+    t2_9: $src.s2_9
+  }
+  demo::m2m::wideReader::TMember2_10[M2_10]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_10
+    t2_10: $src.s2_10
+  }
+  demo::m2m::wideReader::TMember2_11[M2_11]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_11
+    t2_11: $src.s2_11
+  }
+  demo::m2m::wideReader::TMember2_12[M2_12]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_12
+    t2_12: $src.s2_12
+  }
+  demo::m2m::wideReader::TMember2_13[M2_13]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_13
+    t2_13: $src.s2_13
+  }
+  demo::m2m::wideReader::TMember2_14[M2_14]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_14
+    t2_14: $src.s2_14
+  }
+  demo::m2m::wideReader::TMember2_15[M2_15]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_15
+    t2_15: $src.s2_15
+  }
+  demo::m2m::wideReader::TMember2_16[M2_16]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_16
+    t2_16: $src.s2_16
+  }
+  demo::m2m::wideReader::TMember2_17[M2_17]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_17
+    t2_17: $src.s2_17
+  }
+  demo::m2m::wideReader::TMember2_18[M2_18]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember2_18
+    t2_18: $src.s2_18
+  }
+  demo::m2m::wideReader::TGroup3[G3]: Pure
+  {
+    ~src demo::m2m::wideReader::SGroup3
+    member0[M3_0]: $src.member0,
+    member1[M3_1]: $src.member1,
+    member2[M3_2]: $src.member2,
+    member3[M3_3]: $src.member3,
+    member4[M3_4]: $src.member4,
+    member5[M3_5]: $src.member5,
+    member6[M3_6]: $src.member6,
+    member7[M3_7]: $src.member7,
+    member8[M3_8]: $src.member8,
+    member9[M3_9]: $src.member9,
+    member10[M3_10]: $src.member10,
+    member11[M3_11]: $src.member11,
+    member12[M3_12]: $src.member12,
+    member13[M3_13]: $src.member13,
+    member14[M3_14]: $src.member14,
+    member15[M3_15]: $src.member15,
+    member16[M3_16]: $src.member16,
+    member17[M3_17]: $src.member17,
+    member18[M3_18]: $src.member18
+  }
+  demo::m2m::wideReader::TMember3_0[M3_0]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_0
+    t3_0: $src.s3_0
+  }
+  demo::m2m::wideReader::TMember3_1[M3_1]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_1
+    t3_1: $src.s3_1
+  }
+  demo::m2m::wideReader::TMember3_2[M3_2]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_2
+    t3_2: $src.s3_2
+  }
+  demo::m2m::wideReader::TMember3_3[M3_3]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_3
+    t3_3: $src.s3_3
+  }
+  demo::m2m::wideReader::TMember3_4[M3_4]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_4
+    t3_4: $src.s3_4
+  }
+  demo::m2m::wideReader::TMember3_5[M3_5]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_5
+    t3_5: $src.s3_5
+  }
+  demo::m2m::wideReader::TMember3_6[M3_6]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_6
+    t3_6: $src.s3_6
+  }
+  demo::m2m::wideReader::TMember3_7[M3_7]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_7
+    t3_7: $src.s3_7
+  }
+  demo::m2m::wideReader::TMember3_8[M3_8]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_8
+    t3_8: $src.s3_8
+  }
+  demo::m2m::wideReader::TMember3_9[M3_9]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_9
+    t3_9: $src.s3_9
+  }
+  demo::m2m::wideReader::TMember3_10[M3_10]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_10
+    t3_10: $src.s3_10
+  }
+  demo::m2m::wideReader::TMember3_11[M3_11]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_11
+    t3_11: $src.s3_11
+  }
+  demo::m2m::wideReader::TMember3_12[M3_12]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_12
+    t3_12: $src.s3_12
+  }
+  demo::m2m::wideReader::TMember3_13[M3_13]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_13
+    t3_13: $src.s3_13
+  }
+  demo::m2m::wideReader::TMember3_14[M3_14]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_14
+    t3_14: $src.s3_14
+  }
+  demo::m2m::wideReader::TMember3_15[M3_15]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_15
+    t3_15: $src.s3_15
+  }
+  demo::m2m::wideReader::TMember3_16[M3_16]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_16
+    t3_16: $src.s3_16
+  }
+  demo::m2m::wideReader::TMember3_17[M3_17]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_17
+    t3_17: $src.s3_17
+  }
+  demo::m2m::wideReader::TMember3_18[M3_18]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember3_18
+    t3_18: $src.s3_18
+  }
+  demo::m2m::wideReader::TGroup4[G4]: Pure
+  {
+    ~src demo::m2m::wideReader::SGroup4
+    member0[M4_0]: $src.member0,
+    member1[M4_1]: $src.member1,
+    member2[M4_2]: $src.member2,
+    member3[M4_3]: $src.member3,
+    member4[M4_4]: $src.member4,
+    member5[M4_5]: $src.member5,
+    member6[M4_6]: $src.member6,
+    member7[M4_7]: $src.member7,
+    member8[M4_8]: $src.member8,
+    member9[M4_9]: $src.member9,
+    member10[M4_10]: $src.member10,
+    member11[M4_11]: $src.member11,
+    member12[M4_12]: $src.member12,
+    member13[M4_13]: $src.member13,
+    member14[M4_14]: $src.member14,
+    member15[M4_15]: $src.member15,
+    member16[M4_16]: $src.member16,
+    member17[M4_17]: $src.member17,
+    member18[M4_18]: $src.member18
+  }
+  demo::m2m::wideReader::TMember4_0[M4_0]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_0
+    t4_0: $src.s4_0
+  }
+  demo::m2m::wideReader::TMember4_1[M4_1]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_1
+    t4_1: $src.s4_1
+  }
+  demo::m2m::wideReader::TMember4_2[M4_2]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_2
+    t4_2: $src.s4_2
+  }
+  demo::m2m::wideReader::TMember4_3[M4_3]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_3
+    t4_3: $src.s4_3
+  }
+  demo::m2m::wideReader::TMember4_4[M4_4]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_4
+    t4_4: $src.s4_4
+  }
+  demo::m2m::wideReader::TMember4_5[M4_5]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_5
+    t4_5: $src.s4_5
+  }
+  demo::m2m::wideReader::TMember4_6[M4_6]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_6
+    t4_6: $src.s4_6
+  }
+  demo::m2m::wideReader::TMember4_7[M4_7]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_7
+    t4_7: $src.s4_7
+  }
+  demo::m2m::wideReader::TMember4_8[M4_8]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_8
+    t4_8: $src.s4_8
+  }
+  demo::m2m::wideReader::TMember4_9[M4_9]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_9
+    t4_9: $src.s4_9
+  }
+  demo::m2m::wideReader::TMember4_10[M4_10]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_10
+    t4_10: $src.s4_10
+  }
+  demo::m2m::wideReader::TMember4_11[M4_11]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_11
+    t4_11: $src.s4_11
+  }
+  demo::m2m::wideReader::TMember4_12[M4_12]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_12
+    t4_12: $src.s4_12
+  }
+  demo::m2m::wideReader::TMember4_13[M4_13]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_13
+    t4_13: $src.s4_13
+  }
+  demo::m2m::wideReader::TMember4_14[M4_14]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_14
+    t4_14: $src.s4_14
+  }
+  demo::m2m::wideReader::TMember4_15[M4_15]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_15
+    t4_15: $src.s4_15
+  }
+  demo::m2m::wideReader::TMember4_16[M4_16]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_16
+    t4_16: $src.s4_16
+  }
+  demo::m2m::wideReader::TMember4_17[M4_17]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_17
+    t4_17: $src.s4_17
+  }
+  demo::m2m::wideReader::TMember4_18[M4_18]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember4_18
+    t4_18: $src.s4_18
+  }
+  demo::m2m::wideReader::TGroup5[G5]: Pure
+  {
+    ~src demo::m2m::wideReader::SGroup5
+    member0[M5_0]: $src.member0,
+    member1[M5_1]: $src.member1,
+    member2[M5_2]: $src.member2,
+    member3[M5_3]: $src.member3,
+    member4[M5_4]: $src.member4,
+    member5[M5_5]: $src.member5,
+    member6[M5_6]: $src.member6,
+    member7[M5_7]: $src.member7,
+    member8[M5_8]: $src.member8,
+    member9[M5_9]: $src.member9,
+    member10[M5_10]: $src.member10,
+    member11[M5_11]: $src.member11,
+    member12[M5_12]: $src.member12,
+    member13[M5_13]: $src.member13,
+    member14[M5_14]: $src.member14,
+    member15[M5_15]: $src.member15,
+    member16[M5_16]: $src.member16,
+    member17[M5_17]: $src.member17,
+    member18[M5_18]: $src.member18
+  }
+  demo::m2m::wideReader::TMember5_0[M5_0]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_0
+    t5_0: $src.s5_0
+  }
+  demo::m2m::wideReader::TMember5_1[M5_1]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_1
+    t5_1: $src.s5_1
+  }
+  demo::m2m::wideReader::TMember5_2[M5_2]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_2
+    t5_2: $src.s5_2
+  }
+  demo::m2m::wideReader::TMember5_3[M5_3]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_3
+    t5_3: $src.s5_3
+  }
+  demo::m2m::wideReader::TMember5_4[M5_4]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_4
+    t5_4: $src.s5_4
+  }
+  demo::m2m::wideReader::TMember5_5[M5_5]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_5
+    t5_5: $src.s5_5
+  }
+  demo::m2m::wideReader::TMember5_6[M5_6]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_6
+    t5_6: $src.s5_6
+  }
+  demo::m2m::wideReader::TMember5_7[M5_7]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_7
+    t5_7: $src.s5_7
+  }
+  demo::m2m::wideReader::TMember5_8[M5_8]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_8
+    t5_8: $src.s5_8
+  }
+  demo::m2m::wideReader::TMember5_9[M5_9]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_9
+    t5_9: $src.s5_9
+  }
+  demo::m2m::wideReader::TMember5_10[M5_10]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_10
+    t5_10: $src.s5_10
+  }
+  demo::m2m::wideReader::TMember5_11[M5_11]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_11
+    t5_11: $src.s5_11
+  }
+  demo::m2m::wideReader::TMember5_12[M5_12]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_12
+    t5_12: $src.s5_12
+  }
+  demo::m2m::wideReader::TMember5_13[M5_13]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_13
+    t5_13: $src.s5_13
+  }
+  demo::m2m::wideReader::TMember5_14[M5_14]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_14
+    t5_14: $src.s5_14
+  }
+  demo::m2m::wideReader::TMember5_15[M5_15]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_15
+    t5_15: $src.s5_15
+  }
+  demo::m2m::wideReader::TMember5_16[M5_16]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_16
+    t5_16: $src.s5_16
+  }
+  demo::m2m::wideReader::TMember5_17[M5_17]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_17
+    t5_17: $src.s5_17
+  }
+  demo::m2m::wideReader::TMember5_18[M5_18]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember5_18
+    t5_18: $src.s5_18
+  }
+  demo::m2m::wideReader::TGroup6[G6]: Pure
+  {
+    ~src demo::m2m::wideReader::SGroup6
+    member0[M6_0]: $src.member0,
+    member1[M6_1]: $src.member1,
+    member2[M6_2]: $src.member2,
+    member3[M6_3]: $src.member3,
+    member4[M6_4]: $src.member4,
+    member5[M6_5]: $src.member5,
+    member6[M6_6]: $src.member6,
+    member7[M6_7]: $src.member7,
+    member8[M6_8]: $src.member8,
+    member9[M6_9]: $src.member9,
+    member10[M6_10]: $src.member10,
+    member11[M6_11]: $src.member11,
+    member12[M6_12]: $src.member12,
+    member13[M6_13]: $src.member13,
+    member14[M6_14]: $src.member14,
+    member15[M6_15]: $src.member15,
+    member16[M6_16]: $src.member16,
+    member17[M6_17]: $src.member17,
+    member18[M6_18]: $src.member18
+  }
+  demo::m2m::wideReader::TMember6_0[M6_0]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_0
+    t6_0: $src.s6_0
+  }
+  demo::m2m::wideReader::TMember6_1[M6_1]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_1
+    t6_1: $src.s6_1
+  }
+  demo::m2m::wideReader::TMember6_2[M6_2]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_2
+    t6_2: $src.s6_2
+  }
+  demo::m2m::wideReader::TMember6_3[M6_3]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_3
+    t6_3: $src.s6_3
+  }
+  demo::m2m::wideReader::TMember6_4[M6_4]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_4
+    t6_4: $src.s6_4
+  }
+  demo::m2m::wideReader::TMember6_5[M6_5]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_5
+    t6_5: $src.s6_5
+  }
+  demo::m2m::wideReader::TMember6_6[M6_6]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_6
+    t6_6: $src.s6_6
+  }
+  demo::m2m::wideReader::TMember6_7[M6_7]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_7
+    t6_7: $src.s6_7
+  }
+  demo::m2m::wideReader::TMember6_8[M6_8]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_8
+    t6_8: $src.s6_8
+  }
+  demo::m2m::wideReader::TMember6_9[M6_9]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_9
+    t6_9: $src.s6_9
+  }
+  demo::m2m::wideReader::TMember6_10[M6_10]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_10
+    t6_10: $src.s6_10
+  }
+  demo::m2m::wideReader::TMember6_11[M6_11]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_11
+    t6_11: $src.s6_11
+  }
+  demo::m2m::wideReader::TMember6_12[M6_12]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_12
+    t6_12: $src.s6_12
+  }
+  demo::m2m::wideReader::TMember6_13[M6_13]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_13
+    t6_13: $src.s6_13
+  }
+  demo::m2m::wideReader::TMember6_14[M6_14]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_14
+    t6_14: $src.s6_14
+  }
+  demo::m2m::wideReader::TMember6_15[M6_15]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_15
+    t6_15: $src.s6_15
+  }
+  demo::m2m::wideReader::TMember6_16[M6_16]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_16
+    t6_16: $src.s6_16
+  }
+  demo::m2m::wideReader::TMember6_17[M6_17]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_17
+    t6_17: $src.s6_17
+  }
+  demo::m2m::wideReader::TMember6_18[M6_18]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember6_18
+    t6_18: $src.s6_18
+  }
+  demo::m2m::wideReader::TGroup7[G7]: Pure
+  {
+    ~src demo::m2m::wideReader::SGroup7
+    member0[M7_0]: $src.member0,
+    member1[M7_1]: $src.member1,
+    member2[M7_2]: $src.member2,
+    member3[M7_3]: $src.member3,
+    member4[M7_4]: $src.member4,
+    member5[M7_5]: $src.member5,
+    member6[M7_6]: $src.member6,
+    member7[M7_7]: $src.member7,
+    member8[M7_8]: $src.member8,
+    member9[M7_9]: $src.member9,
+    member10[M7_10]: $src.member10,
+    member11[M7_11]: $src.member11,
+    member12[M7_12]: $src.member12,
+    member13[M7_13]: $src.member13,
+    member14[M7_14]: $src.member14,
+    member15[M7_15]: $src.member15,
+    member16[M7_16]: $src.member16,
+    member17[M7_17]: $src.member17,
+    member18[M7_18]: $src.member18
+  }
+  demo::m2m::wideReader::TMember7_0[M7_0]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_0
+    t7_0: $src.s7_0
+  }
+  demo::m2m::wideReader::TMember7_1[M7_1]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_1
+    t7_1: $src.s7_1
+  }
+  demo::m2m::wideReader::TMember7_2[M7_2]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_2
+    t7_2: $src.s7_2
+  }
+  demo::m2m::wideReader::TMember7_3[M7_3]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_3
+    t7_3: $src.s7_3
+  }
+  demo::m2m::wideReader::TMember7_4[M7_4]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_4
+    t7_4: $src.s7_4
+  }
+  demo::m2m::wideReader::TMember7_5[M7_5]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_5
+    t7_5: $src.s7_5
+  }
+  demo::m2m::wideReader::TMember7_6[M7_6]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_6
+    t7_6: $src.s7_6
+  }
+  demo::m2m::wideReader::TMember7_7[M7_7]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_7
+    t7_7: $src.s7_7
+  }
+  demo::m2m::wideReader::TMember7_8[M7_8]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_8
+    t7_8: $src.s7_8
+  }
+  demo::m2m::wideReader::TMember7_9[M7_9]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_9
+    t7_9: $src.s7_9
+  }
+  demo::m2m::wideReader::TMember7_10[M7_10]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_10
+    t7_10: $src.s7_10
+  }
+  demo::m2m::wideReader::TMember7_11[M7_11]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_11
+    t7_11: $src.s7_11
+  }
+  demo::m2m::wideReader::TMember7_12[M7_12]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_12
+    t7_12: $src.s7_12
+  }
+  demo::m2m::wideReader::TMember7_13[M7_13]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_13
+    t7_13: $src.s7_13
+  }
+  demo::m2m::wideReader::TMember7_14[M7_14]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_14
+    t7_14: $src.s7_14
+  }
+  demo::m2m::wideReader::TMember7_15[M7_15]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_15
+    t7_15: $src.s7_15
+  }
+  demo::m2m::wideReader::TMember7_16[M7_16]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_16
+    t7_16: $src.s7_16
+  }
+  demo::m2m::wideReader::TMember7_17[M7_17]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_17
+    t7_17: $src.s7_17
+  }
+  demo::m2m::wideReader::TMember7_18[M7_18]: Pure
+  {
+    ~src demo::m2m::wideReader::SMember7_18
+    t7_18: $src.s7_18
+  }
+)
+
+###Runtime
+Runtime demo::m2m::wideReader::WideRuntime
+{
+  mappings:
+  [
+    demo::m2m::wideReader::WideMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      json:
+      #{
+        JsonModelConnection
+        {
+          class: demo::m2m::wideReader::SRoot;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}
+
+###Service
+Service demo::m2m::wideReader::WideService
+{
+  pattern: '/m2m-wide-source-reader';
+  documentation: 'M2M service whose JSON reader covers 161 source classes';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::wideReader::TRoot.all()->graphFetch(#{demo::m2m::wideReader::TRoot{group0{member0{t0_0},member1{t0_1},member2{t0_2},member3{t0_3},member4{t0_4},member5{t0_5},member6{t0_6},member7{t0_7},member8{t0_8},member9{t0_9},member10{t0_10},member11{t0_11},member12{t0_12},member13{t0_13},member14{t0_14},member15{t0_15},member16{t0_16},member17{t0_17},member18{t0_18}},group1{member0{t1_0},member1{t1_1},member2{t1_2},member3{t1_3},member4{t1_4},member5{t1_5},member6{t1_6},member7{t1_7},member8{t1_8},member9{t1_9},member10{t1_10},member11{t1_11},member12{t1_12},member13{t1_13},member14{t1_14},member15{t1_15},member16{t1_16},member17{t1_17},member18{t1_18}},group2{member0{t2_0},member1{t2_1},member2{t2_2},member3{t2_3},member4{t2_4},member5{t2_5},member6{t2_6},member7{t2_7},member8{t2_8},member9{t2_9},member10{t2_10},member11{t2_11},member12{t2_12},member13{t2_13},member14{t2_14},member15{t2_15},member16{t2_16},member17{t2_17},member18{t2_18}},group3{member0{t3_0},member1{t3_1},member2{t3_2},member3{t3_3},member4{t3_4},member5{t3_5},member6{t3_6},member7{t3_7},member8{t3_8},member9{t3_9},member10{t3_10},member11{t3_11},member12{t3_12},member13{t3_13},member14{t3_14},member15{t3_15},member16{t3_16},member17{t3_17},member18{t3_18}},group4{member0{t4_0},member1{t4_1},member2{t4_2},member3{t4_3},member4{t4_4},member5{t4_5},member6{t4_6},member7{t4_7},member8{t4_8},member9{t4_9},member10{t4_10},member11{t4_11},member12{t4_12},member13{t4_13},member14{t4_14},member15{t4_15},member16{t4_16},member17{t4_17},member18{t4_18}},group5{member0{t5_0},member1{t5_1},member2{t5_2},member3{t5_3},member4{t5_4},member5{t5_5},member6{t5_6},member7{t5_7},member8{t5_8},member9{t5_9},member10{t5_10},member11{t5_11},member12{t5_12},member13{t5_13},member14{t5_14},member15{t5_15},member16{t5_16},member17{t5_17},member18{t5_18}},group6{member0{t6_0},member1{t6_1},member2{t6_2},member3{t6_3},member4{t6_4},member5{t6_5},member6{t6_6},member7{t6_7},member8{t6_8},member9{t6_9},member10{t6_10},member11{t6_11},member12{t6_12},member13{t6_13},member14{t6_14},member15{t6_15},member16{t6_16},member17{t6_17},member18{t6_18}},group7{member0{t7_0},member1{t7_1},member2{t7_2},member3{t7_3},member4{t7_4},member5{t7_5},member6{t7_6},member7{t7_7},member8{t7_8},member9{t7_9},member10{t7_10},member11{t7_11},member12{t7_12},member13{t7_13},member14{t7_14},member15{t7_15},member16{t7_16},member17{t7_17},member18{t7_18}}}}#)->serialize(#{demo::m2m::wideReader::TRoot{group0{member0{t0_0},member1{t0_1},member2{t0_2},member3{t0_3},member4{t0_4},member5{t0_5},member6{t0_6},member7{t0_7},member8{t0_8},member9{t0_9},member10{t0_10},member11{t0_11},member12{t0_12},member13{t0_13},member14{t0_14},member15{t0_15},member16{t0_16},member17{t0_17},member18{t0_18}},group1{member0{t1_0},member1{t1_1},member2{t1_2},member3{t1_3},member4{t1_4},member5{t1_5},member6{t1_6},member7{t1_7},member8{t1_8},member9{t1_9},member10{t1_10},member11{t1_11},member12{t1_12},member13{t1_13},member14{t1_14},member15{t1_15},member16{t1_16},member17{t1_17},member18{t1_18}},group2{member0{t2_0},member1{t2_1},member2{t2_2},member3{t2_3},member4{t2_4},member5{t2_5},member6{t2_6},member7{t2_7},member8{t2_8},member9{t2_9},member10{t2_10},member11{t2_11},member12{t2_12},member13{t2_13},member14{t2_14},member15{t2_15},member16{t2_16},member17{t2_17},member18{t2_18}},group3{member0{t3_0},member1{t3_1},member2{t3_2},member3{t3_3},member4{t3_4},member5{t3_5},member6{t3_6},member7{t3_7},member8{t3_8},member9{t3_9},member10{t3_10},member11{t3_11},member12{t3_12},member13{t3_13},member14{t3_14},member15{t3_15},member16{t3_16},member17{t3_17},member18{t3_18}},group4{member0{t4_0},member1{t4_1},member2{t4_2},member3{t4_3},member4{t4_4},member5{t4_5},member6{t4_6},member7{t4_7},member8{t4_8},member9{t4_9},member10{t4_10},member11{t4_11},member12{t4_12},member13{t4_13},member14{t4_14},member15{t4_15},member16{t4_16},member17{t4_17},member18{t4_18}},group5{member0{t5_0},member1{t5_1},member2{t5_2},member3{t5_3},member4{t5_4},member5{t5_5},member6{t5_6},member7{t5_7},member8{t5_8},member9{t5_9},member10{t5_10},member11{t5_11},member12{t5_12},member13{t5_13},member14{t5_14},member15{t5_15},member16{t5_16},member17{t5_17},member18{t5_18}},group6{member0{t6_0},member1{t6_1},member2{t6_2},member3{t6_3},member4{t6_4},member5{t6_5},member6{t6_6},member7{t6_7},member8{t6_8},member9{t6_9},member10{t6_10},member11{t6_11},member12{t6_12},member13{t6_13},member14{t6_14},member15{t6_15},member16{t6_16},member17{t6_17},member18{t6_18}},group7{member0{t7_0},member1{t7_1},member2{t7_2},member3{t7_3},member4{t7_4},member5{t7_5},member6{t7_6},member7{t7_7},member8{t7_8},member9{t7_9},member10{t7_10},member11{t7_11},member12{t7_12},member13{t7_13},member14{t7_14},member15{t7_15},member16{t7_16},member17{t7_17},member18{t7_18}}}}#);
+    mapping: demo::m2m::wideReader::WideMapping;
+    runtime: demo::m2m::wideReader::WideRuntime;
+  }
+  testSuites:
+  [
+    suite:
+    {
+      data:
+      [
+        connections:
+        [
+          json:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"group0":{"member0":{"s0_0":"first"}},"group7":{"member18":{"s7_18":"last"}}}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"group0":{"member0":{"t0_0":"first"},"member1":null,"member2":null,"member3":null,"member4":null,"member5":null,"member6":null,"member7":null,"member8":null,"member9":null,"member10":null,"member11":null,"member12":null,"member13":null,"member14":null,"member15":null,"member16":null,"member17":null,"member18":null},"group1":null,"group2":null,"group3":null,"group4":null,"group5":null,"group6":null,"group7":{"member0":null,"member1":null,"member2":null,"member3":null,"member4":null,"member5":null,"member6":null,"member7":null,"member8":null,"member9":null,"member10":null,"member11":null,"member12":null,"member13":null,"member14":null,"member15":null,"member16":null,"member17":null,"member18":{"t7_18":"last"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::m2m::wideReader::WideServiceSplit
+{
+  pattern: '/m2m-wide-source-reader-split';
+  documentation: 'The same tree with the reader split into parts of 150 read methods through the BY_COUNT feature flag';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::wideReader::TRoot.all()->graphFetch(#{demo::m2m::wideReader::TRoot{group0{member0{t0_0},member1{t0_1},member2{t0_2},member3{t0_3},member4{t0_4},member5{t0_5},member6{t0_6},member7{t0_7},member8{t0_8},member9{t0_9},member10{t0_10},member11{t0_11},member12{t0_12},member13{t0_13},member14{t0_14},member15{t0_15},member16{t0_16},member17{t0_17},member18{t0_18}},group1{member0{t1_0},member1{t1_1},member2{t1_2},member3{t1_3},member4{t1_4},member5{t1_5},member6{t1_6},member7{t1_7},member8{t1_8},member9{t1_9},member10{t1_10},member11{t1_11},member12{t1_12},member13{t1_13},member14{t1_14},member15{t1_15},member16{t1_16},member17{t1_17},member18{t1_18}},group2{member0{t2_0},member1{t2_1},member2{t2_2},member3{t2_3},member4{t2_4},member5{t2_5},member6{t2_6},member7{t2_7},member8{t2_8},member9{t2_9},member10{t2_10},member11{t2_11},member12{t2_12},member13{t2_13},member14{t2_14},member15{t2_15},member16{t2_16},member17{t2_17},member18{t2_18}},group3{member0{t3_0},member1{t3_1},member2{t3_2},member3{t3_3},member4{t3_4},member5{t3_5},member6{t3_6},member7{t3_7},member8{t3_8},member9{t3_9},member10{t3_10},member11{t3_11},member12{t3_12},member13{t3_13},member14{t3_14},member15{t3_15},member16{t3_16},member17{t3_17},member18{t3_18}},group4{member0{t4_0},member1{t4_1},member2{t4_2},member3{t4_3},member4{t4_4},member5{t4_5},member6{t4_6},member7{t4_7},member8{t4_8},member9{t4_9},member10{t4_10},member11{t4_11},member12{t4_12},member13{t4_13},member14{t4_14},member15{t4_15},member16{t4_16},member17{t4_17},member18{t4_18}},group5{member0{t5_0},member1{t5_1},member2{t5_2},member3{t5_3},member4{t5_4},member5{t5_5},member6{t5_6},member7{t5_7},member8{t5_8},member9{t5_9},member10{t5_10},member11{t5_11},member12{t5_12},member13{t5_13},member14{t5_14},member15{t5_15},member16{t5_16},member17{t5_17},member18{t5_18}},group6{member0{t6_0},member1{t6_1},member2{t6_2},member3{t6_3},member4{t6_4},member5{t6_5},member6{t6_6},member7{t6_7},member8{t6_8},member9{t6_9},member10{t6_10},member11{t6_11},member12{t6_12},member13{t6_13},member14{t6_14},member15{t6_15},member16{t6_16},member17{t6_17},member18{t6_18}},group7{member0{t7_0},member1{t7_1},member2{t7_2},member3{t7_3},member4{t7_4},member5{t7_5},member6{t7_6},member7{t7_7},member8{t7_8},member9{t7_9},member10{t7_10},member11{t7_11},member12{t7_12},member13{t7_13},member14{t7_14},member15{t7_15},member16{t7_16},member17{t7_17},member18{t7_18}}}}#)->serialize(#{demo::m2m::wideReader::TRoot{group0{member0{t0_0},member1{t0_1},member2{t0_2},member3{t0_3},member4{t0_4},member5{t0_5},member6{t0_6},member7{t0_7},member8{t0_8},member9{t0_9},member10{t0_10},member11{t0_11},member12{t0_12},member13{t0_13},member14{t0_14},member15{t0_15},member16{t0_16},member17{t0_17},member18{t0_18}},group1{member0{t1_0},member1{t1_1},member2{t1_2},member3{t1_3},member4{t1_4},member5{t1_5},member6{t1_6},member7{t1_7},member8{t1_8},member9{t1_9},member10{t1_10},member11{t1_11},member12{t1_12},member13{t1_13},member14{t1_14},member15{t1_15},member16{t1_16},member17{t1_17},member18{t1_18}},group2{member0{t2_0},member1{t2_1},member2{t2_2},member3{t2_3},member4{t2_4},member5{t2_5},member6{t2_6},member7{t2_7},member8{t2_8},member9{t2_9},member10{t2_10},member11{t2_11},member12{t2_12},member13{t2_13},member14{t2_14},member15{t2_15},member16{t2_16},member17{t2_17},member18{t2_18}},group3{member0{t3_0},member1{t3_1},member2{t3_2},member3{t3_3},member4{t3_4},member5{t3_5},member6{t3_6},member7{t3_7},member8{t3_8},member9{t3_9},member10{t3_10},member11{t3_11},member12{t3_12},member13{t3_13},member14{t3_14},member15{t3_15},member16{t3_16},member17{t3_17},member18{t3_18}},group4{member0{t4_0},member1{t4_1},member2{t4_2},member3{t4_3},member4{t4_4},member5{t4_5},member6{t4_6},member7{t4_7},member8{t4_8},member9{t4_9},member10{t4_10},member11{t4_11},member12{t4_12},member13{t4_13},member14{t4_14},member15{t4_15},member16{t4_16},member17{t4_17},member18{t4_18}},group5{member0{t5_0},member1{t5_1},member2{t5_2},member3{t5_3},member4{t5_4},member5{t5_5},member6{t5_6},member7{t5_7},member8{t5_8},member9{t5_9},member10{t5_10},member11{t5_11},member12{t5_12},member13{t5_13},member14{t5_14},member15{t5_15},member16{t5_16},member17{t5_17},member18{t5_18}},group6{member0{t6_0},member1{t6_1},member2{t6_2},member3{t6_3},member4{t6_4},member5{t6_5},member6{t6_6},member7{t6_7},member8{t6_8},member9{t6_9},member10{t6_10},member11{t6_11},member12{t6_12},member13{t6_13},member14{t6_14},member15{t6_15},member16{t6_16},member17{t6_17},member18{t6_18}},group7{member0{t7_0},member1{t7_1},member2{t7_2},member3{t7_3},member4{t7_4},member5{t7_5},member6{t7_6},member7{t7_7},member8{t7_8},member9{t7_9},member10{t7_10},member11{t7_11},member12{t7_12},member13{t7_13},member14{t7_14},member15{t7_15},member16{t7_16},member17{t7_17},member18{t7_18}}}}#)->meta::pure::executionPlan::featureFlag::withFeatureFlags([meta::pure::mapping::modelToModel::JsonReaderSplit.BY_COUNT]);
+    mapping: demo::m2m::wideReader::WideMapping;
+    runtime: demo::m2m::wideReader::WideRuntime;
+  }
+  testSuites:
+  [
+    suite:
+    {
+      data:
+      [
+        connections:
+        [
+          json:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"group0":{"member0":{"s0_0":"first"}},"group7":{"member18":{"s7_18":"last"}}}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"group0":{"member0":{"t0_0":"first"},"member1":null,"member2":null,"member3":null,"member4":null,"member5":null,"member6":null,"member7":null,"member8":null,"member9":null,"member10":null,"member11":null,"member12":null,"member13":null,"member14":null,"member15":null,"member16":null,"member17":null,"member18":null},"group1":null,"group2":null,"group3":null,"group4":null,"group5":null,"group6":null,"group7":{"member0":null,"member1":null,"member2":null,"member3":null,"member4":null,"member5":null,"member6":null,"member7":null,"member8":null,"member9":null,"member10":null,"member11":null,"member12":null,"member13":null,"member14":null,"member15":null,"member16":null,"member17":null,"member18":{"t7_18":"last"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
