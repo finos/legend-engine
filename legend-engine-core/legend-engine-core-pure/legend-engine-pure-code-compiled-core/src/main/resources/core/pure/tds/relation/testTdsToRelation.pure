@@ -63,7 +63,8 @@ function <<test.Test>> meta::pure::tds::toRelation::testProjectSingle():Boolean[
   test(
     [
       {| TestClass.all()->project(col(x | $x.string, 'str'))},
-      {| TestClass.all()->project(x | $x.string, 'str')}
+      {| TestClass.all()->project(x | $x.string, 'str')},
+      {| TestClass.all()->project(^BasicColumnSpecification<TestClass>(name = 'str', func = {x:TestClass[1] | $x.string}))}
     ],
     {| TestClass.all()->project(~[str: x | $x.string])}
   );
@@ -104,12 +105,18 @@ function <<test.Test>> meta::pure::tds::toRelation::testTDSProjectMulti():Boolea
 function <<test.Test>> meta::pure::tds::toRelation::testExtendSingle():Boolean[1]
 {
   test(
-    {| TestClass.all()
-        ->project(col(x | $x.string, 'str'))
-        ->extend(
-            col(x:TDSRow[1] | $x.getString('str')->toOne() + 'abc', 'col')
-        )
-    },
+    [
+      {| TestClass.all()
+          ->project(col(x | $x.string, 'str'))
+          ->extend(
+              col(x:TDSRow[1] | $x.getString('str')->toOne() + 'abc', 'col')
+          )
+      },
+      {| TestClass.all()
+          ->project(col(x | $x.string, 'str'))
+          ->extend(^BasicColumnSpecification<TDSRow>(name = 'col', func = {x:TDSRow[1] | $x.getString('str')->toOne() + 'abc'}))
+      }
+    ],
     {| TestClass.all()
       ->project(~[str: x | $x.string])
       ->extend(~[
@@ -429,6 +436,68 @@ function <<test.Test>> meta::pure::tds::toRelation::testFrom():Boolean[1]
     {| TestClass.all()
       ->project(~[str: x | $x.string, int: x | $x.integer])
       ->meta::pure::mapping::from(^meta::pure::mapping::Mapping(), ^meta::core::runtime::Runtime())
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testFilterIsNullIsNotNull():Boolean[1]
+{
+  test(
+    {| TestClass.all()
+        ->project([
+          col(x | $x.string, 'str'),
+          col(x | $x.integer, 'int')
+        ])
+        ->filter(x | $x.isNull('str') || $x.isNotNull('int'))
+    },
+    {| TestClass.all()
+          ->project(~[
+            str: x | $x.string,
+            int: x | $x.integer
+          ])
+          ->filter(x | $x.str->isEmpty() || $x.int->isNotEmpty())
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testExtendIsNull():Boolean[1]
+{
+  test(
+    {| TestClass.all()
+        ->project(col(x | $x.string, 'str'))
+        ->extend(col(x:TDSRow[1] | $x.isNull('str'), 'strIsNull'))
+    },
+    {| TestClass.all()
+      ->project(~[str: x | $x.string])
+      ->extend(~[strIsNull: x | $x.str->isEmpty()])
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testGroupByNoGroupingColumns():Boolean[1]
+{
+  test(
+    {| TestClass.all()->groupBy([], agg(x | $x.integer, y | $y->sum()), ['sum'])},
+    {| TestClass.all()->project(~[sum : x | $x.integer])->aggregate(~[sum : x | $x.sum : y | $y->sum()])}
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testTDSGroupByNoGroupingColumns():Boolean[1]
+{
+  test(
+    {| TestClass.all()
+      ->project([
+          col(x | $x.string, 'str'),
+          col(x | $x.integer, 'int')
+      ])
+      ->groupBy([], agg('sum', row | $row.getInteger('int'), y | $y->sum()))
+    },
+    {| TestClass.all()
+      ->project(~[
+          str: x | $x.string,
+          int: x | $x.integer
+      ])
+      ->aggregate(~[sum : row | $row.int : y | $y->sum()])
     }
   );
 }

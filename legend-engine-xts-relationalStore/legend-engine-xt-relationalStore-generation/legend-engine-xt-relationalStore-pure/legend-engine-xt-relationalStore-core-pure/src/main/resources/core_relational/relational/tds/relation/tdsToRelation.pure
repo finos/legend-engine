@@ -25,13 +25,9 @@ function meta::pure::tds::toRelation::tdsToRelationExtension():TdsToRelationExte
           [
             pair(join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_->cast(@Function<Any>),
             |
-              let left = $a.parameters->at(0)->transform($extensions);
-              let right = $a.parameters->at(1)->transform($extensions);
-              let joinKind = $a.parameters->at(2)->transformJoinKind();
               let joinCols = $a.parameters->at(3)->fromCollection()->cast(@CString).value;
-              let func = transformJoinColsToFunc($joinCols, $joinCols);
-
-              appliedFunction(join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_, [$left, $right, $joinKind, $func]);
+              fail('conversion of join on a single column list ' + $joinCols->joinStrings('[', ', ', ']') + ' is currently not supported, rename the column(s) on one side and join on separate left and right column lists');
+              $a;
             ),
             pair(join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_->cast(@Function<Any>),
               |
