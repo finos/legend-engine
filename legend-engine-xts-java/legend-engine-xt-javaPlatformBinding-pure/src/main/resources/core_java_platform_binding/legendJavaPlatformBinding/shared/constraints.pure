@@ -125,17 +125,20 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::constra
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::generateConstraintMethods(infos:ConstraintInfo[*], javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], constraintsToExclude: String[*], conventions:Conventions[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'generateConstraintMethods\n',|''));
-   $infos->filter(c | !$c.constraint.name->in($constraintsToExclude))->fold(
-      {info, project|
-         let thisProject = $javaClass->generateConstraintMethod($info, $class, $conventions, $debug);
-
-         mergeProjects([$project, $thisProject]);
+   // [B] one resolution state across this class's constraint fold: a helper used by many constraint
+   // bodies is generated once here rather than once per constraint
+   let seed = pair(newProject(), ^CodeDependencyResolutionState(projectsByDependency=^Map<String, Project>()));
+   let folded = $infos->filter(c | !$c.constraint.name->in($constraintsToExclude))->fold(
+      {info, acc|
+         let r = $javaClass->generateConstraintMethod($info, $class, $conventions, $acc.second, $debug);
+         pair([$acc.first, $r.project->toOne()]->mergeProjects(), $r.resolutionState);
       },
-      newProject()
+      $seed
    );
+   $folded.first;
 }
 
-function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::generateConstraintMethod(javaClass:meta::external::language::java::metamodel::Class[1], info:ConstraintInfo[1], class:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1], debug:DebugContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::generateConstraintMethod(javaClass:meta::external::language::java::metamodel::Class[1], info:ConstraintInfo[1], class:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1], resolutionState:CodeDependencyResolutionState[1], debug:DebugContext[1]): ProjectAndState[1]
 {
    let constraint     = $info.constraint;
    print(if($debug.debug,|$debug.space+'- generateConstraintMethod \''+$info.id+'\'\n',|''));
@@ -181,12 +184,11 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
       )
    );
 
-   mergeProjects([
-      newProject()->addClass($javaClass->addMethod($method))
-         ->concatenate($testExpr->dependencies()->resolveAndGetProjects())
-         ->concatenate($message->dependencies()->resolveAndGetProjects())
-         ->toOneMany()
-   ]);
+   // [B] $testExpr/$message deps stay attached to $method in $javaClass; root resolves once.
+   ^ProjectAndState(
+      project = newProject()->addClass($javaClass->addMethod($method)),
+      resolutionState = $resolutionState
+   );
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::constraintMethodName(info:ConstraintInfo[1]): String[1]

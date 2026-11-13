@@ -249,7 +249,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
                                                        ->map(ti | $ti->generateDefaultGettersInterfaceForClass($conventions.planInterfaceProperties->filter(p | $p.first == $ti.type).second, $conventions))
                                                        ->fold({i, p | $p->addClass($i)}, newProject());
 
-            let interface = $clsTypeInfo->toOne()->generateInterfaceForClass($conventions,$debug);
+            let interface = $clsTypeInfo->toOne()->generateInterfaceForClass($typeInfo, $conventions, $debug);
             let generationContext = ^GenerationContext(typeInfos=$typeInfo, conventions=$conventions);
             let constraintContext = ^ConstraintCheckingGenerationContext(enableConstraints=true, topLevelOnly=false);
             let implementationWithProps = $props->fold({p,c| let var = $conventions->fieldName($p);

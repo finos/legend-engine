@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// A mapping property built by a function that instantiates a class inline. Each service fetches a
+// different property of that class, so the interface each plan generates for it declares a different
+// subset of the class's getters.
+
+Class test::partial::Source
+{
+  kind: String[0..1];
+  subKind: String[0..1];
+}
+
+Class test::partial::Criteria
+{
+  kind: String[0..1];
+  subKind: String[0..1];
+}
+
+Class test::partial::Target
+{
+  criteria: test::partial::Criteria[1];
+}
+
+function test::partial::criteriaOf(source: test::partial::Source[1]): test::partial::Criteria[1]
+{
+  ^test::partial::Criteria(kind = $source.kind, subKind = $source.subKind)
+}
+
+
+###Mapping
+Mapping test::partial::Map
+(
+  *test::partial::Target: Pure
+  {
+    ~src test::partial::Source
+    criteria: test::partial::criteriaOf($src)
+  }
+)
+
+
+###Runtime
+Runtime test::partial::Runtime
+{
+  mappings:
+  [
+    test::partial::Map
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1:
+      #{
+        JsonModelConnection
+        {
+          class: test::partial::Source;
+          url: 'data:application/json,{"kind":"OPEN","subKind":"CLOSE"}';
+        }
+      }#
+    ]
+  ];
+}
+
+
+###Service
+Service test::partial::KindService
+{
+  pattern: '/test/partial/kind';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::partial::Target.all()->graphFetch(#{test::partial::Target{criteria{kind}}}#)->serialize(#{test::partial::Target{criteria{kind}}}#);
+    mapping: test::partial::Map;
+    runtime: test::partial::Runtime;
+  }
+}
+
+Service test::partial::SubKindService
+{
+  pattern: '/test/partial/subKind';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::partial::Target.all()->graphFetch(#{test::partial::Target{criteria{subKind}}}#)->serialize(#{test::partial::Target{criteria{subKind}}}#);
+    mapping: test::partial::Map;
+    runtime: test::partial::Runtime;
+  }
+}
