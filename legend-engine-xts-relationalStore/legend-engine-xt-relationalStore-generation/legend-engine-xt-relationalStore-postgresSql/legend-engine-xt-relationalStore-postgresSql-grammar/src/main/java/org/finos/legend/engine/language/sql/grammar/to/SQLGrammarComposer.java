@@ -232,8 +232,8 @@ public class SQLGrammarComposer
             @Override
             public String visit(LogicalBinaryExpression val)
             {
-                String left = val.left.accept(this);
-                String right = val.right.accept(this);
+                String left = wrapLogicalOperand(val.type, val.left);
+                String right = wrapLogicalOperand(val.type, val.right);
                 String operator = BINARY_COMPARATOR.get(val.type);
                 if (operator == null)
                 {
@@ -242,10 +242,34 @@ public class SQLGrammarComposer
                 return left + " " + operator + " " + right;
             }
 
+            private int logicalPrecedence(Expression expression)
+            {
+                if (expression instanceof LogicalBinaryExpression)
+                {
+                    return ((LogicalBinaryExpression) expression).type == LogicalBinaryType.OR ? 1 : 2;
+                }
+                return 3;
+            }
+
+            private String wrapLogicalOperand(LogicalBinaryType parentType, Expression operand)
+            {
+                String rendered = operand.accept(this);
+                int parentPrecedence = parentType == LogicalBinaryType.OR ? 1 : 2;
+                // Parentheses are only dropped when the operand binds at least as tightly as the
+                // parent (e.g. AND nested in OR, or the same associative operator); a lower-precedence
+                // operand (OR nested in AND) must keep its grouping or the round-tripped SQL changes meaning.
+                boolean needsParens = logicalPrecedence(operand) < parentPrecedence;
+                return needsParens ? "(" + rendered + ")" : rendered;
+            }
+
             @Override
             public String visit(NotExpression val)
             {
-                String value = val.value.accept(this);
+                String rendered = val.value.accept(this);
+                // NOT binds tighter than AND/OR, so "NOT (A AND B)" must keep its parentheses or it
+                // would round-trip to "NOT A AND B", i.e. "(NOT A) AND B".
+                boolean needsParens = val.value instanceof LogicalBinaryExpression;
+                String value = needsParens ? "(" + rendered + ")" : rendered;
 
                 return "not " + value;
             }
