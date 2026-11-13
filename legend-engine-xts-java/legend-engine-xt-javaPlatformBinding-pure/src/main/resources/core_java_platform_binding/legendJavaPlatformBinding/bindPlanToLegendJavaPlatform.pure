@@ -28,6 +28,7 @@ import meta::pure::extension::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
+import meta::pure::executionPlan::platformBinding::legendJava::missingTypes::*;
 
 // [B] one plan: the same assembly the batch root performs, so a plan bound on its own is
 // self-contained. Node generators leave each CodeDependency attached to the code it was generated
@@ -57,12 +58,16 @@ function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToNodeA
 {
    let generationContext = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
    let generatedNode     = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $generationContext, $extensions, $debug);
+   let result            = if($plan->isM2MMigrationMissingJavaTypesEnabled(),
+                              | $plan.rootExecutionNode->generateWithMissingJavaTypes($generationContext, $generatedNode, $extensions, $debug),
+                              | pair($generationContext.typeInfos, $generatedNode)
+                           );
 
    ^BoundNodePlan
    (
-      plan        = ^$plan(rootExecutionNode = $generatedNode.node),
-      project     = $generatedNode.project,
-      typeInfos   = $generationContext.typeInfos,
+      plan        = ^$plan(rootExecutionNode = $result.second.node),
+      project     = $result.second.project,
+      typeInfos   = $result.first,
       baseProject = $generationContext.baseProject
    );
 }

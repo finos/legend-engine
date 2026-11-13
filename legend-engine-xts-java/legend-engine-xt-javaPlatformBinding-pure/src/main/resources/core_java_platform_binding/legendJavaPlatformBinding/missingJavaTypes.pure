@@ -1,0 +1,266 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::*;
+import meta::pure::extension::*;
+import meta::pure::executionPlan::featureFlag::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::missingTypes::*;
+
+Class meta::pure::executionPlan::platformBinding::legendJava::missingTypes::JavaTypeUse
+{
+   javaClass  : meta::external::language::java::metamodel::Class[1];
+   getterName : String[0..1];
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::missingTypes::isM2MMigrationMissingJavaTypesEnabled(plan: ExecutionPlan[1]): Boolean[1]
+{
+   meta::core::runtime::isOptionSet('M2MMigrationMissingJavaTypes')
+      || $plan.rootExecutionNode->allExecutionNodes()->exists(n | $n->routedContextHasFlag(meta::pure::executionPlan::features::Feature.M2M_MIGRATION_MISSING_JAVA_TYPES));
+}
+
+// A cluster is a ValueSpecification: read deactivated, or interpreted execution evaluates it instead of reading it.
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::routedContextHasFlag(node: ExecutionNode[1], flag: Enum[1]): Boolean[1]
+{
+   $node.fromCluster->evaluateAndDeactivate().exeCtx->exists(c | $c->contextHasFlag($flag))
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::allExecutionNodes(node: ExecutionNode[1]): ExecutionNode[*]
+{
+   $node->concatenate($node.executionNodes->map(n | $n->allExecutionNodes()));
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::missingTypes::generateWithMissingJavaTypes(node: ExecutionNode[1], context: GenerationContext[1], generated: GeneratedNode[1], extensions: Extension[*], debug: DebugContext[1]): Pair<TypeInfoSet, GeneratedNode>[1]
+{
+   $node->generateWithMissingJavaTypes($context, $generated, $extensions, $debug, 3);
+}
+
+// Node code (stream-reading _Impl classes, JSON readers) is also generated from the typeInfos, so it is regenerated.
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::generateWithMissingJavaTypes(node: ExecutionNode[1], context: GenerationContext[1], generated: GeneratedNode[1], extensions: Extension[*], debug: DebugContext[1], passesLeft: Integer[1]): Pair<TypeInfoSet, GeneratedNode>[1]
+{
+   let enriched = $context.typeInfos->addMissingJavaTypes($generated.project, $context.conventions, $debug);
+   if(($enriched->typeInfoSize() == $context.typeInfos->typeInfoSize()) || ($passesLeft <= 0),
+      | pair($enriched, $generated),
+      | let enrichedContext = ^$context(typeInfos = $enriched)->fillPlanInterfaceClasses();
+        $node->generateWithMissingJavaTypes($enrichedContext, $node->generateLegendJavaPlatformBindingCode('root', $enrichedContext, $extensions, $debug), $extensions, $debug, $passesLeft - 1);
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::typeInfoSize(typeInfos: TypeInfoSet[1]): Integer[1]
+{
+   $typeInfos.typeInfos->size() + $typeInfos->allClassInfos()->map(c | $c.properties->size())->sum();
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::missingTypes::addMissingJavaTypes(typeInfos: TypeInfoSet[1], project: Project[0..1], conventions: Conventions[1], debug: DebugContext[1]): TypeInfoSet[1]
+{
+   if($project->isEmpty(),
+      | $typeInfos,
+      | let appRoot      = $conventions.basePackageName + '.app.';
+        // Helper classes (e.g. Functions__) only exist once the code dependencies are resolved, which binding does at the root.
+        let classes      = $project->toOne()->concatenate($project->toOne()->resolveProjectDependencies())->map(p | $p->allClasses());
+        let projectNames = $classes->map(c | $c->qualifiedClassName());
+        let uses         = $classes
+                             ->map(c | $c->classTypeUses())
+                             ->filter(u | let fqn = $u.javaClass->qualifiedClassName();
+                                          $fqn->startsWith($appRoot) && ($u.getterName->isNotEmpty() || !$fqn->in($projectNames));)
+                             ->removeDuplicatesBy(u | $u.javaClass->qualifiedClassName() + '#' + $u.getterName->orElse(''));
+
+        let generated = newMap($typeInfos.typeInfos.type->map(t | $t->javaClassNameIfGenerated($conventions)->map(n | pair($n, $t))));
+        let resolved  = $uses.javaClass->removeDuplicatesBy(c | $c->qualifiedClassName())->map({c |
+                           let fqn  = $c->qualifiedClassName();
+                           let type = if($generated->get($fqn)->isNotEmpty(), | $generated->get($fqn), | $c->toPureType($appRoot, $conventions));
+                           print(if($debug.debug && $type->isEmpty(), | $debug.space + '[M2MMigrationMissingJavaTypes] could not resolve ' + $fqn + '\n', | ''));
+                           $type->map(t | pair($fqn, $t));
+                        });
+        let pureTypes = newMap($resolved);
+
+        $uses->fold({u, ti | let fqn = $u.javaClass->qualifiedClassName();
+                             $ti->addUseIfMissing($u, $pureTypes->get($fqn), $fqn->in($projectNames), $conventions, $debug);}, $typeInfos);
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::addUseIfMissing(typeInfos: TypeInfoSet[1], use: JavaTypeUse[1], pureType: meta::pure::metamodel::type::Type[0..1], inProject: Boolean[1], conventions: Conventions[1], debug: DebugContext[1]): TypeInfoSet[1]
+{
+   if($pureType->isEmpty(),
+      | $typeInfos,
+      | let type     = $pureType->toOne();
+        let withType = if($inProject || $typeInfos.typeInfos.type->contains($type),
+                          | $typeInfos,
+                          | print(if($debug.debug, | $debug.space + '[M2MMigrationMissingJavaTypes] added class ' + $type->cast(@PackageableElement)->elementToPath() + '\n', | ''));
+                            $typeInfos->addForType($type);
+                       );
+        if($use.getterName->isEmpty() || !$type->instanceOf(meta::pure::metamodel::type::Class) || !$withType.typeInfos.type->contains($type),
+           | $withType,
+           | $withType->addPropertyForGetterIfMissing($type->cast(@meta::pure::metamodel::type::Class<Any>), $use.getterName->toOne(), $conventions, $debug)
+        );
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::addPropertyForGetterIfMissing(typeInfos: TypeInfoSet[1], class: meta::pure::metamodel::type::Class<Any>[1], getterName: String[1], conventions: Conventions[1], debug: DebugContext[1]): TypeInfoSet[1]
+{
+   let property = $class->getAllTypeGeneralisations()
+                     ->filter(t | $t->instanceOf(meta::pure::metamodel::type::Class))
+                     ->map(c | $c->cast(@meta::pure::metamodel::type::Class<Any>)->allProperties())
+                     ->filter(p | $p->instanceOf(Property) && ($conventions->getterName($p) == $getterName))
+                     ->cast(@Property<Nil,Any|*>)
+                     ->first();
+   if($property->isEmpty() || $typeInfos->containsProperty($property->toOne()),
+      | $typeInfos,
+      | print(if($debug.debug, | $debug.space + '[M2MMigrationMissingJavaTypes] added property ' + $class->elementToPath() + '.' + $property.name->toOne() + '\n', | ''));
+        $typeInfos->addProperties($property->toOne());
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::javaClassNameIfGenerated(type: meta::pure::metamodel::type::Type[1], conventions: Conventions[1]): String[0..1]
+{
+   if($conventions->isProvidedType($type) || !$type->instanceOf(PackageableElement),
+      | [],
+      | $conventions->className($type)->qualifiedClassName()
+   );
+}
+
+// Undoes the per-segment escaping of sanitizeJavaKeywords; the forward check discards false candidates.
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::toPureType(javaClass: meta::external::language::java::metamodel::Class[1], appRoot: String[1], conventions: Conventions[1]): meta::pure::metamodel::type::Type[0..1]
+{
+   let fqn = $javaClass->qualifiedClassName();
+   $fqn->substring($appRoot->length())->split('.')->candidatePaths()
+      ->map(path | forgivingPathToElement($path))
+      ->filter(e | $e->instanceOf(meta::pure::metamodel::type::Type))
+      ->cast(@meta::pure::metamodel::type::Type)
+      ->filter(t | $t->javaClassNameIfGenerated($conventions) == $fqn)
+      ->first();
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::candidatePaths(segments: String[*]): String[*]
+{
+   if($segments->isEmpty(),
+      | [],
+      | let heads = $segments->at(0)->unescapedCandidates();
+        let rest  = $segments->tail();
+        if($rest->isEmpty(), | $heads, | $heads->map(h | $rest->candidatePaths()->map(r | $h + '::' + $r)));
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::unescapedCandidates(segment: String[1]): String[*]
+{
+   let withTilde = $segment->replace('_Tilde_', '~');
+   let unescaped = if($withTilde == '__',
+                      | '_',
+                      | if($withTilde->startsWith('_') && ($withTilde->length() > 1), | $withTilde->substring(1), | [])
+                   );
+   $withTilde->concatenate($unescaped)->removeDuplicates();
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::classTypeUses(class: meta::external::language::java::metamodel::Class[1]): JavaTypeUse[*]
+{
+   let signatureTypes = $class.superType
+                          ->concatenate($class.interfaces)
+                          ->concatenate($class.fields.type)
+                          ->concatenate($class.methods.returnType)
+                          ->concatenate($class.methods.parameters.type)
+                          ->concatenate($class.constructors.parameters.type);
+   let bodies = $class.fields.valueCode
+                  ->concatenate($class.methods.bodyCode)
+                  ->concatenate($class.constructors.bodyCode);
+
+   $signatureTypes->map(t | $t->typeUses())
+      ->concatenate($bodies->map(b | $b->codeTypeUses()));
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::codeTypeUses(code: Code[1]): JavaTypeUse[*]
+{
+   let getterUse = $code->match([
+      m: MethodCall[1] | $m.instance.type->javaClasses()->map(c | ^JavaTypeUse(javaClass = $c, getterName = $m.methodName)),
+      a: Any[1]        | []
+   ]);
+
+   $code.type->concatenate($code->extraTypes())->map(t | $t->typeUses())
+      ->concatenate($getterUse)
+      ->concatenate($code->childCodes()->map(c | $c->codeTypeUses()));
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::typeUses(type: meta::external::language::java::metamodel::Type[1]): JavaTypeUse[*]
+{
+   $type->javaClasses()->map(c | ^JavaTypeUse(javaClass = $c));
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::javaClasses(type: meta::external::language::java::metamodel::Type[1]): meta::external::language::java::metamodel::Class[*]
+{
+   $type->match([
+      c: meta::external::language::java::metamodel::Class[1]             | $c,
+      p: meta::external::language::java::metamodel::ParameterizedType[1] | $p.rawType->concatenate($p.typeArguments)->map(t | $t->javaClasses()),
+      w: meta::external::language::java::metamodel::WildcardType[1]      | $w.lowerBounds->concatenate($w.upperBounds)->map(t | $t->javaClasses()),
+      a: meta::external::language::java::metamodel::Array[1]             | $a.rawType->javaClasses(),
+      f: meta::external::language::java::metamodel::FunctionType[1]      | $f.parameterTypes->concatenate($f.returnType)->map(t | $t->javaClasses()),
+      v: meta::external::language::java::metamodel::TypeVariable[1]      | $v.bounds->map(t | $t->javaClasses()),
+      o: meta::external::language::java::metamodel::Type[1]              | []
+   ]);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::extraTypes(code: Code[1]): meta::external::language::java::metamodel::Type[*]
+{
+   $code->match([
+      i: InstanceOf[1]            | $i.class,
+      n: New[1]                   | $n.typeArguments,
+      m: MethodCall[1]            | $m.typeArguments,
+      s: StaticMethodCall[1]      | $s.class->concatenate($s.typeArguments),
+      s: StaticFieldAccess[1]     | $s.class,
+      s: StaticMethodReference[1] | $s.class,
+      a: Any[1]                   | []
+   ]);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::missingTypes::childCodes(code: Code[1]): Code[*]
+{
+   $code->match([
+      c: Block[1]                    | $c.statements,
+      c: ExpressionStatement[1]      | $c.expression,
+      c: InfixExpression[1]          | [$c.left, $c.right],
+      c: PrefixExpression[1]         | $c.expression,
+      c: PostfixExpression[1]        | $c.expression,
+      c: Conditional[1]              | [$c.test, $c.then, $c.else],
+      c: InstanceOf[1]               | $c.expression,
+      c: LocalVariableDeclaration[1] | $c.initializer,
+      c: If[1]                       | $c.test->concatenate($c.then)->concatenate($c.else),
+      c: For[1]                      | $c.init->concatenate($c.test)->concatenate($c.update)->concatenate($c.body),
+      c: ForEach[1]                  | [$c.parameter, $c.collection, $c.body],
+      c: While[1]                    | [$c.test, $c.then],
+      c: DoWhile[1]                  | [$c.do, $c.while],
+      c: Try[1]                      | $c.try->concatenate($c.catches)->concatenate($c.finally),
+      c: Catch[1]                    | [$c.parameter, $c.clause],
+      c: Finally[1]                  | $c.clause,
+      c: Return[1]                   | $c.expression,
+      c: Throw[1]                    | $c.expression,
+      c: NewAnonymous[1]             | $c.arguments->concatenate($c.methods),
+      c: New[1]                      | $c.arguments,
+      c: NewArray[1]                 | $c.arguments,
+      c: CodeMethod[1]               | $c.parameters->concatenate($c.body),
+      c: ArrayAccess[1]              | [$c.array, $c.index],
+      c: CastProxy[1]                | $c.proxy,
+      c: Cast[1]                     | $c.expression,
+      c: ConstructorCall[1]          | $c.arguments,
+      c: MethodCall[1]               | $c.instance->concatenate($c.arguments),
+      c: FieldAccess[1]              | $c.instance,
+      c: MethodReference[1]          | $c.instance,
+      c: StaticMethodCall[1]         | $c.arguments,
+      c: Lambda[1]                   | $c.parameters->concatenate($c.expression),
+      c: DeferredStreamResolve[1]    | $c.stream,
+      c: Code[1]                     | []
+   ]);
+}

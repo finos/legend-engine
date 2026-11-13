@@ -1,0 +1,29 @@
+name: m2m-missing-java-types-flag
+title: "M2M graph fetch that only compiles with M2M_MIGRATION_MISSING_JAVA_TYPES"
+description: |
+  Shape of a legacy payment-action migration. actionData is routed to one set
+  per action-data subtype plus a catch-all PaymentActionData set, whose ~src is
+  the supertype of the other sets' ~src. Source-tree calculation then leaves the
+  Instruct branch without its properties, so SettlementInstructionIdentifier is
+  never generated and the plan fails to compile. The query opts into
+  M2M_MIGRATION_MISSING_JAVA_TYPES, which generates the missing types; the
+  suites check the plain and the Instruct payloads, including the nested
+  defaultInstruction.
+modelSources:
+  model:
+    root: m2m-missing-java-types-flag
+    files:
+      - model.pure
+features:
+  - execution:graph-fetch
+  - execution:m2m-migration-missing-java-types
+  - execution:service-test
+  - execution:test-data
+  - grammar:class-inheritance
+  - mapping:mapping
+stores: []
+complexity: intermediate
+tags:
+  - m2m
+  - migration
+  - feature-flag
