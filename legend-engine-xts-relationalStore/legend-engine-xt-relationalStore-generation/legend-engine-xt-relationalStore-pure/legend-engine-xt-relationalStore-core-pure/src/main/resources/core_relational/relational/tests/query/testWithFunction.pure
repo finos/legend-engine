@@ -501,3 +501,31 @@ function <<test.Test>> meta::relational::tests::query::function::testDayOfWeekNu
   assertEquals('select extract(dow from "root".tradeDate) as "Day Of Week Number" from tradeTable as "root" where extract(isodow from "root".tradeDate) is distinct from \'2\'', $result->sqlRemoveFormatting(0));
 }
 
+function meta::relational::tests::query::function::sameFirstName(firstName:String[1], expected:String[1]):Boolean[1]
+{
+  $firstName == $expected
+}
+
+function <<test.Test>> meta::relational::tests::query::function::testInlinedFunctionParameterSharingNameWithCallerVariable():Boolean[1]
+{
+  let sql = meta::relational::tests::query::function::sqlOf({firstName: String[1]|Person.all()->filter(p|meta::relational::tests::query::function::sameFirstName($p.firstName, $firstName))->project(col(p|$p.lastName, 'lastName'))});
+  assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\'', $sql);
+}
+
+function meta::relational::tests::query::function::lastNamesOfFirstName(firstName:String[1]):TabularDataSet[1]
+{
+  Person.all()->filter(p|meta::relational::tests::query::function::sameFirstName($p.firstName, $firstName))->project(col(p|$p.lastName, 'lastName'))
+}
+
+function <<test.Test>> meta::relational::tests::query::function::testInlinedFunctionParameterSharingNameWithEnclosingFunctionParameter():Boolean[1]
+{
+  let sql = meta::relational::tests::query::function::sqlOf({firstName: String[1]|meta::relational::tests::query::function::lastNamesOfFirstName($firstName)});
+  assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\'', $sql);
+}
+
+function <<access.private>> meta::relational::tests::query::function::sqlOf(f:FunctionDefinition<Any>[1]):String[1]
+{
+  let extensions = meta::relational::extension::relationalExtensions();
+  let plan = meta::pure::executionPlan::executionPlan($f, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), $extensions);
+  $plan.rootExecutionNode->meta::pure::executionPlan::allNodes($extensions)->filter(n|$n->instanceOf(meta::relational::mapping::SQLExecutionNode))->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery->toOne();
+}
