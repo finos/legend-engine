@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Arrays;
-import org.finos.legend.engine.postgres.PostgresServerLauncher;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethodType;
 import org.finos.legend.engine.postgres.protocol.wire.auth.identity.IdentityType;
 import org.junit.Assert;
@@ -77,7 +76,8 @@ public class TestServerConfig
             SSLConfig ssl = serverConfig.getSsl();
             Assert.assertNotNull(ssl);
             Assert.assertEquals("keystore.p12", ssl.getKeyStorePath());
-            Assert.assertEquals("${KEYSTORE_PASSWORD}", ssl.getKeyStorePassword());
+            Assert.assertEquals("/run/secrets/keystore-password", ssl.getKeyStorePassword());
+            Assert.assertEquals("/run/secrets/truststore-password", ssl.getTrustStorePassword());
             Assert.assertEquals("PKCS12", ssl.getKeyStoreType());
             Assert.assertEquals("truststore.p12", ssl.getTrustStorePath());
             Assert.assertFalse(ssl.isNeedClientAuth());
@@ -97,27 +97,6 @@ public class TestServerConfig
         {
             ServerConfig serverConfig = objectMapper.readValue(inputStream, ServerConfig.class);
             Assert.assertNull(serverConfig.getSsl());
-        }
-    }
-
-    @Test
-    public void resolvesLiteralPassword()
-    {
-        Assert.assertEquals("literal", PostgresServerLauncher.resolveEnv("literal"));
-        Assert.assertNull(PostgresServerLauncher.resolveEnv(null));
-    }
-
-    @Test
-    public void missingEnvVarFailsClosed()
-    {
-        try
-        {
-            PostgresServerLauncher.resolveEnv("${A_DEFINITELY_UNSET_ENV_VAR_FOR_TEST}");
-            Assert.fail("expected failure for unset env var");
-        }
-        catch (IllegalStateException e)
-        {
-            Assert.assertTrue(e.getMessage().contains("A_DEFINITELY_UNSET_ENV_VAR_FOR_TEST"));
         }
     }
 }

@@ -64,6 +64,9 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -364,6 +367,22 @@ public class PostgresServer
         return userMetrics;
     }
 
+    static String readPasswordFile(String passwordFilePath)
+    {
+        if (passwordFilePath == null)
+        {
+            return null;
+        }
+        try
+        {
+            return Files.readString(Paths.get(passwordFilePath)).trim();
+        }
+        catch (IOException e)
+        {
+            throw new IllegalStateException("Failed to read ssl password file '" + passwordFilePath + "'", e);
+        }
+    }
+
     private static SslContext buildWireSslContext(SSLConfig ssl)
     {
         if (ssl.getKeyStorePath() == null)
@@ -378,15 +397,17 @@ public class PostgresServer
         try
         {
             KeyStore keyStore = KeyStore.getInstance(ssl.getKeyStoreType() == null ? "PKCS12" : ssl.getKeyStoreType());
-            char[] keyStorePassword = ssl.getKeyStorePassword() == null ? null : ssl.getKeyStorePassword().toCharArray();
+            String keyStorePasswordValue = readPasswordFile(ssl.getKeyStorePassword());
+            char[] keyStorePassword = keyStorePasswordValue == null ? null : keyStorePasswordValue.toCharArray();
             try (InputStream in = new FileInputStream(ssl.getKeyStorePath()))
             {
                 keyStore.load(in, keyStorePassword);
             }
 
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            char[] keyManagerPassword = ssl.getKeyManagerPassword() != null
-                    ? ssl.getKeyManagerPassword().toCharArray()
+            String keyManagerPasswordValue = readPasswordFile(ssl.getKeyManagerPassword());
+            char[] keyManagerPassword = keyManagerPasswordValue != null
+                    ? keyManagerPasswordValue.toCharArray()
                     : keyStorePassword;
             keyManagerFactory.init(keyStore, keyManagerPassword);
 
@@ -395,7 +416,8 @@ public class PostgresServer
             if (ssl.getTrustStorePath() != null)
             {
                 KeyStore trustStore = KeyStore.getInstance(ssl.getTrustStoreType() == null ? "PKCS12" : ssl.getTrustStoreType());
-                char[] trustStorePassword = ssl.getTrustStorePassword() == null ? null : ssl.getTrustStorePassword().toCharArray();
+                String trustStorePasswordValue = readPasswordFile(ssl.getTrustStorePassword());
+                char[] trustStorePassword = trustStorePasswordValue == null ? null : trustStorePasswordValue.toCharArray();
                 try (InputStream in = new FileInputStream(ssl.getTrustStorePath()))
                 {
                     trustStore.load(in, trustStorePassword);
@@ -447,17 +469,17 @@ public class PostgresServer
 
         SslContextFactory.Server factory = new SslContextFactory.Server();
         factory.setKeyStorePath(ssl.getKeyStorePath());
-        factory.setKeyStorePassword(ssl.getKeyStorePassword());
+        factory.setKeyStorePassword(readPasswordFile(ssl.getKeyStorePassword()));
         factory.setKeyStoreType(ssl.getKeyStoreType() == null ? "PKCS12" : ssl.getKeyStoreType());
         if (ssl.getKeyManagerPassword() != null)
         {
-            factory.setKeyManagerPassword(ssl.getKeyManagerPassword());
+            factory.setKeyManagerPassword(readPasswordFile(ssl.getKeyManagerPassword()));
         }
 
         if (ssl.getTrustStorePath() != null)
         {
             factory.setTrustStorePath(ssl.getTrustStorePath());
-            factory.setTrustStorePassword(ssl.getTrustStorePassword());
+            factory.setTrustStorePassword(readPasswordFile(ssl.getTrustStorePassword()));
             factory.setTrustStoreType(ssl.getTrustStoreType() == null ? "PKCS12" : ssl.getTrustStoreType());
         }
 

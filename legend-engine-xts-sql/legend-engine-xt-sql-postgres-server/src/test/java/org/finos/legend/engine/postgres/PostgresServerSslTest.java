@@ -36,6 +36,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.postgresql.util.PSQLException;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
@@ -57,6 +58,7 @@ public class PostgresServerSslTest
     private static TestPostgresServer mutualTlsServer;
     private static Path clientCertPath;
     private static Path clientKeyPath;
+    private static Path passwordFilePath;
 
     static
     {
@@ -67,6 +69,9 @@ public class PostgresServerSslTest
     @BeforeAll
     public static void setUp() throws Exception
     {
+        passwordFilePath = Files.createTempFile("legend-pg-test-password", ".txt");
+        Files.write(passwordFilePath, (KEYSTORE_PASSWORD + "\n").getBytes(StandardCharsets.UTF_8));
+        passwordFilePath.toFile().deleteOnExit();
         Path keyStorePath = Files.createTempFile("legend-pg-test-keystore", ".p12");
         writeSelfSignedKeyStore(keyStorePath);
         keyStorePath.toFile().deleteOnExit();
@@ -115,11 +120,16 @@ public class PostgresServerSslTest
         }
     }
 
+    private static String jsonPath(Path path)
+    {
+        return path.toString().replace("\\", "\\\\");
+    }
+
     private static SSLConfig sslConfig(Path keyStorePath, boolean requireSsl) throws Exception
     {
         String json = "{"
                 + "\"keyStorePath\":\"" + keyStorePath.toString().replace("\\", "\\\\") + "\","
-                + "\"keyStorePassword\":\"" + KEYSTORE_PASSWORD + "\","
+                + "\"keyStorePassword\":\"" + jsonPath(passwordFilePath) + "\","
                 + "\"keyStoreType\":\"PKCS12\","
                 + "\"needClientAuth\":false,"
                 + "\"requireSsl\":" + requireSsl
@@ -131,10 +141,10 @@ public class PostgresServerSslTest
     {
         String json = "{"
                 + "\"keyStorePath\":\"" + keyStorePath.toString().replace("\\", "\\\\") + "\","
-                + "\"keyStorePassword\":\"" + KEYSTORE_PASSWORD + "\","
+                + "\"keyStorePassword\":\"" + jsonPath(passwordFilePath) + "\","
                 + "\"keyStoreType\":\"PKCS12\","
                 + "\"trustStorePath\":\"" + trustStorePath.toString().replace("\\", "\\\\") + "\","
-                + "\"trustStorePassword\":\"" + KEYSTORE_PASSWORD + "\","
+                + "\"trustStorePassword\":\"" + jsonPath(passwordFilePath) + "\","
                 + "\"trustStoreType\":\"PKCS12\","
                 + "\"needClientAuth\":true,"
                 + "\"requireSsl\":true"
