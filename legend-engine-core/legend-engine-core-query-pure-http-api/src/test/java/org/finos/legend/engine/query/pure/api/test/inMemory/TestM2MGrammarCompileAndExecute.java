@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.query.pure.api.test.inMemory;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -30,16 +31,20 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.query.pure.api.Execute;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.finos.legend.pure.generated.core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlanFeature;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,6 +61,8 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestM2MGrammarCompileAndExecute
 {
@@ -506,14 +513,112 @@ public class TestM2MGrammarCompileAndExecute
         assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"label\":\"A\"}}", json);
     }
 
+    private static final String UNTARGETED_UNION_MEMBER_MODEL = "" +
+            "Class test::Deal { a: test::DateHolder[1]; }\n" +
+            "Class test::DateHolder { v: String[1]; }\n" +
+            "Class test::AContainer { h: test::DateHolder[1]; }\n" +
+            "Class test::com::BContainer { h: test::DateHolder[1]; }\n" +
+            "Class test::CContainer { h: test::DateHolder[1]; }\n" +
+            "Class test::Out { terms: test::Term[*]; }\n" +
+            "Class test::Term { name: String[1]; dates: test::TermDate[*]; }\n" +
+            "Class test::TermDate { d: String[1]; }\n" +
+            "function test::wrapA(d: test::Deal[1]): test::AContainer[1] { ^test::AContainer(h = $d.a) }\n" +
+            "function test::wrapC(d: test::Deal[1]): test::CContainer[1] { ^test::CContainer(h = $d.a) }\n" +
+            "function test::query(): String[*]\n" +
+            "{\n" +
+            "   test::Out.all()->graphFetch(#{test::Out{terms{name, dates{d}}}}#)->serialize(#{test::Out{terms{name, dates{d}}}}#)%s\n" +
+            "}\n" +
+            "\n" +
+            "###Mapping\n" +
+            "Mapping test::M\n" +
+            "(\n" +
+            "   test::Out : Pure { ~src test::Deal  terms[a] : $src->test::wrapA(), terms[c] : $src->test::wrapC() }\n" +
+            "   *test::Term : Operation { meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a, b, c) }\n" +
+            "   test::Term[a] : Pure { ~src test::AContainer  name : 'A', dates : $src.h }\n" +
+            "   test::Term[b] : Pure { ~src test::com::BContainer  name : 'B', dates : $src.h }\n" +
+            "   test::Term[c] : Pure { ~src test::CContainer  name : 'C', dates : $src.h }\n" +
+            "   test::TermDate : Pure { ~src test::DateHolder  d : $src.v }\n" +
+            ")\n";
+
+    @Test
+    public void testClassOfUntargetedUnionMemberIsGeneratedWithFlag() throws IOException
+    {
+        ExecuteInput input = untargetedUnionMemberInput("->meta::pure::executionPlan::featureFlag::withFeatureFlags(meta::pure::executionPlan::features::Feature.M2M_MIGRATION_MISSING_JAVA_TYPES)");
+        String json = responseAsString(runTest(input));
+        assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"terms\":[{\"name\":\"A\",\"dates\":[{\"d\":\"x\"}]},{\"name\":\"C\",\"dates\":[{\"d\":\"x\"}]}]}}", json);
+    }
+
+    // Routing widens terms to all three union members, so the code references BContainer, which nothing generates.
+    // Expected to change once routing stops widening to untargeted members.
+    @Test
+    public void testClassOfUntargetedUnionMemberIsMissingWithoutFlag()
+    {
+        Response result = execute(untargetedUnionMemberInput(""));
+        String body = responseBody(result);
+        assertNotEquals(200, result.getStatus());
+        assertTrue(body, body.contains("JavaCompileException") && body.contains("BContainer"));
+    }
+
+    private ExecuteInput untargetedUnionMemberInput(String queryTail)
+    {
+        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(String.format(UNTARGETED_UNION_MEMBER_MODEL, queryTail));
+        Function query = contextData.getElementsOfType(Function.class).stream().filter(f -> f.name.startsWith("query")).findFirst()
+                .orElseThrow(() -> new IllegalStateException("No function starting with 'query' found in model"));
+        LambdaFunction lambda = new LambdaFunction();
+        lambda.body = query.body;
+        lambda.parameters = Collections.emptyList();
+
+        ExecuteInput input = new ExecuteInput();
+        input.clientVersion = "vX_X_X";
+        input.model = contextData;
+        input.mapping = "test::M";
+        input.function = lambda;
+        input.runtime = runtimeValue(jsonModelConnection("test::Deal", "{\"a\":{\"v\":\"x\"}}"));
+        input.context = context();
+        return input;
+    }
+
     private Response runTest(ExecuteInput input)
+    {
+        Response result = execute(input);
+        if (result.getStatus() != 200)
+        {
+            Assert.fail("Expected status 200 but was " + result.getStatus() + ": " + responseBody(result));
+        }
+        return result;
+    }
+
+    private Response execute(ExecuteInput input)
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutor(InMemory.build());
         //Should use: core_pure_extensions_extension.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(modelManager.)
-        Response result = new Execute(modelManager, executor, (PureModel pureModel) -> core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers).execute(TestExecutionUtility.buildMockRequest(), input, SerializationFormat.defaultFormat, null, null);
-        Assert.assertEquals(200, result.getStatus());
-        return result;
+        return new Execute(modelManager, executor, (PureModel pureModel) -> Lists.mutable.<Root_meta_pure_extension_Extension>withAll(core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()))
+                .with(core_pure_executionPlan_executionPlanFeature.Root_meta_pure_executionPlan_featureFlag_ExecutionPlanFeatureFlagExtension__Extension_1_(pureModel.getExecutionSupport())), LegendPlanTransformers.transformers).execute(TestExecutionUtility.buildMockRequest(), input, SerializationFormat.defaultFormat, null, null);
+    }
+
+    private String responseBody(Response response)
+    {
+        Object entity = response.getEntity();
+        if (entity instanceof StreamingOutput)
+        {
+            try
+            {
+                return responseAsString(response);
+            }
+            catch (Exception e)
+            {
+                return e.toString();
+            }
+        }
+        try
+        {
+            return ObjectMapperFactory.getNewStandardObjectMapper().writeValueAsString(entity);
+        }
+        catch (Exception e)
+        {
+            return String.valueOf(entity);
+        }
     }
 
     private String responseAsString(Response response) throws IOException

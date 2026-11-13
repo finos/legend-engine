@@ -985,6 +985,7 @@ so live in the `mapping:` domain alongside their relational counterparts:
 | `execution:hosted-service` | Hosted service function activator |
 | `execution:legacy-mapping-test` | Deprecated `MappingTests` block on a Mapping (EMIT Phase 5's legacy `MappingTestRunner`) |
 | `execution:legacy-service-test` | Deprecated `test: Single` / `test: Multi` block on a Service (EMIT Phase 5's legacy `ServiceTestRunner`) |
+| `execution:m2m-migration-missing-java-types` | Query opts into `Feature.M2M_MIGRATION_MISSING_JAVA_TYPES`, so plan generation adds the Java types and getters M2M plan code references but source-tree calculation left out |
 | `execution:model-generation` | Model generation specification |
 | `execution:multi-execution-service` | Multi-execution service |
 | `execution:plan-generation` | Execution plan generation |
