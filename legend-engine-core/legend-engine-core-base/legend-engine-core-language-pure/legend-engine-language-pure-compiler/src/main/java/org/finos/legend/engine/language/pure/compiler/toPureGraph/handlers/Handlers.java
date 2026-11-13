@@ -2565,7 +2565,7 @@ public class Handlers
                 h("meta::pure::tds::emptyLast_SortInformation_1__SortInformation_1_", "emptyLast", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "SortInformation".equals(ps.get(0)._genericType()._rawType()._name()))
         ));
 
-        register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "join", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> ps.size() == 4 && typeOneRelation(ps.get(0)) && typeOneRelation(ps.get(1)) && typeOne(ps.get(2), "JoinKind") && typeOne(ps.get(3), pureModel.taxonomyTypes("cov_function_FunctionDefinition")))));
+        register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "join", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> ps.size() == 4)));
 
         register(grp(AsOfJoinInference,
                         h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", "asOfJoin", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true),
@@ -3682,16 +3682,6 @@ public class Handlers
     public boolean typeOne(ValueSpecification vs, MutableSet<String> type)
     {
         return isNilOrType(vs, type) && isOne(vs._multiplicity());
-    }
-
-    public boolean typeOneRelation(ValueSpecification vs)
-    {
-        return typeOne(vs, pureModel.taxonomyTypes("cov_relation_Relation"));
-    }
-
-    public boolean typeOneTabularDataSet(ValueSpecification vs)
-    {
-        return typeOne(vs, pureModel.taxonomyTypes("cov_tds_TabularDataSet"));
     }
 
     public boolean typeZeroOne(ValueSpecification vs, String type)

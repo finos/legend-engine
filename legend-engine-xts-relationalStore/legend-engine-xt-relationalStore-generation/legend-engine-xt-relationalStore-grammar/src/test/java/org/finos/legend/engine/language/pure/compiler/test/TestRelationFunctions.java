@@ -1036,7 +1036,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     }
 
     @Test
-    public void testJoinRejectsJoinTypeInPlaceOfJoinKind()
+    public void testJoinWithJoinTypeInPlaceOfJoinKindWarns()
     {
         test(
                 "###Relational\n" +
@@ -1050,13 +1050,10 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::relational::metamodel::join::JoinType.INNER, {a,b|$a.id == $b.id2})\n" +
                         "}",
-                "COMPILATION error at [7:18-21]: Can't find a match for function 'join(RelationStoreAccessor<(id:Int, other:Varchar(200))>[1],RelationStoreAccessor<(id2:Int, errr:Varchar(200))>[1],JoinType[1],LambdaFunction<{(id:Int, other:Varchar(200))[1], (id2:Int, errr:Varchar(200))[1]->Boolean[1]}>[1])'.\n" +
-                        "Functions that can match if parameter types or multiplicities are changed:\n" +
-                        "\t\tjoin(Relation<T>[1],Relation<V>[1],JoinKind[1],Function<{T[1], V[1]->Boolean[1]}>[1]):Relation<T+V>[1]\n" +
-                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],Function<{TDSRow[1], TDSRow[1]->Boolean[1]}>[1]):TabularDataSet[1]\n" +
-                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],String[1..*]):TabularDataSet[1]\n" +
-                        "Functions that can match if number of parameters are changed:\n" +
-                        "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],String[1..*],String[1..*]):TabularDataSet[1]\n"
+                null,
+                org.eclipse.collections.api.factory.Lists.fixedSize.with(
+                        "COMPILATION warning at [7:18-21]: Argument 3 of join() is a JoinType, but the first argument is a Relation, so a JoinKind is expected. This is accepted for now and will be rejected in a future release."
+                )
         );
     }
 
@@ -1082,6 +1079,52 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],String[1..*]):TabularDataSet[1]\n" +
                         "Functions that can match if number of parameters are changed:\n" +
                         "\t\tjoin(TabularDataSet[1],TabularDataSet[1],JoinType[1],String[1..*],String[1..*]):TabularDataSet[1]\n"
+        );
+    }
+
+    @Test
+    public void testTdsJoinWithJoinKindInPlaceOfJoinTypeWarns()
+    {
+        test(
+                "Class test::A\n" +
+                        "{\n" +
+                        "   name : String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::A.all()->project([col(a|$a.name, 'x')])->join(test::A.all()->project([col(a|$a.name, 'y')]), meta::pure::functions::relation::JoinKind.INNER, {l, r|$l.getString('x') == $r.getString('y')})\n" +
+                        "}",
+                null,
+                org.eclipse.collections.api.factory.Lists.fixedSize.with(
+                        "COMPILATION warning at [8:51-54]: Argument 3 of join() is a JoinKind, but the first argument is a TabularDataSet, so a JoinType is expected. This is accepted for now and will be rejected in a future release."
+                )
+        );
+    }
+
+    @Test
+    public void testJoinOfTabularDataSetWithRelationWarns()
+    {
+        test(
+                "Class test::A\n" +
+                        "{\n" +
+                        "   name : String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::A.all()->project([col(a|$a.name, 'x')])->join(#>{a::A.tb}#->select(~id), meta::relational::metamodel::join::JoinType.INNER, {l, r|$l.getString('x') == 'a'})\n" +
+                        "}",
+                null,
+                org.eclipse.collections.api.factory.Lists.fixedSize.with(
+                        "COMPILATION warning at [12:70-75]: Argument 2 of join() is a Relation, but the first argument is a TabularDataSet, so a TabularDataSet is expected. This is accepted for now and will be rejected in a future release."
+                )
         );
     }
 
