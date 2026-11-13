@@ -356,3 +356,34 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
     simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
   assertEquals('select concat(`root`.FIRSTNAME, \' \', `root`.LASTNAME) as `fullName` from personTable as `root`', $sql);
 }
+
+// Databricks rejects a correlated scalar subquery as a table function argument, so a calling function's
+// own parameter is passed to another table function by name, bare or wrapped in a Literal.
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testTableFunctionCallPassesParameterByName():Boolean[1]
+{
+  let schema = meta::relational::tests::db.schemas->filter(s|$s.name == 'default')->toOne();
+  let p = ^meta::relational::metamodel::relation::FunctionParameter(name = 'currentWatermark', type = ^meta::relational::metamodel::datatype::Varchar(size = 1024));
+  let tf = ^meta::relational::metamodel::relation::TabularFunction(schema = $schema, name = 'ACCOUNTS', parameters = $p);
+  let param = ^meta::relational::functions::pureToSqlQuery::metamodel::TableFunctionParamPlaceHolder(
+                var = ^meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder(name = 'currentWatermark', type = String, multiplicity = PureOne));
+  let call = {value:meta::relational::metamodel::RelationalOperationElement[1] |
+    ^meta::relational::metamodel::relation::TabularFunctionCall(function = $tf,
+        arguments = ^meta::relational::metamodel::relation::TabularFunctionCallArgument(parameter = $p, value = $value))
+      ->meta::relational::functions::sqlQueryToString::processOperation(DatabaseType.Databricks, meta::relational::extension::relationalExtensions())};
+  assertEquals('ACCOUNTS(currentWatermark)', $call->eval($param));
+  assertEquals('ACCOUNTS(currentWatermark)', $call->eval(^meta::relational::metamodel::Literal(value = $param)));
+  assertEquals('ACCOUNTS(\'{}\')', $call->eval(^meta::relational::metamodel::Literal(value = '{}')));
+}
+
+// A reserved-word or special-character return column must be backtick-quoted in RETURNS TABLE, or the
+// CREATE FUNCTION does not parse; plain names stay bare.
+function <<test.Test>> meta::relational::databricks::tests::testCreateFunctionQuotesReturnColumnNames():Boolean[1]
+{
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(meta::relational::runtime::DatabaseType.Databricks);
+   assertEquals('`ORDER`', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('ORDER', $dbConfig));
+   assertEquals('`order`', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('order', $dbConfig));
+   assertEquals('`company:Id`', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('company:Id', $dbConfig));
+   assertEquals('`test/Non@Decimal`', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('test/Non@Decimal', $dbConfig));
+   assertEquals('legal_name', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('legal_name', $dbConfig));
+   assertEquals('START_ID', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('START_ID', $dbConfig));
+}

@@ -35,7 +35,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       isBooleanLiteralSupported = false,
       collectionThresholdLimit = 1048576,
       extraTempTableCreationLogicSupplierForIn = {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'},
-      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      // Case-insensitive: SQL keywords are, and processIdentifierWithQuoteChar passes the
+      // identifier through verbatim, so a column named ORDER would otherwise miss the list.
+      isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForMemSQL_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
@@ -92,31 +94,153 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::memSQLReservedWords():String[*]
 {
+    // SingleStore's restricted keywords, lower-cased (isDbReservedIdentifier lower-cases the
+    // identifier before the lookup):
+    // https://docs.singlestore.com/cloud/reference/sql-reference/restricted-keywords/list-of-restricted-keywords/
+    //
+    // The previous list was a generic SQL-92 set in which most entries carried a stray leading
+    // space (' case', ' cast', ...), so they could never match, and `order` and much of the core
+    // keyword set were missing: a column named ORDER produced `CREATE TABLE t(ORDER INT NULL)`,
+    // which SingleStore rejects. Over-inclusion is harmless - backtick-quoting an identifier that
+    // is not reserved is always valid - whereas under-inclusion produces SQL the server cannot parse.
     [
-       'absolute','action','allocate','are','assertion',
-       'bit', 'bit_length', 'both',
-       'cascaded',' case',' cast',' catalog',' char',' char_length',' character',' character_length',' coalesce',' collate',' collation',' column',' connection',' constraints',' corresponding',' cross',' current_date',' current_time',' current_timestamp',' current_user',
-       'date',' day',' dec',' decimal','default',' deferrable',' deferred',' describe',' descriptor',' diagnostics',' disconnect',' domain',
-       'end-exec',' exception',' extract',
-       'false',' first',' float',' found',' full',
-       'get',' global',' go',
-       'hour',
-       'immediate',' indicator',' initially',' inner',' input',' insensitive',' int',' integer',' interval',
-       'join',
-       'kerberos','key',
-       'language',' last',' leading',' left','lines',' local',' lower',
-       'match',' minute',' module',' month',
-       'names',' natural',' nchar',' next',' no',' nullif',' numeric',
-       'octet_length',' outer',' output',' overlaps',
-       'pad',' partial',' position',' preserve',' prior',
-       'real',' relative',' restrict',' right',
-       'scroll',' second',' section',' semi_sensitive',' session_user ',' size ',' smallint',' space',' sql',' sqlcode',' sqlerror',' sqlstate',' substring',' system_user',
-       'then',' time',' timestamp',' timezone_hour',' timezone_minute',' trailing',' translate',' translation',' trim',' true',
-       'unknown',' upper',' usage',
-       'value', 'varchar',
-       'when',' whenever','window',' write',' year',
-       'zone'
-       ];
+      '_background_threads_for_cleanup', '_batch_size_limit', '_binary', '_bt', '_check_can_connect',
+      '_check_consistency', '_checksum', '_commit_log_tail', '_continue_replay', '_core', '_disconnect',
+      '_drop_profile', '_failover', '_fsync', '_gc', '_gcx', '_global_version_timestamp', '_init_profile',
+      '_internal_dynamic_typecast', '_load', '_ls', '_management_thread', '_memsql_table_id_lookup',
+      '_pause_replay', '_read', '_repair_table', '_repl', '_reprovisioning', '_resurrect', '_rpc',
+      '_send_threads', '_sleep', '_snapshot', '_snapshots', '_sync', '_sync2', '_sync_partitions',
+      '_sync_snapshot', '_term_bump', '_transactions_experimental', '_twopcid', '_unittest', '_unload',
+      '_utf8', '_wake', '_wm_heartbeat', 'abort', 'abs', 'absolute', 'access', 'account', 'acos',
+      'action', 'add', 'adddate', 'addtime', 'admin', 'aes_decrypt', 'aes_encrypt', 'after', 'against',
+      'aggregate', 'aggregates', 'aggregator', 'aggregator_id', 'aggregator_plan_hash', 'aggregators',
+      'algorithm', 'all', 'also', 'alter', 'always', 'analyse', 'analyze', 'and', 'anti_join', 'any',
+      'any_value', 'approx_count_distinct', 'approx_count_distinct_accumulate',
+      'approx_count_distinct_combine', 'approx_count_distinct_estimate', 'approx_geography_intersects',
+      'approx_percentile', 'arghistory', 'arrange', 'arrangement', 'array', 'as', 'asc', 'ascii',
+      'asensitive', 'asin', 'asm', 'assertion', 'assignment', 'ast', 'asymmetric', 'async', 'at', 'atan',
+      'atan2', 'attach', 'attribute', 'authorization', 'auto', 'auto_increment', 'auto_reprovision',
+      'autostats', 'autostats_cardinality_mode', 'autostats_enabled', 'autostats_histogram_mode',
+      'autostats_sampling', 'availability', 'avg', 'avg_row_length', 'avro', 'azure', 'background',
+      'backup', 'backup_history', 'backup_id', 'backward', 'batch', 'batch_interval', 'batches', 'before',
+      'begin', 'between', 'bigint', 'bin', 'binary', 'bit', 'bit_and', 'bit_count', 'bit_or', 'bit_xor',
+      'blob', 'bool', 'boolean', 'bootstrap', 'both', 'btree', 'bucket_count', 'by', 'byte',
+      'byte_length', 'cache', 'call', 'call_for_pipeline', 'called', 'capture', 'cascade', 'cascaded',
+      'case', 'cast', 'catalog', 'ceil', 'ceiling', 'chain', 'change', 'char', 'char_length', 'character',
+      'character_length', 'characteristics', 'charset', 'check', 'checkpoint', 'checksum', 'class',
+      'clear', 'client', 'client_found_rows', 'close', 'cluster', 'clustered', 'cnf', 'coalesce',
+      'coercibility', 'collate', 'collation', 'collect', 'column', 'columnar', 'columns', 'columnstore',
+      'columnstore_segment_rows', 'comment', 'comments', 'commit', 'committed', 'compact', 'compile',
+      'compressed', 'compression', 'concat', 'concat_ws', 'concurrent', 'concurrently', 'condition',
+      'config', 'configuration', 'connection', 'connection_id', 'connections', 'constraint',
+      'constraints', 'content', 'continue', 'conv', 'conversion', 'convert', 'convert_tz', 'copy', 'cos',
+      'cost', 'cot', 'count', 'create', 'credentials', 'cross', 'csv', 'cube', 'cume_dist', 'curdate',
+      'current', 'current_catalog', 'current_date', 'current_role', 'current_schema',
+      'current_security_groups', 'current_security_roles', 'current_time', 'current_timestamp',
+      'current_user', 'cursor', 'curtime', 'cycle', 'data', 'database', 'databases', 'date', 'date_add',
+      'date_format', 'date_sub', 'date_trunc', 'datediff', 'datetime', 'day', 'day_hour',
+      'day_microsecond', 'day_minute', 'day_second', 'dayname', 'dayofmonth', 'dayofweek', 'dayofyear',
+      'deallocate', 'dec', 'decimal', 'declare', 'decode', 'default', 'defaults', 'deferrable',
+      'deferred', 'defined', 'definer', 'degrees', 'delay_key_write', 'delayed', 'delete', 'delimiter',
+      'delimiters', 'dense_rank', 'desc', 'describe', 'detach', 'deterministic', 'dictionary',
+      'differential', 'directory', 'disable', 'discard', 'disk', 'distinct', 'distinctrow',
+      'distributed_joins', 'div', 'do', 'document', 'domain', 'dot_product', 'double', 'drop', 'dual',
+      'dump', 'duplicate', 'durability', 'dynamic', 'each', 'earliest', 'echo', 'election', 'else',
+      'elseif', 'elt', 'enable', 'enclosed', 'encoding', 'encrypted', 'end', 'engine', 'engines', 'enum',
+      'errors', 'escape', 'escaped', 'estimate', 'euclidean_distance', 'event', 'events', 'except',
+      'exclude', 'excluding', 'exclusive', 'execute', 'exists', 'exit', 'exp', 'explain', 'extended',
+      'extension', 'external', 'external_host', 'external_port', 'extra_join', 'extract', 'extractor',
+      'extractors', 'failed_login_attempts', 'failure', 'false', 'family', 'fault', 'fetch', 'field',
+      'fields', 'file', 'files', 'fill', 'first', 'first_value', 'fix_alter', 'fixed', 'float', 'float4',
+      'float8', 'floor', 'flush', 'following', 'for', 'force', 'force_compiled_mode',
+      'force_interpreter_mode', 'foreground', 'foreign', 'format', 'forward', 'found_rows', 'freeze',
+      'from', 'from_base64', 'from_days', 'from_unixtime', 'fs', 'full', 'fulltext', 'function',
+      'functions', 'gc', 'gcs', 'generate', 'geography', 'geography_area', 'geography_contains',
+      'geography_distance', 'geography_intersects', 'geography_latitude', 'geography_length',
+      'geography_longitude', 'geography_point', 'geography_within_distance', 'geographypoint', 'geometry',
+      'geometry_area', 'geometry_contains', 'geometry_distance', 'geometry_filter', 'geometry_intersects',
+      'geometry_length', 'geometry_point', 'geometry_within_distance', 'geometry_x', 'geometry_y',
+      'geometrypoint', 'get_format', 'global', 'grant', 'granted', 'grants', 'greatest', 'group',
+      'group_concat', 'grouping', 'groups', 'gzip', 'handle', 'handler', 'hard_cpu_limit_percentage',
+      'has_temp_tables', 'hash', 'having', 'hdfs', 'header', 'heartbeat_no_logging', 'hex',
+      'high_priority', 'highlight', 'hold', 'holding', 'host', 'hosts', 'hour', 'hour_microsecond',
+      'hour_minute', 'hour_second', 'identified', 'identity', 'if', 'ifnull', 'ignore', 'ilike',
+      'immediate', 'immutable', 'implicit', 'import', 'in', 'including', 'increment', 'incremental',
+      'index', 'indexes', 'inet6_aton', 'inet6_ntoa', 'inet_aton', 'inet_ntoa', 'infile', 'inherit',
+      'inherits', 'init', 'initcap', 'initialize', 'initially', 'inject', 'inline', 'inner', 'inout',
+      'input', 'insensitive', 'insert', 'insert_method', 'instance', 'instead', 'instr', 'int', 'int1',
+      'int2', 'int3', 'int4', 'int8', 'integer', 'interpreter_mode', 'intersect', 'interval', 'into',
+      'invoker', 'is', 'isnull', 'isolation', 'iterate', 'join', 'json', 'json_agg',
+      'json_array_contains_double', 'json_array_contains_json', 'json_array_contains_string',
+      'json_array_push_double', 'json_array_push_json', 'json_array_push_string', 'json_delete_key',
+      'json_extract_bigint', 'json_extract_double', 'json_extract_json', 'json_extract_string',
+      'json_get_type', 'json_length', 'json_set_double', 'json_set_json', 'json_set_string',
+      'json_splice_double', 'json_splice_json', 'json_splice_string', 'kafka', 'key', 'key_block_size',
+      'keys', 'kill', 'killall', 'label', 'lag', 'language', 'large', 'last', 'last_day',
+      'last_insert_id', 'last_value', 'lateral', 'latest', 'lc_collate', 'lc_ctype', 'lcase', 'lead',
+      'leading', 'leaf', 'leakproof', 'least', 'leave', 'leaves', 'left', 'length', 'level', 'license',
+      'like', 'limit', 'lines', 'listen', 'llvm', 'ln', 'load', 'loaddata_where', 'local', 'localtime',
+      'localtimestamp', 'locate', 'location', 'lock', 'log', 'log10', 'log2', 'long', 'longblob',
+      'longtext', 'loop', 'low_priority', 'lower', 'lpad', 'ltrim', 'lz4', 'management', 'mapping',
+      'master', 'match', 'materialized', 'max', 'max_concurrency', 'max_errors',
+      'max_partitions_per_batch', 'max_queue_depth', 'max_retries_per_batch_partition', 'max_rows',
+      'maxvalue', 'mbc', 'md5', 'median', 'mediumblob', 'mediumint', 'mediumtext', 'member', 'memory',
+      'memory_percentage', 'memsql', 'memsql_deserialize', 'memsql_imitating_kafka', 'memsql_serialize',
+      'merge', 'metadata', 'microsecond', 'middleint', 'min', 'min_rows', 'minus', 'minute',
+      'minute_microsecond', 'minute_second', 'minvalue', 'mod', 'mode', 'model', 'modifies', 'modify',
+      'month', 'monthname', 'months_between', 'move', 'mpl', 'named', 'names', 'namespace', 'national',
+      'natural', 'nchar', 'next', 'no', 'no_query_rewrite', 'no_write_to_binlog', 'node', 'none',
+      'noparam', 'norely', 'not', 'nothing', 'notify', 'now', 'nowait', 'nth_value', 'ntile', 'null',
+      'nullcols', 'nullif', 'nulls', 'numeric', 'nvarchar', 'object', 'octet_length', 'of', 'off',
+      'offline', 'offset', 'offsets', 'oids', 'on', 'online', 'only', 'open', 'operator', 'optimization',
+      'optimize', 'optimizer', 'optimizer_state', 'option', 'optionally', 'options', 'or', 'order',
+      'ordered_serialize', 'orphan', 'out', 'out_of_order', 'outer', 'outfile', 'over', 'overlaps',
+      'overlay', 'owned', 'owner', 'pack_keys', 'paired', 'parquet', 'parser', 'partial', 'partition',
+      'partition_id', 'partitioning', 'partitions', 'passing', 'password', 'password_lock_time', 'pause',
+      'percent_rank', 'percentile_cont', 'percentile_disc', 'periodic', 'persisted', 'pi', 'pipeline',
+      'pipelines', 'pivot', 'placing', 'plan', 'plancache', 'plans', 'plugins', 'pool', 'pools', 'port',
+      'position', 'pow', 'power', 'preceding', 'precision', 'prepare', 'prepared', 'preserve', 'primary',
+      'prior', 'privileges', 'procedural', 'procedure', 'procedures', 'process', 'processlist', 'profile',
+      'profiles', 'program', 'promote', 'proxy', 'purge', 'quarter', 'queries', 'query', 'query_timeout',
+      'queue', 'quote', 'radians', 'rand', 'range', 'rank', 'read', 'reads', 'real', 'reassign',
+      'rebalance', 'recheck', 'record', 'recursive', 'redundancy', 'redundant', 'ref', 'reference',
+      'references', 'refresh', 'regexp', 'reindex', 'relative', 'release', 'reload', 'rely', 'remote',
+      'remove', 'rename', 'repair', 'repeat', 'repeatable', 'replace', 'replica', 'replicate',
+      'replicating', 'replication', 'require', 'reset', 'resource', 'resource_pool', 'restart', 'restore',
+      'restrict', 'result', 'retry', 'return', 'returning', 'returns', 'reverse', 'revoke', 'rg_pool',
+      'right', 'right_anti_join', 'right_semi_join', 'right_straight_join', 'rlike', 'role', 'roles',
+      'rollback', 'rollup', 'round', 'routine', 'row', 'row_count', 'row_format', 'row_number', 'rows',
+      'rowstore', 'rpad', 'rtrim', 'rule', 'running', 's3', 'safe', 'save', 'savepoint', 'scalar',
+      'schema', 'schema_binding', 'schemas', 'scroll', 'search', 'sec_to_time', 'second',
+      'second_microsecond', 'security', 'security_lists_intersect', 'select', 'semi_join', 'sensitive',
+      'separator', 'sequence', 'sequences', 'serial', 'serializable', 'series', 'server', 'service_user',
+      'session', 'session_user', 'set', 'setof', 'sha', 'sha1', 'sha2', 'shard', 'sharded', 'sharded_id',
+      'share', 'show', 'shutdown', 'sigmoid', 'sign', 'signal', 'signed', 'similar', 'simple', 'sin',
+      'site', 'skip', 'skipped_batches', 'sleep', 'smallint', 'snapshot', 'soft_cpu_limit_percentage',
+      'some', 'soname', 'sparse', 'spatial', 'spatial_check_index', 'specific', 'split', 'sql',
+      'sql_big_result', 'sql_buffer_result', 'sql_cache', 'sql_calc_found_rows', 'sql_mode',
+      'sql_no_cache', 'sql_no_logging', 'sql_small_result', 'sqlexception', 'sqlstate', 'sqlwarning',
+      'sqrt', 'ssl', 'stable', 'standalone', 'start', 'starting', 'state', 'statement', 'statistics',
+      'stats', 'status', 'std', 'stddev', 'stddev_pop', 'stddev_samp', 'stdin', 'stdout', 'stop',
+      'storage', 'str_to_date', 'straight_join', 'strict', 'string', 'strip', 'subdate', 'substr',
+      'substring', 'substring_index', 'success', 'sum', 'super', 'symmetric', 'sync', 'sync_snapshot',
+      'synchronize', 'sysid', 'system', 'table', 'table_checksum', 'tables', 'tablespace', 'tags', 'tan',
+      'target_size', 'task', 'temp', 'template', 'temporary', 'temptable', 'terminate', 'terminated',
+      'test', 'text', 'then', 'time', 'time_bucket', 'time_format', 'time_to_sec', 'timediff', 'timeout',
+      'timestamp', 'timestampadd', 'timestampdiff', 'timezone', 'tinyblob', 'tinyint', 'tinytext', 'to',
+      'to_base64', 'to_char', 'to_date', 'to_days', 'to_json', 'to_number', 'to_seconds', 'to_timestamp',
+      'tracelogs', 'traditional', 'trailing', 'transaction', 'transform', 'treat', 'trigger', 'triggers',
+      'trim', 'true', 'trunc', 'truncate', 'trusted', 'two_phase', 'type', 'types', 'ucase', 'unbounded',
+      'uncommitted', 'undefined', 'undo', 'unencrypted', 'unenforced', 'unhex', 'unhold', 'unicode',
+      'union', 'unique', 'unix_timestamp', 'unknown', 'unlisten', 'unlock', 'unlogged', 'unpivot',
+      'unsigned', 'until', 'update', 'upgrade', 'upper', 'usage', 'use', 'user', 'users', 'using',
+      'utc_date', 'utc_time', 'utc_timestamp', 'vacuum', 'valid', 'validate', 'validator', 'value',
+      'values', 'var_pop', 'var_samp', 'varbinary', 'varchar', 'varcharacter', 'variables', 'variadic',
+      'variance', 'varying', 'vector_sub', 'verbose', 'version', 'view', 'void', 'volatile', 'voting',
+      'wait', 'warnings', 'week', 'weekday', 'weekofyear', 'when', 'where', 'while', 'whitespace',
+      'window', 'with', 'within', 'without', 'work', 'workload', 'wrapper', 'write', 'xact_id', 'xor',
+      'year', 'year_month', 'yes', 'zerofill', 'zone'
+    ];
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::getDynaFunctionToSqlForMemSQL(): DynaFunctionToSql[*]
@@ -489,10 +613,21 @@ function meta::relational::functions::sqlQueryToString::memsql::loadValuesToDbTa
             + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
             +') '
             + 'values ('
-            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
+            + $row.values->convertValuesToCsvMemSQL($loadTableSQL.columnsToLoad.type)
             + ');';
     );
   );
+}
+
+// Variant columns are Json on MemSQL, which the shared convertValuesToCsv passes through unquoted
+// (it quotes SemiStructured only), so a JSON value produced `values (1,[{"a":1}])`.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::convertValuesToCsvMemSQL(str:String[*], types:Any[*]):String[1]
+{
+  range($types->size())->map(x |
+    if($types->at($x)->instanceOf(meta::relational::metamodel::datatype::Json) && !($str->at($x) == '' || $str->at($x) == '---null---'),
+      | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
+      | meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($str->at($x), $types->at($x)))
+  )->joinStrings(',');
 }
 
 function meta::relational::functions::sqlQueryToString::memsql::createPipeline(createPipelineSQL: CreatePipelineSQL[1], dbConfig: DbConfig[1]) : String[1]
@@ -534,6 +669,8 @@ function meta::relational::functions::sqlQueryToString::memsql::convert(genericT
             pair(|$path == 'TinyInt', |^meta::relational::metamodel::datatype::TinyInt()),
             pair(|$path == 'UBigInt', |^meta::relational::metamodel::datatype::UnsignedBigInt()),
             pair(|$path == 'UInt', |^meta::relational::metamodel::datatype::UnsignedInt()),
+            // the relational metamodel has no unsigned SMALLINT; INT UNSIGNED holds every USmallInt value
+            pair(|$path == 'USmallInt', |^meta::relational::metamodel::datatype::UnsignedInt()),
             pair(|$path == 'UTinyInt', |^meta::relational::metamodel::datatype::UnsignedTinyInt()),
             pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer))),
             pair(|$path == 'Variant', |^meta::relational::metamodel::datatype::Json())

@@ -95,6 +95,61 @@ function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testTo
    assertEquals('select json_extract_string("root".FIRM_DETAILS, \'$.legalName\') as "Legal Name" from FIRM_TABLE as "root"', $s);
 }
 
+
+// A DuckDB table MACRO must be redeployable and must separate its parameters with commas. Both
+// were wrong until this test existed: createFunction emitted a bare `CREATE MACRO`, so a second
+// deploy failed with 'Table Macro Function with name ... already exists', and it joined parameter
+// names with a space, so any macro with more than one parameter was unparseable ("Parser Error:
+// syntax error at or near ..."). A single parameter happened to come out valid, which is why it
+// went unnoticed.
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testDuckDBCreateFunctionIsReplaceable(): Boolean[1]
+{
+   let sql = meta::relational::functions::sqlQueryToString::duckDB::createFunction(
+      ^meta::relational::metamodel::CreateFunctionSQL(
+         schemaName = 'MY_SCHEMA',
+         name = 'MY_FN',
+         typedParameters = ^meta::relational::metamodel::SQLParameter(
+                              name = 'region',
+                              type = ^meta::relational::metamodel::datatype::Varchar(size = 100)),
+         generatedSQL = 'select 1'
+      ),
+      meta::relational::functions::sqlQueryToString::createDbConfig(meta::relational::runtime::DatabaseType.DuckDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('CREATE OR REPLACE MACRO MY_SCHEMA.MY_FN(region) AS TABLE\n   select 1', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testDuckDBCreateFunctionSeparatesParametersWithCommas(): Boolean[1]
+{
+   let sql = meta::relational::functions::sqlQueryToString::duckDB::createFunction(
+      ^meta::relational::metamodel::CreateFunctionSQL(
+         schemaName = 'MY_SCHEMA',
+         name = 'MY_FN',
+         typedParameters = [^meta::relational::metamodel::SQLParameter(
+                               name = 'region',
+                               type = ^meta::relational::metamodel::datatype::Varchar(size = 100)),
+                            ^meta::relational::metamodel::SQLParameter(
+                               name = 'legalName',
+                               type = ^meta::relational::metamodel::datatype::Varchar(size = 100))],
+         generatedSQL = 'select 1'
+      ),
+      meta::relational::functions::sqlQueryToString::createDbConfig(meta::relational::runtime::DatabaseType.DuckDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('CREATE OR REPLACE MACRO MY_SCHEMA.MY_FN(region, legalName) AS TABLE\n   select 1', $sql);
+}
+
+// Unsigned precise primitives map to DuckDB's native unsigned types. USmallInt widens to UINTEGER:
+// the relational metamodel has no unsigned SMALLINT, and UINTEGER holds every USmallInt value.
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testDuckDBUnsignedTypes(): Boolean[1]
+{
+   let sqlType = {t:String[1] | meta::relational::functions::typeConversion::duckDB::dataTypeToSqlTextDuckDB(meta::relational::functions::typeConversion::duckDB::convert(^GenericType(rawType = ('meta::pure::precisePrimitives::' + $t)->pathToElement()->cast(@Type))))};
+   assertEquals('UTINYINT', $sqlType->eval('UTinyInt'));
+   assertEquals('UINTEGER', $sqlType->eval('USmallInt'));
+   assertEquals('UINTEGER', $sqlType->eval('UInt'));
+   assertEquals('UBIGINT', $sqlType->eval('UBigInt'));
+}
+
 ###Pure
 Class meta::relational::tests::sqlQueryToString::duckDB::semiStructured::SemiStructuredFirm
 {

@@ -1543,11 +1543,17 @@ function meta::relational::functions::sqlQueryToString::databricks::tabularFunct
    if($schema == '', | $functionName, | $schema + '.' + $functionName) + '(' + $params->map(p|$p.name)->joinStrings(', ') + ')';
 }
 
+// A table function argument cannot be a correlated scalar subquery on Databricks
+// (UNSUPPORTED_CORRELATED_SCALAR_SUBQUERY), so a calling function's own parameter is passed by name,
+// as in a join condition, not through the (SELECT param_x FROM func_param_table) indirection.
 function meta::relational::functions::sqlQueryToString::databricks::tabularFunctionCallProcessorForDatabricks(schema:String[1], functionName:String[1], args:TabularFunctionCallArgument[*], sgc:SqlGenerationContext[1]):String[1]
 {
    let renderedArgs = $args.value->map(v | $v->match([
       ll:LiteralList[1] | 'array(' + $ll.values->map(e | $e->processOperation($sgc))->joinStrings(', ') + ')',
-      r:RelationalOperationElement[1] | $r->processOperation($sgc)
+      l:Literal[1] | if($l.value->instanceOf(TableFunctionParamPlaceHolder),
+                        | $l.value->cast(@TableFunctionParamPlaceHolder)->inlineTableFunctionParamsForDatabricks()->processOperation($sgc),
+                        | $l->processOperation($sgc)),
+      r:RelationalOperationElement[1] | $r->inlineTableFunctionParamsForDatabricks()->processOperation($sgc)
    ]))->joinStrings(', ');
    let qualified = if($schema == '', | $functionName, | $schema + '.' + $functionName);
    $qualified + '(' + $renderedArgs + ')';

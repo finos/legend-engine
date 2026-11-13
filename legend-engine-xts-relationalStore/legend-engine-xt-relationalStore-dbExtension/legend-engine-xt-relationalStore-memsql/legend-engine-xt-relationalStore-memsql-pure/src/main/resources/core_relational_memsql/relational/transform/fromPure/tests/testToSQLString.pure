@@ -65,7 +65,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
            |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
             meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $s1);
+   assertEquals('select stddev_samp(`root`.`int1`) as `stdDevSample` from dataTable as `root`', $s1);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testToSQLStringWithStdDevPopulation_MemSQL():Boolean[1]
@@ -74,7 +74,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
            |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
             meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select stddev_pop(`root`.int1) as `stdDevPopulation` from dataTable as `root`', $s1);
+   assertEquals('select stddev_pop(`root`.`int1`) as `stdDevPopulation` from dataTable as `root`', $s1);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testToSqlGenerationFirstDayOfMonth_MemSQL():Boolean[1]
