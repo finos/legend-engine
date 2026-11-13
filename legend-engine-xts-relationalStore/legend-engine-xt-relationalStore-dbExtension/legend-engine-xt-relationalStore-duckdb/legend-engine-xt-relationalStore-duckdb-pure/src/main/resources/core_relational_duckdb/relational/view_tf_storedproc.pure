@@ -49,10 +49,10 @@ function meta::relational::functions::sqlQueryToString::duckDB::createFunction(c
     // Enforce use of typed fields — deprecated string fields are not supported  
     assert($createFunc.typedParameters->isNotEmpty(), 'DuckDB createFunction requires typedParameters (SQLParameter[*]). The deprecated string-based parameters field is not supported.');  
   
-    // DuckDB MACROs only need parameter names, not types  
-    let paramNames = $createFunc.typedParameters.name->joinStrings(' ');  
-  
-    'CREATE MACRO ' +  
+    // DuckDB MACROs only need parameter names, not types
+    let paramNames = $createFunc.typedParameters.name->joinStrings(', ');
+
+    'CREATE OR REPLACE MACRO ' +
     if($createFunc.schemaName->isEmpty(),|'',|$createFunc.schemaName->toOne() + '.') +  
     $createFunc.name +  
     +'('+ $paramNames + ')'+   

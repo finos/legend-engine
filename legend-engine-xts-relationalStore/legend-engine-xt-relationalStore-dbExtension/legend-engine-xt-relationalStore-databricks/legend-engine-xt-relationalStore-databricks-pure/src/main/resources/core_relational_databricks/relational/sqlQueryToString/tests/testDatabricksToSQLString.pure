@@ -377,3 +377,16 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
   assertSameSQL('CREATE OR REPLACE FUNCTION `test_schema`.`outer_func`(param1 STRING) \nRETURNS TABLE(name STRING) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT param1 AS param_param1) \nSELECT t.name AS name FROM test_schema.inner_func(param1) AS t;',
                 meta::relational::functions::sqlQueryToString::databricks::createFunction($outerFunc, $dbConfig, $extensions));
 }
+
+// A reserved-word or special-character return column must be backtick-quoted in RETURNS TABLE, or the
+// CREATE FUNCTION does not parse; plain names stay bare.
+function <<test.Test>> meta::relational::databricks::tests::testCreateFunctionQuotesReturnColumnNames():Boolean[1]
+{
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(meta::relational::runtime::DatabaseType.Databricks);
+   assertEquals('`ORDER`', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('ORDER', $dbConfig));
+   assertEquals('`order`', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('order', $dbConfig));
+   assertEquals('`company:Id`', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('company:Id', $dbConfig));
+   assertEquals('`test/Non@Decimal`', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('test/Non@Decimal', $dbConfig));
+   assertEquals('legal_name', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('legal_name', $dbConfig));
+   assertEquals('START_ID', meta::relational::functions::sqlQueryToString::databricks::quoteFunctionColumnName('START_ID', $dbConfig));
+}
