@@ -280,6 +280,15 @@ public class Handlers
 
     // U and Z cannot be inferred from the arguments -- Z is constrained as Relation<Z=(?:U)> -- so resolve them
     // explicitly, in declaration order, the way eval and flatten do for their wildcard-column ColSpecs.
+    private TypeAndMultiplicity requireRelation(String functionName, List<ValueSpecification> ps)
+    {
+        if (Nil.equals(ps.get(1)._genericType()._rawType()._name()))
+        {
+            throw new EngineException(functionName + "(..., Relation) expects a relation, got Nil", EngineErrorType.COMPILATION);
+        }
+        return res("Boolean", "one");
+    }
+
     private static RichIterable<? extends GenericType> singleColumnRelationTypeArguments(List<ValueSpecification> ps, PureModel pureModel)
     {
         GenericType columnType = singleRelationColumnType(ps.get(1), pureModel);
@@ -1820,7 +1829,7 @@ public class Handlers
         register("meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_", "equal", true, ps -> res("Boolean", "one"));
         register(grp(SingleColumnRelationInference.apply("equalTo"),
                 h("meta::pure::functions::relation::equalTo_U_$0_1$__Relation_1__Boolean_1_", "equalTo", false,
-                        ps -> res("Boolean", "one"),
+                        ps -> requireRelation("equalTo", ps),
                         ps -> singleColumnRelationTypeArguments(ps, pureModel),
                         ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation")))));
         register("meta::pure::functions::boolean::is_Any_1__Any_1__Boolean_1_", "is", true, ps -> res("Boolean", "one"));
@@ -1848,7 +1857,7 @@ public class Handlers
         // The Relation overload must be tried first: a Relation[1] also satisfies the collection overloads' Any[*] parameter.
         register(grp(InInference,
                 h("meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_", "in", false,
-                        ps -> res("Boolean", "one"),
+                        ps -> requireRelation("in", ps),
                         ps -> singleColumnRelationTypeArguments(ps, pureModel),
                         ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation"))),
                 h("meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_", "in", false, ps -> res("Boolean", "one"), ps -> isOne(ps.get(0)._multiplicity())),
@@ -1860,7 +1869,7 @@ public class Handlers
         {
             register(grp(SingleColumnRelationInference.apply(quantified),
                     h("meta::pure::functions::relation::" + quantified + "_U_$0_1$__Relation_1__Boolean_1_", quantified, false,
-                            ps -> res("Boolean", "one"),
+                            ps -> requireRelation(quantified, ps),
                             ps -> singleColumnRelationTypeArguments(ps, pureModel),
                             ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation")))));
         }
@@ -2955,11 +2964,8 @@ public class Handlers
 
     private void registerMathInequalities()
     {
+        // The Relation overloads come last: Nil also matches their Relation parameter, so the primitive overloads must be tried first.
         register(grp(SingleColumnRelationInference.apply("greaterThan"),
-                h("meta::pure::functions::relation::greaterThan_U_$0_1$__Relation_1__Boolean_1_", "greaterThan", false,
-                        ps -> res("Boolean", "one"),
-                        ps -> singleColumnRelationTypeArguments(ps, pureModel),
-                        ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation"))),
                 h("meta::pure::functions::boolean::greaterThan_Boolean_1__Boolean_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
                 h("meta::pure::functions::boolean::greaterThan_Boolean_1__Boolean_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
                 h("meta::pure::functions::boolean::greaterThan_Boolean_$0_1$__Boolean_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
@@ -2975,13 +2981,13 @@ public class Handlers
                 h("meta::pure::functions::boolean::greaterThan_String_1__String_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
                 h("meta::pure::functions::boolean::greaterThan_String_1__String_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
                 h("meta::pure::functions::boolean::greaterThan_String_$0_1$__String_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::greaterThan_String_$0_1$__String_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String"))));
+                h("meta::pure::functions::boolean::greaterThan_String_$0_1$__String_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
+                h("meta::pure::functions::relation::greaterThan_U_$0_1$__Relation_1__Boolean_1_", "greaterThan", false,
+                        ps -> requireRelation("greaterThan", ps),
+                        ps -> singleColumnRelationTypeArguments(ps, pureModel),
+                        ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation")))));
 
         register(grp(SingleColumnRelationInference.apply("greaterThanEqual"),
-                h("meta::pure::functions::relation::greaterThanEqual_U_$0_1$__Relation_1__Boolean_1_", "greaterThanEqual", false,
-                        ps -> res("Boolean", "one"),
-                        ps -> singleColumnRelationTypeArguments(ps, pureModel),
-                        ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation"))),
                 h("meta::pure::functions::boolean::greaterThanEqual_Boolean_1__Boolean_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
                 h("meta::pure::functions::boolean::greaterThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
                 h("meta::pure::functions::boolean::greaterThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
@@ -2997,13 +3003,13 @@ public class Handlers
                 h("meta::pure::functions::boolean::greaterThanEqual_String_1__String_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
                 h("meta::pure::functions::boolean::greaterThanEqual_String_1__String_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
                 h("meta::pure::functions::boolean::greaterThanEqual_String_$0_1$__String_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::greaterThanEqual_String_$0_1$__String_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String"))));
+                h("meta::pure::functions::boolean::greaterThanEqual_String_$0_1$__String_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
+                h("meta::pure::functions::relation::greaterThanEqual_U_$0_1$__Relation_1__Boolean_1_", "greaterThanEqual", false,
+                        ps -> requireRelation("greaterThanEqual", ps),
+                        ps -> singleColumnRelationTypeArguments(ps, pureModel),
+                        ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation")))));
 
         register(grp(SingleColumnRelationInference.apply("lessThan"),
-                h("meta::pure::functions::relation::lessThan_U_$0_1$__Relation_1__Boolean_1_", "lessThan", false,
-                        ps -> res("Boolean", "one"),
-                        ps -> singleColumnRelationTypeArguments(ps, pureModel),
-                        ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation"))),
                 h("meta::pure::functions::boolean::lessThan_Boolean_1__Boolean_1__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
                 h("meta::pure::functions::boolean::lessThan_Boolean_1__Boolean_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
                 h("meta::pure::functions::boolean::lessThan_Boolean_$0_1$__Boolean_1__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
@@ -3019,13 +3025,13 @@ public class Handlers
                 h("meta::pure::functions::boolean::lessThan_String_1__String_1__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
                 h("meta::pure::functions::boolean::lessThan_String_1__String_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
                 h("meta::pure::functions::boolean::lessThan_String_$0_1$__String_1__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::lessThan_String_$0_1$__String_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String"))));
+                h("meta::pure::functions::boolean::lessThan_String_$0_1$__String_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
+                h("meta::pure::functions::relation::lessThan_U_$0_1$__Relation_1__Boolean_1_", "lessThan", false,
+                        ps -> requireRelation("lessThan", ps),
+                        ps -> singleColumnRelationTypeArguments(ps, pureModel),
+                        ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation")))));
 
         register(grp(SingleColumnRelationInference.apply("lessThanEqual"),
-                h("meta::pure::functions::relation::lessThanEqual_U_$0_1$__Relation_1__Boolean_1_", "lessThanEqual", false,
-                        ps -> res("Boolean", "one"),
-                        ps -> singleColumnRelationTypeArguments(ps, pureModel),
-                        ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation"))),
                 h("meta::pure::functions::boolean::lessThanEqual_Boolean_1__Boolean_1__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
                 h("meta::pure::functions::boolean::lessThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
                 h("meta::pure::functions::boolean::lessThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
@@ -3041,7 +3047,11 @@ public class Handlers
                 h("meta::pure::functions::boolean::lessThanEqual_String_1__String_1__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
                 h("meta::pure::functions::boolean::lessThanEqual_String_1__String_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
                 h("meta::pure::functions::boolean::lessThanEqual_String_$0_1$__String_1__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String"))));
+                h("meta::pure::functions::boolean::lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
+                h("meta::pure::functions::relation::lessThanEqual_U_$0_1$__Relation_1__Boolean_1_", "lessThanEqual", false,
+                        ps -> requireRelation("lessThanEqual", ps),
+                        ps -> singleColumnRelationTypeArguments(ps, pureModel),
+                        ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation")))));
 
         register(h("meta::pure::functions::boolean::between_Date_$0_1$__Date_$0_1$__Date_$0_1$__Boolean_1_", "between", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), pureModel.taxonomyTypes("cov_Date")) && typeZeroOne(ps.get(1), pureModel.taxonomyTypes("cov_Date")) && typeZeroOne(ps.get(2), pureModel.taxonomyTypes("cov_Date"))),
                 h("meta::pure::functions::boolean::between_Number_$0_1$__Number_$0_1$__Number_$0_1$__Boolean_1_", "between", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), pureModel.taxonomyTypes("cov_Number")) && typeZeroOne(ps.get(1), pureModel.taxonomyTypes("cov_Number")) && typeZeroOne(ps.get(2), pureModel.taxonomyTypes("cov_Number"))),

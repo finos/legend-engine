@@ -15,9 +15,11 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import net.javacrumbs.jsonunit.JsonAssert;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -2168,6 +2170,114 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->filter(x|($x.id > 1) && ($x.id >= 1) && ($x.id < 10) && ($x.id <= 10) && ($x.name == 'a'))\n" +
                         "}");
+    }
+
+    @Test
+    public void testScalarComparisonWithNilFallsThroughToPrimitiveOverload()
+    {
+        test(
+                "###Pure\n" +
+                        "function test::f(): Boolean[1]\n" +
+                        "{\n" +
+                        "  let subActiveFromDt = [];\n" +
+                        "  $subActiveFromDt->isEmpty() || (%2024-01-01 >= $subActiveFromDt->toOne());\n" +
+                        "}");
+    }
+
+    @Test
+    public void testAllScalarComparisonsWithNilFallThroughToPrimitiveOverloads()
+    {
+        test(
+                "###Pure\n" +
+                        "function test::f(): Boolean[1]\n" +
+                        "{\n" +
+                        "  (%2024-01-01 > []->toOne()) && (%2024-01-01 >= []->toOne()) && (%2024-01-01 < []->toOne()) && (%2024-01-01 <= []->toOne()) &&\n" +
+                        "  (1 > []->toOne()) && (1.5 >= []->toOne()) && ('a' < []->toOne()) && (true <= []->toOne()) &&\n" +
+                        "  ([]->toOne() > 1) && ([]->toOne() >= []->toOne())\n" +
+                        "}");
+    }
+
+    @Test
+    public void testInWithNilError()
+    {
+        test(
+                "###Pure\n" +
+                        "function test::f(): Boolean[1]\n" +
+                        "{\n" +
+                        "  'x'->in([]->toOne())\n" +
+                        "}", "COMPILATION error at [4:8-9]: in(..., Relation) expects a relation, got Nil"
+        );
+    }
+
+    @Test
+    public void testEqualToWithNilError()
+    {
+        test(
+                "###Pure\n" +
+                        "function test::f(): Boolean[1]\n" +
+                        "{\n" +
+                        "  1->equalTo([]->toOne())\n" +
+                        "}", "COMPILATION error at [4:6-12]: equalTo(..., Relation) expects a relation, got Nil"
+        );
+    }
+
+    @Test
+    public void testQuantifiedComparisonsWithNilError()
+    {
+        for (String quantified : Handlers.QUANTIFIED_COMPARISONS)
+        {
+            test(
+                    "###Pure\n" +
+                            "function test::f(): Boolean[1]\n" +
+                            "{\n" +
+                            "  1->" + quantified + "([]->toOne())\n" +
+                            "}", "COMPILATION error at [4:6-" + (5 + quantified.length()) + "]: " + quantified + "(..., Relation) expects a relation, got Nil"
+            );
+        }
+    }
+
+    @Test
+    public void testAllScalarComparisonsWithSingleColumnRelation()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|($x.id > #>{a::A.tb}#->select(~id)) && ($x.id >= #>{a::A.tb}#->select(~id)) &&\n" +
+                        "      ($x.id < #>{a::A.tb}#->select(~id)) && ($x.id <= #>{a::A.tb}#->select(~id)) && $x.name->equalTo(#>{a::A.tb}#->select(~name)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testScalarComparisonWithRelationParameter()
+    {
+        test(
+                "###Pure\n" +
+                        "function test::f(r: meta::pure::metamodel::relation::Relation<(id:Integer)>[1]): Boolean[1]\n" +
+                        "{\n" +
+                        "  (1 > $r) && (1 >= $r) && (1 < $r) && (1 <= $r) && 1->equalTo($r) && 1->in($r) && 1->greaterThanAny($r)\n" +
+                        "}");
+    }
+
+    @Test
+    public void testAllScalarComparisonsWithMultiColumnRelationError()
+    {
+        for (String comparison : Lists.immutable.of("greaterThan", "greaterThanEqual", "lessThan", "lessThanEqual", "equalTo"))
+        {
+            test(
+                    "###Relational\n" +
+                            "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                            "\n" +
+                            "###Pure\n" +
+                            "function test::f():Any[*]\n" +
+                            "{\n" +
+                            "   #>{a::A.tb}#->filter(x|$x.id->" + comparison + "(#>{a::A.tb}#->select(~[id, name])))\n" +
+                            "}", "COMPILATION error at [7:" + (49 + comparison.length()) + "-" + (54 + comparison.length()) + "]: " + comparison + "(..., Relation) expects a relation with a single column, got (id:Int, name:Varchar(200))"
+            );
+        }
     }
 
     @Override
