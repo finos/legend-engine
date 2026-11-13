@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Mirrors the ambercove EMIT failure: a domain class with QPs whose bodies call user-defined
+// functions. A plain top-level function that constructs the class inline drives the
+// newDynamicClass path in langLibrary.pure, which emits ALL of Person's qualified properties
+// onto Person_Impl - including QPs whose bodies emit _pure.functions.Functions__* helper calls.
+// Under V3 defer-to-root those helper classes must be picked up by the root
+// resolveProjectDependencies sweep; without it the emitted Java references classes that
+// were never generated.
+
+Class test::qp::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  countedAnimals: Integer[1];
+  surveyBand()
+  {
+    test::qp::surveyBand($this.firstName, $this.lastName, $this.countedAnimals)
+  }: String[0..1];
+  watchListed()
+  {
+    test::qp::watchListed($this.firstName)
+  }: Boolean[1];
+}
+
+function test::qp::surveyBand(speciesCode: String[1], tideCode: String[1], countedAnimals: Integer[1]): String[0..1]
+{
+  if(($speciesCode == 'SEAL') && ($tideCode == 'EBB'),
+     | 'seal-ebb-haulout',
+     | if($speciesCode == 'SEAL',
+          | 'seal-tide-watch',
+          | if(($speciesCode == 'TERN') && ($countedAnimals >= 40),
+               | 'tern-colony-peak',
+               | if($speciesCode == 'TERN',
+                    | 'tern-colony-light',
+                    | []))))
+}
+
+function test::qp::watchListed(speciesCode: String[1]): Boolean[1]
+{
+  ((($speciesCode == 'SEAL') || ($speciesCode == 'TERN')) || ($speciesCode == 'OTTER')) || ($speciesCode == 'PORPOISE')
+}
+
+function test::qp::buildPerson(): test::qp::Person[1]
+{
+  ^test::qp::Person(firstName = 'SEAL', lastName = 'EBB', countedAnimals = 12)
+}

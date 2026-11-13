@@ -29,23 +29,168 @@ import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
 
+// [B] one plan: the same assembly the batch root performs, so a plan bound on its own is
+// self-contained. Node generators leave each CodeDependency attached to the code it was generated
+// into, so without the resolve step the emitted Java references helper, enum and model classes that
+// were never generated. No TypeInfoSet union step - one plan contributes exactly one set.
 function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegendJavaPlatform(plan: ExecutionPlan[1], platformBindingConfig: PlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionPlan[1]
 {
    let legendJavaConfig   = $platformBindingConfig->convertToLegendJavaPlatformBindingConfigIfPossible();
-   let generationContext  = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
+   let bound              = $plan->bindPlanToNodeAst($legendJavaConfig, $extensions, $debug);
+   let boundPlan          = $bound.plan;
 
-   let baseProject        = $generationContext->generateTypes($debug);
-   let seededContext      = ^$generationContext(resolutionState = ^CodeDependencyResolutionState(projectsByDependency=^Map<String, Project>()));
-   let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $seededContext, $extensions, $debug);
-   let generatedProject   = $baseProject->concatenate($generatedNode.project)->toOneMany()->mergeProjects();
+   let sharedTypes        = $bound.typeInfos->generateSharedTypesUnder(engineConventions($extensions), $bound.baseProject);
+   let prelim            = $sharedTypes->concatenate($bound.project)->toOneMany()->mergeProjects();
+   let generatedProject   = $prelim->concatenate($prelim->resolveProjectDependencies())->toOneMany()->mergeProjects();
 
-   ^$plan
+   ^$boundPlan
    (
-      rootExecutionNode = $generatedNode.node,
       globalImplementationSupport = if ($generatedProject->allClasses()->isEmpty(),
                                         | [],
                                         | $generatedProject->projectToImplementation()
                                     )
+   );
+}
+
+// [B] leaf: node code only (no shared interfaces/enums), plus this plan's TypeInfoSet
+function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToNodeAst(plan: ExecutionPlan[1], legendJavaConfig: LegendJavaPlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): BoundNodePlan[1]
+{
+   let generationContext = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
+   let generatedNode     = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $generationContext, $extensions, $debug);
+
+   ^BoundNodePlan
+   (
+      plan        = ^$plan(rootExecutionNode = $generatedNode.node),
+      project     = $generatedNode.project,
+      typeInfos   = $generationContext.typeInfos,
+      baseProject = $generationContext.baseProject
+   );
+}
+
+// [B] leaf for a whole service: merged node ASTs + union of the plans' TypeInfoSets
+function meta::pure::executionPlan::platformBinding::legendJava::bindPlansToNodeAst(plans: ExecutionPlan[*], platformBindingConfigs: PlatformBindingConfig[*], extensions: Extension[*]): NodesAndTypeInfos[1]
+{
+   assert($plans->size() == $platformBindingConfigs->size(), | 'bindPlansToNodeAst: plans and configs must be the same length');
+
+   let debug  = noDebug();
+   let bounds = $plans->zip($platformBindingConfigs)->map(pc |
+      $pc.first->bindPlanToNodeAst($pc.second->convertToLegendJavaPlatformBindingConfigIfPossible(), $extensions, $debug)
+   );
+
+   let mergedProject   = if ($bounds->isEmpty(), | [], | $bounds.project->toOneMany()->mergeProjects());
+   let mergedTypeInfos = $bounds.typeInfos->mergeTypeInfoSets();
+   ^NodesAndTypeInfos(plans = $bounds.plan, project = $mergedProject, typeInfos = $mergedTypeInfos);
+}
+
+// [B] root: recover the dependencies attached to the assembled project's code and resolve them to a
+// fixpoint. Some dependency closures (e.g. newDynamicClass in langLibrary.pure) materialize classes
+// whose OWN method/constructor/field bodies carry further dependency markers - QP bodies that call
+// user-defined functions emit _pure.functions.Functions__* helper markers, but only after the outer
+// dep is resolved and Person_Impl exists in the project. A one-shot scan misses them. The loop keeps
+// scanning newly-added classes and resolves any dependencies whose names have not been seen yet.
+function meta::pure::executionPlan::platformBinding::legendJava::resolveProjectDependencies(project: Project[1]): Project[0..1]
+{
+   let resolved = $project->allClasses()->resolveDependenciesOf([], [], ^CodeDependencyResolutionState(projectsByDependency = ^Map<String, Project>()));
+   $resolved->getProjects()->mergeProjectsNullable();
+}
+
+// termination: each round scans only the classes the previous round added, and a dependency name is
+// resolved at most once, so the rounds stop once resolution adds no new project.
+// Dependency projects overlap heavily (every new_ dependency carries the plan's interfaces and enums),
+// so a class already scanned in an identical shape is not walked again.
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::resolveDependenciesOf(classes: meta::external::language::java::metamodel::Class[*], seen: String[*], scanned: String[*], state: CodeDependencyResolutionState[1]): CodeDependencyResolutionState[1]
+{
+   let seenNames    = $seen->map(n | pair($n, true))->newMap();
+   let scannedKeys  = $scanned->map(k | pair($k, true))->newMap();
+   let keyed        = $classes->map(c | pair($c->scanKey(), $c))->removeDuplicatesBy(p | $p.first)->filter(p | $scannedKeys->get($p.first)->isEmpty());
+   let newDeps      = $keyed.second->map(c | $c.fields.valueCode->concatenate($c.constructors.bodyCode)->concatenate($c.methods.bodyCode))
+                        ->dependencies()
+                        ->removeDuplicatesBy(d | $d.name)
+                        ->filter(d | $seenNames->get($d.name)->isEmpty());
+   if ($newDeps->isEmpty(),
+      | $state,
+      {|
+         let resolved    = $newDeps->resolveProjects($state);
+         let newProjects = $resolved.projectsByDependency->keyValues()->filter(kv | $state.projectsByDependency->get($kv.first)->isEmpty()).second;
+         $newProjects->map(p | $p->allClasses())->resolveDependenciesOf($seen->concatenate($newDeps.name), $scanned->concatenate($keyed.first), $resolved);
+      }
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::scanKey(class: meta::external::language::java::metamodel::Class[1]): String[1]
+{
+   $class->meta::external::language::java::serialization::typeToString() + '|' + $class.methods->map(m | $m->methodSignature())->sort()->joinStrings(',') + '|' + $class.fields.name->sort()->joinStrings(',');
+}
+
+// [B] root: shared type layer (interfaces + enums + units) generated once from the global union
+function meta::pure::executionPlan::platformBinding::legendJava::generateSharedTypes(union: TypeInfoSet[1], extensions: Extension[*]): Project[1]
+{
+   let conventions = engineConventions($extensions);
+   $union->generateSharedTypesUnder($conventions, $conventions->fundamentals(noDebug()));
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::generateSharedTypesUnder(union: TypeInfoSet[1], conventions: Conventions[1], baseProject: Project[0..1]): Project[1]
+{
+   let ctx = ^GenerationContext(typeInfos = $union, conventions = $conventions)->fillNewFunctionProhibitedList();
+   ^$ctx(baseProject = $baseProject)->generateTypes(noDebug());
+}
+
+// [B] union several TypeInfoSets; same-typed ClassTypeInfos merged, model-derived infos deduped by ==
+function meta::pure::executionPlan::platformBinding::legendJava::mergeTypeInfoSets(sets: TypeInfoSet[*]): TypeInfoSet[1]
+{
+   $sets->fold({s, acc | $s.typeInfos->fold({ti, a | $a->addTypeInfoUnion($ti)}, $acc)}, newTypeInfoSet());
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::addTypeInfoUnion(acc: TypeInfoSet[1], ti: TypeInfo[1]): TypeInfoSet[1]
+{
+   let existing = $acc.typeInfos->filter(e | $e.type == $ti.type);
+   if($existing->isEmpty(),
+      | ^$acc(typeInfos = $acc.typeInfos->concatenate($ti)),
+      | let others = $acc.typeInfos->filter(e | $e.type != $ti.type);
+        ^$acc(typeInfos = $others->concatenate(mergeTypeInfoPair($existing->toOne(), $ti)));
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::mergeTypeInfoPair(a: TypeInfo[1], b: TypeInfo[1]): TypeInfo[1]
+{
+   if($a->instanceOf(ClassTypeInfo) && $b->instanceOf(ClassTypeInfo),
+      | let ca = $a->cast(@ClassTypeInfo);
+        let cb = $b->cast(@ClassTypeInfo);
+        // Dedup by property NAME, not object identity: milestoning-generated properties are distinct
+        // instances across plans, but within one class the (getter) name is the unique key - two entries
+        // with the same name would emit a duplicate getter and trip addMethod's "already exists" assert.
+        // Qualified properties are keyed by name + parameter types (so genuine overloads are kept).
+        ^ClassTypeInfo(
+           type                 = $ca.type,
+           properties           = $ca.properties->concatenate($cb.properties)->removeDuplicatesBy(p | $p.name->toOne()),
+           supertypes           = $ca.supertypes->concatenate($cb.supertypes)->removeDuplicates(),
+           qualifiedProperties  = $ca.qualifiedProperties->concatenate($cb.qualifiedProperties)->removeDuplicatesBy(q | $q.name->toOne() + '::' + $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | $p.genericType.rawType->toOne()->elementToPath())->joinStrings(',')),
+           constraints          = $ca.constraints->concatenate($cb.constraints)->removeDuplicatesBy(x | $x.id),
+           isNewInstanceAllowed = $ca.isNewInstanceAllowed || $cb.isNewInstanceAllowed
+        );,
+      | $a
+   );
+}
+
+// [A] merge two Java projects (union of same-FQN classes, conflict-guarded)
+function meta::pure::executionPlan::platformBinding::legendJava::mergeProjectPair(a: Project[1], b: Project[1]): Project[1]
+{
+   [$a, $b]->mergeProjects();
+}
+
+// [D] attach classes serialized elsewhere; caller must pass them in directory order for byte-stable output
+function meta::pure::executionPlan::platformBinding::legendJava::attachImplementationFromClasses(plans: ExecutionPlan[*], classes: meta::pure::executionPlan::JavaClass[*]): ExecutionPlan[*]
+{
+   let sharedImplementation = if ($classes->isEmpty(),
+      | [],
+      | ^meta::pure::executionPlan::JavaPlatformImplementation(classes = $classes));
+
+   $plans->size()->range()->map(i |
+      let plan = $plans->at($i);
+      if ($i == 0,
+          | ^$plan(globalImplementationSupport = $sharedImplementation),
+          | $plan
+      );
    );
 }
 
@@ -70,9 +215,11 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 {
    let conventions  = engineConventions($extensions);
    
-   let pathAdjusted = if ($legendJavaConfig.planId->isEmpty(), 
-                          | $conventions, 
-                          | $conventions->setBasePackageName($conventions.basePackageName+'.'+$conventions->identifier('plan_'+$legendJavaConfig.planId->toOne()))
+   // [A] basePackageName stays plan-independent so model-derived types dedup on merge; planId is applied
+   // only to node classes (planNodeClass), whose content genuinely differs per plan
+   let pathAdjusted = if ($legendJavaConfig.planId->isEmpty(),
+                          | $conventions,
+                          | ^$conventions(planId = $legendJavaConfig.planId->toOne())
                       );
 
    let pureM2MRuntime = $plan.runtime->meta::pure::router::runtime::isPureM2MRuntime();

@@ -23,7 +23,9 @@ import meta::external::language::java::serialization::*;
 Class meta::external::language::java::serialization::Stringifier
 {
    imports          : meta::external::language::java::metamodel::Importable[*];
-   classesInPackage : meta::external::language::java::metamodel::Class[*];
+   // [C] simple names declared in the package being serialized; kept small because the Stringifier is
+   // copied on every text operation
+   packageSimpleNames : String[*];
    project          : meta::external::language::java::metamodel::project::Project[0..1];
 
    stack            : meta::external::language::java::metamodel::Class[*];
@@ -48,7 +50,13 @@ Enum meta::external::language::java::serialization::Scope
 
 function meta::external::language::java::serialization::newStringifier(project:meta::external::language::java::metamodel::project::Project[1]): Stringifier[1]
 {
-   ^Stringifier(foldLevel=0, wipLine='', pending='', completeLines='', scope=Scope.DEFAULT, tab='    ', tabDepth=0, project=$project)
+   ^Stringifier(foldLevel=0, wipLine='', pending='', completeLines='', scope=Scope.DEFAULT, tab='    ', tabDepth=0, project=$project);
+}
+
+// [C] Stringifier for one package, names supplied up front (once per package, not once per class)
+function meta::external::language::java::serialization::newPackageStringifier(packageSimpleNames:String[*]): Stringifier[1]
+{
+   ^Stringifier(foldLevel=0, wipLine='', pending='', completeLines='', scope=Scope.DEFAULT, tab='    ', tabDepth=0, packageSimpleNames=$packageSimpleNames);
 }
 
 function meta::external::language::java::serialization::newStringifier(): Stringifier[1]
@@ -139,9 +147,19 @@ function <<access.private>> meta::external::language::java::serialization::class
             }
          )->cast(@meta::external::language::java::metamodel::Importable);
 
+         // [C] fast path when names were supplied up front; otherwise derive them, preserving the
+         // original behaviour for callers that pass a whole project
+         let pkgNames = if($sfer.packageSimpleNames->isNotEmpty(),
+                           | $sfer.packageSimpleNames,
+                           | let classPkg = $class.package->packageToString();
+                             $sfer.project->map(p | $p->allClasses())
+                                          ->filter(c | $c.package->packageToString() == $classPkg)
+                                          ->map(c | $c.simpleName);
+                        );
+
          ^$sfer(
-            imports          = $classImports,
-            classesInPackage = $sfer.project->map(p| $p->allClasses())->filter(c| $c.package == $class.package)
+            imports            = $classImports,
+            packageSimpleNames = $pkgNames
          );
 
       }
@@ -360,7 +378,9 @@ function <<access.private>> meta::external::language::java::serialization::shoul
                p:meta::external::language::java::metamodel::Package[1] | $classPkg == $p->packageToString()
             ]);
          });
-   let shadowed = $sfer.classesInPackage->exists(c| $c != $class && $c.simpleName == $class.simpleName);
+   // [C] shadowed by a class in the enclosing package? Same question as before, now a lookup. The
+   // $classPkg != $stackPkg guard reproduces the old "$c != $class" exclusion.
+   let shadowed = $classPkg != $stackPkg && $sfer.packageSimpleNames->contains($class.simpleName);
    !$imported || $shadowed;
 }
 
