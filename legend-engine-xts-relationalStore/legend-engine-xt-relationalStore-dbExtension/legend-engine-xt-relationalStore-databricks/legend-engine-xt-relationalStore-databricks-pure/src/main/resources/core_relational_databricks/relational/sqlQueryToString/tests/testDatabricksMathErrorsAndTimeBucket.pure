@@ -1,0 +1,166 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::functions::sqlstring::*;
+import meta::pure::mapping::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::pure::profiles::*;
+import meta::relational::functions::sqlstring::*;
+import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::functions::sqlQueryToString::tests::*;
+import meta::relational::tests::functions::sqlstring::databricks::*;
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testTimeBucketHoursCountsFromEpochDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Trade.all()->project(t|$t.settlementDateTime->toOne()->timeBucket(3, DurationUnit.HOURS), 'bucket'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select cast(timestamp_seconds(unix_seconds(cast(`root`.settlementDateTime as timestamp)) - pmod(unix_seconds(cast(`root`.settlementDateTime as timestamp)), 3 * 3600)) as timestamp) as `bucket` from tradeTable as `root`', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testTimeBucketWeeksStartOnMondaysDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Trade.all()->project(t|$t.settlementDateTime->toOne()->timeBucket(2, DurationUnit.WEEKS), 'bucket'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select cast(timestamp_seconds(unix_seconds(cast(`root`.settlementDateTime as timestamp)) - pmod(unix_seconds(cast(`root`.settlementDateTime as timestamp)) + 259200, 2 * 604800)) as timestamp) as `bucket` from tradeTable as `root`', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testTimeBucketMonthsOfDateColumnReturnsDateDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Trade.all()->project(t|$t.date->cast(@StrictDate)->timeBucket(3, DurationUnit.MONTHS), 'bucket'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select cast(add_months(DATE \'1970-01-01\', ((year(`root`.tradeDate) - 1970) * 12 + month(`root`.tradeDate) - 1) - pmod(((year(`root`.tradeDate) - 1970) * 12 + month(`root`.tradeDate) - 1), 3 * 1)) as date) as `bucket` from tradeTable as `root`', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testDivideCastsOperandsToDoubleDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Trade.all()->project(t|$t.quantity / 96, 'ratio'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select try_divide(cast(`root`.quantity as double), cast(96 as double)) as `ratio` from tradeTable as `root`', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testHashAggSumsRowHashesWithoutNarrowingDatabricks():Boolean[1]
+{
+  let sql = meta::relational::functions::sqlQueryToString::processOperation(
+    ^meta::relational::metamodel::DynaFunction(name = 'hashAgg', parameters = ^meta::relational::metamodel::ColumnName(name = 'quantity')),
+    DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('sum(hash(quantity))', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testSqrtOfColumnRaisesErrorOutsideDomainDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Trade.all()->project(t|$t.quantity->sqrt(), 'root'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select case when `root`.quantity < 0 then raise_error(concat(\'Unable to compute sqrt of \', cast(`root`.quantity as string))) else sqrt(`root`.quantity) end as `root` from tradeTable as `root`', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testArcSineOfColumnRaisesErrorOutsideDomainDatabricks():Boolean[1]
+{
+  let sql = toSQLString(|Trade.all()->project(t|$t.quantity->asin(), 'angle'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+  assertEquals('select case when abs(`root`.quantity) > 1 then raise_error(concat(\'Unable to compute asin of \', cast(`root`.quantity as string))) else asin(`root`.quantity) end as `angle` from tradeTable as `root`', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testSqrtOfNegativeLiteralFailsDatabricks():Boolean[1]
+{
+  assertError({|toSQLString(|Trade.all()->project(t|sqrt(-4), 'root'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions())}, 'Unable to compute sqrt of -4');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testRemByZeroLiteralFailsDatabricks():Boolean[1]
+{
+  assertError({|toSQLString(|Trade.all()->project(t|7->rem(0), 'remainder'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions())}, 'Cannot divide 7 by zero');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testLagDropsWindowFrameDatabricks():Boolean[1]
+{
+  assertEquals('lag(quantity) OVER (Order By settlementDateTime asc nulls last)',
+    ^meta::relational::metamodel::DynaFunction(name = 'lag', parameters = ^meta::relational::metamodel::ColumnName(name = 'quantity'))->windowWithUnboundedRowsFrameDatabricks());
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testLeadDropsWindowFrameDatabricks():Boolean[1]
+{
+  assertEquals('lead(quantity) OVER (Order By settlementDateTime asc nulls last)',
+    ^meta::relational::metamodel::DynaFunction(name = 'lead', parameters = ^meta::relational::metamodel::ColumnName(name = 'quantity'))->windowWithUnboundedRowsFrameDatabricks());
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testRankDropsWindowFrameDatabricks():Boolean[1]
+{
+  assertEquals('rank() OVER (Order By settlementDateTime asc nulls last)',
+    ^meta::relational::metamodel::DynaFunction(name = 'rank')->windowWithUnboundedRowsFrameDatabricks());
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testSumKeepsWindowFrameDatabricks():Boolean[1]
+{
+  assertEquals('sum(quantity) OVER (Order By settlementDateTime asc nulls last ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)',
+    ^meta::relational::metamodel::DynaFunction(name = 'sum', parameters = ^meta::relational::metamodel::ColumnName(name = 'quantity'))->windowWithUnboundedRowsFrameDatabricks());
+}
+
+function <<access.private>> meta::relational::tests::functions::sqlstring::databricks::windowWithUnboundedRowsFrameDatabricks(func:meta::relational::metamodel::DynaFunction[1]):String[1]
+{
+  let window = ^meta::relational::metamodel::Window(
+    sortBy = ^meta::relational::metamodel::SortByInfo(sortByElement = ^meta::relational::metamodel::ColumnName(name = 'settlementDateTime'), sortDirection = meta::relational::metamodel::SortDirection.ASC),
+    frame = ^meta::relational::metamodel::Frame(frameType = meta::relational::metamodel::FrameType.ROWS,
+      offsetFrom = ^meta::relational::metamodel::UnboundedFrameValue(direction = meta::relational::metamodel::FrameValueDirection.PRECEDING),
+      offsetTo = ^meta::relational::metamodel::UnboundedFrameValue(direction = meta::relational::metamodel::FrameValueDirection.FOLLOWING))
+  );
+  meta::relational::functions::sqlQueryToString::processOperation(^meta::relational::metamodel::WindowColumn(columnName = 'windowed', window = $window, func = $func),
+    DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testSliceWithLowBoundAboveClampedHighBoundFailsDatabricks():Boolean[1]
+{
+  assertError({|^meta::relational::metamodel::DynaFunction(name = 'array_slice', parameters = [
+      ^meta::relational::metamodel::ColumnName(name = 'items'),
+      ^meta::relational::metamodel::Literal(value = 2),
+      ^meta::relational::metamodel::DynaFunction(name = 'minus', parameters = ^meta::relational::metamodel::Literal(value = 5))
+    ])->literalOperationSqlDatabricks()}, 'The low bound (2) can\'t be higher than the high bound (0) in a slice operation');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testRangeWithZeroStepFailsDatabricks():Boolean[1]
+{
+  assertError({|^meta::relational::metamodel::DynaFunction(name = 'range', parameters = [
+      ^meta::relational::metamodel::Literal(value = 1), ^meta::relational::metamodel::Literal(value = 5), ^meta::relational::metamodel::Literal(value = 0)
+    ])->literalOperationSqlDatabricks()}, 'range step must not be 0');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testBitShiftBeyond62BitsFailsDatabricks():Boolean[1]
+{
+  assertError({|^meta::relational::metamodel::DynaFunction(name = 'bitShiftLeft', parameters = [
+      ^meta::relational::metamodel::Literal(value = 1), ^meta::relational::metamodel::Literal(value = 63)
+    ])->literalOperationSqlDatabricks()}, 'Unsupported number of bits to shift - max bits allowed is 62');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testRemByColumnIsLeftToSparkDatabricks():Boolean[1]
+{
+  assertEquals('mod(7,quantity)', ^meta::relational::metamodel::DynaFunction(name = 'rem', parameters = [
+      ^meta::relational::metamodel::Literal(value = 7), ^meta::relational::metamodel::ColumnName(name = 'quantity')
+    ])->literalOperationSqlDatabricks());
+}
+
+function <<access.private>> meta::relational::tests::functions::sqlstring::databricks::literalOperationSqlDatabricks(func:meta::relational::metamodel::DynaFunction[1]):String[1]
+{
+  meta::relational::functions::sqlQueryToString::processOperation($func, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testTimeBucketMillisecondsIsUnsupportedDatabricks():Boolean[1]
+{
+  assertError({|toSQLString(|Trade.all()->project(t|$t.settlementDateTime->toOne()->timeBucket(1, DurationUnit.MILLISECONDS), 'bucket'),
+    simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions())}, 'The DurationUnit \'MILLISECOND\' is not supported yet for timeBucket');
+}
