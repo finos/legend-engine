@@ -192,6 +192,29 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
   assertEquals($expected, $result.values->cast(@TabularDataSet)->toOne()->meta::json::tdsToJSONKeyValueObjectString()->makeString());
 }
 
+// $x.status->cast(@String) never converts the enum, but queries rely on the column still coming back as a
+// String: the store value, not the enum decoded through its EnumerationMapping.
+function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::tests::executeProjectWithEnumColumnCastToString() : Boolean[1]
+{
+  let runtime = getM2M2RRuntime();
+  let connection = $runtime.connectionStores->at(1);
+  [
+    'DROP TABLE IF EXISTS Person;',
+    'CREATE TABLE Person(id INT, firstName VARCHAR(200), lastName VARCHAR(200), status VARCHAR(20));',
+    'INSERT INTO Person(id, firstName, lastName, status) values (1, \'Grace\', \'Davis\', \'ACTIVE\');',
+    'INSERT INTO Person(id, firstName, lastName, status) values (2, \'Alice\', \'Johnson\', \'INACTIVE\');'
+  ]->map(sqlString | $sqlString->meta::relational::metamodel::execute::executeInDb($connection));
+
+  let result = meta::pure::router::execute(
+    {|Person.all()->project([x|$x.firstName, x|$x.status->cast(@String)], ['firstName', 'status'])},
+    ModelToModelMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertEquals(['ACTIVE', 'INACTIVE'], $result.values->cast(@TabularDataSet)->toOne().rows->map(r|$r.get('status')));
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ExcludeAlloy>> meta::pure::executionPlan::m2m2r::tests::executeProjectWithEnumColSpecKeepsEnumColumnType() : Boolean[1]
 {
   let runtime = getM2M2RRuntime();
