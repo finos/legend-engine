@@ -1,0 +1,18 @@
+name: function-test
+title: "Function Tests"
+description: |
+  Two functions carrying tests: one in a test suite and one as a top-level
+  atomic test, exercising the TEST_EXECUTION phase through the function
+  test runner.
+
+modelSources:
+  model:
+    root: function-test
+    files:
+      - model.pure
+
+features:
+  - grammar:function
+complexity: basic
+tags:
+  - function-test
