@@ -95,11 +95,27 @@ function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testTo
    assertEquals('select json_extract_string("root".FIRM_DETAILS, \'$.legalName\') as "Legal Name" from FIRM_TABLE as "root"', $s);
 }
 
+// DuckDB 1.4 casts a JSON[] to JSON as a list of quoted strings, which json_array_length rejects, so array_size takes
+// the length of a LIST with len() and keeps json_array_length for anything else.
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringArraySizeOfSemiStructuredListInDuckDB(): Boolean[1]
+{
+   let s = toSQLString(
+      |meta::relational::tests::sqlQueryToString::duckDB::semiStructured::SemiStructuredFirm.all()
+         ->project([f | $f.officeCount], ['Office Count']),
+      meta::relational::tests::sqlQueryToString::duckDB::semiStructured::semiStructuredTestMapping,
+      meta::relational::runtime::DatabaseType.DuckDB,
+      meta::relational::extension::relationalExtensions()
+   );
+   let offices = 'cast(json_extract("root".FIRM_DETAILS, \'$.offices\') as JSON[])';
+   assertEquals('select ifnull(case when suffix(typeof(' + $offices + '), \']\') then cast(len(' + $offices + ') as UBIGINT) else json_array_length(cast(' + $offices + ' as JSON)) end, 0) as "Office Count" from FIRM_TABLE as "root"', $s);
+}
+
 ###Pure
 Class meta::relational::tests::sqlQueryToString::duckDB::semiStructured::SemiStructuredFirm
 {
    id: Integer[1];
    legalName: String[1];
+   officeCount: Integer[1];
 }
 
 ###Relational
@@ -123,6 +139,7 @@ Mapping meta::relational::tests::sqlQueryToString::duckDB::semiStructured::semiS
       )
       ~mainTable [meta::relational::tests::sqlQueryToString::duckDB::semiStructured::semiStructuredTestDB]FIRM_TABLE
       id: [meta::relational::tests::sqlQueryToString::duckDB::semiStructured::semiStructuredTestDB]FIRM_TABLE.ID,
-      legalName: extractFromSemiStructured([meta::relational::tests::sqlQueryToString::duckDB::semiStructured::semiStructuredTestDB]FIRM_TABLE.FIRM_DETAILS, 'legalName', 'VARCHAR')
+      legalName: extractFromSemiStructured([meta::relational::tests::sqlQueryToString::duckDB::semiStructured::semiStructuredTestDB]FIRM_TABLE.FIRM_DETAILS, 'legalName', 'VARCHAR'),
+      officeCount: array_size(extractFromSemiStructured([meta::relational::tests::sqlQueryToString::duckDB::semiStructured::semiStructuredTestDB]FIRM_TABLE.FIRM_DETAILS, 'offices', 'SEMISTRUCTURED[]'))
    }
 )

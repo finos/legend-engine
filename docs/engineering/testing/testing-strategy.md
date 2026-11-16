@@ -37,7 +37,7 @@ block-beta
 | WireMock | `2.35.2` | Mock HTTP servers for service-store tests |
 | Testcontainers | `1.21.4` | Docker-based integration tests (MongoDB, Postgres, etc.) |
 | H2 | `2.1.214` | In-process SQL database for relational tests |
-| DuckDB | `1.3.0.0` | Local analytical SQL for REPL and PCT tests |
+| DuckDB | `1.4.0.0` | Local analytical SQL for REPL and PCT tests |
 
 ---
 

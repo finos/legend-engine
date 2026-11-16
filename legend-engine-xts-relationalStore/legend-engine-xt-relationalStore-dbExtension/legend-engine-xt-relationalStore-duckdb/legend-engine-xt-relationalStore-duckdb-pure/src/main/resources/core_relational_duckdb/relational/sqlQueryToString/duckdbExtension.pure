@@ -190,7 +190,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='coalesce(array_aggregate(%s, \'sum\'), 0)')),
     dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='array_sort(%s)')),
     dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='array_reverse(%s)')),
-    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(json_array_length(cast(%s as JSON)), 0)')),
+    // A LIST (typed extraction, toMany) is measured with len(): DuckDB 1.4 casts a JSON[] to JSON as a list of quoted
+    // strings, which json_array_length rejects. Anything else (JSON values, JSON text) is still read as JSON.
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(case when suffix(typeof(%s), \']\') then cast(len(%s) as UBIGINT) else json_array_length(cast(%s as JSON)) end, 0)', transform={p:String[1] | [$p, $p, $p]}, parametersWithinWhenClause = [false])),
     dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)')),
     dynaFnToSql('array_position',         $allStates,            ^ToSql(format='(ifnull(array_position(%s, %s), 0)-1)')),
     dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='(%s[greatest(%s + 1, 1) : greatest(%s, 0)])')),
@@ -205,7 +207,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='ifnull(array_contains(%s, %s), false)')),
     dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='array_distinct(%s)')),
     dynaFnToSql('array_to_string',        $allStates,           ^ToSql(format='array_to_string(%s, %s)')),
-    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
+    // '+' rather than date_add(), its alias: DuckDB 1.4 fails date_add() on a window function argument
+    // ("Unimplemented expression class"), e.g. adjust($p->lead($r).date, ...).
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='(%s + %s)', transform={p:String[3] | [$p->at(0), constructIntervalFunction($p->at(2), $p->at(1))] })),
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(cast(%s as BIGINT) & cast(%s as BIGINT))')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ cast(%s as BIGINT))')),
     dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='(cast(%s as BIGINT) | cast(%s as BIGINT))')),
@@ -791,7 +795,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
                | $propertyAccess,
                | '(%s->\'$[%s]\')'->format([$propertyAccess, $p.index->toOne()->cast(@Literal).value->toString()]));,
       a: SemiStructuredArrayElementAccess[1] |
-            if($a.operand->isTypedListForDuckDB(),
+            if($a.operand->isListForDuckDB(),
                | '(%s[%s])'->format([$processedOperand, ($a.index->cast(@Literal).value->toString()->parseInteger() + 1)->toString()]),
                | '(%s->\'$[%s]\')'->format([$processedOperand, $a.index->cast(@Literal).value->toString()]))
    ]);
@@ -802,6 +806,23 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
    if($s.avoidCastIfPrimitive == true || $s->match([a: SemiStructuredArrayElementAccess[1] | $a.operand->isTypedListForDuckDB(), n: SemiStructuredObjectNavigation[1] | false]),
       | $navigation,
       | $navigation->castForDuckDBSemiStructuredData($s.returnType));
+}
+
+// True when the element renders as a DuckDB list, of plain values or of JSON values (JSON[]). A list
+// is indexed from 1 by subscript: DuckDB 1.4 no longer reads a list as JSON, so a JSONPath subscript
+// ('$[i]') on it fails to bind ("No function matches ... json_extract(JSON[], STRING_LITERAL)").
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::isListForDuckDB(element: RelationalOperationElement[1]): Boolean[1]
+{
+   $element->match([
+      f: FilterRelationalLambda[1] | true,
+      d: DynaFunction[1] |
+            if($d.name->in(['variantTo', 'cast']) && ($d.parameters->size() > 1) && $d.parameters->at(1)->instanceOf(meta::relational::metamodel::DataTypeInfo),
+               | $d.parameters->at(1)->cast(@meta::relational::metamodel::DataTypeInfo).dataType->instanceOf(meta::relational::metamodel::datatype::Array),
+               | $d.name->in(['array_sort', 'array_reverse', 'array_append', 'array_slice', 'array_drop', 'array_take', 'array_init', 'array_tail', 'array_distinct', 'array_concatenate'])
+                   && $d.parameters->isNotEmpty()
+                   && $d.parameters->at(0)->isListForDuckDB()),
+      a: RelationalOperationElement[1] | false
+   ]);
 }
 
 // True when the element renders as a DuckDB list of plain values rather than as JSON. Such a list
