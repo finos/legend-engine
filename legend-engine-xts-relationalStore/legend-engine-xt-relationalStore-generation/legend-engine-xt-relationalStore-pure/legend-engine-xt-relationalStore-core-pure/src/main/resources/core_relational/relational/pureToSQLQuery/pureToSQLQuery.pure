@@ -95,6 +95,7 @@ Class meta::relational::functions::pureToSqlQuery::State
    inIsolatedIsEmpty:Boolean[0..1];
    shouldIsolate:Boolean[1];
    propertyMappingFromRouter : PropertyMapping[*];
+   setsFromRouter : RelationFunctionInstanceSetImplementation[*];
    qualifierBase:OperationWithParentPropertyMapping[0..1];
    processingProjectionThread : Boolean[1];
    functionReferenceScope : FunctionParamScope[0..1];
@@ -357,6 +358,41 @@ function meta::relational::functions::pureToSqlQuery::getClassMappingById(state:
   $state.idToClassMapping->getClassMappingById($id);
 }
 
+function meta::relational::functions::pureToSqlQuery::withRouterSetContext(state:State[1], routed:StoreMappingRoutedValueSpecification[1]):State[1]
+{
+  let sourceSets = $routed.value->match([
+    f:FunctionExpression[1] | $f.parametersValues->first()->map(p | $p->sourceSetsFromRouter($routed)),
+    v:ValueSpecification[1] | []
+  ]);
+  // Inline-embedded sets take the target's id but keep the owner's function, so they must not stand in for the target.
+  let sets = $routed.sets->concatenate($sourceSets)->setsWithAttachedOperationMembers()
+      ->filter(s | $s->instanceOf(RelationFunctionInstanceSetImplementation) && !$s->instanceOf(EmbeddedSetImplementation))->cast(@RelationFunctionInstanceSetImplementation)
+      ->filter(s | $s->isRelationFunctionRouted())->removeDuplicatesBy(s | $s.id);
+  ^$state(propertyMappingFromRouter = $routed.propertyMapping, setsFromRouter = $sets,
+    mapping = $routed.mapping,
+    idToClassMapping = if($state.mapping == $routed.mapping, | $state.idToClassMapping, | buildClassMappingsById($routed.mapping)));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::sourceSetsFromRouter(v:ValueSpecification[1], scope:StoreMappingRoutedValueSpecification[1]):SetImplementation[*]
+{
+  $v->match([
+    r:StoreMappingRoutedValueSpecification[1] |
+      if($r.mapping == $scope.mapping && $r.runtime == $scope.runtime && $r.executionContext == $scope.executionContext,
+        | $r.sets, | []),
+    r:FunctionRoutedValueSpecification[1] | $r.value->sourceSetsFromRouter($scope),
+    r:NoSetRoutedValueSpecification[1] | $r.value->sourceSetsFromRouter($scope),
+    v:ValueSpecification[1] | []
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::setsWithAttachedOperationMembers(sets:SetImplementation[*]):SetImplementation[*]
+{
+  $sets->map(s | $s->concatenate($s->match([
+    o:OperationSetImplementation[1] | $o.parameters.setImplementation->setsWithAttachedOperationMembers(),
+    s:SetImplementation[1] | []
+  ])));
+}
+
 function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[0..1], extensions:Extension[*], runtime:meta::core::runtime::Runtime[0..1]):State[1]
 {
    let baseState = defaultState($mapping, $inScopeVars, $exeCtx, $extensions);
@@ -447,7 +483,7 @@ function meta::relational::functions::pureToSqlQuery::processValueSpecificationR
 {
    let res = $vs->evaluateAndDeactivate()->match(
              [
-                 r:StoreMappingRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, ^$state(propertyMappingFromRouter = $r.propertyMapping, mapping = $r.mapping, idToClassMapping=if ($state.mapping == $r.mapping, | $state.idToClassMapping, | buildClassMappingsById($r.mapping))), $joinType, $nodeId, $aggFromMap, $context, $extensions),
+                 r:StoreMappingRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state->withRouterSetContext($r), $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  r:StoreRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  r:FunctionRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  f:FunctionExpression[1] | processFunctionExpression($f, $currentPropertyMapping, $operation, $vars, ^$state(functionExpressionStack+=$f), $joinType, buildNodeId($nodeId,'_d'), $aggFromMap, $context, $extensions),
@@ -5894,13 +5930,8 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression: 
 
 function meta::relational::functions::pureToSqlQuery::processRelationFunctionClassMapping(r:RelationFunctionInstanceSetImplementation[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], milestoningContext:TemporalMilestoningContext[0..1], joinType:JoinType[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-  // Auto-infer PK iff explicit ~primaryKey wasn't set at compile time.
-  let resolved = if($r.primaryKey->isEmpty(),
-    | let pkCols = $r->meta::relational::mapping::resolveRelationFunctionPrimaryKey([], $extensions);
-      ^$r(primaryKey = $pkCols);,
-    | $r
-  );
-  let routedRelationFunction = $resolved->potentiallyRouteRelationFunctionSet($state.mapping->toOne(), $extensions)->cast(@RelationFunctionInstanceSetImplementation).relationFunction;
+  let routed = if($r->isRelationFunctionRouted(), | $r, | $state.setsFromRouter->filter(s | $s.id == $r.id)->first()->defaultIfEmpty($r)->toOne());
+  let routedRelationFunction = $routed->potentiallyRouteRelationFunctionSet($state.mapping->toOne(), $extensions)->cast(@RelationFunctionInstanceSetImplementation).relationFunction;
   let relationExpression = $routedRelationFunction.expressionSequence->evaluateAndDeactivate()->at(0)->cast(@ClusteredValueSpecification).val;
   let newCursor = ^SelectWithCursor(select=^SelectSQLQuery(), milestoningContext=$milestoningContext);
   let newState = defaultState($state.mapping, $state.inScopeVars, $state.idToClassMapping);

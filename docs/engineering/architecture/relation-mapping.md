@@ -646,6 +646,28 @@ like any other RFPM `valueFn`, and the join's target relation is reached via
 the same `potentiallyRouteRelationFunctionSet` path used for `~func`/`~src`
 sources.
 
+**Accessor-only shortcut.** Most relation functions are native relation
+operators over store accessors (`#>{db.T}#->filter(...)->limit(...)`). For
+those the router contributes nothing but the accessor's store and the cluster
+wrapper, so routing builds that cluster directly instead of running the full
+router. A body qualifies only when the router would leave it untouched: no
+Class, property, `getAll` or mapping-dependent reference, only native or
+`shouldStop` functions (so nothing the router would inline or pre-evaluate),
+no unmaterialized col-spec constructors, and exactly one store across the body,
+lambdas and col specs included. Col-spec constructors take the full routing
+path so SQL generation receives materialized specs. Anything else that needs
+routing also takes the full routing path.
+
+**Reusing routed sets in SQL generation.** Every `StoreMappingRoutedValueSpecification`
+carries the sets the router already routed for that expression. pureToSql
+keeps the routed relation function sets of the current expression, its
+source expression and any attached union members in `setsFromRouter`, and
+`processRelationFunctionClassMapping` takes the routed function body from there
+by set id instead of routing the raw mapping body again. Set lookups by id
+(`getClassMappingById`) still return the mapping's own instances, so
+`RelationFunction` owners compare the same way across scopes. Inline-embedded
+sets are excluded: they carry the target's id but the owner's function.
+
 ---
 
 ## 8. Primary-Key Inference
@@ -700,10 +722,11 @@ Pure implementation.
 
 - **At compile time** — no. Third-pass PK resolution only validates
   *explicit* `~primaryKey` names.
-- **Lazily at SQL-generation** — yes. `processRelationFunctionClassMapping`
-  and a handful of property-navigation entry points call
-  `ensureRelationFunctionPrimaryKeyResolved` right before they need PK data.
-  That's what makes PK inference "just work" without a compile-time pass.
+- **Lazily, when needed** — yes. The router infers it on the unrouted body
+  when it routes a set, and SQL-generation entry points
+  (`ensureRelationFunctionPrimaryKeyResolved`, `resolvePrimaryKey`) infer it
+  right before they need PK data. That's what makes PK inference "just work"
+  without a compile-time pass.
 
 Prefer implicit inference for straightforward function bodies; add an explicit
 `~primaryKey` when the body is opaque to the operator table (custom store

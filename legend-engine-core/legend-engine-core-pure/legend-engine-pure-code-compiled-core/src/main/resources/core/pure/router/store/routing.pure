@@ -226,8 +226,108 @@ function meta::pure::router::store::routing::potentiallyRouteRelationFunction(r:
 {
   if(isRelationFunctionRouted($r),
     | $r.relationFunction,
-    | $r.relationFunction->routeFunction(getRoutingStrategy($mapping, $runtime), ^ExecutionContext(), [], $extensions, noDebug())->cast(@FunctionDefinition<{->Relation<Any>[1]}>)
+    | let accessorStore = $r.relationFunction->accessorOnlyRelationFunctionStore($extensions);
+      if($accessorStore->isNotEmpty(),
+        | $r.relationFunction->clusterAccessorOnlyRelationFunction($accessorStore->toOne(), $runtime, $extensions),
+        | $r.relationFunction->routeFunction(getRoutingStrategy($mapping, $runtime), ^ExecutionContext(), [], $extensions, noDebug())->cast(@FunctionDefinition<{->Relation<Any>[1]}>)
+      );
   );
+}
+
+function meta::pure::router::store::routing::accessorOnlyRelationFunctionStore(f:FunctionDefinition<{->Relation<Any>[1]}>[1], extensions:Extension[*]):Store[0..1]
+{
+  let body = $f.expressionSequence->evaluateAndDeactivate();
+  if($body->size() == 1 && $body->toOne()->isAccessorOnlyRelationElement($extensions),
+     | let stores = $body->toOne()->relationStoreAccessorsIn().store->removeDuplicates();
+       if($stores->size() == 1, | $stores->toOne(), | []);,
+     | []
+  );
+}
+
+// Takes Any: also called on raw payloads unwrapped from InstanceValues, including col specs that
+// engine-compiled mappings build as materialised objects.
+function <<access.private>> meta::pure::router::store::routing::isAccessorOnlyRelationElement(v:Any[1], extensions:Extension[*]):Boolean[1]
+{
+  $v->match([
+    fe:FunctionExpression[1]                 | $fe->isAccessorOnlyRelationFunctionExpression($extensions),
+    iv:InstanceValue[1]                      | !$iv->isRoutedAsClass() && $iv.values->forAll(x | $x->isAccessorOnlyRelationElement($extensions)),
+    ve:VariableExpression[1]                 | true,
+    vs:ValueSpecification[1]                 | false,
+    a:RelationStoreAccessor<Any>[1]          | true,
+    e:Enumeration<Any>[1]                    | true,
+    c:Class<Any>[1]                          | false,
+    p:AbstractProperty<Any>[1]               | false,
+    fd:FunctionDefinition<Any>[1]            | $fd.expressionSequence->evaluateAndDeactivate()->forAll(e | $e->isAccessorOnlyRelationElement($extensions)),
+    fc:FuncColSpec<Any,Any>[1]               | $fc.function->isAccessorOnlyRelationElement($extensions),
+    fca:FuncColSpecArray<Any,Any>[1]         | $fca.funcSpecs->forAll(s | $s->isAccessorOnlyRelationElement($extensions)),
+    ac:AggColSpec<Any,Any,Any>[1]            | $ac.map->isAccessorOnlyRelationElement($extensions) && $ac.reduce->isAccessorOnlyRelationElement($extensions),
+    aca:AggColSpecArray<Any,Any,Any>[1]      | $aca.aggSpecs->forAll(s | $s->isAccessorOnlyRelationElement($extensions)),
+    cs:ColSpec<Any>[1]                       | true,
+    csa:ColSpecArray<Any>[1]                 | true,
+    a:Any[1]                                 | $a->type()->instanceOf(PrimitiveType) || $a->type()->instanceOf(Enumeration)
+  ]);
+}
+
+function <<access.private>> meta::pure::router::store::routing::isAccessorOnlyRelationFunctionExpression(fe:FunctionExpression[1], extensions:Extension[*]):Boolean[1]
+{
+  let func = $fe.func;
+  let routerLeavesUnchanged = $func->instanceOf(meta::pure::metamodel::relation::Column) || $func->instanceOf(NativeFunction) || $func->shouldStop($extensions);
+  $routerLeavesUnchanged
+    // SQL generation needs materialized column specs, which full routing produces.
+    && !$func->in(relationColSpecConstructors())
+    && !specializedFunctionExpressionRouterProcessor($extensions)->exists(p | $p.first->eval($fe))
+    && $fe.parametersValues->evaluateAndDeactivate()->forAll(p | $p->isAccessorOnlyRelationElement($extensions));
+}
+
+function <<access.private>> meta::pure::router::store::routing::relationColSpecConstructors():Function<Any>[*]
+{
+  [
+    meta::pure::functions::relation::colSpec_String_1__T_1__ColSpec_1_,
+    meta::pure::functions::relation::colSpecArray_String_MANY__T_1__ColSpecArray_1_,
+    meta::pure::functions::relation::funcColSpec_Function_1__String_1__T_1__FuncColSpec_1_,
+    meta::pure::functions::relation::funcColSpecArray_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+    meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
+    meta::pure::functions::relation::aggColSpecArray_AggColSpec_MANY__P_1__AggColSpecArray_1_
+  ];
+}
+
+function <<access.private>> meta::pure::router::store::routing::isRoutedAsClass(iv:InstanceValue[1]):Boolean[1]
+{
+  let rawType = $iv.genericType.rawType;
+  $iv.values->isEmpty() && $iv.multiplicity == PureOne && $rawType->isNotEmpty()
+    && $rawType->toOne()->instanceOf(Class) && !$rawType->toOne()->subTypeOf(Relation);
+}
+
+function <<access.private>> meta::pure::router::store::routing::relationStoreAccessorsIn(v:Any[1]):RelationStoreAccessor<Any>[*]
+{
+  $v->match([
+    fe:FunctionExpression[1]            | $fe.parametersValues->evaluateAndDeactivate()->map(p | $p->relationStoreAccessorsIn()),
+    iv:InstanceValue[1]                 | $iv.values->map(x | $x->relationStoreAccessorsIn()),
+    a:RelationStoreAccessor<Any>[1]     | $a,
+    fd:FunctionDefinition<Any>[1]       | $fd.expressionSequence->evaluateAndDeactivate()->map(e | $e->relationStoreAccessorsIn()),
+    fc:FuncColSpec<Any,Any>[1]          | $fc.function->relationStoreAccessorsIn(),
+    fca:FuncColSpecArray<Any,Any>[1]    | $fca.funcSpecs->map(s | $s->relationStoreAccessorsIn()),
+    ac:AggColSpec<Any,Any,Any>[1]       | $ac.map->relationStoreAccessorsIn()->concatenate($ac.reduce->relationStoreAccessorsIn()),
+    aca:AggColSpecArray<Any,Any,Any>[1] | $aca.aggSpecs->map(s | $s->relationStoreAccessorsIn()),
+    a:Any[1]                            | []
+  ]);
+}
+
+function <<access.private>> meta::pure::router::store::routing::clusterAccessorOnlyRelationFunction(f:FunctionDefinition<{->Relation<Any>[1]}>[1], store:Store[1], runtime:Runtime[1], extensions:Extension[*]):FunctionDefinition<{->Relation<Any>[1]}>[1]
+{
+  let body = $f.expressionSequence->evaluateAndDeactivate()->toOne();
+  let cluster = ^meta::pure::router::store::metamodel::clustering::StoreClusteredValueSpecification(
+    genericType  = $body.genericType,
+    multiplicity = $body.multiplicity,
+    s            = $extensions->meta::pure::extension::storeContractFromStore($store),
+    store        = $store,
+    runtime      = $runtime,
+    openVars     = $f->openVariableValues(),
+    val          = $body,
+    exeCtx       = ^ExecutionContext(),
+    executable   = true
+  );
+  ^$f(expressionSequence = $cluster);
 }
 
 function <<access.private>> meta::pure::router::store::routing::getRoutingStrategy(mapping:Mapping[1], runtime:Runtime[1]):StoreMappingRoutingStrategy[1]

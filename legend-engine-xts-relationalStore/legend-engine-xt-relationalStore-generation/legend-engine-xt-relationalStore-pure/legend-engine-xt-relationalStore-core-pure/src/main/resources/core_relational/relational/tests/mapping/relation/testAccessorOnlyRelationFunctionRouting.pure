@@ -1,0 +1,408 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::executionPlan::*;
+import meta::pure::extension::*;
+import meta::pure::router::routing::*;
+import meta::pure::tools::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::relation::*;
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::router::store::routing::*;
+import meta::pure::router::store::metamodel::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::relational::tests::mapping::relation::accessorOnly::*;
+
+function meta::relational::tests::mapping::relation::accessorOnly::firmAccessorOnlyFunction():Relation<(ID:Integer[1], legalName:String[1])>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.firmTable}#->limit(10)
+}
+
+function meta::relational::tests::mapping::relation::accessorOnly::personJoinGroupFunction():Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->join(#>{meta::relational::tests::mapping::relation::testDB.groupMembershipTable}#, JoinKind.INNER, {p, g | $p.ID == $g.PERSONID})
+    ->filter(x | $x.GROUPNAME == 'Group C')
+}
+
+function meta::relational::tests::mapping::relation::accessorOnly::personAccessorOnlyFunction():Relation<(ID:Integer[1], 'FIRST NAME':String[1], AGE:Integer[1], FIRMID:Integer[1], EMPLOYEE_TYPE:String[1], IS_MALE:Integer[1], SALARY:Float)>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#->filter(x | $x.AGE > 25)->limit(5)
+}
+
+function meta::relational::tests::mapping::relation::accessorOnly::personViaHelperFunction():Relation<(ID:Integer[1], 'FIRST NAME':String[1], AGE:Integer[1], FIRMID:Integer[1], EMPLOYEE_TYPE:String[1], IS_MALE:Integer[1], SALARY:Float)>[1]
+{
+  meta::relational::tests::mapping::relation::accessorOnly::personAccessorOnlyFunction()
+}
+
+function meta::relational::tests::mapping::relation::accessorOnly::firmViaHelperFunction():Relation<(ID:Integer[1], legalName:String[1])>[1]
+{
+  meta::relational::tests::mapping::relation::accessorOnly::firmAccessorOnlyFunction()
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::accessorOnly::planSql(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1]):String[*]
+{
+  let extensions = meta::relational::extension::relationalExtensions();
+  let plan = executionPlan($query, $mapping, meta::external::store::relational::tests::testRuntime(testDB), $extensions);
+  let sql = $plan.rootExecutionNode->allNodes($extensions)->filter(n | $n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode).sqlQuery;
+  assert($sql->isNotEmpty(), 'Expected SQL execution nodes in the relation mapping plan');
+  $sql;
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::accessorOnly::strategySet(mapping:Mapping[1], id:String[1]):RelationFunctionInstanceSetImplementation[1]
+{
+  getRoutingStrategyFromMappingAndRuntime($mapping, meta::external::store::relational::tests::testRuntime(testDB), meta::relational::extension::relationalExtensions())
+    .mapping->classMappingById($id)->toOne()->cast(@RelationFunctionInstanceSetImplementation);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testFilterAndLimitOverAccessorIsAccessorOnly():Boolean[1]
+{
+  assertEquals(testDB, accessorOnlyRelationFunctionStore(personFunction__Relation_1_, meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testJoinOfTwoAccessorsIsAccessorOnly():Boolean[1]
+{
+  assertEquals(testDB, accessorOnlyRelationFunctionStore(personJoinGroupFunction__Relation_1_, meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testBodyReadingAClassIsNotAccessorOnly():Boolean[1]
+{
+  assertEmpty(accessorOnlyRelationFunctionStore(personFunctionWithProject__Relation_1_, meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testBodyCallingAUserFunctionIsNotAccessorOnly():Boolean[1]
+{
+  assertEmpty(accessorOnlyRelationFunctionStore(personViaHelperFunction__Relation_1_, meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testRoutingStrategyLeavesMappingSetsUnchanged():Boolean[1]
+{
+  [AccessorOnlyMapping, ViaHelperMapping, IncludingAccessorOnlyMapping]->forAll(mapping |
+    let strategy = getRoutingStrategyFromMappingAndRuntime($mapping, meta::external::store::relational::tests::testRuntime(testDB), meta::relational::extension::relationalExtensions());
+    let person = $strategy.mapping->_classMappingByIdRecursive('person')->toOne()->cast(@RelationFunctionInstanceSetImplementation);
+    assert($person->is($mapping->_classMappingByIdRecursive('person')->toOne()), 'Routing must retain the mapping-owned set');
+    assertFalse($person->isRelationFunctionRouted());
+    assertEmpty($person.primaryKey);
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testRoutingResolvesPrimaryKeyWithoutChangingMapping():Boolean[1]
+{
+  [AccessorOnlyMapping, ViaHelperMapping, IncludingAccessorOnlyMapping]->forAll(mapping |
+    let person = routedSet($mapping, 'person');
+    assert($person->isRelationFunctionRouted());
+    assertEquals(['ID'], $person.primaryKey->map(c | $c.name->toOne()));
+    assertEmpty($mapping->classMappingById('person')->toOne()->cast(@RelationFunctionInstanceSetImplementation).primaryKey);
+  );
+}
+
+function meta::relational::tests::mapping::relation::accessorOnly::personAggregateArrayFunction():Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->extend(~[TOTAL_AGE:x | $x.AGE:y | $y->sum()])
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testColumnSpecConstructorsRequireFullRouting():Boolean[1]
+{
+  [pkTestRename__Relation_1_, pkTestSelectKeepingPK__Relation_1_, pkTestExtend__Relation_1_,
+   firmFunctionMixedCase__Relation_1_, personFunctionWithGroupBy__Relation_1_, personAggregateArrayFunction__Relation_1_]
+    ->forAll(f | assertEmpty(accessorOnlyRelationFunctionStore($f, meta::relational::extension::relationalExtensions())));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testAggregateColumnSpecArrayGeneratesSqlAfterRouting():Boolean[1]
+{
+  let extensions = meta::relational::extension::relationalExtensions();
+  let person = strategySet(ViaHelperMapping, 'person');
+  let withAggregate = ^$person(relationFunction = personAggregateArrayFunction__Relation_1_);
+  let cursor = $withAggregate->processRelationFunctionClassMapping(^Map<VariableExpression, ValueSpecification>(),
+    defaultState(ViaHelperMapping, ^Map<String, List<Any>>()), [], meta::relational::metamodel::join::JoinType.LEFT_OUTER, '', noDebug(), $extensions);
+  assert($cursor.select.data->isNotEmpty());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testMaterializedColumnSpecsRemainAccessorOnly():Boolean[1]
+{
+  let f = personAggregateArrayFunction__Relation_1_;
+  let body = $f.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@FunctionExpression);
+  let spec = $body.parametersValues->at(1);
+  let materializedSpec = ^InstanceValue(genericType = $spec.genericType, multiplicity = $spec.multiplicity, values = $spec->reactivate());
+  let materialized = ^$f(expressionSequence = ^$body(parametersValues = [$body.parametersValues->at(0), $materializedSpec]));
+  assertEquals(testDB, accessorOnlyRelationFunctionStore($materialized, meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testShortcutMatchesFullRoutingForProject():Boolean[1]
+{
+  let query = {|Person.all()->project(~[name:x|$x.firstName, age:x|$x.age])};
+  assertEquals(planSql($query, ViaHelperMapping), planSql($query, AccessorOnlyMapping));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testShortcutMatchesFullRoutingForFilterAndAssociation():Boolean[1]
+{
+  let query = {|Person.all()->filter(x|$x.age > 30)->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName])};
+  assertEquals(planSql($query, ViaHelperMapping), planSql($query, AccessorOnlyMapping));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testShortcutMatchesFullRoutingForToManyNavigation():Boolean[1]
+{
+  let query = {|Firm.all()->project(~[firmName:x|$x.legalName, name:x|$x.employees.firstName])};
+  assertEquals(planSql($query, ViaHelperMapping), planSql($query, AccessorOnlyMapping));
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::accessorOnly::routedSet(mapping:Mapping[1], id:String[1]):RelationFunctionInstanceSetImplementation[1]
+{
+  let runtime = meta::external::store::relational::tests::testRuntime(testDB);
+  let extensions = meta::relational::extension::relationalExtensions();
+  let strategy = getRoutingStrategyFromMappingAndRuntime($mapping, $runtime, $extensions);
+  $strategy.mapping->classMappingById($id)->toOne()->potentiallyRouteRelationFunctionSet($strategy.mapping, $runtime, $extensions)->cast(@RelationFunctionInstanceSetImplementation);
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::accessorOnly::routedHelperSet(id:String[1]):RelationFunctionInstanceSetImplementation[1]
+{
+  routedSet(ViaHelperMapping, $id);
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::accessorOnly::sqlRouterContext(sets:SetImplementation[*]):StoreMappingRoutedValueSpecification[1]
+{
+  let query = {|Person.all()};
+  let value = $query.expressionSequence->evaluateAndDeactivate()->toOne();
+  ^StoreMappingRoutedValueSpecification(genericType = $value.genericType, multiplicity = $value.multiplicity,
+    id = 'sql_test', value = $value, sets = $sets, mapping = ViaHelperMapping,
+    runtime = meta::external::store::relational::tests::testRuntime(testDB),
+    executionContext = ^meta::pure::runtime::ExecutionContext(),
+    routingStrategy = getRoutingStrategyFromMappingAndRuntime(ViaHelperMapping, meta::external::store::relational::tests::testRuntime(testDB), meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testSqlContextRetainsRoutedFunctionAndLookupKeepsMappingIdentity():Boolean[1]
+{
+  let person = routedHelperSet('person');
+  let initialState = defaultState(ViaHelperMapping, ^Map<String, List<Any>>());
+  let mappingSet = $initialState->getClassMappingById('person')->toOne();
+  let state = $initialState->withRouterSetContext(sqlRouterContext($person));
+  let resolved = $state->getClassMappingById('person')->toOne()->cast(@RelationFunctionInstanceSetImplementation);
+  assert($resolved->is($mappingSet), 'SQL lookup must retain the indexed mapping instance');
+  assertFalse($resolved->isRelationFunctionRouted());
+  assert($state.setsFromRouter->toOne()->is($person));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testSqlContextRetainsRoutedFunctionWithoutPrimaryKey():Boolean[1]
+{
+  let person = routedHelperSet('person');
+  let withoutKey = ^$person(primaryKey = []);
+  let state = defaultState(ViaHelperMapping, ^Map<String, List<Any>>())->withRouterSetContext(sqlRouterContext($withoutKey));
+  assert($state.setsFromRouter->toOne()->is($withoutKey));
+  let resolved = $state->getClassMappingById('person')->toOne()->cast(@RelationFunctionInstanceSetImplementation);
+  assert($resolved->is($state.idToClassMapping->getClassMappingById('person')->toOne()), 'Expected the raw indexed relation set');
+  assertFalse($resolved->isRelationFunctionRouted());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testSqlLookupKeepsFallbackForAnUnroutedSetWithPrimaryKey():Boolean[1]
+{
+  let person = strategySet(ViaHelperMapping, 'person')->ensureRelationFunctionPrimaryKeyResolved(meta::relational::extension::relationalExtensions());
+  assert($person.primaryKey->isNotEmpty());
+  assertFalse($person->isRelationFunctionRouted());
+  let state = defaultState(ViaHelperMapping, ^Map<String, List<Any>>())->withRouterSetContext(sqlRouterContext($person));
+  assertEmpty($state.setsFromRouter);
+  assert($state->getClassMappingById('person')->toOne()->is($state.idToClassMapping->getClassMappingById('person')->toOne()), 'Expected the raw indexed relation set');
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testSqlRouterContextDistinguishesSetsOfTheSameClass():Boolean[1]
+{
+  let person = routedHelperSet('person');
+  let anotherPerson = ^$person(id = 'anotherPerson');
+  let state = defaultState(ViaHelperMapping, ^Map<String, List<Any>>())->withRouterSetContext(sqlRouterContext([$person, $anotherPerson]));
+  assert($state.setsFromRouter->filter(s | $s.id == 'person')->toOne()->is($person));
+  assert($state.setsFromRouter->filter(s | $s.id == 'anotherPerson')->toOne()->is($anotherPerson));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testSqlRouterContextRetainsBothAssociationEndpoints():Boolean[1]
+{
+  let person = routedHelperSet('person');
+  let firm = routedHelperSet('firm');
+  let source = sqlRouterContext($person);
+  let value = $source.value->cast(@FunctionExpression);
+  let target = ^$source(sets = $firm, value = ^$value(parametersValues = $source));
+  let state = defaultState(ViaHelperMapping, ^Map<String, List<Any>>())->withRouterSetContext($target);
+  assert($state.setsFromRouter->filter(s | $s.id == 'person')->toOne()->is($person));
+  assert($state.setsFromRouter->filter(s | $s.id == 'firm')->toOne()->is($firm));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testSqlRouterContextRetainsNestedOperationMembers():Boolean[1]
+{
+  let person = routedHelperSet('person');
+  let inner = ^OperationSetImplementation(id = 'inner', class = Person, parent = ViaHelperMapping, root = false,
+    operation = meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_,
+    parameters = ^SetImplementationContainer(id = 'person', setImplementation = $person));
+  let outer = ^$inner(id = 'outer', parameters = ^SetImplementationContainer(id = 'inner', setImplementation = $inner));
+  let state = defaultState(ViaHelperMapping, ^Map<String, List<Any>>())->withRouterSetContext(sqlRouterContext($outer));
+  assert($state.setsFromRouter->filter(s | $s.id == 'person')->toOne()->is($person));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testSqlRouterContextDoesNotLeakIntoSiblingExpressions():Boolean[1]
+{
+  let person = routedHelperSet('person');
+  let state = defaultState(ViaHelperMapping, ^Map<String, List<Any>>())->withRouterSetContext(sqlRouterContext($person));
+  let sibling = $state->withRouterSetContext(sqlRouterContext(routedHelperSet('firm')));
+  assert($state.setsFromRouter->filter(s | $s.id == 'person')->toOne()->is($person));
+  assertEquals(['firm'], $sibling.setsFromRouter.id);
+  assert($sibling->getClassMappingById('person')->toOne()->is($sibling.idToClassMapping->getClassMappingById('person')->toOne()), 'A sibling must use the mapping fallback');
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testSqlRouterContextDoesNotImportSourceFromAnotherRuntime():Boolean[1]
+{
+  let originalSource = sqlRouterContext(routedHelperSet('person'));
+  let source = ^$originalSource(runtime = ^meta::core::runtime::Runtime());
+  let target = sqlRouterContext(routedHelperSet('firm'));
+  let value = $target.value->cast(@FunctionExpression);
+  let state = defaultState(ViaHelperMapping, ^Map<String, List<Any>>())->withRouterSetContext(^$target(value = ^$value(parametersValues = $source)));
+  assertEquals(['firm'], $state.setsFromRouter.id);
+  assert($state->getClassMappingById('person')->toOne()->is($state.idToClassMapping->getClassMappingById('person')->toOne()), 'A different runtime must use the mapping fallback');
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testSqlRouterContextRebuildsFallbackForAnotherMapping():Boolean[1]
+{
+  let state = defaultState(ViaHelperMapping, ^Map<String, List<Any>>())->withRouterSetContext(sqlRouterContext(routedHelperSet('person')));
+  let context = sqlRouterContext([]);
+  let other = $state->withRouterSetContext(^$context(mapping = AccessorOnlyMapping));
+  assertEmpty($other.setsFromRouter);
+  assert($other.mapping->toOne()->is(AccessorOnlyMapping));
+  assert($other->getClassMappingById('person')->toOne()->is($other.idToClassMapping->getClassMappingById('person')->toOne()), 'Expected the new mapping index');
+  assertEmpty($other->getClassMappingById('missing'));
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::accessorOnly::rejectHelperRouting():Extension[1]
+{
+  ^Extension(type = 'rejectHelperRouting', availableFeatures = ^FeatureExtension(id = 'rejectHelperRouting',
+    routeFunctionExpressions = pair(
+      fe:FunctionExpression[1] | $fe.func == personAccessorOnlyFunction__Relation_1_,
+      {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*], debug:DebugContext[1] |
+        fail('Unexpected relation function rerouting');
+        $state;
+      }
+    )));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testSqlGenerationReusesRoutedHelperWithoutRoutingAgain():Boolean[1]
+{
+  let person = routedHelperSet('person');
+  let raw = ViaHelperMapping->classMappingById('person')->toOne()->cast(@RelationFunctionInstanceSetImplementation);
+  let extensions = meta::relational::extension::relationalExtensions()->concatenate(rejectHelperRouting());
+  assertError(| $raw->potentiallyRouteRelationFunctionSet(ViaHelperMapping, $extensions), 'Unexpected relation function rerouting');
+  [$person, ^$person(primaryKey = [])]->forAll(routed |
+    let state = defaultState(ViaHelperMapping, ^Map<String, List<Any>>())->withRouterSetContext(sqlRouterContext($routed));
+    let cursor = $raw->processRelationFunctionClassMapping(^Map<VariableExpression, ValueSpecification>(), $state, [],
+      meta::relational::metamodel::join::JoinType.LEFT_OUTER, '', noDebug(), $extensions);
+    assert($cursor.select.data->isNotEmpty());
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testRoutingAnAlreadyRoutedSetKeepsItsIdentity():Boolean[1]
+{
+  let person = routedHelperSet('person');
+  assert($person->potentiallyRouteRelationFunctionSet(ViaHelperMapping, meta::relational::extension::relationalExtensions())->is($person));
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::accessorOnly::clusteredBody(set:RelationFunctionInstanceSetImplementation[1]):ValueSpecification[1]
+{
+  $set.relationFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@meta::pure::router::store::metamodel::clustering::StoreClusteredValueSpecification).val;
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::accessorOnly::rawBody(mapping:Mapping[1], id:String[1]):ValueSpecification[1]
+{
+  $mapping->classMappingById($id)->toOne()->cast(@RelationFunctionInstanceSetImplementation).relationFunction.expressionSequence->evaluateAndDeactivate()->toOne();
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testAccessorOnlySetIsClusteredAroundItsOwnBody():Boolean[1]
+{
+  [pair(AccessorOnlyMapping, 'person'), pair(AccessorOnlyMapping, 'firm'), pair(IncludingAccessorOnlyMapping, 'person')]->forAll(p |
+    assert(routedSet($p.first, $p.second)->clusteredBody()->is(rawBody($p.first, $p.second)), 'Expected the shortcut to cluster the mapping body itself: ' + $p.second);
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testSetCallingAUserFunctionIsRebuiltByFullRouting():Boolean[1]
+{
+  ['person', 'firm']->forAll(id |
+    assertFalse(routedSet(ViaHelperMapping, $id)->clusteredBody()->is(rawBody(ViaHelperMapping, $id)));
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::accessorOnly::testRelationUnionWithEmbeddedFilterStillGeneratesSql():Boolean[1]
+{
+  let extensions = meta::relational::extension::relationalExtensions();
+  let plan = executionPlan(
+    {|meta::relational::tests::model::simple::Person.all()->filter(p | $p.firm.legalName == 'Firm X')->project(~[name:p | $p.lastName])},
+    meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRelationMappingsWithEmbeddedFirm,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::union::myDB), $extensions);
+  let sql = $plan.rootExecutionNode->allNodes($extensions)->filter(n | $n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode).sqlQuery;
+  assertEquals(1, $sql->size());
+  assert($sql->toOne()->toLower()->contains('union'));
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+
+Mapping meta::relational::tests::mapping::relation::accessorOnly::AccessorOnlyMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunction__Relation_1_
+    firstName: 'FIRST NAME',
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::accessorOnly::firmAccessorOnlyFunction__Relation_1_
+    legalName: legalName,
+    +id: Integer[1]: ID
+  }
+
+  Person_Firm: XStore
+  {
+    employees[firm, person]: $this.id == $that.firmId,
+    firm[person, firm]: $this.firmId == $that.id
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::accessorOnly::ViaHelperMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::accessorOnly::personViaHelperFunction__Relation_1_
+    firstName: 'FIRST NAME',
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::accessorOnly::firmViaHelperFunction__Relation_1_
+    legalName: legalName,
+    +id: Integer[1]: ID
+  }
+
+  Person_Firm: XStore
+  {
+    employees[firm, person]: $this.id == $that.firmId,
+    firm[person, firm]: $this.firmId == $that.id
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::accessorOnly::IncludingAccessorOnlyMapping
+(
+  include meta::relational::tests::mapping::relation::accessorOnly::AccessorOnlyMapping
+)
