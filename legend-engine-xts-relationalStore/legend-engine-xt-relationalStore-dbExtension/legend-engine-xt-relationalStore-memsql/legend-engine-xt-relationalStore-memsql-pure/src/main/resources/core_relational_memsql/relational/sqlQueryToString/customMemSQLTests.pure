@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::relational::functions::sqlstring::*;
+import meta::relational::functions::asserts::*;
 
 Class meta::relational::memsql::tests::db::A
 {
@@ -29,7 +30,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testQuoteIdentifiers
       true,
       meta::relational::extension::relationalExtensions());
 
-  assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
+  assertSameSQL('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::db::testReservedKeywords() : Boolean[1]
@@ -40,7 +41,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testReservedKeywords
       meta::relational::runtime::DatabaseType.MemSQL, 
       meta::relational::extension::relationalExtensions());
 
-  assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
+  assertSameSQL('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::db::testWeekOfYear() : Boolean[1]
@@ -51,7 +52,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testWeekOfYear() : B
         meta::relational::runtime::DatabaseType.MemSQL,
         meta::relational::extension::relationalExtensions());
 
-    assertEquals('select weekofyear(date(`root`.dateTime)) as `week` from dataTable as `root`', $result);
+    assertSameSQL('select weekofyear(date(`root`.dateTime)) as `week` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::db::testDayOfYear() : Boolean[1]
@@ -62,7 +63,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testDayOfYear() : Bo
         meta::relational::runtime::DatabaseType.MemSQL,
         meta::relational::extension::relationalExtensions());
 
-    assertEquals('select dayofyear(date(`root`.dateTime)) as `doy` from dataTable as `root`', $result);
+    assertSameSQL('select dayofyear(date(`root`.dateTime)) as `doy` from dataTable as `root`', $result);
 }
 
 function meta::relational::memsql::tests::db::allTypesColumnsForMemSQL() : meta::relational::metamodel::Column[*]
@@ -101,7 +102,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testCreateTableForMe
   );
   let createTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $table);
   let result = $createTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
-  assertEquals('Create Table hr.allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float FLOAT,col_double DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_numeric NUMERIC(12, 4),col_timestamp DATETIME(6),col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_binary BINARY(512),col_json JSON,col_ubigint BIGINT UNSIGNED,col_uint INT UNSIGNED,col_utinyint TINYINT UNSIGNED);', $result->toOne());
+  assertSameSQL('Create Table hr.allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float FLOAT,col_double DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_numeric NUMERIC(12, 4),col_timestamp DATETIME(6),col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_binary BINARY(512),col_json JSON,col_ubigint BIGINT UNSIGNED,col_uint INT UNSIGNED,col_utinyint TINYINT UNSIGNED);', $result->toOne());
 
   // Default schema -> no schema prefix
   let defaultTable = ^meta::relational::metamodel::relation::Table(
@@ -111,7 +112,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testCreateTableForMe
   );
   let defaultCreateTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $defaultTable);
   let defaultResult = $defaultCreateTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
-  assertEquals('Create Table allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float FLOAT,col_double DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_numeric NUMERIC(12, 4),col_timestamp DATETIME(6),col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_binary BINARY(512),col_json JSON,col_ubigint BIGINT UNSIGNED,col_uint INT UNSIGNED,col_utinyint TINYINT UNSIGNED);', $defaultResult->toOne());
+  assertSameSQL('Create Table allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float FLOAT,col_double DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_numeric NUMERIC(12, 4),col_timestamp DATETIME(6),col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_binary BINARY(512),col_json JSON,col_ubigint BIGINT UNSIGNED,col_uint INT UNSIGNED,col_utinyint TINYINT UNSIGNED);', $defaultResult->toOne());
 }
 
 ###Relational

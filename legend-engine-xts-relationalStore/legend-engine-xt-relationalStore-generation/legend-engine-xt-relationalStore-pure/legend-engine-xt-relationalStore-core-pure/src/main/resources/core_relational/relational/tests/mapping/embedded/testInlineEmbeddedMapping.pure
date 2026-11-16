@@ -27,6 +27,7 @@ import meta::relational::tests::mapping::embedded::advanced::model::*;
 import meta::relational::tests::mapping::embedded::advanced::mapping::*;
 import meta::relational::tests::mapping::embedded::advanced::store::*;
 import meta::relational::tests::mapping::embedded::advanced::*;
+import meta::relational::functions::asserts::*;
 
 
 function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Runtime[1]
@@ -42,7 +43,7 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
                          , testMappingEmbedded, testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('name,description\n' + 'Product 1,Bond 1\n' + 'Product 2,Bond 2\n' + 'Product 3,SuperBond 3 super\n', $result.values->toOne()->toCSV());
-  assertEquals('select "root".PRODUCT_NAME as "name", "root".BOND_DETAILS as "description" from PRODUCT_DENORM as "root"', $result->sqlRemoveFormatting());
+  assertSameSQL('select "root".PRODUCT_NAME as "name", "root".BOND_DETAILS as "description" from PRODUCT_DENORM as "root"', $result->sqlRemoveFormatting());
 
    true;
  }
@@ -54,7 +55,7 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
                                      , testMappingEmbedded, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('name,type\n' + 'Product 3,7 weeks\n', $result.values->toOne()->toCSV());
-   assertEquals('select "root".PRODUCT_NAME as "name", "root".BOND_TYPE as "type" from PRODUCT_DENORM as "root" where "root".BOND_TYPE = \'7 weeks\'', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".PRODUCT_NAME as "name", "root".BOND_TYPE as "type" from PRODUCT_DENORM as "root" where "root".BOND_TYPE = \'7 weeks\'', $result->sqlRemoveFormatting());
 
  }
 
@@ -67,7 +68,7 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
 
 
    assertEquals('name,type\n' + 'Product 1,5 years\n' + 'Product 2,5 years\n', $result.values->toOne()->toCSV());
-   assertEquals('select "root".PRODUCT_NAME as "name", "root".BOND_TYPE as "type" from PRODUCT_DENORM as "root" where "root".BOND_TYPE like \'5%\' and "root".BOND_DETAILS like \'Bond%\'', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".PRODUCT_NAME as "name", "root".BOND_TYPE as "type" from PRODUCT_DENORM as "root" where "root".BOND_TYPE like \'5%\' and "root".BOND_DETAILS like \'Bond%\'', $result->sqlRemoveFormatting());
   }
 
 
@@ -81,7 +82,7 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
                                   ), testMappingEmbedded,testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('Bond Type,Profit\n' + '5 years,10.0\n' + '7 weeks,1.0\n', $result.values->toOne()->toCSV());
-   assertEqualsH2Compatible(
+   assertSameSQLH2Compatible(
     'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then 5.0 else 1.0 end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"',
     'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then cast(5.0 as float) else cast(1.0 as float) end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"',
     $result->sqlRemoveFormatting()
@@ -98,7 +99,7 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
                                   ), testMappingEmbedded, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('Bond Type,sum\n' + '5 years,10.0\n' + '7 weeks,1.0\n', $result.values->toOne()->toCSV());
-   assertEqualsH2Compatible(
+   assertSameSQLH2Compatible(
     'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"',
     'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then cast(5.0 as float) else cast(1.0 as float) end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"',
     $result->sqlRemoveFormatting()
@@ -112,7 +113,7 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
                                      , testMappingEmbedded, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('name,duration\n' + 'Product 1,5\n' + 'Product 2,5\n', $result.values->toOne()->toCSV());
-   assertEquals('select "root".PRODUCT_NAME as "name", case when "root".BOND_TYPE like \'5%\' then 5 else 0 end as "duration" from PRODUCT_DENORM as "root" where case when "root".BOND_TYPE like \'5%\' then 5 else 0 end = \'5\'', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".PRODUCT_NAME as "name", case when "root".BOND_TYPE like \'5%\' then 5 else 0 end as "duration" from PRODUCT_DENORM as "root" where case when "root".BOND_TYPE like \'5%\' then 5 else 0 end = \'5\'', $result->sqlRemoveFormatting());
 
  }
 
@@ -120,7 +121,7 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
  {
    let result = execute(|Product.all()->filter(p|$p.name == 'Product 1')->project([p| $p.name, p| $p.bondDetails.bondClassification.type], ['name','bondClassification']), testMappingEmbeddedParent, testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
    assertEquals('name,bondClassification\n' + 'Product 1,Corporate\n', $result.values->toOne()->toCSV());
-   assertEquals('select "root".PRODUCT_NAME as "name", "bondclassificationtable_0".type as "bondClassification" from PRODUCT_DENORM as "root" left outer join BondClassificationTable as "bondclassificationtable_0" on ("root".PRODUCT_ID = "bondclassificationtable_0".PRODUCT_ID) where "root".PRODUCT_NAME = \'Product 1\'', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".PRODUCT_NAME as "name", "bondclassificationtable_0".type as "bondClassification" from PRODUCT_DENORM as "root" left outer join BondClassificationTable as "bondclassificationtable_0" on ("root".PRODUCT_ID = "bondclassificationtable_0".PRODUCT_ID) where "root".PRODUCT_NAME = \'Product 1\'', $result->sqlRemoveFormatting());
  }
 
  function <<test.ToFix>> meta::relational::tests::mapping::embedded::advanced::testProjectionWithMultipleRootMappings():Boolean[1]

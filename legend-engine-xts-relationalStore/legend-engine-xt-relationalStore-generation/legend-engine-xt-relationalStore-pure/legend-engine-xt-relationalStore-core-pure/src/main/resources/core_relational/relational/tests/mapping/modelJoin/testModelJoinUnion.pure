@@ -21,6 +21,7 @@ import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::tests::mapping::modelJoin::domain::*;
 import meta::relational::tests::mapping::modelJoin::union::*;
+import meta::relational::functions::asserts::*;
 
 // =============================================================================
 // Union source: Person = union(fullTimeTable, contractTable), Firm = simple.
@@ -71,7 +72,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'left outer join (select "root".FIRMID as firmId, "root".FIRSTNAME as "fullTimeTableFIRSTNAME_contractTableFIRSTNAME" ' +
     'from fullTimeTable as "root" union all select "root".FIRMID as firmId, "root".FIRSTNAME as "fullTimeTableFIRSTNAME_contractTableFIRSTNAME" ' +
     'from contractTable as "root") as "unionalias_0" on ("unionalias_0".firmId = "root".ID)';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -140,7 +141,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'left outer join (select "root".FIRMID as firmId, "root".FIRSTNAME as "fullTimeTableFIRSTNAME_contractTableFIRSTNAME" ' +
     'from fullTimeTable as "root" union all select "root".FIRMID as firmId, "root".FIRSTNAME as "fullTimeTableFIRSTNAME_contractTableFIRSTNAME" ' +
     'from contractTable as "root") as "unionalias_1" on ("unionalias_1".firmId = "unionBase".id)';
-  assertEquals($expectedSql, $result->sql()); 
+  assertSameSQL($expectedSql, $result->sql()); 
 
   assertEquals(
     #TDS
@@ -208,7 +209,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'where exists (select 1 from (select "root".FIRMID as firmId, "root".AGE as "fullTimeTableAGE_contractTableAGE" ' +
     'from fullTimeTable as "root" union all select "root".FIRMID as firmId, "root".AGE as "fullTimeTableAGE_contractTableAGE" ' +
     'from contractTable as "root") as "unionalias_1" where "unionalias_1".firmId = "root".ID and "unionalias_1"."fullTimeTableAGE_contractTableAGE" > 30)';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -268,7 +269,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'left outer join (select "root".FIRMID as firmId from fullTimeTable as "root" union all select "root".FIRMID as firmId ' +
     'from contractTable as "root") as "unionalias_0" on ("unionalias_0".firmId = "firmtable_2".ID) ' +
     'group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -289,7 +290,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
 function <<test.Test>> meta::relational::tests::mapping::modelJoin::union::testDirectRelationFunctionJoinOnNotNullKeyIsPlainEqualInFilter():Boolean[1]
 {
   let sql = meta::relational::functions::sqlstring::toSQLString(|meta::relational::tests::mapping::modelJoin::domain::Firm.all()->filter(f | $f.employees->exists(e | $e.lastName == 'Smith')), meta::relational::tests::mapping::modelJoin::union::DirectRelationFunctionMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
-  assertEquals('select "dbAccessor_d#4".ID as "ID", "dbAccessor_d#4".LEGALNAME as "LEGALNAME", "dbAccessor_d#4".CITY as "CITY", "dbAccessor_d#4".COUNTRY as "COUNTRY", "dbAccessor_d#4".CODE as "CODE" from (select "_sub_d#2".ID as ID, "_sub_d#2".LEGALNAME as LEGALNAME, "_sub_d#2".CITY as CITY, "_sub_d#2".COUNTRY as COUNTRY, "_sub_d#2".CODE as CODE from firmTable as "_sub_d#2") as "dbAccessor_d#4" where exists (select 1 from (select "dbAccessor_d#3_mj_tgt_d#2".ID as "ID", "dbAccessor_d#3_mj_tgt_d#2".FIRSTNAME as "FIRSTNAME", "dbAccessor_d#3_mj_tgt_d#2".LASTNAME as "LASTNAME", "dbAccessor_d#3_mj_tgt_d#2".FIRMID as "FIRMID", "dbAccessor_d#3_mj_tgt_d#2".AGE as "AGE" from (select "_sub_d#3_mj_tgt".ID as ID, "_sub_d#3_mj_tgt".FIRSTNAME as FIRSTNAME, "_sub_d#3_mj_tgt".LASTNAME as LASTNAME, "_sub_d#3_mj_tgt".FIRMID as FIRMID, "_sub_d#3_mj_tgt".AGE as AGE from fullTimeTable as "_sub_d#3_mj_tgt" where "_sub_d#3_mj_tgt".LASTNAME = \'Smith\') as "dbAccessor_d#3_mj_tgt_d#2" where "dbAccessor_d#3_mj_tgt_d#2".LASTNAME = \'Smith\') as "dbAccessor_d#3_mj_tgt_d#2__d#3_mj_tgt_d#3_mj_tgt_d#3" where "dbAccessor_d#3_mj_tgt_d#2__d#3_mj_tgt_d#3_mj_tgt_d#3"."FIRMID" = "dbAccessor_d#4"."ID" and "dbAccessor_d#3_mj_tgt_d#2__d#3_mj_tgt_d#3_mj_tgt_d#3"."LASTNAME" = \'Smith\')', $sql);
+  assertSameSQL('select "dbAccessor_d#4".ID as "ID", "dbAccessor_d#4".LEGALNAME as "LEGALNAME", "dbAccessor_d#4".CITY as "CITY", "dbAccessor_d#4".COUNTRY as "COUNTRY", "dbAccessor_d#4".CODE as "CODE" from (select "_sub_d#2".ID as ID, "_sub_d#2".LEGALNAME as LEGALNAME, "_sub_d#2".CITY as CITY, "_sub_d#2".COUNTRY as COUNTRY, "_sub_d#2".CODE as CODE from firmTable as "_sub_d#2") as "dbAccessor_d#4" where exists (select 1 from (select "dbAccessor_d#3_mj_tgt_d#2".ID as "ID", "dbAccessor_d#3_mj_tgt_d#2".FIRSTNAME as "FIRSTNAME", "dbAccessor_d#3_mj_tgt_d#2".LASTNAME as "LASTNAME", "dbAccessor_d#3_mj_tgt_d#2".FIRMID as "FIRMID", "dbAccessor_d#3_mj_tgt_d#2".AGE as "AGE" from (select "_sub_d#3_mj_tgt".ID as ID, "_sub_d#3_mj_tgt".FIRSTNAME as FIRSTNAME, "_sub_d#3_mj_tgt".LASTNAME as LASTNAME, "_sub_d#3_mj_tgt".FIRMID as FIRMID, "_sub_d#3_mj_tgt".AGE as AGE from fullTimeTable as "_sub_d#3_mj_tgt" where "_sub_d#3_mj_tgt".LASTNAME = \'Smith\') as "dbAccessor_d#3_mj_tgt_d#2" where "dbAccessor_d#3_mj_tgt_d#2".LASTNAME = \'Smith\') as "dbAccessor_d#3_mj_tgt_d#2__d#3_mj_tgt_d#3_mj_tgt_d#3" where "dbAccessor_d#3_mj_tgt_d#2__d#3_mj_tgt_d#3_mj_tgt_d#3"."FIRMID" = "dbAccessor_d#4"."ID" and "dbAccessor_d#3_mj_tgt_d#2__d#3_mj_tgt_d#3_mj_tgt_d#3"."LASTNAME" = \'Smith\')', $sql);
 }
 
 // =============================================================================
@@ -347,7 +348,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'from fullTimeTable as "root" union all select "root".FIRMID as firmId, ' +
     '"root".AGE as "fullTimeTableAGE_contractTableAGE" from contractTable as "root") as "unionalias_1" ' +
     'where "unionalias_1".firmId = "root".ID and "unionalias_1"."fullTimeTableAGE_contractTableAGE" > 30)';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -481,7 +482,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'union all select null as "pk_0_0", "root".ID as "pk_0_1", ' +
     '"root".LEGALNAME as "firmTableLEGALNAME_firmTableBLEGALNAME", "root".ID as id from firmTableB as "root") as "unionBase" ' +
     'left outer join contractTable as "contracttable_0" on ("contracttable_0".FIRMID = "unionBase".id)';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS

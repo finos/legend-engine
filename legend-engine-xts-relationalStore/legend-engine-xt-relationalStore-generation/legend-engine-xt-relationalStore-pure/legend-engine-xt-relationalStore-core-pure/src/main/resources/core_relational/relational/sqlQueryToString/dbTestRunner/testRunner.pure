@@ -26,6 +26,7 @@ import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::functions::typeInference::*;
 import meta::relational::mapping::*;
 import meta::relational::dbTestRunner::*;
+import meta::relational::functions::asserts::*;
 
 function meta::relational::dbTestRunner::runSqlQueryTest(sqlQuery:SQLQuery[1], expectedResult:Literal[1..*], equalityComparator: Function<{Any[1..*],Any[1..*]->Boolean[1]}>[0..1] , testConfig:DbTestConfig[1]): Boolean[1]
 {
@@ -38,7 +39,7 @@ function meta::relational::dbTestRunner::runSqlQueryTest(sqlQuery:SQLQuery[1], e
   let sqlString = sqlQueryToString($sqlQuery, $testConfig.dbType, $extensions);
 
   if($testConfig.expectedSql->isNotEmpty(),
-      | assertEquals($testConfig.expectedSql->toOne(), $sqlString),
+      | assertSameSQL($testConfig.expectedSql->toOne(), $sqlString),
       | true
     );
 

@@ -21,6 +21,7 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testSimpleConcatenate():Boolean[1]
 {
@@ -39,7 +40,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testSimpleC
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -64,7 +65,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testMultiCo
    assertEquals('Allen_0,Allen_1,Allen_2,Allen_3,Harris_0,Harris_1,Harris_2,Harris_3,Hill_0,Hill_0,Hill_1,Hill_1,Hill_2,Hill_2,Hill_3,Hill_3,Johnson_0,Johnson_1,Johnson_2,Johnson_3,Roberts_0,Roberts_1,Roberts_2,Roberts_3,Smith_0,Smith_1,Smith_2,Smith_3',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select concat("root".LASTNAME, \'_0\') as "lastName" from personTable as "root" union all select concat("root".LASTNAME, \'_1\') as "lastName" from personTable as "root" union all select concat("root".LASTNAME, \'_2\') as "lastName" from personTable as "root" union all select concat("root".LASTNAME, \'_3\') as "lastName" from personTable as "root") as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select concat("root".LASTNAME, \'_0\') as "lastName" from personTable as "root" union all select concat("root".LASTNAME, \'_1\') as "lastName" from personTable as "root" union all select concat("root".LASTNAME, \'_2\') as "lastName" from personTable as "root" union all select concat("root".LASTNAME, \'_3\') as "lastName" from personTable as "root") as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -86,7 +87,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME is distinct from \'hello\' union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME is distinct from \'hello\' union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -107,7 +108,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME is distinct from \'hello\') as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME is distinct from \'hello\') as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -129,7 +130,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Harris,Hill,Hill,Johnson,Roberts,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\' union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\' union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -150,7 +151,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Harris,Hill,Hill,Johnson,Roberts,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\') as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\') as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -172,7 +173,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where "unionalias_0"."lastName" is distinct from \'hello\'',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where "unionalias_0"."lastName" is distinct from \'hello\'',
       $result->sqlRemoveFormatting());
 }
 
@@ -194,7 +195,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where "unionalias_0"."lastName" = \'hello\'',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where "unionalias_0"."lastName" = \'hello\'',
       $result->sqlRemoveFormatting());
 }
 
@@ -218,7 +219,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen|Anthony,Allen|Anthony,Harris|David,Harris|David,Hill|John,Hill|John,Hill|John,Hill|John,Hill|Oliver,Hill|Oliver,Hill|Oliver,Hill|Oliver,Johnson|John,Johnson|John,Roberts|Fabrice,Roberts|Fabrice,Smith|Peter,Smith|Peter',
      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lhs_lastName" as "lhs_lastName", "unionalias_0"."rhs_firstName" as "rhs_firstName" from (select "unionalias_1"."lhs_lastName" as "lhs_lastName", "persontable_1"."rhs_lastName" as "rhs_lastName", "persontable_1"."rhs_firstName" as "rhs_firstName" from (select "unionalias_2"."lhs_lastName" as "lhs_lastName" from (select "root".LASTNAME as "lhs_lastName" from personTable as "root" union all select "root".LASTNAME as "lhs_lastName" from personTable as "root") as "unionalias_2") as "unionalias_1" inner join (select "root".LASTNAME as "rhs_lastName", "root".FIRSTNAME as "rhs_firstName" from personTable as "root") as "persontable_1" on ("unionalias_1"."lhs_lastName" = "persontable_1"."rhs_lastName")) as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lhs_lastName" as "lhs_lastName", "unionalias_0"."rhs_firstName" as "rhs_firstName" from (select "unionalias_1"."lhs_lastName" as "lhs_lastName", "persontable_1"."rhs_lastName" as "rhs_lastName", "persontable_1"."rhs_firstName" as "rhs_firstName" from (select "unionalias_2"."lhs_lastName" as "lhs_lastName" from (select "root".LASTNAME as "lhs_lastName" from personTable as "root" union all select "root".LASTNAME as "lhs_lastName" from personTable as "root") as "unionalias_2") as "unionalias_1" inner join (select "root".LASTNAME as "rhs_lastName", "root".FIRSTNAME as "rhs_firstName" from personTable as "root") as "persontable_1" on ("unionalias_1"."lhs_lastName" = "persontable_1"."rhs_lastName")) as "unionalias_0"',
      $result->sqlRemoveFormatting());
 
 }

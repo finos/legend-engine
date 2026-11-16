@@ -128,6 +128,17 @@ mvn verify -Pintegration-test                # Docker-based (Testcontainers)
 
 Class naming: `Test<Subject>` (preferred) or `<Subject>Test` (legacy), `Test<Subject>WithH2` for H2-backed integration, `PCT<Store>_<Dialect>_Test` for PCT variants.
 
+### SQL assertions in relational Pure tests
+
+Assert generated SQL text only through the family in `meta::relational::functions::asserts`
+(`core_relational/relational/tests/testAssert.pure`): `assertSameSQL`, `assertSameSQLs`,
+`assertSQLContains`, `assertSQLDoesNotContain`, `assertSQLStartsWith`, `assertSQLMatches`.
+Never use a bare `assertEquals`, `->contains(...)` or `->startsWith(...)` on a SQL string: the family is the
+single place that honours `SqlAssertMode` (compiled runs: `-Dpure.options.SqlAssertModeSkip=true` or
+`-Dpure.options.SqlAssertModeLog=true`), which lets other flows (TDS v2 comparison, optimizer sweeps) switch SQL
+comparison off without editing tests, and a guard test (`assertNoSqlAssertBypasses`, one per dialect module that has a
+test runner) fails on bypasses. Assert result rows alongside the SQL wherever the test can execute the query.
+
 ### PCT (Pure Compatibility Tests)
 
 PCT is how cross-store behavioural parity is enforced. Pure functions marked `<<PCT.test>>` run against every registered store. Default-profile stores (run on every PR): **H2, DuckDB, Java binding**. Cloud stores (`pct-cloud-test` profile, CI-only, requires secrets): Postgres, Snowflake, BigQuery, Databricks, Spanner, MemSQL.

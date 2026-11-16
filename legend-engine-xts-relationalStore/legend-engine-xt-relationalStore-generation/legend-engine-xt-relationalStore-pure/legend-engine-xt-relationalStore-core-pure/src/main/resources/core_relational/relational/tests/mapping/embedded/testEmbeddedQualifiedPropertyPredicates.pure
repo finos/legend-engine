@@ -120,6 +120,7 @@ Mapping meta::relational::tests::mapping::embedded::qualifiedProperty::Otherwise
 ###Pure
 import meta::relational::functions::sqlstring::*;
 import meta::relational::tests::mapping::embedded::qualifiedProperty::*;
+import meta::relational::functions::asserts::*;
 
 function meta::relational::tests::mapping::embedded::qualifiedProperty::toH2SQL(query: FunctionDefinition<{->Any[*]}>[1], mapping: meta::pure::mapping::Mapping[1]): String[1]
 {
@@ -128,7 +129,7 @@ function meta::relational::tests::mapping::embedded::qualifiedProperty::toH2SQL(
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProperty::testQualifiedPropertyOfEmbeddedClassInIsNotEmpty():Boolean[1]
 {
-  assertEquals(
+  assertSameSQL(
     'select "root".name as "n" from EmployeeTable as "root" where concat("root".deptName, \'!\') is not null',
     toH2SQL(|Employee.all()->filter(e | $e.dept.label()->isNotEmpty())->project([e | $e.name], ['n']), EmbeddedMapping)
   );
@@ -136,7 +137,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProp
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProperty::testQualifiedPropertyOfEmbeddedClassUsingIsEmptyOnThis():Boolean[1]
 {
-  assertEquals(
+  assertSameSQL(
     'select case when concat("root".deptName, \'!\') is null then \'none\' else concat("root".deptName, \'!\') end as "c" from EmployeeTable as "root"',
     toH2SQL(|Employee.all()->project([e | $e.dept.center()], ['c']), EmbeddedMapping)
   );
@@ -144,7 +145,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProp
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProperty::testQualifiedPropertyOfInlineEmbeddedClassInIsNotEmpty():Boolean[1]
 {
-  assertEquals(
+  assertSameSQL(
     'select "root".name as "n" from EmployeeTable as "root" where concat("root".deptName, \'!\') is not null',
     toH2SQL(|Employee.all()->filter(e | $e.dept.label()->isNotEmpty())->project([e | $e.name], ['n']), InlineEmbeddedMapping)
   );
@@ -152,7 +153,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProp
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProperty::testQualifiedPropertyOfOtherwiseEmbeddedClassInIsNotEmpty():Boolean[1]
 {
-  assertEquals(
+  assertSameSQL(
     'select "root".name as "n" from EmployeeTable as "root" where concat("root".deptName, \'!\') is not null',
     toH2SQL(|Employee.all()->filter(e | $e.dept.label()->isNotEmpty())->project([e | $e.name], ['n']), OtherwiseEmbeddedMapping)
   );
@@ -160,7 +161,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProp
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProperty::testQualifiedPropertyOfEmbeddedClassInSize():Boolean[1]
 {
-  assertEquals(
+  assertSameSQL(
     'select count(concat("root".deptName, \'!\')) as "s" from EmployeeTable as "root"',
     toH2SQL(|Employee.all()->project([e | $e.dept.label()->size()], ['s']), EmbeddedMapping)
   );
@@ -168,7 +169,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProp
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProperty::testMilestonedPropertyOfEmbeddedClassInIsNotEmpty():Boolean[1]
 {
-  assertEquals(
+  assertSameSQL(
     'select "root".name as "n" from EmployeeTable as "root" left outer join OfficeTable as "OfficeTable_d#9_d#2_m1" on ("root".officeId = "OfficeTable_d#9_d#2_m1".id and "OfficeTable_d#9_d#2_m1".from_z <= DATE\'2020-01-01\' and "OfficeTable_d#9_d#2_m1".thru_z > DATE\'2020-01-01\') where "OfficeTable_d#9_d#2_m1".name is not null',
     toH2SQL(|Employee.all()->filter(e | $e.dept.office(%2020-01-01).name->isNotEmpty())->project([e | $e.name], ['n']), EmbeddedMapping)
   );
@@ -176,7 +177,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProp
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::qualifiedProperty::testQualifiedPropertyOfEmbeddedClassNavigatingMilestonedPropertyOnThis():Boolean[1]
 {
-  assertEquals(
+  assertSameSQL(
     'select "root".name as "n", "OfficeTable_d#9_d_m2".name as "o" from EmployeeTable as "root" left outer join OfficeTable as "OfficeTable_d#11_d#2_m1" on ("root".officeId = "OfficeTable_d#11_d#2_m1".id and "OfficeTable_d#11_d#2_m1".from_z <= DATE\'2020-01-01\' and "OfficeTable_d#11_d#2_m1".thru_z > DATE\'2020-01-01\') left outer join OfficeTable as "OfficeTable_d#9_d_m2" on ("root".officeId = "OfficeTable_d#9_d_m2".id and "OfficeTable_d#9_d_m2".from_z <= DATE\'2020-01-01\' and "OfficeTable_d#9_d_m2".thru_z > DATE\'2020-01-01\') where "OfficeTable_d#11_d#2_m1".name is not null',
     toH2SQL(|Employee.all()->filter(e | $e.dept.officeName(%2020-01-01)->isNotEmpty())->project([e | $e.name, e | $e.dept.officeName(%2020-01-01)], ['n', 'o']), EmbeddedMapping)
   );

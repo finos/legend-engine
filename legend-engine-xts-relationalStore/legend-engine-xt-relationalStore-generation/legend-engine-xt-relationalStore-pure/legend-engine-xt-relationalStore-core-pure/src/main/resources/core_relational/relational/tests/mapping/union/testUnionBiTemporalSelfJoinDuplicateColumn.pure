@@ -31,7 +31,8 @@ function <<test.Test>> meta::relational::tests::mapping::union::biTemporal::test
       biTemporalTestRuntime(),
       meta::relational::extension::relationalExtensions()
    );
-     assertEquals('select "unionBase"."BENEFICIARYLast_Name_CUSTOMERLast_Name" as "Name", "customer_1".Email as "Email" from (select "root".lake_from as "lake_from_0", "root".lake_thru as "lake_thru_0", null as "lake_from_1", null as "lake_thru_1", "root".Beneficiary_Id as "pk_0_0", "root".Account_Id as "pk_1_0", "root".As_Of_Date as "pk_2_0", null as "pk_0_1", null as "pk_1_1", "root".Last_Name as "BENEFICIARYLast_Name_CUSTOMERLast_Name", null as Customer_ID_1, null as Terminated_Record_Flag_1 from OLAP.BENEFICIARY as "root" where "root".lake_from <= DATE\'2024-10-30\' and "root".lake_thru > DATE\'2024-10-30\' union all select null as "lake_from_0", null as "lake_thru_0", "root".lake_from as "lake_from_1", "root".lake_thru as "lake_thru_1", null as "pk_0_0", null as "pk_1_0", null as "pk_2_0", "root".Customer_ID as "pk_0_1", "root".As_Of_Date as "pk_1_1", "root".Last_Name as "BENEFICIARYLast_Name_CUSTOMERLast_Name", "root".Customer_ID as Customer_ID_1, "root".Terminated_Record_Flag as Terminated_Record_Flag_1 from OLAP.CUSTOMER as "root" where "root".lake_from <= DATE\'2024-10-30\' and "root".lake_thru > DATE\'2024-10-30\') as "unionBase" left outer join OLAP.CUSTOMER as "customer_1" on ("unionBase".Customer_ID_1 = "customer_1".Customer_ID and "customer_1".Terminated_Record_Flag = 0 and "customer_1".lake_thru > \'9999-01-01\' and "customer_1".lake_from <= DATE\'2024-10-30\' and "customer_1".lake_thru > DATE\'2024-10-30\' and "customer_1".lake_from <= DATE\'2024-10-30\' and "customer_1".lake_thru > DATE\'2024-10-30\')', $result->sqlRemoveFormatting());
+   assertSameElements(['Alice,alice@test.com', 'Bob,bob@test.com', 'Charlie,TDSNull'], $result.values.rows->map(r|$r.values->makeString(',')));
+     assertSameSQL('select "unionBase"."BENEFICIARYLast_Name_CUSTOMERLast_Name" as "Name", "customer_1".Email as "Email" from (select "root".lake_from as "lake_from_0", "root".lake_thru as "lake_thru_0", null as "lake_from_1", null as "lake_thru_1", "root".Beneficiary_Id as "pk_0_0", "root".Account_Id as "pk_1_0", "root".As_Of_Date as "pk_2_0", null as "pk_0_1", null as "pk_1_1", "root".Last_Name as "BENEFICIARYLast_Name_CUSTOMERLast_Name", null as Customer_ID_1, null as Terminated_Record_Flag_1 from OLAP.BENEFICIARY as "root" where "root".lake_from <= DATE\'2024-10-30\' and "root".lake_thru > DATE\'2024-10-30\' union all select null as "lake_from_0", null as "lake_thru_0", "root".lake_from as "lake_from_1", "root".lake_thru as "lake_thru_1", null as "pk_0_0", null as "pk_1_0", null as "pk_2_0", "root".Customer_ID as "pk_0_1", "root".As_Of_Date as "pk_1_1", "root".Last_Name as "BENEFICIARYLast_Name_CUSTOMERLast_Name", "root".Customer_ID as Customer_ID_1, "root".Terminated_Record_Flag as Terminated_Record_Flag_1 from OLAP.CUSTOMER as "root" where "root".lake_from <= DATE\'2024-10-30\' and "root".lake_thru > DATE\'2024-10-30\') as "unionBase" left outer join OLAP.CUSTOMER as "customer_1" on ("unionBase".Customer_ID_1 = "customer_1".Customer_ID and "customer_1".Terminated_Record_Flag = 0 and "customer_1".lake_thru > \'9999-01-01\' and "customer_1".lake_from <= DATE\'2024-10-30\' and "customer_1".lake_thru > DATE\'2024-10-30\' and "customer_1".lake_from <= DATE\'2024-10-30\' and "customer_1".lake_thru > DATE\'2024-10-30\')', $result->sqlRemoveFormatting());
 }
 
 // Regression test: milestoning column references in union join ON clauses must be quoted.
@@ -44,10 +45,11 @@ function <<test.Test>> meta::relational::tests::mapping::union::biTemporal::test
       biTemporalTestRuntime(),
       meta::relational::extension::relationalExtensions()
    );
+   assertSameElements(['Alice,MNGR', 'Bob,OFFC', 'Charlie,TDSNull'], $result.values.rows->map(r|$r.values->makeString(',')));
    // The generated SQL must quote milestoning column references in the ON clause.
    // If unquoted, H2 would throw: Column "unionalias_X.LAKE_THRU_0" not found (42122)
    let sql = $result->sqlRemoveFormatting();
-   assert($sql->contains('"lake_thru_0"'), 'Milestoning column reference in ON clause must be quoted to avoid H2 case-sensitivity mismatch');
+   assertSQLContains('"lake_thru_0"', $sql);
    true;
 }
 
@@ -65,18 +67,19 @@ function <<test.Test>> meta::relational::tests::mapping::union::biTemporal::test
       biTemporalTestRuntime(),
       meta::relational::extension::relationalExtensions()
    );
+   assertSameElements(['1001,Alice', '1002,Bob'], $result.values.rows->map(r|$r.values->makeString(',')));
    let sql = $result->sqlRemoveFormatting();
    // Verify the two-level wrapper pattern: inner union "unionalias_1" inside outer wrapper "unionalias_0"
-   assert($sql->contains('as "unionalias_1"'), 'Must have inner union alias (unionalias_1)');
-   assert($sql->contains('as "unionalias_0"'), 'Must have outer wrapper alias (unionalias_0)');
+   assertSQLContains('as "unionalias_1"', $sql);
+   assertSQLContains('as "unionalias_0"', $sql);
    // Verify the wrapper SELECT quotes milestoning column references from the inner union.
    // Without the fix, this would be unquoted: "unionalias_1".lake_thru_0 as lake_thru_0
    // H2 uppercases the unquoted reference to LAKE_THRU_0, which can't match "lake_thru_0".
-   assert($sql->contains('"unionalias_1"."lake_thru_0" as "lake_thru_0"'), 'Wrapper SELECT must quote milestoning column reference from inner union');
+   assertSQLContains('"unionalias_1"."lake_thru_0" as "lake_thru_0"', $sql);
    // Verify the ON clause also quotes milestoning references on the wrapper
-   assert($sql->contains('"unionalias_0"."lake_thru_0"') || $sql->contains('"unionalias_0"."lake_thru_1"'), 'ON clause must quote milestoning column reference on wrapper');
+   assertSQLMatches('.*"unionalias_0"\\."lake_thru_[01]".*', $sql);
    // Verify no unquoted lake_thru_0 reference exists (the actual PWM bug pattern)
-   assert(!$sql->contains('.lake_thru_0 '), 'Must not have unquoted lake_thru_0 reference');
+   assertSQLDoesNotContain('.lake_thru_0 ', $sql);
    true;
 }
 

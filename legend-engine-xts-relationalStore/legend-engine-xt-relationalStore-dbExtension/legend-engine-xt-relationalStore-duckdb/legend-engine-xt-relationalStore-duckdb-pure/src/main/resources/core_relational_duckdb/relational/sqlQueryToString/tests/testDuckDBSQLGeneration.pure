@@ -27,13 +27,14 @@ import meta::relational::tests::postProcessor::cteExtraction::*;
 import meta::external::store::relational::sqlDialectTranslation::duckDB::*;
 import meta::relational::tests::mapping::sqlFunction::model::domain::*;
 import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testCTESQLGeneration(): Boolean[1]
 {
    let func = {|Trade.all()->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])->limit(10)->filter(x | $x.getInteger('TradeID') == 100)};
    let pp = testRuntimeWithCTEPP().connectionStores->at(0).connection->cast(@meta::external::store::relational::runtime::DatabaseConnection).sqlQueryPostProcessors;
    let result = toSQLString($func, simpleRelationalMapping, DatabaseType.DuckDB, []->cast(@String), $pp, ^Format(newLine='', indent=''), duckDBExtensions(), noDebug());
-   assertEquals(
+   assertSameSQL(
       'WITH subquery_cte_1_1 AS (select "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root" limit 10) \n' +
       'select "subselect"."TradeID" as "TradeID", "subselect"."Quantity" as "Quantity" from subquery_cte_1_1 as "subselect" where "subselect"."TradeID" = 100',
       $result
@@ -43,44 +44,44 @@ function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testCT
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertVarchar128InDuckDB(): Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertVarchar128], ['convertVarchar128']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
-   assertEquals('select CAST("root".int1 AS VARCHAR) as "convertVarchar128" from dataTable as "root"', $s);
+   assertSameSQL('select CAST("root".int1 AS VARCHAR) as "convertVarchar128" from dataTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertDateNoFormatInDuckDB(): Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate1], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
-   assertEquals('select strptime("root".stringDateFormat, \'%Y-%m-%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
+   assertSameSQL('select strptime("root".stringDateFormat, \'%Y-%m-%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertDateISOFormatInDuckDB(): Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
-   assertEquals('select strptime("root".stringDateFormat, \'%Y-%m-%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
+   assertSameSQL('select strptime("root".stringDateFormat, \'%Y-%m-%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
 }
 
 // substr is always correctly indexed, on every dialect, with no flag involved.
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testSubstrOnDuckDB(): Boolean[1]
 {
    let s = toSQLString(|Person.all()->project([p | $p.firstName->substr(4, 9)], ['slice']), simpleRelationalMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
-   assertEquals('select substring("root".FIRSTNAME, 5, 5) as "slice" from personTable as "root"', $s);
+   assertSameSQL('select substring("root".FIRSTNAME, 5, 5) as "slice" from personTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertDateMMMyyyyFormatInDuckDB(): Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
-   assertEquals('select strptime("root".stringUserDefinedDateFormat, \'%b%Y\')::DATE as "convertToDate" from dataTable as "root"', $s);
+   assertSameSQL('select strptime("root".stringUserDefinedDateFormat, \'%b%Y\')::DATE as "convertToDate" from dataTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertDateUppercaseFormatNormalizedInDuckDB(): Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateMemSQL], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
-   assertEquals('select strptime("root".stringDateFormat, \'%Y-%m-%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
+   assertSameSQL('select strptime("root".stringDateFormat, \'%Y-%m-%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertDateSlashedFormatInDuckDB(): Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat2], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
-   assertEquals('select strptime("root".stringUserDefinedDateFormat, \'%Y/%m/%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
+   assertSameSQL('select strptime("root".stringUserDefinedDateFormat, \'%Y/%m/%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringExtractFromSemiStructuredVarcharInDuckDB(): Boolean[1]
@@ -92,7 +93,7 @@ function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testTo
       meta::relational::runtime::DatabaseType.DuckDB,
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select json_extract_string("root".FIRM_DETAILS, \'$.legalName\') as "Legal Name" from FIRM_TABLE as "root"', $s);
+   assertSameSQL('select json_extract_string("root".FIRM_DETAILS, \'$.legalName\') as "Legal Name" from FIRM_TABLE as "root"', $s);
 }
 
 ###Pure
@@ -126,3 +127,9 @@ Mapping meta::relational::tests::sqlQueryToString::duckDB::semiStructured::semiS
       legalName: extractFromSemiStructured([meta::relational::tests::sqlQueryToString::duckDB::semiStructured::semiStructuredTestDB]FIRM_TABLE.FIRM_DETAILS, 'legalName', 'VARCHAR')
    }
 )
+
+###Pure
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testNoSqlAssertBypassesInDuckDB():Boolean[1]
+{
+  meta::relational::functions::asserts::assertNoSqlAssertBypasses('/core_relational_duckdb/');
+}

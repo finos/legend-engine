@@ -2,6 +2,7 @@ import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::pure::alloy::connections::tests::sybase::testTableMapperPostProcessor():Boolean[1]
 {
@@ -15,5 +16,5 @@ function <<test.Test>> meta::pure::alloy::connections::tests::sybase::testTableM
                             ))
         );
         let result = meta::pure::executionPlan::executionPlan({|Product.all()->filter(p|$p.name == 'ok')}, meta::relational::tests::simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
-        assertEquals('select "root".ID as "pk_0", "root".NAME as "name" from productSchemaTransformed.productTable as "root" where "root".NAME = \'ok\'', $result.rootExecutionNode.executionNodes->filter(p|$p->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode).sqlQuery);
+        assertSameSQLs('select "root".ID as "pk_0", "root".NAME as "name" from productSchemaTransformed.productTable as "root" where "root".NAME = \'ok\'', $result.rootExecutionNode.executionNodes->filter(p|$p->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode).sqlQuery);
 }

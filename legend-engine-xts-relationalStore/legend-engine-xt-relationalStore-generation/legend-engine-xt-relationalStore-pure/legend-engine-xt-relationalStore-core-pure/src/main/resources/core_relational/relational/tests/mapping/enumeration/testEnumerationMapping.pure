@@ -144,7 +144,7 @@ function <<test.Test>> meta::relational::tests::mapping::enumeration::testNested
     assertEquals(EmployeeRole.SENIOR, $result.values->filter(e | $e.name == 'Bob')->toOne().role);
     assertEquals(EmployeeRole.JUNIOR, $result.values->filter(e | $e.name == 'Curtis')->toOne().role);
 
-    assertEquals('select "root".id as "pk_0", "root".id as "id", "root".name as "name", "root".doh as "dateOfHire", "root".type as "type", case when "root".type = \'FTE\' then \'S\' when "root".type = \'FTC\' then \'J\' when "root".type = \'FTO\' then \'J\' else \'J\' end as "role" from employeeTable as "root"', $result->sqlRemoveFormatting());
+    assertSameSQL('select "root".id as "pk_0", "root".id as "id", "root".name as "name", "root".doh as "dateOfHire", "root".type as "type", case when "root".type = \'FTE\' then \'S\' when "root".type = \'FTC\' then \'J\' when "root".type = \'FTO\' then \'J\' else \'J\' end as "role" from employeeTable as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::enumeration::testNestedIfFlattensToSingleCase():Boolean[1]
@@ -156,7 +156,7 @@ function <<test.Test>> meta::relational::tests::mapping::enumeration::testNested
     assertEquals(EmployeeRole.SENIOR, $result.values->filter(e | $e.name == 'Bob')->toOne().role);
     assertEquals(EmployeeRole.JUNIOR, $result.values->filter(e | $e.name == 'Curtis')->toOne().role);
 
-    assertEquals('select "root".id as "pk_0", "root".id as "id", "root".name as "name", "root".doh as "dateOfHire", "root".type as "type", case when "root".type = \'FTE\' then \'S\' when "root".type = \'FTC\' then \'J\' when "root".type = \'FTO\' then \'J\' else \'J\' end as "role" from employeeTable as "root"', $result->sqlRemoveFormatting());
+    assertSameSQL('select "root".id as "pk_0", "root".id as "id", "root".name as "name", "root".doh as "dateOfHire", "root".type as "type", case when "root".type = \'FTE\' then \'S\' when "root".type = \'FTC\' then \'J\' when "root".type = \'FTO\' then \'J\' else \'J\' end as "role" from employeeTable as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::enumeration::testEnumInRelation(): Boolean[1]

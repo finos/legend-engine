@@ -22,6 +22,7 @@ import meta::pure::runtime::*;
 import meta::relational::tests::mapping::modelJoin::milestoning::domain::*;
 import meta::relational::tests::mapping::modelJoin::milestoning::*;
 import meta::relational::tests::mapping::modelJoin::milestoning::store::*;
+import meta::relational::functions::asserts::*;
 
 // =============================================================================
 // Milestoned contract: Person→Contract via model join, Contract is businesstemporal
@@ -74,7 +75,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
               '"contractlogtable_2".THRU_Z as THRU_Z from contractLogTable as "contractlogtable_2" ' +
               'where "contractlogtable_2".FROM_Z <= DATE\'2024-01-01\' and "contractlogtable_2".THRU_Z > DATE\'2024-01-01\') as "contractlogtable_1") as "contractlogtable_0" ' +
     'on ("persontable_0"."ID" = "contractlogtable_0"."PERSONID")';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -161,7 +162,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
                    '"producttable_2".CATEGORY as CATEGORY from productTable as "producttable_2") as "producttable_1") as "producttable_0" ' +
          'on ("ordertable_1"."ID" = "producttable_0"."ORDERID")) as "ordertable_0" ' +
     'on ("ordertable_0"."CATEGORY" = "sectiontable_0"."ZONE")';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -246,7 +247,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
                    'from sectionTable as "producttable_2") as "producttable_1") as "sectiontable_0" ' +
          'on ("warehousetable_1"."ID" = "sectiontable_0"."WAREHOUSEID")) as "warehousetable_0" ' +
     'on ("producttable_0"."CATEGORY" = "warehousetable_0"."ZONE")';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -336,7 +337,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
                    'from trackingTable as "producttable_2") as "producttable_1") as "trackingtable_0" ' +
          'on ("shipmenttable_1"."ID" = "trackingtable_0"."SHIPMENTID")) as "shipmenttable_0" ' +
     'on ("producttable_0"."CODE" = "shipmenttable_0"."PREFIX")';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -411,7 +412,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
               '"audittable_2".IN_Z as IN_Z, "audittable_2".OUT_Z as OUT_Z from auditTable as "audittable_2" ' +
               'where "audittable_2".IN_Z <= TIMESTAMP\'2024-01-01 10:00:00\' and "audittable_2".OUT_Z > TIMESTAMP\'2024-01-01 10:00:00\') as "audittable_1") as "audittable_0" ' +
     'on ("producttable_0"."CODE" = "audittable_0"."ENTITYREF")';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -549,7 +550,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
          'left outer join productTable as "producttable_0" on ("root".ID = "producttable_0".ORDERID) ' +
          'where "root".FROM_Z <= DATE\'2024-01-01\' and "root".THRU_Z > DATE\'2024-01-01\') as "ordertable_0" ' +
     'on ("ordertable_0".CATEGORY = "sectiontable_0".ZONE)';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -622,7 +623,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
          'on ("root".ID = "sectiontable_0".WAREHOUSEID)) as "warehousetable_0" ' +
     'on ("producttable_0".CATEGORY = "warehousetable_0".ZONE) ' +
     'where "root".FROM_Z <= DATE\'2024-01-01\' and "root".THRU_Z > DATE\'2024-01-01\'';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -698,7 +699,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
          'where "root".FROM_Z <= DATE\'2024-07-01\' and "root".THRU_Z > DATE\'2024-07-01\') as "shipmenttable_0" ' +
     'on ("producttable_0".CODE = "shipmenttable_0".PREFIX) ' +
     'where "root".FROM_Z <= DATE\'2024-03-01\' and "root".THRU_Z > DATE\'2024-03-01\''; 
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -763,7 +764,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
          'where "audittable_1".IN_Z <= TIMESTAMP\'2024-01-01 10:00:00\' and "audittable_1".OUT_Z > TIMESTAMP\'2024-01-01 10:00:00\') as "audittable_0" ' +
     'on ("producttable_0".CODE = "audittable_0".ENTITYREF) ' +
     'where "root".FROM_Z <= DATE\'2024-01-01\' and "root".THRU_Z > DATE\'2024-01-01\'';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS

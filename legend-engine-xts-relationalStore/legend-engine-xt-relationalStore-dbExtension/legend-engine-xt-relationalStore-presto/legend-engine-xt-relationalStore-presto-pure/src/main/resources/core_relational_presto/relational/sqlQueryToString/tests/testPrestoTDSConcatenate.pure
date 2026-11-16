@@ -21,6 +21,7 @@ import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::tds::presto::tdsConcatenate::testConcatenateWithDistinctAndGroupBy():Boolean[1]
 {
@@ -29,5 +30,5 @@ function <<test.Test>> meta::relational::tests::tds::presto::tdsConcatenate::tes
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))->distinct()->groupBy('lastName', agg('count', x|$x, y| $y->count()))};
 
   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select "aggreg"."lastName" as "lastName", count(*) as "count" from (select distinct "union"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "union") as "aggreg" group by "aggreg"."lastName"', $result);
+   assertSameSQL('select "aggreg"."lastName" as "lastName", count(*) as "count" from (select distinct "union"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "union") as "aggreg" group by "aggreg"."lastName"', $result);
 }

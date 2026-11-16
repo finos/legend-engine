@@ -201,6 +201,7 @@ function <<test.Test>> meta::relational::tests::query::function::concatenate::te
   -> concatenate(meta::relational::tests::model::simple::Person.all() -> project([col(p|$p.firstName,'firstName') ,col(p|$p.lastName,'lastName'),col(p|$p.age,'age')]) ->groupBy(['firstName'], [agg('count',r|$r.getString('firstName'), c|$c->size())]) ->filter(p|$p.getString('firstName')->in(['John', 'Peter'])) )};
    let result = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "unionalias_0"."firstName" as "firstName", "unionalias_0"."count" as "count" from (select "root".FIRSTNAME as "firstName", count("root".FIRSTNAME) as "count" from personTable as "root" group by "firstName" having "root".FIRSTNAME in (\'John\', \'Peter\') union all select "root".FIRSTNAME as "firstName", count("root".FIRSTNAME) as "count" from personTable as "root" group by "firstName" having "root".FIRSTNAME in (\'John\', \'Peter\')) as "unionalias_0"', $result->sqlRemoveFormatting());
+   assertSameElements(['John,2', 'Peter,1', 'John,2', 'Peter,1'], $result.values.rows->map(r|$r.values->makeString(',')));
 }
 
 function <<test.Test>> meta::relational::tests::query::function::concatenate::testConcatenateWithPreFilteredGroupBy():Boolean[1]
@@ -209,6 +210,7 @@ function <<test.Test>> meta::relational::tests::query::function::concatenate::te
   -> concatenate(meta::relational::tests::model::simple::Person.all() -> project([col(p|$p.firstName,'firstName') ,col(p|$p.lastName,'lastName'),col(p|$p.age,'age')]) -> filter(p|$p.getString('firstName')->in(['John', 'Peter']))  ->groupBy(['firstName'], [agg('count',r|$r.getString('firstName'), c|$c->size())]))};
    let result = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "unionalias_0"."firstName" as "firstName", "unionalias_0"."count" as "count" from (select "root".FIRSTNAME as "firstName", count("root".FIRSTNAME) as "count" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\') group by "firstName" union all select "root".FIRSTNAME as "firstName", count("root".FIRSTNAME) as "count" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\') group by "firstName") as "unionalias_0"', $result->sqlRemoveFormatting());
+   assertSameElements(['John,2', 'Peter,1', 'John,2', 'Peter,1'], $result.values.rows->map(r|$r.values->makeString(',')));
 }
 
 function <<test.BeforePackage>> meta::relational::tests::projection::function::concatenate::setUp():Boolean[1]

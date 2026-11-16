@@ -54,6 +54,7 @@ import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::functions::collection::*;
+import meta::relational::functions::asserts::*;
 
 function meta::pure::executionPlan::tests::templateFunctionsList():String[*]
 {
@@ -1786,7 +1787,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testPreprocessFunctionO
   );
   let final = ^FunctionDefinition<{->Any[1]}>(expressionSequence = $withFrom);
   let rawPlan = meta::pure::executionPlan::executionPlan($final, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
-  assertEquals('select top 10 "persontable_0".FIRSTNAME as "FIRSTNAME" from personTable as "persontable_0"', $rawPlan.rootExecutionNode.executionNodes->cast(@SQLExecutionNode).sqlQuery);
+  assertSameSQLs('select top 10 "persontable_0".FIRSTNAME as "FIRSTNAME" from personTable as "persontable_0"', $rawPlan.rootExecutionNode.executionNodes->cast(@SQLExecutionNode).sqlQuery);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionSQLPopulationLegacy():Boolean[1]
@@ -2114,7 +2115,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariabl
    let result = executionPlan($l, meta::relational::tests::milestoning::milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let rlnNode = $result.rootExecutionNode.executionNodes->filter(n|$n->instanceOf(RelationalInstantiationExecutionNode))->at(0).executionNodes->at(0)->cast(@SQLExecutionNode);
    let rlnNodeSQL = $rlnNode.sqlQuery;
-   assertEqualsH2Compatible(
+   assertSameSQLH2Compatible(
     'select "root".id as "id" from ProductTable as "root" where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'',
     'select "root".id as "id" from ProductTable as "root" where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'',
     $rlnNodeSQL
@@ -2127,7 +2128,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariabl
    let result = executionPlan($l, meta::relational::tests::milestoning::milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let rlnNode = $result.rootExecutionNode.executionNodes->filter(n|$n->instanceOf(RelationalInstantiationExecutionNode))->at(0).executionNodes->at(0)->cast(@SQLExecutionNode);
    let rlnNodeSQL = $rlnNode.sqlQuery;
-   assertEqualsH2Compatible(
+   assertSameSQLH2Compatible(
     'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'${bd}\' and "productclassificationtable_0".thru_z > \'${bd}\') where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'',
     'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= TIMESTAMP\'${bd}\' and "productclassificationtable_0".thru_z > TIMESTAMP\'${bd}\') where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'',
     $rlnNodeSQL
@@ -2140,7 +2141,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariabl
    let result = executionPlan($l, meta::relational::tests::milestoning::milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let rlnNode = $result.rootExecutionNode.executionNodes->filter(n|$n->instanceOf(RelationalInstantiationExecutionNode))->at(0).executionNodes->at(0)->cast(@SQLExecutionNode);
    let rlnNodeSQL = $rlnNode.sqlQuery;
-   assertEqualsH2Compatible(
+   assertSameSQLH2Compatible(
     'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, \'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, \'${bd}\')) where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'',
     'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(day, 1, TIMESTAMP\'${bd}\') and "productclassificationtable_0".thru_z > dateadd(day, 1, TIMESTAMP\'${bd}\')) where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'',
     $rlnNodeSQL
@@ -2153,7 +2154,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariabl
    let result = executionPlan($l, meta::relational::tests::milestoning::milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let rlnNode = $result.rootExecutionNode.executionNodes->filter(n|$n->instanceOf(RelationalInstantiationExecutionNode))->at(0).executionNodes->at(0)->cast(@SQLExecutionNode);
    let rlnNodeSQL = $rlnNode.sqlQuery;
-   assertEqualsH2Compatible(
+   assertSameSQLH2Compatible(
     'select "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, \'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, \'${bd}\')) left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= dateadd(DAY, 1, \'${bd}\') and "productexchangetable_1".thru_z > dateadd(DAY, 1, \'${bd}\')) as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'',
     'select "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(day, 1, TIMESTAMP\'${bd}\') and "productclassificationtable_0".thru_z > dateadd(day, 1, TIMESTAMP\'${bd}\')) left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= dateadd(day, 1, TIMESTAMP\'${bd}\') and "productexchangetable_1".thru_z > dateadd(day, 1, TIMESTAMP\'${bd}\')) as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'',
     $rlnNodeSQL
@@ -2841,9 +2842,9 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGraphFetchH2TempTab
   let processedTempTableName = $rootNode.processedTempTableName;
   assertEquals('temp_table_node_0', $processedTempTableName);
   let tempTableStrategy = $rootNode.tempTableStrategy;
-  assertEquals('CREATE LOCAL TEMPORARY TABLE temp_table_node_0(pk_0 INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
-  assertEquals('INSERT INTO temp_table_node_0 SELECT * FROM CSVREAD(\'${csv_file_location}\');', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
-  assertEquals('Drop table if exists temp_table_node_0;', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertSameSQL('CREATE LOCAL TEMPORARY TABLE temp_table_node_0(pk_0 INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertSameSQL('INSERT INTO temp_table_node_0 SELECT * FROM CSVREAD(\'${csv_file_location}\');', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertSameSQL('Drop table if exists temp_table_node_0;', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testGraphFetchH2TempTableStrategyWithQuoteIdentifiers():Boolean[1]
@@ -2863,9 +2864,9 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGraphFetchH2TempTab
   let processedTempTableName = $rootNode.processedTempTableName;
   assertEquals('"temp_table_node_0"', $processedTempTableName);
   let tempTableStrategy = $rootNode.tempTableStrategy;
-  assertEquals('CREATE LOCAL TEMPORARY TABLE "temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
-  assertEquals('INSERT INTO "temp_table_node_0" SELECT * FROM CSVREAD(\'${csv_file_location}\');', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
-  assertEquals('Drop table if exists "temp_table_node_0";', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertSameSQL('CREATE LOCAL TEMPORARY TABLE "temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertSameSQL('INSERT INTO "temp_table_node_0" SELECT * FROM CSVREAD(\'${csv_file_location}\');', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertSameSQL('Drop table if exists "temp_table_node_0";', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testTypedTDSWithEnum():Boolean[1]
@@ -2873,7 +2874,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTypedTDSWithEnum():
    let query = {|Synonym.all()->project(~[type: x | $x.type, name : x | $x.name])};
    let generatedPlan = executionPlan($query, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(true), meta::relational::extension::relationalExtensions());
    let sqlQuery = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery;
-   assertEquals('select "root"."TYPE" as "type", "root"."NAME" as "name" from "productSchema"."synonymTable" as "root"', $sqlQuery);
+   assertSameSQL('select "root"."TYPE" as "type", "root"."NAME" as "name" from "productSchema"."synonymTable" as "root"', $sqlQuery);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testTypedTDSWithEnumFilter():Boolean[1]
@@ -2881,7 +2882,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTypedTDSWithEnumFil
   let query = {|Synonym.all()->project(~[type: x | $x.type])->filter(row|$row.type == meta::relational::tests::model::simple::ProductSynonymType.CUSIP)};
   let generatedPlan = executionPlan($query, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(true), meta::relational::extension::relationalExtensions());
   let sqlQuery = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery;
-  assertEquals('select "root"."TYPE" as "type" from "productSchema"."synonymTable" as "root" where "root"."TYPE" = \'CUSIP\'', $sqlQuery);
+  assertSameSQL('select "root"."TYPE" as "type" from "productSchema"."synonymTable" as "root" where "root"."TYPE" = \'CUSIP\'', $sqlQuery);
 }
 
 function <<test.Test>> {doc.doc = 'Test that execution plan generation when using ->from() contains case statement for enum push down'} meta::pure::executionPlan::tests::testExecutionPlanGenerationForLambdaFromWithEnumMapping():Boolean[1]  

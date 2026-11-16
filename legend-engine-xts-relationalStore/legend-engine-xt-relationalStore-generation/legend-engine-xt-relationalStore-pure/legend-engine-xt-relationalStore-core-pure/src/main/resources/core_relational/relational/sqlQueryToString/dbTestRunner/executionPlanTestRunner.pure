@@ -21,6 +21,7 @@ import meta::pure::alloy::connections::*;
 import meta::external::store::relational::runtime::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
+import meta::relational::functions::asserts::*;
 
 Class meta::relational::dbTestRunner::DbTestConfig
 {
@@ -112,7 +113,7 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
   let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^meta::pure::runtime::ExecutionContext(), $extensions, noDebug());
 
   if($config.expectedSql->isEmpty(), |true,
-    |assertEquals($config.expectedSql->toOne(), $basicPlan.rootExecutionNode.childNodes()->filter(n|$n->instanceOf(SQLExecutionNode))->at(0)->cast(@SQLExecutionNode).sqlQuery));
+    |assertSameSQL($config.expectedSql->toOne(), $basicPlan.rootExecutionNode.childNodes()->filter(n|$n->instanceOf(SQLExecutionNode))->at(0)->cast(@SQLExecutionNode).sqlQuery));
 
   if($config.connection->isEmpty(), |[],
      | let boundPlan = meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions($basicPlan);

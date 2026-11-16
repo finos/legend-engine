@@ -25,6 +25,7 @@ import meta::relational::tests::functions::pureToSqlQuery::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::router::store::metamodel::clustering::*;
 import meta::pure::router::utils::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testFindFunctionSequenceMultiplicity():Boolean[1]
 {
@@ -251,7 +252,7 @@ meta::relational::tests::functions::pureToSqlQuery::simpleFunctionExpressionTran
    let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
 
-   assertEquals('select now()', $sql_string);
+   assertSameSQL('select now()', $sql_string);
 }
 
 function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::simpleFunctionExpressionTranslationAdjust() : Boolean[1]
@@ -265,7 +266,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::simpl
    let sql = meta::relational::functions::pureToSqlQuery::toSQLQuery($fe, $mapping, ^Map<String,List<Any>>() , [], noDebug(), meta::relational::extension::relationalExtensions());
    let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select dateadd(month, 1, now())', $sql_string);
+   assertSameSQL('select dateadd(month, 1, now())', $sql_string);
 }
 
 function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::addDriverTablePkForProject() : Boolean[1]
@@ -324,6 +325,6 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testI
    let sql = $fe->toSQLQuery($mapping, ^Map<String,List<Any>>(), $context, $debugContext, $extensions)->cast(@TdsSelectSqlQuery);
    let sqlStr = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select "addressTable_d#4_d_m1".NAME as "personAddress", "addressTable_d#4_f_d_d_m2_r".NAME as "firmAddress", "root".ID as "ID", "root".ADDRESSID as fk_ADDRESSID, "addressTable_d#4_f_d_d_m2_r".STREET as fk_j0_0_STREET, "addressTable_d#4_d_m1".STREET as fk_j0_1_STREET, "firmTable_d#6_d_m2".ADDRESSID as fk_j1_ADDRESSID from personTable as "root" left outer join addressTable as "addressTable_d#4_d_m1" on ("addressTable_d#4_d_m1".ID = "root".ADDRESSID) left outer join firmTable as "firmTable_d#6_d_m2" on ("firmTable_d#6_d_m2".ID = "root".FIRMID) left outer join addressTable as "addressTable_d#4_f_d_d_m2_r" on ("addressTable_d#4_f_d_d_m2_r".ID = "firmTable_d#6_d_m2".ADDRESSID)', $sqlStr);
+   assertSameSQL('select "addressTable_d#4_d_m1".NAME as "personAddress", "addressTable_d#4_f_d_d_m2_r".NAME as "firmAddress", "root".ID as "ID", "root".ADDRESSID as fk_ADDRESSID, "addressTable_d#4_f_d_d_m2_r".STREET as fk_j0_0_STREET, "addressTable_d#4_d_m1".STREET as fk_j0_1_STREET, "firmTable_d#6_d_m2".ADDRESSID as fk_j1_ADDRESSID from personTable as "root" left outer join addressTable as "addressTable_d#4_d_m1" on ("addressTable_d#4_d_m1".ID = "root".ADDRESSID) left outer join firmTable as "firmTable_d#6_d_m2" on ("firmTable_d#6_d_m2".ID = "root".FIRMID) left outer join addressTable as "addressTable_d#4_f_d_d_m2_r" on ("addressTable_d#4_f_d_d_m2_r".ID = "firmTable_d#6_d_m2".ADDRESSID)', $sqlStr);
 }
 

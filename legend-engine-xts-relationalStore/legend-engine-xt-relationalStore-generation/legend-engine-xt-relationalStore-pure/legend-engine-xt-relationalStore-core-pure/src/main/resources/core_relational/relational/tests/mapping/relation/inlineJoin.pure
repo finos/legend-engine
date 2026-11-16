@@ -156,6 +156,7 @@ import meta::relational::tests::mapping::relation::inlineJoin::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::executionPlan::*;
 import meta::relational::metamodel::execute::*;
+import meta::relational::functions::asserts::*;
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::testNavigationJoinDefaultsToLeftOuterJoin():Boolean[1]
 {
@@ -165,7 +166,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
     meta::external::store::relational::tests::testRuntime(JoinDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals(
+  assertSameSQL(
     'select "firmtable_0".LEGALNAME as "firmName" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".ID)',
     $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
   );
@@ -179,7 +180,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
     meta::external::store::relational::tests::testRuntime(JoinDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals(
+  assertSameSQL(
     'select "persontable_2".LEGALNAME as "firmNameInner" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID, "firmtable_0".LEGALNAME as LEGALNAME from PersonTable as "persontable_1" inner join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_1".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID = "persontable_2".ID)',
     $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
   );
@@ -196,7 +197,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
     meta::external::store::relational::tests::testRuntime(JoinDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals(
+  assertSameSQL(
     'select "firmtable_0".LEGALNAME as "firmName", "firmtable_0".LEGALNAME as "firmNameDup" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".ID)',
     $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
   );
@@ -210,7 +211,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
     meta::external::store::relational::tests::testRuntime(JoinDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals(
+  assertSameSQL(
     'select "firmtable_0".LEGALNAME as "firmNameFiltered", "firmtable_0".LEGALNAME as "firmNameFilteredDup" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1" where "firmtable_1".LEGALNAME is not null) as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".ID)',
     $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
   );
@@ -224,7 +225,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
     meta::external::store::relational::tests::testRuntime(JoinDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals(
+  assertSameSQL(
     'select "firmtable_0".LEGALNAME as "firmNameFiltered", "firmtable_2".LEGALNAME as "firmNameFilteredOther" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1" where "firmtable_1".LEGALNAME is not null) as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".ID) left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1" where "firmtable_1".LEGALNAME = \'Firm X\') as "firmtable_2" on ("persontable_0".FIRMID = "firmtable_2".ID)',
     $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
   );
@@ -241,7 +242,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
   // Keyed by ID, not FIRSTNAME: legend-pure's native Relation mapping grammar has no `~primaryKey`
   // syntax (engine-only), so the source PK here is inferred from PersonTable's actual declared
   // PRIMARY KEY column rather than declared explicitly.
-  assertEquals(
+  assertSameSQL(
     'select "persontable_2".FIRSTNAME as "gatedFirstName" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "persontable_3".ID as "ID", "persontable_3".FIRSTNAME as "FIRSTNAME", "persontable_3".FIRMID as "FIRMID" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" inner join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
     $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
   );
@@ -256,7 +257,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
     meta::relational::extension::relationalExtensions()
   );
   // Keyed by ID, not FIRSTNAME — see testFilterJoinDefaultsToLeftOuterJoin.
-  assertEquals(
+  assertSameSQL(
     'select "persontable_2".FIRSTNAME as "gatedFirstNameInner" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "persontable_3".ID as "ID", "persontable_3".FIRSTNAME as "FIRSTNAME", "persontable_3".FIRMID as "FIRMID" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" inner join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
     $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
   );
@@ -270,7 +271,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
     meta::external::store::relational::tests::testRuntime(JoinDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals(
+  assertSameSQL(
     'select "firmtable_0"."LEGALNAME" as "firmLegalName" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as "ID", "firmtable_1".LEGALNAME as "LEGALNAME" from (select "firmtable_2".ID as ID, "firmtable_2".LEGALNAME as LEGALNAME from FirmTable as "firmtable_2") as "firmtable_1") as "firmtable_0" on ("persontable_0"."FIRMID" = "firmtable_0"."ID")',
     $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
   );
@@ -286,7 +287,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
     meta::external::store::relational::tests::testRuntime(JoinDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals(
+  assertSameSQL(
     'select "chainpersontable_2".COUNTRYNAME as "countryNameForMatchedFirm" from (select "chainpersontable_1".ID as ID, "chainpersontable_1".FIRSTNAME as FIRSTNAME, "chainpersontable_1".FIRMID as FIRMID, "chainpersontable_1".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_1") as "chainpersontable_0" left outer join (select "chainpersontable_3".ID as relJoinKey_ID, "countrytable_0".ID as "ID", "countrytable_0".COUNTRYNAME as "COUNTRYNAME" from (select "chainpersontable_4".ID as ID, "chainpersontable_4".FIRSTNAME as FIRSTNAME, "chainpersontable_4".FIRMID as FIRMID, "chainpersontable_4".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_4") as "chainpersontable_3" inner join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".LEGALNAME as LEGALNAME, "chainfirmtable_1".COUNTRYID as COUNTRYID from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("chainpersontable_3".FIRMID = "chainfirmtable_0".ID) left outer join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME from CountryTable as "countrytable_1") as "countrytable_0" on ("chainpersontable_3".COUNTRYID = "countrytable_0".ID)) as "chainpersontable_2" on ("chainpersontable_0".ID is not distinct from "chainpersontable_2".relJoinKey_ID)',
     $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
   );
@@ -302,7 +303,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
     meta::external::store::relational::tests::testRuntime(JoinDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals(
+  assertSameSQL(
     'select "chainpersontable_2".LEGALNAME as "firmNameForMatchedCountry" from (select "chainpersontable_1".ID as ID, "chainpersontable_1".FIRSTNAME as FIRSTNAME, "chainpersontable_1".FIRMID as FIRMID, "chainpersontable_1".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_1") as "chainpersontable_0" left outer join (select "chainpersontable_3".ID as relJoinKey_ID, "chainfirmtable_0".ID as "ID", "chainfirmtable_0".LEGALNAME as "LEGALNAME", "chainfirmtable_0".COUNTRYID as "COUNTRYID" from (select "chainpersontable_4".ID as ID, "chainpersontable_4".FIRSTNAME as FIRSTNAME, "chainpersontable_4".FIRMID as FIRMID, "chainpersontable_4".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_4") as "chainpersontable_3" left outer join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".LEGALNAME as LEGALNAME, "chainfirmtable_1".COUNTRYID as COUNTRYID from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("chainpersontable_3".FIRMID = "chainfirmtable_0".ID) inner join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME from CountryTable as "countrytable_1") as "countrytable_0" on ("chainfirmtable_0".COUNTRYID = "countrytable_0".ID)) as "chainpersontable_2" on ("chainpersontable_0".ID is not distinct from "chainpersontable_2".relJoinKey_ID)',
     $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
   );

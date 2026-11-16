@@ -30,7 +30,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
          meta::relational::tests::simpleRelationalMapping,
          meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select `root`.ID as `id`, `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where (`root`.settlementDateTime is not null and `root`.settlementDateTime > adddate(curdate(), INTERVAL 10000000 MICROSECOND))', $s1);
+   assertSameSQL('select `root`.ID as `id`, `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where (`root`.settlementDateTime is not null and `root`.settlementDateTime > adddate(curdate(), INTERVAL 10000000 MICROSECOND))', $s1);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testToSQLStringJoinStrings_MemSQL():Boolean[1]
@@ -41,13 +41,13 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
                                   )};
 
    let memSqlSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.LEGALNAME as `legalName`, group_concat(`personTable_d#4_d_m1`.FIRSTNAME separator \'*\') as `employeesFirstName` from firmTable as `root` left outer join personTable as `personTable_d#4_d_m1` on (`root`.ID = `personTable_d#4_d_m1`.FIRMID) group by `legalName`', $memSqlSql);
+   assertSameSQL('select `root`.LEGALNAME as `legalName`, group_concat(`personTable_d#4_d_m1`.FIRSTNAME separator \'*\') as `employeesFirstName` from firmTable as `root` left outer join personTable as `personTable_d#4_d_m1` on (`root`.ID = `personTable_d#4_d_m1`.FIRMID) group by `legalName`', $memSqlSql);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testToSQLStringWithLength_MemSQL():Boolean[1]
 {
    let memsql = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select char_length(`root`.FIRSTNAME) as `nameLength` from personTable as `root`', $memsql);
+   assertSameSQL('select char_length(`root`.FIRSTNAME) as `nameLength` from personTable as `root`', $memsql);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testToSQLStringWithPosition_MemSQL():Boolean[1]
@@ -56,7 +56,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
               |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
                meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select substring(`root`.FULLNAME, 0, LOCATE(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $memsql);
+   assertSameSQL('select substring(`root`.FULLNAME, 0, LOCATE(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $memsql);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testToSQLStringWithStdDevSample_MemSQL():Boolean[1]
@@ -65,7 +65,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
            |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
             meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $s1);
+   assertSameSQL('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $s1);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testToSQLStringWithStdDevPopulation_MemSQL():Boolean[1]
@@ -74,7 +74,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
            |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
             meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select stddev_pop(`root`.int1) as `stdDevPopulation` from dataTable as `root`', $s1);
+   assertSameSQL('select stddev_pop(`root`.int1) as `stdDevPopulation` from dataTable as `root`', $s1);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testToSqlGenerationFirstDayOfMonth_MemSQL():Boolean[1]
@@ -93,7 +93,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
          simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -113,7 +113,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
          simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -133,7 +133,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
          simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -153,7 +153,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
          simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -185,7 +185,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
       ]
     )},simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select 	`root`.LEGALNAME as `legalName`, 	substring(`root`.LEGALNAME, 0, 5) as `subname` from firmTable as `root`', $result->replace('\n', ''));
+   assertSameSQL('select 	`root`.LEGALNAME as `legalName`, 	substring(`root`.LEGALNAME, 0, 5) as `subname` from firmTable as `root`', $result->replace('\n', ''));
 }
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testSubstringWithNonZeroIndex_MemSQL() : Boolean[1]
@@ -202,7 +202,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
       ]
     )},simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select 	`root`.LEGALNAME as `legalName`, 	substring(`root`.LEGALNAME, 2, 3) as `subname` from firmTable as `root`', $result->replace('\n', ''));
+   assertSameSQL('select 	`root`.LEGALNAME as `legalName`, 	substring(`root`.LEGALNAME, 2, 3) as `subname` from firmTable as `root`', $result->replace('\n', ''));
 }
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testIsDistinctSQLGeneration_MemSQL():Boolean[1]
@@ -226,7 +226,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
 {
    let ifWithPredicateArms = ^DynaFunction(name = 'if', parameters = [meta::relational::memsql::tests::functions::sqlstring::columnEquals('FIRSTNAME', 'John'), meta::relational::memsql::tests::functions::sqlstring::columnEquals('LASTNAME', 'Smith'), meta::relational::memsql::tests::functions::sqlstring::columnEquals('LASTNAME', 'Doe')]);
    let composed = ^DynaFunction(name = 'and', parameters = [^DynaFunction(name = 'greaterThan', parameters = [^ColumnName(name = 'AGE'), ^Literal(value = 0)]), $ifWithPredicateArms]);
-   assertEquals('AGE > 0 and case when FIRSTNAME = \'John\' then LASTNAME = \'Smith\' else LASTNAME = \'Doe\' end',
+   assertSameSQL('AGE > 0 and case when FIRSTNAME = \'John\' then LASTNAME = \'Smith\' else LASTNAME = \'Doe\' end',
                 $composed->processOperation(DatabaseType.MemSQL, meta::relational::extension::relationalExtensions()));
 }
 
@@ -235,7 +235,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
    let ext = meta::relational::extension::relationalExtensions();
    let column = ^DynaFunction(name = 'booleanColumn', parameters = ^ColumnName(name = 'ON_FLAG'));
    let asString = 'case when ON_FLAG is null then null when ON_FLAG = 1 then \'true\' else \'false\' end';
-   assertEquals($asString, $column->processOperation(DatabaseType.MemSQL, $ext));
-   assertEquals($asString + ' = \'true\'', ^DynaFunction(name = 'equal', parameters = [$column, ^Literal(value = true)])->processOperation(DatabaseType.MemSQL, $ext));
-   assertEquals($asString + ' = \'false\'', ^DynaFunction(name = 'equal', parameters = [$column, ^Literal(value = false)])->processOperation(DatabaseType.MemSQL, $ext));
+   assertSameSQL($asString, $column->processOperation(DatabaseType.MemSQL, $ext));
+   assertSameSQL($asString + ' = \'true\'', ^DynaFunction(name = 'equal', parameters = [$column, ^Literal(value = true)])->processOperation(DatabaseType.MemSQL, $ext));
+   assertSameSQL($asString + ' = \'false\'', ^DynaFunction(name = 'equal', parameters = [$column, ^Literal(value = false)])->processOperation(DatabaseType.MemSQL, $ext));
 }

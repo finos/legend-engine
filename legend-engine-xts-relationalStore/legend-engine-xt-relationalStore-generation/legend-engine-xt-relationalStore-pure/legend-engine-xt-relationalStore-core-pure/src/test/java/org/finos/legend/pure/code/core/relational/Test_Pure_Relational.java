@@ -27,7 +27,10 @@ public class Test_Pure_Relational
     public static TestSuite suite()
     {
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
-        executionSupport.getConsole().disable();
+        if (!executionSupport.getRuntimeOptions().isOptionSet("SqlAssertModeLog"))
+        {
+            executionSupport.getConsole().disable();
+        }
         TestSuite suite = new TestSuite();
         //NOTE- we are not collecting parameterized test collection in meta::relational here
         suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::relational", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport()) && !isPlatformStoreRelationalDbTest(ci)), executionSupport));

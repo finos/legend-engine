@@ -11,6 +11,7 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
 import meta::relational::metamodel::*;
+import meta::relational::functions::asserts::*;
 
 
 function meta::pure::alloy::connections::tests::relationalMapper::databaseMappers():DatabaseMapper[*]
@@ -80,19 +81,19 @@ function <<access.private>> meta::pure::alloy::connections::tests::relationalMap
 function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::testRelationalDatabaseMapper():Boolean[1]
 {
   let resultSQL = relationalMapperSqlQuery({|Product.all()}, productMappingWithFilter, databaseMappers(), [], []);
-  assertEquals('select "root".ID as "pk_0", "root".NAME as "name" from snDB.productSchema.productTable as "root"', $resultSQL);
+  assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name" from snDB.productSchema.productTable as "root"', $resultSQL);
 }
 
 function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::testRelationalSchemaMapper():Boolean[1]
 {
   let resultSQL = relationalMapperSqlQuery({|Product.all()}, productMappingWithFilter, [], schemaMappers(), []);
-  assertEquals('select "root".ID as "pk_0", "root".NAME as "name" from productSchemaNewDBINC.productTable as "root"', $resultSQL);
+  assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name" from productSchemaNewDBINC.productTable as "root"', $resultSQL);
 }
 
 function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::testRelationalTableMapper():Boolean[1]
 {
   let resultSQL = relationalMapperSqlQuery({|Product.all()}, productMappingWithFilter, [], [], tableMappers());
-  assertEquals('select "root".ID as "pk_0", "root".NAME as "name" from productSchema.productTableNewINC as "root"', $resultSQL);
+  assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name" from productSchema.productTableNewINC as "root"', $resultSQL);
 }
 
 
@@ -100,19 +101,19 @@ function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::
 function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::testRelationalDatabaseSchemaMapper():Boolean[1]
 {
   let resultSQL = relationalMapperSqlQuery({|Product.all()}, productMappingWithFilter, databaseMappers(), schemaMappers(), []);
-  assertEquals('select "root".ID as "pk_0", "root".NAME as "name" from snDB.productSchemaNewDBINC.productTable as "root"', $resultSQL);
+  assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name" from snDB.productSchemaNewDBINC.productTable as "root"', $resultSQL);
 }
 
 function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::testRelationalDatabaseTableMapper():Boolean[1]
 {
   let resultSQL = relationalMapperSqlQuery({|Product.all()}, productMappingWithFilter, databaseMappers(), [], tableMappers());
-  assertEquals('select "root".ID as "pk_0", "root".NAME as "name" from snDB.productSchema.productTableNewINC as "root"', $resultSQL);
+  assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name" from snDB.productSchema.productTableNewINC as "root"', $resultSQL);
 }
 
 function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::testRelationalSchemaTableMapper():Boolean[1]
 {
   let resultSQL = relationalMapperSqlQuery({|Product.all()}, productMappingWithFilter, [], schemaMappers(), tableMappers());
-  assertEquals('select "root".ID as "pk_0", "root".NAME as "name" from productSchemaNewDBINC.productTableNewINC as "root"', $resultSQL);
+  assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name" from productSchemaNewDBINC.productTableNewINC as "root"', $resultSQL);
 }
 
 
@@ -120,7 +121,7 @@ function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::
 function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::testRelationalDatabaseSchemaTableMapper():Boolean[1]
 {
   let resultSQL = relationalMapperSqlQuery({|Product.all()},productMappingWithFilter, databaseMappers(), schemaMappers(), tableMappers());
-  assertEquals('select "root".ID as "pk_0", "root".NAME as "name" from snDB.productSchemaNewDBINC.productTableNewINC as "root"', $resultSQL);
+  assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name" from snDB.productSchemaNewDBINC.productTableNewINC as "root"', $resultSQL);
 }
 
 
@@ -128,17 +129,17 @@ function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::
 function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::testRelationalDefaultSchemaMapper():Boolean[1]
 {
   let resultSQL = relationalMapperSqlQuery({|Firm.all()}, simpleRelationalMapping, databaseMappers(), schemaMappers(), tableMappers());
-  assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from snDBDefault.default.firmTableNew as "root"', $resultSQL);
+  assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from snDBDefault.default.firmTableNew as "root"', $resultSQL);
 }
 
 function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::testRelationalMapperWithJoin():Boolean[1]
 {
   let resultSQL = relationalMapperSqlQuery({|Firm.all()->project([f|$f.employeeByLastName('Smith').address.name],['address'])}, simpleRelationalMapping, databaseMappers(), schemaMappers(), tableMappers());
-  assertEquals('select "addresstable_0".NAME as "address" from snDBDefault.default.firmTableNew as "root" left outer join snDBDefault.default.personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Smith\') left outer join snDBDefault.default.addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID)', $resultSQL);
+  assertSameSQL('select "addresstable_0".NAME as "address" from snDBDefault.default.firmTableNew as "root" left outer join snDBDefault.default.personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Smith\') left outer join snDBDefault.default.addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID)', $resultSQL);
 }
 
 function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::testRelationalMapperTwoDBs():Boolean[1]
 {
   let resultSQL = relationalMapperSqlQuery({|Product.all()->filter(p | $p.cusip == 'CUSIP1')->project([p | $p.name, p | $p.cusip], ['name', 'cusip'])}, productMappingWithFilter, databaseMappers(), schemaMappers(), tableMappers());
-  assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip" from snDB.productSchemaNewDBINC.productTableNewINC as "root" left outer join snDB.productSchemaNewDB.synonymTableNew as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".ID <> 1) where "synonymtable_0".NAME = \'CUSIP1\'', $resultSQL);
+  assertSameSQL('select "root".NAME as "name", "synonymtable_0".NAME as "cusip" from snDB.productSchemaNewDBINC.productTableNewINC as "root" left outer join snDB.productSchemaNewDB.synonymTableNew as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".ID <> 1) where "synonymtable_0".NAME = \'CUSIP1\'', $resultSQL);
 }

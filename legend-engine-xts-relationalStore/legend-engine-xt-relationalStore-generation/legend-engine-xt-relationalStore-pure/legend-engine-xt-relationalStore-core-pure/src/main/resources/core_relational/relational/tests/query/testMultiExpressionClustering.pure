@@ -19,6 +19,7 @@ import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
+import meta::relational::functions::asserts::*;
 
 //from(<lambda>, mapping, runtime) hands clustering an expression that carries the lambda on func
 //rather than on parametersValues, so nothing can be derived from it directly. Routing records the
@@ -40,7 +41,7 @@ function <<test.Test>> meta::relational::tests::query::multiExpression::testRela
               ->cast(@RelationalTdsInstantiationExecutionNode).executionNodes
               ->cast(@SQLExecutionNode).sqlQuery->toOne();
 
-  assert($sql->startsWith('with '), | 'expected a common table expression, got: ' + $sql);
+  assertSQLStartsWith('with ', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::query::multiExpression::testPlatformOnlyMultiExpressionStaysOnPlatform():Boolean[1]

@@ -1,0 +1,180 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::valuespecification::*;
+import meta::relational::functions::asserts::*;
+
+function meta::relational::functions::asserts::assertNoSqlAssertBypasses(sourcePrefix:String[1]):Boolean[1]
+{
+  let bypasses = sqlAssertBypasses('meta'->pathToElement()->cast(@Package), $sourcePrefix);
+  assert($bypasses->isEmpty(), | 'SQL text must be asserted through meta::relational::functions::asserts (assertSameSQL, assertSameSQLs, assertSQLContains, assertSQLDoesNotContain, assertSQLStartsWith, assertSQLMatches, assertSameSQLH2Compatible); found ' + $bypasses->size()->toString() + ' bypasses:\n' + $bypasses->joinStrings('\n'));
+}
+
+function meta::relational::functions::asserts::sqlAssertBypasses(pkg:Package[1], sourcePrefix:String[1]):String[*]
+{
+  $pkg.children->map(c | $c->match([
+    p:Package[1] | sqlAssertBypasses($p, $sourcePrefix),
+    f:ConcreteFunctionDefinition<Any>[1] | if($f->isDefinedUnder($sourcePrefix) && ($f.package->toOne()->elementToPath() != 'meta::relational::functions::asserts'), | $f->sqlAssertBypasses(), | []),
+    a:Any[1] | []
+  ]));
+}
+
+function <<access.private>> meta::relational::functions::asserts::isDefinedUnder(f:ConcreteFunctionDefinition<Any>[1], sourcePrefix:String[1]):Boolean[1]
+{
+  let sourceInformation = $f->sourceInformation();
+  $sourceInformation->isNotEmpty() && $sourceInformation.source->toOne()->startsWith($sourcePrefix);
+}
+
+function <<access.private>> meta::relational::functions::asserts::sqlAssertBypasses(f:ConcreteFunctionDefinition<Any>[1]):String[*]
+{
+  $f.expressionSequence->evaluateAndDeactivate()->bypassingCallsIn([])
+    ->map(fe | $f->elementToPath() + ' (' + $fe->sourceInformation()->map(s | $s.source + ':' + $s.line->toString())->joinStrings() + ')');
+}
+
+function <<access.private>> meta::relational::functions::asserts::bypassingCallsIn(expressions:ValueSpecification[*], outerSqlVariables:String[*]):SimpleFunctionExpression[*]
+{
+  let sqlVariables = $outerSqlVariables->concatenate($expressions->map(e | $e->sqlLetVariable()));
+  $expressions->map(e | $e->bypassingCalls($sqlVariables));
+}
+
+function <<access.private>> meta::relational::functions::asserts::bypassingCalls(vs:ValueSpecification[1], sqlVariables:String[*]):SimpleFunctionExpression[*]
+{
+  $vs->match([
+    fe:SimpleFunctionExpression[1] | if($fe->isSqlTextAssertion($sqlVariables), | $fe, | [])
+                                       ->concatenate($fe.parametersValues->map(p | $p->bypassingCalls($sqlVariables)));,
+    iv:InstanceValue[1] | $iv.values->map(v | $v->match([
+                            l:LambdaFunction<Any>[1] | $l.expressionSequence->evaluateAndDeactivate()->bypassingCallsIn($sqlVariables),
+                            s:ValueSpecification[1] | $s->bypassingCalls($sqlVariables),
+                            a:Any[1] | []
+                          ])),
+    a:Any[1] | []
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::asserts::sqlLetVariable(vs:ValueSpecification[1]):String[*]
+{
+  $vs->match([
+    fe:SimpleFunctionExpression[1] | if($fe->isCallTo('meta::pure::functions::lang', 'letFunction') && $fe.parametersValues->at(1)->producesSQL([]),
+                                        | $fe.parametersValues->at(0)->cast(@InstanceValue).values->cast(@String),
+                                        | []),
+    a:Any[1] | []
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::asserts::isSqlTextAssertion(fe:SimpleFunctionExpression[1], sqlVariables:String[*]):Boolean[1]
+{
+  if($fe->isCallTo('meta::pure::functions::asserts', 'assertEquals'),
+    | $fe.parametersValues->take(2)->exists(p | $p->isSqlLiteral() || $p->producesSQL($sqlVariables)),
+    | if($fe->isCallTo('meta::relational::functions::sqlQueryToString::h2', 'assertEqualsH2Compatible'),
+        | $fe.parametersValues->exists(p | $p->isSqlLiteral() || $p->producesSQL($sqlVariables)),
+        | $fe->isCallTo('meta::pure::functions::asserts', 'assert') && $fe.parametersValues->at(0)->isStringTestOnSQL($sqlVariables))
+  );
+}
+
+function <<access.private>> meta::relational::functions::asserts::isStringTestOnSQL(vs:ValueSpecification[1], sqlVariables:String[*]):Boolean[1]
+{
+  $vs->match([
+    fe:SimpleFunctionExpression[1] | if($fe->isNamed(['contains', 'startsWith', 'endsWith', 'matches']),
+                                        | $fe.parametersValues->at(0)->producesSQL($sqlVariables),
+                                        | $fe->isNamed(['not', 'and', 'or']) && $fe.parametersValues->exists(p | $p->isStringTestOnSQL($sqlVariables))),
+    a:Any[1] | false
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::asserts::producesSQL(vs:ValueSpecification[1], sqlVariables:String[*]):Boolean[1]
+{
+  $vs->match([
+    fe:SimpleFunctionExpression[1] | $fe->isCallTo('meta::relational::mapping', 'sqlRemoveFormatting')
+                                       || $fe->isCallTo('meta::relational::mapping', 'sql')
+                                       || $fe->isNamed(['toSQLString', 'toSQLStringPretty', 'toSQL', 'sqlQueryToString'])
+                                       || ($fe->isNamed('sqlQuery') && $fe.func->instanceOf(Property))
+                                       || ($fe->isNamed(['toLower', 'toUpper', 'trim', 'replace', 'toOne']) && $fe.parametersValues->at(0)->producesSQL($sqlVariables)),
+    v:VariableExpression[1] | $v.name->in($sqlVariables),
+    a:Any[1] | false
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::asserts::isSqlLiteral(vs:ValueSpecification[1]):Boolean[1]
+{
+  let prefix = $vs->literalPrefix();
+  $prefix->isNotEmpty() && $prefix->toOne()->matches('(?is)\\s*\\(*\\s*(select|with|insert|update|delete|create|drop|merge|truncate|alter|declare)\\s.*');
+}
+
+function <<access.private>> meta::relational::functions::asserts::literalPrefix(vs:ValueSpecification[1]):String[0..1]
+{
+  $vs->match([
+    iv:InstanceValue[1] | $iv.values->first()->match([
+                            s:String[1] | $s,
+                            v:ValueSpecification[1] | $v->literalPrefix(),
+                            a:Any[0..1] | []
+                          ]),
+    fe:SimpleFunctionExpression[1] | if($fe->isNamed('plus') && $fe.parametersValues->isNotEmpty(), | $fe.parametersValues->at(0)->literalPrefix(), | []),
+    a:Any[1] | []
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::asserts::isNamed(fe:SimpleFunctionExpression[1], names:String[*]):Boolean[1]
+{
+  // the expression's functionName is the full path when the call is written qualified, so prefer the resolved function's name
+  let name = $fe.func->match([f:Function<Any>[1] | $f.functionName, a:Any[1] | []])->concatenate($fe.functionName)->first();
+  $name->isNotEmpty() && $name->toOne()->in($names);
+}
+
+function <<access.private>> meta::relational::functions::asserts::isCallTo(fe:SimpleFunctionExpression[1], packagePath:String[1], name:String[1]):Boolean[1]
+{
+  $fe->isNamed($name) && $fe.func->match([
+    p:PackageableElement[1] | $p.package->isNotEmpty() && $p.package->toOne()->elementToPath() == $packagePath,
+    a:Any[1] | false
+  ]);
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testNoSqlAssertBypassesInCoreRelational():Boolean[1]
+{
+  assertNoSqlAssertBypasses('/core_relational/');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testGuardFlagsBypassForms():Boolean[1]
+{
+  assertSize(meta::relational::functions::asserts::guardSampleLiteral_String_1__Boolean_1_->sqlAssertBypasses(), 1);
+  assertSize(meta::relational::functions::asserts::guardSampleQualifiedCall_String_1__Boolean_1_->sqlAssertBypasses(), 1);
+  assertSize(meta::relational::functions::asserts::guardSampleLetVariable_String_1__Boolean_1_->sqlAssertBypasses(), 1);
+  assertSize(meta::relational::functions::asserts::guardSampleStringTest_String_1__Boolean_1_->sqlAssertBypasses(), 1);
+  assertEmpty(meta::relational::functions::asserts::guardSampleFamily_String_1__Boolean_1_->sqlAssertBypasses());
+}
+
+function <<access.private>> meta::relational::functions::asserts::guardSampleLiteral(s:String[1]):Boolean[1]
+{
+  assertEquals('select a from t', $s);
+}
+
+function <<access.private>> meta::relational::functions::asserts::guardSampleQualifiedCall(s:String[1]):Boolean[1]
+{
+  assertEquals('x', meta::relational::mapping::sqlRemoveFormatting($s));
+}
+
+function <<access.private>> meta::relational::functions::asserts::guardSampleLetVariable(s:String[1]):Boolean[1]
+{
+  let sql = meta::relational::mapping::sqlRemoveFormatting($s);
+  assertEquals('x', $sql);
+}
+
+function <<access.private>> meta::relational::functions::asserts::guardSampleStringTest(s:String[1]):Boolean[1]
+{
+  assert(meta::relational::mapping::sqlRemoveFormatting($s)->toLower()->contains('from'));
+}
+
+function <<access.private>> meta::relational::functions::asserts::guardSampleFamily(s:String[1]):Boolean[1]
+{
+  assertSQLContains('from', meta::relational::mapping::sqlRemoveFormatting($s));
+}

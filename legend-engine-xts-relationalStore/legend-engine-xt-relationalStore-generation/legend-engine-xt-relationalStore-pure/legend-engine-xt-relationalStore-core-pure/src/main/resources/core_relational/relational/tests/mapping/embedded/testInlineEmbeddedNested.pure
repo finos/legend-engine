@@ -77,7 +77,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
                                  ), testMappingEmbeddedTargetIds,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('c1,c2\n' + 'addressh1,10.0\n' + 'addressh3,1.0\n', $result.values->toOne()->toCSV());
-  assertEqualsH2Compatible(
+  assertSameSQLH2Compatible(
     'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".BOND_TYPE = \'5 years\' then 5.0 else 1.0 end) as "c2" from PRODUCT_DENORM as "root" group by "c1"', 
     'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".BOND_TYPE = \'5 years\' then cast(5.0 as float) else cast(1.0 as float) end) as "c2" from PRODUCT_DENORM as "root" group by "c1"', 
     $result->sqlRemoveFormatting()
@@ -94,7 +94,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
                                  ), testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('c1,sum\n' + 'addressh1,10.0\n' + 'addressh3,1.0\n', $result.values->toOne()->toCSV());
-  assertEqualsH2Compatible(
+  assertSameSQLH2Compatible(
     'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".HOLDER_ADDRESS_NAME like \'addressh1%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" group by "c1"', 
     'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".HOLDER_ADDRESS_NAME like \'addressh1%\' then cast(5.0 as float) else cast(1.0 as float) end) as "sum" from PRODUCT_DENORM as "root" group by "c1"', 
     $result->sqlRemoveFormatting()
@@ -119,6 +119,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
                                     ->project( [p | $p.type, p | $p.issuer.address.name,p | $p.holder.address.name], ['type','i','h'])
                                     , testInlineInEmbeddedPropertyMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
+  assertSameElements(['5 years,addressi1,addressh1', '5 years,addressi2,addressh1'], $result.values.rows->map(r|$r.values->makeString(',')));
   assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER_ADDRESS_NAME as "i", "root".HOLDER_ADDRESS_NAME as "h" from PRODUCT_DENORM as "root" where "root".HOLDER_ADDRESS_NAME = \'addressh1\'', $result);
 
 }
