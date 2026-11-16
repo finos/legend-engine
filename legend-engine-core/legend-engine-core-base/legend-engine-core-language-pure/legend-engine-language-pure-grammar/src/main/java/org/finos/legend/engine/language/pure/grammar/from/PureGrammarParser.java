@@ -23,7 +23,12 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.CodeParserGramm
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ExpressionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ExpressionParserOverride;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ModelParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ModelParserOverride;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParserOverride;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
@@ -49,6 +54,30 @@ public class PureGrammarParser
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PureGrammarParser.class);
     private static final String DEFAULT_SECTION_BEGIN = "\n###" + DomainParser.name + "\n";
+
+    /**
+     * The engine's own parser for standalone expressions.
+     */
+    private static final ExpressionParser DOMAIN_EXPRESSION_PARSER = new ExpressionParser()
+    {
+        @Override
+        public LambdaFunction parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+        {
+            return new DomainParser().parseLambda(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        }
+
+        @Override
+        public ValueSpecification parseValueSpecification(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+        {
+            return new DomainParser().parseValueSpecification(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        }
+
+        @Override
+        public RootGraphFetchTree parseGraphFetch(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+        {
+            return new DomainParser().parseGraphFetch(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        }
+    };
 
     private final DEPRECATED_PureGrammarParserLibrary parsers;
     private final PureGrammarParserExtensions extensions;
@@ -77,7 +106,7 @@ public class PureGrammarParser
 
     public PureModelContextData parseModel(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return this.parse(code, this.parsers, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        return this.getModelParser().parseModel(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
     public PureModelContextData parseModel(String code, boolean returnSourceInformation)
@@ -87,7 +116,7 @@ public class PureGrammarParser
 
     public PureModelContextData parseModel(String code)
     {
-        return this.parse(code, this.parsers, "", 0, 0, true);
+        return this.parseModel(code, "", 0, 0, true);
     }
 
     public LambdaFunction parseLambda(String code)
@@ -97,7 +126,7 @@ public class PureGrammarParser
 
     public LambdaFunction parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return new DomainParser().parseLambda(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        return this.getExpressionParser().parseLambda(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
     public LambdaFunction parseLambda(String code, String sourceId, boolean returnSourceInfo)
@@ -150,21 +179,7 @@ public class PureGrammarParser
                     codeBuilder.append(tn.getText());
                 }
                 SectionSourceCode codeSection = new SectionSourceCode(codeBuilder.toString(), parserName, sectionSourceInformation, sectionWalkerSourceInformation);
-                SectionParser sectionParser = this.extensions.getExtraSectionParser(parserName);
-                Section section;
-                if (sectionParser == null)
-                {
-                    DEPRECATED_SectionGrammarParser legacyParser = parserLibrary.getParser(parserName, parserNameSourceInformation);
-                    if (legacyParser == null)
-                    {
-                        throw new EngineException("'" + parserName + "' is not a known section parser", parserNameSourceInformation, EngineErrorType.PARSER);
-                    }
-                    section = legacyParser.parse(legacyParser.getParserInfo(codeSection.code, codeSection.sourceInformation, codeSection.walkerSourceInformation), elementConsumer, parserContext);
-                }
-                else
-                {
-                    section = sectionParser.parse(codeSection, elementConsumer, parserContext);
-                }
+                Section section = this.getSectionParser(parserName, parserLibrary, parserNameSourceInformation).parse(codeSection, elementConsumer, parserContext);
 
                 // remove duplicates in imports and content of the section
                 section.elements = ListIterate.distinct(section.elements);
@@ -195,13 +210,54 @@ public class PureGrammarParser
         return section;
     }
 
+    /**
+     * The parser for a section type: an extension's, or else the built-in one, unless an extension overrides it (see
+     * {@link SectionParserOverride}).
+     */
+    private SectionParser getSectionParser(String parserName, DEPRECATED_PureGrammarParserLibrary parserLibrary, SourceInformation parserNameSourceInformation)
+    {
+        SectionParser sectionParser = this.extensions.getExtraSectionParser(parserName);
+        if (sectionParser == null)
+        {
+            DEPRECATED_SectionGrammarParser legacyParser = parserLibrary.getParser(parserName, parserNameSourceInformation);
+            if (legacyParser == null)
+            {
+                throw new EngineException("'" + parserName + "' is not a known section parser", parserNameSourceInformation, EngineErrorType.PARSER);
+            }
+            sectionParser = SectionParser.newParser(parserName, (code, elementConsumer, parserContext) -> legacyParser.parse(legacyParser.getParserInfo(code.code, code.sourceInformation, code.walkerSourceInformation), elementConsumer, parserContext));
+        }
+        SectionParserOverride override = this.extensions.getSectionParserOverride(parserName);
+        return (override == null) ? sectionParser : override.override(sectionParser);
+    }
+
     public RootGraphFetchTree parseGraphFetch(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return new DomainParser().parseGraphFetch(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        return this.getExpressionParser().parseGraphFetch(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
     public ValueSpecification parseValueSpecification(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return new DomainParser().parseValueSpecification(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        return this.getExpressionParser().parseValueSpecification(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
+    }
+
+    /**
+     * The parser for whole models: the engine's own, which splits the code into sections and parses each with its
+     * section type's parser, unless an extension overrides it (see {@link ModelParserOverride}).
+     */
+    private ModelParser getModelParser()
+    {
+        ModelParser engineParser = (code, sourceId, lineOffset, columnOffset, returnSourceInfo) -> this.parse(code, this.parsers, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        ModelParserOverride override = this.extensions.getModelParserOverride();
+        return (override == null) ? engineParser : override.override(engineParser);
+    }
+
+    /**
+     * The parser for standalone expressions: the engine's own, unless an extension overrides it (see
+     * {@link ExpressionParserOverride}).
+     */
+    private ExpressionParser getExpressionParser()
+    {
+        ExpressionParserOverride override = this.extensions.getExpressionParserOverride();
+        return (override == null) ? DOMAIN_EXPRESSION_PARSER : override.override(DOMAIN_EXPRESSION_PARSER);
     }
 }

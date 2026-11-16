@@ -70,6 +70,7 @@ public class ColSpec
             }
             // Backward compatibility - old protocol -------------------------------------------------------------------
 
+            colSpec.multiplicity = processOne(node, "multiplicity", Multiplicity.class, codec);
             colSpec.function1 = processOne(node, "function1", LambdaFunction.class, codec);
             colSpec.function2 = processOne(node, "function2", LambdaFunction.class, codec);
             colSpec.sourceInformation = processOne(node, "sourceInformation", SourceInformation.class, codec);

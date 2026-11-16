@@ -1445,4 +1445,71 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  }\n" +
                 "}");
     }
+
+    @Test
+    public void testServiceTestsWithoutSourceInformation()
+    {
+        testWithoutSourceInformation("###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: '/url/myUrl';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: param: String[1]|test::class.all()->project([col(p|$p.prop1, 'prop1')]);\n" +
+                "    mapping: test::mapping;\n" +
+                "    runtime: test::runtime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = 'value1'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualTo\n" +
+                "              #{\n" +
+                "                expected:\n" +
+                "                  'expected result content';\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n");
+
+        testWithoutSourceInformation("###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: '/url/myUrl';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: param: String[1]|test::class.all()->project([col(p|$p.prop1, 'prop1')]);\n" +
+                "    mapping: test::mapping;\n" +
+                "    runtime: test::runtime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      { ['value1'], res: Result<Any|*>[1]|true }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+    }
 }

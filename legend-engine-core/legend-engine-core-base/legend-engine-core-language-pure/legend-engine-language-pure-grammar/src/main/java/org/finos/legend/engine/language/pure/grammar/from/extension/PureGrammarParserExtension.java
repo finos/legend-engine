@@ -34,6 +34,33 @@ public interface PureGrammarParserExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
+    /**
+     * Section types this extension takes over from the parser that would otherwise parse them (see
+     * {@link SectionParserOverride}); at most one override per section type across all extensions.
+     */
+    default Iterable<? extends SectionParserOverride> getSectionParserOverrides()
+    {
+        return Collections.emptyList();
+    }
+
+    /**
+     * The parser this extension takes the parsing of standalone expressions over with (see
+     * {@link ExpressionParserOverride}); at most one across all extensions.
+     */
+    default Iterable<? extends ExpressionParserOverride> getExpressionParserOverrides()
+    {
+        return Collections.emptyList();
+    }
+
+    /**
+     * The parser this extension takes the parsing of whole models over with (see {@link ModelParserOverride}); at
+     * most one across all extensions.
+     */
+    default Iterable<? extends ModelParserOverride> getModelParserOverrides()
+    {
+        return Collections.emptyList();
+    }
+
     default Iterable<? extends ConnectionValueParser> getExtraConnectionParsers()
     {
         return Collections.emptyList();
