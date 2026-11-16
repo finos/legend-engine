@@ -27,7 +27,7 @@ import meta::relational::tests::mapping::embedded::advanced::*;
                          , testMappingEmbeddedOtherwise, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('name,description\n' + 'Product 1,Bond 1\n' + 'Product 2,Bond 2\n' + 'Product 3,SuperBond 3 super\n', $result.values->toOne()->toCSV());
-  assertEquals('select "root".PRODUCT_NAME as "name", "root".BOND_DETAILS as "description" from PRODUCT_DENORM as "root"', $result->sqlRemoveFormatting());
+  assertSameSQL('select "root".PRODUCT_NAME as "name", "root".BOND_DETAILS as "description" from PRODUCT_DENORM as "root"', $result->sqlRemoveFormatting());
  }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestFilter():Boolean[1]
@@ -73,7 +73,8 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::embe
    let result = execute(|Product.all()->project([p | $p.bondDetails.holder.name], ['holder'])
                          , testMappingEmbeddedOtherwise, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
   
-  assertEquals('select "party_0".name as "holder" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) left outer join Party as "party_0" on ("bond_detail_0".HOLDERID = "party_0".id)', $result->sqlRemoveFormatting());
+  assertSameElements(['Party 1', 'Party 2', 'Party 3'], $result.values.rows->map(r|$r.values->makeString(',')));
+  assertSameSQL('select "party_0".name as "holder" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) left outer join Party as "party_0" on ("bond_detail_0".HOLDERID = "party_0".id)', $result->sqlRemoveFormatting());
  }
 
  function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testProjectionOtherwiseNonPrimitive():Boolean[1]
@@ -81,7 +82,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::embe
    let result = execute(|Product.all()->project([p | $p.name, p | $p.bondDetails.holder.name, p | $p.bondDetails.bondClassification.type], ['name', 'holder', 'type'])
                          , testMappingEmbeddedOtherwise3, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
   
-  assertEquals('select "root".PRODUCT_NAME as "name", "party_0".name as "holder", "bondclassificationtable_0".type as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) left outer join Party as "party_0" on ("bond_detail_0".HOLDERID = "party_0".id) left outer join BondClassificationTable as "bondclassificationtable_0" on ("root".PRODUCT_ID = "bondclassificationtable_0".PRODUCT_ID)', $result->sqlRemoveFormatting());
+  assertSameSQL('select "root".PRODUCT_NAME as "name", "party_0".name as "holder", "bondclassificationtable_0".type as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) left outer join Party as "party_0" on ("bond_detail_0".HOLDERID = "party_0".id) left outer join BondClassificationTable as "bondclassificationtable_0" on ("root".PRODUCT_ID = "bondclassificationtable_0".PRODUCT_ID)', $result->sqlRemoveFormatting());
   assertEquals('name,holder,type\n' + 'Product 1,Party 1,Corporate\n' + 'Product 2,Party 2,\n' + 'Product 3,Party 3,\n', $result.values->toOne()->toCSV());
  }
 
@@ -119,7 +120,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
                                  ), testMappingEmbeddedOtherwise,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('Bond Type,Profit\n' + '15 years,10.0\n' + '5 years,1.0\n', $result.values->toOne()->toCSV());
-  assertEqualsH2Compatible(
+  assertSameSQLH2Compatible(
     'select "bond_detail_0".TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then 5.0 else 1.0 end) as "Profit" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
     'select "bond_detail_0".TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then cast(5.0 as float) else cast(1.0 as float) end) as "Profit" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
     $result->sqlRemoveFormatting()
@@ -136,7 +137,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
                                  ), testMappingEmbeddedOtherwise, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('Bond Type,sum\n' + '15 years,2.0\n' + '5 years,5.0\n', $result.values->toOne()->toCSV());
-  assertEqualsH2Compatible(
+  assertSameSQLH2Compatible(
     'select "bond_detail_0".TYPE as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
     'select "bond_detail_0".TYPE as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then cast(5.0 as float) else cast(1.0 as float) end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
     $result->sqlRemoveFormatting()
@@ -153,7 +154,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
                                  ), testMappingEmbeddedOtherwise, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('Bond Type,sum\n' + 'Bond 1,1.0\n' + 'Bond 2,1.0\n'+ 'SuperBond 3 super,5.0\n', $result.values->toOne()->toCSV());
-  assertEqualsH2Compatible(
+  assertSameSQLH2Compatible(
     'select "root".BOND_DETAILS as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
     'select "root".BOND_DETAILS as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then cast(5.0 as float) else cast(1.0 as float) end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
     $result->sqlRemoveFormatting()

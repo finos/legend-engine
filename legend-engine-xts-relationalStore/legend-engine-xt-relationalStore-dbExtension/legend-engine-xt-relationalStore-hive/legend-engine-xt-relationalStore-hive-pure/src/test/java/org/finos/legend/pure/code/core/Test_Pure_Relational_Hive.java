@@ -25,7 +25,10 @@ public class Test_Pure_Relational_Hive
     public static TestSuite suite()
     {
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
-        executionSupport.getConsole().disable();
+        if (!executionSupport.getRuntimeOptions().isOptionSet("SqlAssertModeLog"))
+        {
+            executionSupport.getConsole().disable();
+        }
         TestSuite suite = new TestSuite();
 
         suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::executionPlan::tests::hive", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));

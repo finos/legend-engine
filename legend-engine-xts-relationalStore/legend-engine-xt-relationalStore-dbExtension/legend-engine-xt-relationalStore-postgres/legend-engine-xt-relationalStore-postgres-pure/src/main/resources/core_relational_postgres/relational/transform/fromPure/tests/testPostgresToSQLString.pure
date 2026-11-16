@@ -33,7 +33,7 @@ function meta::relational::functions::sqlToString::postgres::runTestCaseById(tes
    let testCase = $filtered->toOne();
 
    let result = toSQLString($testCase.query, $testCase.mapping, $testCase.dbType, postgresExtensions());
-   assertEquals($testCase.expectedSql, $result, '\nSQL not as expected for \'%s\'\n\nexpected: %s\nactual:   %s', [$testCase.id, $testCase.expectedSql, $result]);
+   assertSameSQL($testCase.expectedSql, $result, $testCase.id->toString());
 }
 
 function meta::relational::functions::sqlToString::postgres::testCasesForDocGeneration():TestCase[*]
@@ -58,14 +58,14 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
                                   )};
 
    let postGresSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, postgresExtensions());
-   assertEquals('select "root".LEGALNAME as "legalName", string_agg("personTable_d#4_d_m1".FIRSTNAME, Text\'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by 1', $postGresSql);
+   assertSameSQL('select "root".LEGALNAME as "legalName", string_agg("personTable_d#4_d_m1".FIRSTNAME, Text\'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by 1', $postGresSql);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringJoinStringsSimpleConcat():Boolean[1]
 {
    let fn = {|Person.all()->project([p | $p.firstName + '_' + $p.lastName], ['firstName_lastName'])};
    let postGresSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, postgresExtensions());
-   assertEquals('select concat("root".FIRSTNAME, Text\'_\', "root".LASTNAME) as "firstName_lastName" from personTable as "root"', $postGresSql);
+   assertSameSQL('select concat("root".FIRSTNAME, Text\'_\', "root".LASTNAME) as "firstName_lastName" from personTable as "root"', $postGresSql);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringConcatPostgres():Boolean[1]
@@ -75,7 +75,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
                                     meta::relational::tests::simpleRelationalMapping,
                                     meta::relational::runtime::DatabaseType.Postgres, postgresExtensions());
 
-   assertEquals('select concat("root".FIRSTNAME, Text\' \', "root".LASTNAME) as "fullName" from personTable as "root" where "root".FIRSTNAME = Text\'John\'', $s);
+   assertSameSQL('select concat("root".FIRSTNAME, Text\' \', "root".LASTNAME) as "fullName" from personTable as "root" where "root".FIRSTNAME = Text\'John\'', $s);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testTakePostgres():Boolean[1]
@@ -96,7 +96,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testP
                                                    ['a','b','c','d', 'e'])->take(0),
                               simpleRelationalMapping, DatabaseType.Postgres, postgresExtensions());
    print($result);
-   assertEquals('select Text\'String\' as "a", Date\'2016-03-01\' as "b", Timestamp\'2016-03-01 10:18:18.976\' as "c", 1 as "d", 1.1 as "e" from personTable as "root" limit 0', $result);
+   assertSameSQL('select Text\'String\' as "a", Date\'2016-03-01\' as "b", Timestamp\'2016-03-01 10:18:18.976\' as "c", 1 as "d", 1.1 as "e" from personTable as "root" limit 0', $result);
    true;
 }
 
@@ -104,21 +104,21 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testR
 {
    let result = toSQLString(|Person.all()->project([p | round($p.age->toOne() / 100)], ['round']),
                               simpleRelationalMapping, DatabaseType.Postgres, postgresExtensions());
-   assertEquals('select round((((1.0 * "root".AGE) / 100))::numeric, 0) as "round" from personTable as "root"', $result);
+   assertSameSQL('select round((((1.0 * "root".AGE) / 100))::numeric, 0) as "round" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testRoundToDecimalsPostgres():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([p | round($p.age->toOne() / 100, 2)], ['round']),
                               simpleRelationalMapping, DatabaseType.Postgres, postgresExtensions());
-   assertEquals('select round((((1.0 * "root".AGE) / 100))::numeric, 2) as "round" from personTable as "root"', $result);
+   assertSameSQL('select round((((1.0 * "root".AGE) / 100))::numeric, 2) as "round" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringWithLength():Boolean[1]
 {
    [DatabaseType.Postgres]->map(db|
       let s = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, $db, postgresExtensions());
-      assertEquals('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
+      assertSameSQL('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
    );
 }
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringWithPosition():Boolean[1]
@@ -127,7 +127,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
               |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
                meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.Postgres, postgresExtensions());
 
-   assertEquals('select substring("root".FULLNAME, 0, position(Text\',\' in "root".FULLNAME)-1) as "firstName" from personTable as "root"', $postgresSql);
+   assertSameSQL('select substring("root".FULLNAME, 0, position(Text\',\' in "root".FULLNAME)-1) as "firstName" from personTable as "root"', $postgresSql);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationIndexOf():Boolean[1]
@@ -145,7 +145,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
          simpleRelationalMapping,
          $driver, postgresExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -156,7 +156,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
               |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
                meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, $db, postgresExtensions());
 
-      assertEquals('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"', $s);
+      assertSameSQL('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"', $s);
    )->distinct() == [true];
 }
 
@@ -167,7 +167,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
               |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
                meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, $db, postgresExtensions());
 
-      assertEquals('select stddev_pop("root".int1) as "stdDevPopulation" from dataTable as "root"', $s);
+      assertSameSQL('select stddev_pop("root".int1) as "stdDevPopulation" from dataTable as "root"', $s);
    )->distinct() == [true];
 }
 
@@ -187,7 +187,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testD
          simpleRelationalMapping,
          $driver, postgresExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -213,7 +213,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
          simpleRelationalMapping,
          $driver, postgresExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -237,7 +237,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testC
          simpleRelationalMapping,
          $driver, postgresExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -249,7 +249,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
                                                    ],
                                                    ['a']),
                               simpleRelationalMapping, DatabaseType.Postgres, postgresExtensions());
-   assertEquals('select "root".FIRSTNAME like \'tri%\' as "a" from personTable as "root"', $result);
+   assertSameSQL('select "root".FIRSTNAME like \'tri%\' as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testSqlGenerationForAdjustFunctionUsageInProjectionForPostgres():Boolean[1]
@@ -259,7 +259,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testS
                                                    ],
                                                    ['a']),
                               simpleRelationalMapping, DatabaseType.Postgres, postgresExtensions());
-   assertEquals('select (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 SECONDS\' * 1)) as "a" from personTable as "root"', $result);
+   assertSameSQL('select (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 SECONDS\' * 1)) as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testSqlGenerationForAdjustFunctionWithHourForPostgres():Boolean[1]
@@ -269,7 +269,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testS
                                                    ],
                                                    ['a']),
                               simpleRelationalMapping, DatabaseType.Postgres, postgresExtensions());
-   assertEquals('select (Date(Timestamp\'2011-12-30 08:55:00.0\') + (INTERVAL \'1 HOURS\' * date_part(\'hour\', Timestamp\'2011-12-30 08:55:00.0\'))) as "a" from personTable as "root"', $result);
+   assertSameSQL('select (Date(Timestamp\'2011-12-30 08:55:00.0\') + (INTERVAL \'1 HOURS\' * date_part(\'hour\', Timestamp\'2011-12-30 08:55:00.0\'))) as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testSqlGenerationForAdjustStrictDateUsageInProjectionForPostgres():Boolean[1]
@@ -279,7 +279,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testS
                                                    ],
                                                    ['a']),
                               simpleRelationalMapping, DatabaseType.Postgres, postgresExtensions());
-   assertEquals('select (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) as "a" from personTable as "root"', $result);
+   assertSameSQL('select (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testSqlGenerationForAdjustStrictDateUsageInFiltersForPostgres():Boolean[1]
@@ -289,7 +289,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testS
                                                    ],
                                                    ['a']),
                               simpleRelationalMapping, DatabaseType.Postgres, postgresExtensions());
-   assertEquals('select Text\'a\' as "a" from tradeTable as "root" where (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) > Date\'2011-12-30\'', $result);
+   assertSameSQL('select Text\'a\' as "a" from tradeTable as "root" where (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) > Date\'2011-12-30\'', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testSqlGenerationForAdjustFunctionUsageInFiltersForPostgres():Boolean[1]
@@ -299,7 +299,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testS
                                                    ],
                                                    ['a']),
                               simpleRelationalMapping, DatabaseType.Postgres, postgresExtensions());
-   assertEquals('select Text\'a\' as "a" from tradeTable as "root" where (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 DAYS\' * 1)) > Timestamp\'2011-12-30 08:55:00.0\'', $result);
+   assertSameSQL('select Text\'a\' as "a" from tradeTable as "root" where (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 DAYS\' * 1)) > Timestamp\'2011-12-30 08:55:00.0\'', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationFirstDayOfMonth():Boolean[1]
@@ -318,7 +318,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
          simpleRelationalMapping,
          $driver, postgresExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -338,7 +338,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
          simpleRelationalMapping,
          $driver, postgresExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -358,7 +358,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
          simpleRelationalMapping,
          $driver, postgresExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -378,7 +378,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
          simpleRelationalMapping,
          $driver, postgresExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -398,7 +398,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
          simpleRelationalMapping,
          $driver, postgresExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -423,7 +423,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
          simpleRelationalMapping,
          $driver, postgresExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -446,7 +446,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
          simpleRelationalMapping,
          $driver, postgresExtensions());
 
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+      assertSameSQL($expectedSql, $result, $driver->toString());
    )->distinct() == [true];
 }
 
@@ -464,4 +464,9 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
    let func = {|Person.all()->project([col(x | $x.firstName, 'FirstName'), col(x | $x.age->toOne()->toString()->toUpper(), 'AgeString')])};
    let sql = toSQLString($func, simpleRelationalMapping, DatabaseType.Postgres, postgresExtensions());
    assertSameSQL('select "root".FIRSTNAME as "FirstName", upper(cast("root".AGE as varchar)) as "AgeString" from personTable as "root"', $sql);
+}
+
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testNoSqlAssertBypassesInPostgres():Boolean[1]
+{
+  meta::relational::functions::asserts::assertNoSqlAssertBypasses('/core_relational_postgres/');
 }

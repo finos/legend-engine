@@ -14,24 +14,148 @@
 
 import meta::pure::mapping::*;
 import meta::relational::mapping::*;
+import meta::relational::functions::asserts::*;
 
-function meta::relational::functions::asserts::assertSameSQL(sqlString:String[1],result:Result<Any|*>[1]):Boolean[1]
+// Every SQL-text assertion in the relational test suites goes through this family, so that one runtime
+// option decides what they do. Pure runtime options are flags, so the three modes are two options:
+//   (neither set)       STRICT - compare and fail on a mismatch
+//   SqlAssertModeSkip   SKIP   - pass without comparing
+//   SqlAssertModeLog    LOG    - compare, print mismatches (prefixed '[SqlAssertMode=log]') and pass
+// Interpreted (Pure LSP / IDE): set the option live (pure-lsp set-option SqlAssertModeSkip).
+// Compiled (JUnit runners): -Dpure.options.SqlAssertModeSkip=true on the test JVM, e.g. on the mvn command line.
+Enum meta::relational::functions::asserts::SqlAssertMode
 {
-  meta::relational::functions::asserts::assertSameSQL($sqlString, $result->sqlRemoveFormatting());
+  STRICT,
+  SKIP,
+  LOG
 }
 
-function meta::relational::functions::asserts::assertSameSQL(sqlString:String[1],result:String[1]):Boolean[1]
+function meta::relational::functions::asserts::sqlAssertMode():SqlAssertMode[1]
 {
-  assertEquals($sqlString, $result);
+  if(meta::core::runtime::isOptionSet('SqlAssertModeSkip'),
+    | SqlAssertMode.SKIP,
+    | if(meta::core::runtime::isOptionSet('SqlAssertModeLog'), | SqlAssertMode.LOG, | SqlAssertMode.STRICT)
+  );
 }
 
-function meta::relational::functions::asserts::sqlContains(subString:String[1],result:Result<Any|*>[1]):Boolean[1]
+function meta::relational::functions::asserts::assertSameSQL(expected:String[1], result:Result<Any|*>[1]):Boolean[1]
 {
-  let sql = $result->sqlRemoveFormatting() ;
-   assert($sql->contains($subString), | $sql + ' does not contain ' + $subString);
+  assertSameSQL($expected, $result->sqlRemoveFormatting());
 }
 
-function meta::relational::functions::asserts::sqlContains(subString:String[1],result:String[1]):Boolean[1]
+function meta::relational::functions::asserts::assertSameSQL(expected:String[1], actual:String[1]):Boolean[1]
 {
-  assert($result->contains($subString), | $result + ' does not contain ' + $subString);
+  checkSameSQL(sqlAssertMode(), $expected, $actual);
+}
+
+function meta::relational::functions::asserts::assertSameSQL(expected:String[1], actual:String[1], generatedFor:String[1]):Boolean[1]
+{
+  checkSameSQL(sqlAssertMode(), $expected, $actual, $generatedFor);
+}
+
+function meta::relational::functions::asserts::assertSameSQLs(expected:String[*], actual:String[*]):Boolean[1]
+{
+  checkSameSQLs(sqlAssertMode(), $expected, $actual);
+}
+
+function meta::relational::functions::asserts::assertSQLContains(expectedSubstring:String[1], result:Result<Any|*>[1]):Boolean[1]
+{
+  assertSQLContains($expectedSubstring, $result->sqlRemoveFormatting());
+}
+
+function meta::relational::functions::asserts::assertSQLContains(expectedSubstring:String[1], actual:String[1]):Boolean[1]
+{
+  checkSQLContains(sqlAssertMode(), $expectedSubstring, $actual);
+}
+
+function meta::relational::functions::asserts::assertSQLDoesNotContain(unexpectedSubstring:String[1], result:Result<Any|*>[1]):Boolean[1]
+{
+  assertSQLDoesNotContain($unexpectedSubstring, $result->sqlRemoveFormatting());
+}
+
+function meta::relational::functions::asserts::assertSQLDoesNotContain(unexpectedSubstring:String[1], actual:String[1]):Boolean[1]
+{
+  checkSQLDoesNotContain(sqlAssertMode(), $unexpectedSubstring, $actual);
+}
+
+function meta::relational::functions::asserts::assertSQLStartsWith(expectedPrefix:String[1], result:Result<Any|*>[1]):Boolean[1]
+{
+  assertSQLStartsWith($expectedPrefix, $result->sqlRemoveFormatting());
+}
+
+function meta::relational::functions::asserts::assertSQLStartsWith(expectedPrefix:String[1], actual:String[1]):Boolean[1]
+{
+  checkSQLStartsWith(sqlAssertMode(), $expectedPrefix, $actual);
+}
+
+function meta::relational::functions::asserts::assertSQLMatches(regex:String[1], result:Result<Any|*>[1]):Boolean[1]
+{
+  assertSQLMatches($regex, $result->sqlRemoveFormatting());
+}
+
+function meta::relational::functions::asserts::assertSQLMatches(regex:String[1], actual:String[1]):Boolean[1]
+{
+  checkSQLMatches(sqlAssertMode(), $regex, $actual);
+}
+
+function <<doc.deprecated>> meta::relational::functions::asserts::sqlContains(subString:String[1], result:Result<Any|*>[1]):Boolean[1]
+{
+  assertSQLContains($subString, $result);
+}
+
+function <<doc.deprecated>> meta::relational::functions::asserts::sqlContains(subString:String[1], result:String[1]):Boolean[1]
+{
+  assertSQLContains($subString, $result);
+}
+
+function <<access.private>> meta::relational::functions::asserts::checkSameSQL(mode:SqlAssertMode[1], expected:String[1], actual:String[1]):Boolean[1]
+{
+  compareSQL($mode, 'assertSameSQL', | $expected == $actual, | format('\nexpected: %r\nactual:   %r', [$expected, $actual]));
+}
+
+function <<access.private>> meta::relational::functions::asserts::checkSameSQL(mode:SqlAssertMode[1], expected:String[1], actual:String[1], generatedFor:String[1]):Boolean[1]
+{
+  compareSQL($mode, 'assertSameSQL', | $expected == $actual, | format('\nSQL not as expected for %s\nexpected: %r\nactual:   %r', [$generatedFor, $expected, $actual]));
+}
+
+function <<access.private>> meta::relational::functions::asserts::checkSameSQLs(mode:SqlAssertMode[1], expected:String[*], actual:String[*]):Boolean[1]
+{
+  compareSQL($mode, 'assertSameSQLs', | equal($expected, $actual), | format('\nexpected: %s\nactual:   %s', [$expected->map(s | $s->toRepresentation())->joinStrings('[', ', ', ']'), $actual->map(s | $s->toRepresentation())->joinStrings('[', ', ', ']')]));
+}
+
+function <<access.private>> meta::relational::functions::asserts::checkSQLContains(mode:SqlAssertMode[1], expectedSubstring:String[1], actual:String[1]):Boolean[1]
+{
+  compareSQL($mode, 'assertSQLContains', | $actual->contains($expectedSubstring), | $actual + ' does not contain ' + $expectedSubstring);
+}
+
+function <<access.private>> meta::relational::functions::asserts::checkSQLDoesNotContain(mode:SqlAssertMode[1], unexpectedSubstring:String[1], actual:String[1]):Boolean[1]
+{
+  compareSQL($mode, 'assertSQLDoesNotContain', | !$actual->contains($unexpectedSubstring), | $actual + ' contains ' + $unexpectedSubstring);
+}
+
+function <<access.private>> meta::relational::functions::asserts::checkSQLStartsWith(mode:SqlAssertMode[1], expectedPrefix:String[1], actual:String[1]):Boolean[1]
+{
+  compareSQL($mode, 'assertSQLStartsWith', | $actual->startsWith($expectedPrefix), | $actual + ' does not start with ' + $expectedPrefix);
+}
+
+function <<access.private>> meta::relational::functions::asserts::checkSQLMatches(mode:SqlAssertMode[1], regex:String[1], actual:String[1]):Boolean[1]
+{
+  compareSQL($mode, 'assertSQLMatches', | $actual->matches($regex), | $actual + ' does not match ' + $regex);
+}
+
+function <<access.private>> meta::relational::functions::asserts::compareSQL(mode:SqlAssertMode[1], assertion:String[1], matches:Function<{->Boolean[1]}>[1], mismatch:Function<{->String[1]}>[1]):Boolean[1]
+{
+  if($mode == SqlAssertMode.SKIP || $matches->eval(),
+    | true,
+    | if($mode == SqlAssertMode.LOG,
+        | let unused = println(sqlAssertLogLine($assertion, $mismatch->eval()));
+          true;,
+        | fail($mismatch)
+      )
+  );
+}
+
+function <<access.private>> meta::relational::functions::asserts::sqlAssertLogLine(assertion:String[1], mismatch:String[1]):String[1]
+{
+  '[SqlAssertMode=log] ' + $assertion + ' mismatch:' + $mismatch;
 }

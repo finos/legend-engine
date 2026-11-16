@@ -1,0 +1,160 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSameSQLPassesOnEqualSQL():Boolean[1]
+{
+  checkSameSQL(SqlAssertMode.STRICT, 'select 1', 'select 1');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSameSQLFailsOnDifferentSQL():Boolean[1]
+{
+  assertError(|checkSameSQL(SqlAssertMode.STRICT, 'select 1', 'select 2'), '\nexpected: \'select 1\'\nactual:   \'select 2\'');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSameSQLForTargetPassesOnEqualSQL():Boolean[1]
+{
+  checkSameSQL(SqlAssertMode.STRICT, 'select 1', 'select 1', 'H2');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSameSQLForTargetFailsNamingTheTarget():Boolean[1]
+{
+  assertError(|checkSameSQL(SqlAssertMode.STRICT, 'select 1', 'select 2', 'H2'), '\nSQL not as expected for H2\nexpected: \'select 1\'\nactual:   \'select 2\'');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSameSQLsPassesOnEqualStatements():Boolean[1]
+{
+  checkSameSQLs(SqlAssertMode.STRICT, ['create table t', 'select 1'], ['create table t', 'select 1']);
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSameSQLsFailsOnDifferentStatements():Boolean[1]
+{
+  assertError(|checkSameSQLs(SqlAssertMode.STRICT, ['select 1', 'select 2'], ['select 1']), '\nexpected: [\'select 1\', \'select 2\']\nactual:   [\'select 1\']');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSQLContainsPassesWhenSubstringPresent():Boolean[1]
+{
+  checkSQLContains(SqlAssertMode.STRICT, 'from t', 'select a from t');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSQLContainsFailsWhenSubstringAbsent():Boolean[1]
+{
+  assertError(|checkSQLContains(SqlAssertMode.STRICT, 'from u', 'select a from t'), 'select a from t does not contain from u');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSQLDoesNotContainPassesWhenSubstringAbsent():Boolean[1]
+{
+  checkSQLDoesNotContain(SqlAssertMode.STRICT, 'from u', 'select a from t');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSQLDoesNotContainFailsWhenSubstringPresent():Boolean[1]
+{
+  assertError(|checkSQLDoesNotContain(SqlAssertMode.STRICT, 'from t', 'select a from t'), 'select a from t contains from t');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSQLStartsWithPassesOnMatchingPrefix():Boolean[1]
+{
+  checkSQLStartsWith(SqlAssertMode.STRICT, 'with ', 'with c as (select 1) select * from c');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSQLStartsWithFailsOnOtherPrefix():Boolean[1]
+{
+  assertError(|checkSQLStartsWith(SqlAssertMode.STRICT, 'with ', 'select 1'), 'select 1 does not start with with ');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSQLMatchesPassesOnMatchingRegex():Boolean[1]
+{
+  checkSQLMatches(SqlAssertMode.STRICT, 'select .* from t', 'select a, b from t');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testStrictSQLMatchesFailsOnNonMatchingRegex():Boolean[1]
+{
+  assertError(|checkSQLMatches(SqlAssertMode.STRICT, 'select .* from u', 'select a from t'), 'select a from t does not match select .* from u');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testSkipSameSQLPassesOnMismatch():Boolean[1]
+{
+  checkSameSQL(SqlAssertMode.SKIP, 'select 1', 'select 2');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testSkipSameSQLForTargetPassesOnMismatch():Boolean[1]
+{
+  checkSameSQL(SqlAssertMode.SKIP, 'select 1', 'select 2', 'H2');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testSkipSameSQLsPassesOnMismatch():Boolean[1]
+{
+  checkSameSQLs(SqlAssertMode.SKIP, ['select 1'], ['select 2', 'select 3']);
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testSkipSQLContainsPassesOnMismatch():Boolean[1]
+{
+  checkSQLContains(SqlAssertMode.SKIP, 'from u', 'select a from t');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testSkipSQLDoesNotContainPassesOnMismatch():Boolean[1]
+{
+  checkSQLDoesNotContain(SqlAssertMode.SKIP, 'from t', 'select a from t');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testSkipSQLStartsWithPassesOnMismatch():Boolean[1]
+{
+  checkSQLStartsWith(SqlAssertMode.SKIP, 'with ', 'select 1');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testSkipSQLMatchesPassesOnMismatch():Boolean[1]
+{
+  checkSQLMatches(SqlAssertMode.SKIP, 'select .* from u', 'select a from t');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testLogSameSQLPassesOnMismatch():Boolean[1]
+{
+  checkSameSQL(SqlAssertMode.LOG, 'select 1', 'select 2');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testLogSameSQLForTargetPassesOnMismatch():Boolean[1]
+{
+  checkSameSQL(SqlAssertMode.LOG, 'select 1', 'select 2', 'H2');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testLogSameSQLsPassesOnMismatch():Boolean[1]
+{
+  checkSameSQLs(SqlAssertMode.LOG, ['select 1'], ['select 2', 'select 3']);
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testLogSQLContainsPassesOnMismatch():Boolean[1]
+{
+  checkSQLContains(SqlAssertMode.LOG, 'from u', 'select a from t');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testLogSQLDoesNotContainPassesOnMismatch():Boolean[1]
+{
+  checkSQLDoesNotContain(SqlAssertMode.LOG, 'from t', 'select a from t');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testLogSQLStartsWithPassesOnMismatch():Boolean[1]
+{
+  checkSQLStartsWith(SqlAssertMode.LOG, 'with ', 'select 1');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testLogSQLMatchesPassesOnMismatch():Boolean[1]
+{
+  checkSQLMatches(SqlAssertMode.LOG, 'select .* from u', 'select a from t');
+}
+
+function <<test.Test>> meta::relational::functions::asserts::testLogLineReportsAssertionAndMismatch():Boolean[1]
+{
+  assertEquals('[SqlAssertMode=log] assertSameSQL mismatch:\nexpected: \'select 1\'\nactual:   \'select 2\'', sqlAssertLogLine('assertSameSQL', '\nexpected: \'select 1\'\nactual:   \'select 2\''));
+}

@@ -82,7 +82,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::embedde
 
    // map(n | -$n) over the embedded [0..1] property must negate the column, giving the same
    // SQL as the equivalent direct expression -$p.address.streetNumber->toOne().
-   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", -"root".ADDRESS_STREETNUMBER as "negatedStreetNumber" from PERSON_ADDRESS_DENORM as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", -"root".ADDRESS_STREETNUMBER as "negatedStreetNumber" from PERSON_ADDRESS_DENORM as "root"', $result->sqlRemoveFormatting());
 }
 
 // Companion to the unary-minus case above, with a binary operator. Unary minus is the only
@@ -101,7 +101,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::embedde
       meta::relational::extension::relationalExtensions()
    );
 
-   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".ADDRESS_STREETNUMBER * 2 as "doubledStreetNumber" from PERSON_ADDRESS_DENORM as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".ADDRESS_STREETNUMBER * 2 as "doubledStreetNumber" from PERSON_ADDRESS_DENORM as "root"', $result->sqlRemoveFormatting());
 }
 
 // The cases above map over a primitive property, where the lambda parameter has to resolve to a
@@ -120,7 +120,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::embedde
       meta::relational::extension::relationalExtensions()
    );
 
-   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".ADDRESS_STREETNUMBER * 2 as "addressStreetNumberDoubled" from PERSON_ADDRESS_DENORM as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".ADDRESS_STREETNUMBER * 2 as "addressStreetNumberDoubled" from PERSON_ADDRESS_DENORM as "root"', $result->sqlRemoveFormatting());
 }
 
 ###Relational

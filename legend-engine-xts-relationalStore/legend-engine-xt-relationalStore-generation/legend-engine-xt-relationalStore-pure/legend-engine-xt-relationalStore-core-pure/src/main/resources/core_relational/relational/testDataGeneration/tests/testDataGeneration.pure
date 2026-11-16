@@ -29,6 +29,7 @@ import meta::pure::lineage::scanTables::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::testDataGeneration::*;
 import meta::pure::extension::*;
+import meta::relational::functions::asserts::*;
 
 /*** Tests ***/
 
@@ -44,7 +45,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 1);
-   assertEquals('select top 20 "root".ID from Person as "root" where "root".name = \'Atul Anand\'', $testData.sqls->at(0));
+   assertSameSQL('select top 20 "root".ID from Person as "root" where "root".name = \'Atul Anand\'', $testData.sqls->at(0));
    assertTestData( 'default\n' +
                    'Person\n' +
                    'ID\n' +
@@ -65,7 +66,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
    let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
    assertSize($testData.sqls, 1);
-   assertEquals('select top 20 "root".ID, "root".name from Person as "root" where "root".name = \'Atul Anand\'', $testData.sqls->at(0));
+   assertSameSQL('select top 20 "root".ID, "root".name from Person as "root" where "root".name = \'Atul Anand\'', $testData.sqls->at(0));
 
    assertTestData(  'default\n' +
                     'Person\n' +
@@ -166,7 +167,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['No Name']));
    let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
    assertSize($testData.sqls, 1);
-   assertEquals('select top 20 "root".ID, "root".name from Person as "root" where "root".name = \'No Name\'', $testData.sqls->at(0)->sqlRemoveFormatting());
+   assertSameSQL('select top 20 "root".ID, "root".name from Person as "root" where "root".name = \'No Name\'', $testData.sqls->at(0)->sqlRemoveFormatting());
    assertTestData(  'default\n' +
                     'Person\n' +
                     'ID,NAME\n' +
@@ -291,7 +292,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 3);
-   assertEqualsH2Compatible(
+   assertSameSQLH2Compatible(
     sqlRemoveFormatting('\n' +
     'select top 20 \n' +
     '	"root".ID, "root".prodId \n' +
@@ -1771,7 +1772,7 @@ function <<access.protected>> meta::relational::testDataGeneration::tests::initD
 
 function <<access.private>> meta::relational::testDataGeneration::tests::assertSqlEquals(s1 : String[1], s2 : String[1]):Boolean[1]
 {
-   assertEquals($s1->sqlRemoveFormatting(), $s2->sqlRemoveFormatting());
+   assertSameSQL($s1->sqlRemoveFormatting(), $s2->sqlRemoveFormatting());
 }
 
 function meta::relational::testDataGeneration::tests::assertTestData(s1 : String[1], s2 : String[1], db: Database[1]):Boolean[1]

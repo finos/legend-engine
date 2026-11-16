@@ -29,13 +29,13 @@ import meta::relational::tests::functions::sqlstring::databricks::*;
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDatabricksSchemaNameShouldContainCatalogName():Boolean[1]
 {
    let s = toSQLString(|Person.all(), meta::relational::tests::simpleRelationalMappingPersonForDatabricksCatalog, meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age` from catalog.schema.personTable as `root`', $s);
+   assertSameSQL('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age` from catalog.schema.personTable as `root`', $s);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDatabricksSchemaNameShouldNotContainCatalogName():Boolean[1]
 {
    let s = toSQLString(|Person.all(), meta::relational::tests::simpleRelationalMappingPersonForDatabricks, meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age` from schema.personTable as `root`', $s);
+   assertSameSQL('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age` from schema.personTable as `root`', $s);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testCreateViewForDatabricks(): Boolean[*]
@@ -46,17 +46,17 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    // Test basic create or replace view (no copyGrants, no secure)
    let basicView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', generatedSQL = 'select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`', secure = false, copyGrants = false);
    let basicResult = meta::relational::functions::sqlQueryToString::databricks::createView($basicView, $dbConfig, $extensions);
-   assertEquals('CREATE OR REPLACE VIEW `personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`;', $basicResult);
+   assertSameSQL('CREATE OR REPLACE VIEW `personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`;', $basicResult);
 
    // Test create view with schema name
    let schemaView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', schemaName = 'hr', generatedSQL = 'select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`', secure = false, copyGrants = false);
    let schemaResult = meta::relational::functions::sqlQueryToString::databricks::createView($schemaView, $dbConfig, $extensions);
-   assertEquals('CREATE OR REPLACE VIEW `hr`.`personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`;', $schemaResult);
+   assertSameSQL('CREATE OR REPLACE VIEW `hr`.`personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`;', $schemaResult);
 
    // Test create view with copyGrants generates two SQL statements
    let copyGrantsView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', schemaName = 'hr', generatedSQL = 'select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`', secure = false, copyGrants = true);
    let copyGrantsResult = meta::relational::functions::sqlQueryToString::databricks::createView($copyGrantsView, $dbConfig, $extensions);
-   assertEquals('CREATE VIEW IF NOT EXISTS `hr`.`personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`; \nALTER VIEW `hr`.`personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`;', $copyGrantsResult);
+   assertSameSQL('CREATE VIEW IF NOT EXISTS `hr`.`personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`; \nALTER VIEW `hr`.`personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`;', $copyGrantsResult);
 
    let secureView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', generatedSQL = 'select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`', secure = true, copyGrants = false);
    assertError({|meta::relational::functions::sqlQueryToString::databricks::createView($secureView, $dbConfig, $extensions)}, 'For Databricks we dont support SECURE views yet.');
@@ -91,7 +91,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    );
    let createTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $table);
    let result = $createTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
-   assertEquals('Create Table hr.allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $result->toOne());
+   assertSameSQL('Create Table hr.allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $result->toOne());
 
    // Test create table with default schema
    let defaultTable = ^meta::relational::metamodel::relation::Table(
@@ -101,7 +101,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    );
    let defaultCreateTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $defaultTable);
    let defaultResult = $defaultCreateTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
-   assertEquals('Create Table allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $defaultResult->toOne());
+   assertSameSQL('Create Table allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $defaultResult->toOne());
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testCreateFunctionForDatabricks(): Boolean[*]
@@ -125,7 +125,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
       copyGrants = false
    );
    let basicResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($basicFunc, $dbConfig, $extensions);
-   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func`(name STRING) \nRETURNS TABLE(name STRING, DESCRIPTION STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT name AS param_name) \nSELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = name;', $basicResult);
+   assertSameSQL('CREATE OR REPLACE FUNCTION `test_schema`.`my_func`(name STRING) \nRETURNS TABLE(name STRING, DESCRIPTION STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT name AS param_name) \nSELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = name;', $basicResult);
 
    // Test without schema
    let noSchemaFunc = ^meta::relational::metamodel::CreateFunctionSQL(
@@ -137,7 +137,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
       copyGrants = false
    );
    let noSchemaResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($noSchemaFunc, $dbConfig, $extensions);
-   assertEquals('CREATE OR REPLACE FUNCTION `my_func`(batchId DECIMAL(10, 0)) \nRETURNS TABLE(name STRING) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT batchId AS param_batchId) \nSELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= batchId;', $noSchemaResult);
+   assertSameSQL('CREATE OR REPLACE FUNCTION `my_func`(batchId DECIMAL(10, 0)) \nRETURNS TABLE(name STRING) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT batchId AS param_batchId) \nSELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= batchId;', $noSchemaResult);
 
    // Test with copyGrants = true (should still generate CREATE OR REPLACE)
    let copyGrantsFunc = ^meta::relational::metamodel::CreateFunctionSQL(
@@ -155,7 +155,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
       copyGrants = true
    );
    let copyGrantsResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($copyGrantsFunc, $dbConfig, $extensions);
-   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func`(currentWatermark STRING) \nRETURNS TABLE(name STRING, DESCRIPTION STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT currentWatermark AS param_currentWatermark) \nSELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = \'ee\';', $copyGrantsResult);
+   assertSameSQL('CREATE OR REPLACE FUNCTION `test_schema`.`my_func`(currentWatermark STRING) \nRETURNS TABLE(name STRING, DESCRIPTION STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT currentWatermark AS param_currentWatermark) \nSELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = \'ee\';', $copyGrantsResult);
 
    // Test with multiple parameters
    let multiParamFunc = ^meta::relational::metamodel::CreateFunctionSQL(
@@ -175,7 +175,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
       copyGrants = false
    );
    let multiParamResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($multiParamFunc, $dbConfig, $extensions);
-   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func_multi`(startId DECIMAL(10, 0), endId DECIMAL(10, 0)) \nRETURNS TABLE(name STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT startId AS param_startId, endId AS param_endId) \nSELECT t.name AS name, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.START_ID <= startId AND t.END_ID >= endId;', $multiParamResult);
+   assertSameSQL('CREATE OR REPLACE FUNCTION `test_schema`.`my_func_multi`(startId DECIMAL(10, 0), endId DECIMAL(10, 0)) \nRETURNS TABLE(name STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT startId AS param_startId, endId AS param_endId) \nSELECT t.name AS name, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.START_ID <= startId AND t.END_ID >= endId;', $multiParamResult);
 }
 
 // Databricks uses nullsLowWithClauseSupport(): ASC nulls last, DESC nulls first natively.
@@ -241,7 +241,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
     $dbTestRuntime,
     meta::relational::extension::relationalExtensions()
   );
-  assert($baseline->contains('nulls last'), | 'expected default SQL to contain `nulls last`, got:\n' + $baseline);
+  assertSQLContains('nulls last', $baseline);
   // Feature on via connection surface: implicit sort drops the nulls clause.
   let enabled = meta::relational::functions::sqlstring::toSQLStringPretty(
     |meta::relational::tests::model::simple::Person.all()->sortBy(p|$p.firstName),
@@ -249,9 +249,9 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
     $dbTestRuntime->meta::external::store::relational::runtime::testRuntimeWithUseDbNativeImplicitNullOrderingFeatureEnabled(),
     meta::relational::extension::relationalExtensions()
   );
-  assert(!$enabled->contains('nulls'), | 'expected enabled SQL to drop `nulls` clause, got:\n' + $enabled);
+  assertSQLDoesNotContain('nulls', $enabled);
   // sanity: the same order-by column is still present, so we only removed the nulls clause.
-  assert($enabled->contains('order by'), | 'expected enabled SQL to still contain `order by`, got:\n' + $enabled);
+  assertSQLContains('order by', $enabled);
 }
 
 // Explicit `disabled` on the connection surface is inert (matches the resolution contract):
@@ -272,7 +272,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
     $dbTestRuntime->meta::external::store::relational::runtime::testRuntimeWithUseDbNativeImplicitNullOrderingFeatureDisabled(),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals($baseline, $disabled);
+  assertSameSQL($baseline, $disabled);
 }
 
 // Query-surface (withFeatureFlags) end-to-end: mirrors testLegacyFlagProjectionEmitsPlainEquals
@@ -340,21 +340,21 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
     ),
     meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.Databricks),
     meta::relational::extension::relationalExtensions());
-  assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`join_on_param_func`(threshold INT) \nRETURNS TABLE(firstName STRING, age INT, age2 INT) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT threshold AS param_threshold) \nselect `persontable_0`.`firstName` as `firstName`, `persontable_0`.`age` as `age`, `persontable_0`.`age2` as `age2` from (select * from (select `root`.FIRSTNAME as `firstName`, `root`.AGE as `age` from personTable as `root`) as `persontable_1` inner join (select `root`.AGE as `age2` from personTable as `root` where `root`.AGE > (SELECT param_threshold FROM func_param_table)) as `persontable_3` on ((`persontable_1`.`age` = `persontable_3`.`age2` and `persontable_3`.`age2` > threshold))) as `persontable_0`;', $ddl);
+  assertSameSQL('CREATE OR REPLACE FUNCTION `test_schema`.`join_on_param_func`(threshold INT) \nRETURNS TABLE(firstName STRING, age INT, age2 INT) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT threshold AS param_threshold) \nselect `persontable_0`.`firstName` as `firstName`, `persontable_0`.`age` as `age`, `persontable_0`.`age2` as `age2` from (select * from (select `root`.FIRSTNAME as `firstName`, `root`.AGE as `age` from personTable as `root`) as `persontable_1` inner join (select `root`.AGE as `age2` from personTable as `root` where `root`.AGE > (SELECT param_threshold FROM func_param_table)) as `persontable_3` on ((`persontable_1`.`age` = `persontable_3`.`age2` and `persontable_3`.`age2` > threshold))) as `persontable_0`;', $ddl);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testJoinStringsGroupByDatabricks():Boolean[1]
 {
   let sql = toSQLString(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName->joinStrings('*')], ['legalName', 'employees']),
     simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-  assertEquals('select `root`.LEGALNAME as `legalName`, `gen_firmTable_Firm_Person_d_m2`.aggCol as `employees` from firmTable as `root` left outer join (select `gen_firmTable_Firm_Person`.ID as ID, array_join(collect_list(`personTable_d#5`.FIRSTNAME), \'*\') as aggCol from firmTable as `gen_firmTable_Firm_Person` left outer join personTable as `personTable_d#5` on (`gen_firmTable_Firm_Person`.ID = `personTable_d#5`.FIRMID) group by `gen_firmTable_Firm_Person`.ID) as `gen_firmTable_Firm_Person_d_m2` on (`root`.ID = `gen_firmTable_Firm_Person_d_m2`.ID)', $sql);
+  assertSameSQL('select `root`.LEGALNAME as `legalName`, `gen_firmTable_Firm_Person_d_m2`.aggCol as `employees` from firmTable as `root` left outer join (select `gen_firmTable_Firm_Person`.ID as ID, array_join(collect_list(`personTable_d#5`.FIRSTNAME), \'*\') as aggCol from firmTable as `gen_firmTable_Firm_Person` left outer join personTable as `personTable_d#5` on (`gen_firmTable_Firm_Person`.ID = `personTable_d#5`.FIRMID) group by `gen_firmTable_Firm_Person`.ID) as `gen_firmTable_Firm_Person_d_m2` on (`root`.ID = `gen_firmTable_Firm_Person_d_m2`.ID)', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testJoinStringsConcatDatabricks():Boolean[1]
 {
   let sql = toSQLString(|Person.all()->project(p|[$p.firstName, $p.lastName]->joinStrings(' '), 'fullName'),
     simpleRelationalMapping, DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-  assertEquals('select concat(`root`.FIRSTNAME, \' \', `root`.LASTNAME) as `fullName` from personTable as `root`', $sql);
+  assertSameSQL('select concat(`root`.FIRSTNAME, \' \', `root`.LASTNAME) as `fullName` from personTable as `root`', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testFunctionPassesItsOwnParameterToAnotherFunctionByName():Boolean[1]
@@ -374,6 +374,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
     secure = false,
     copyGrants = false
   );
-  assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`outer_func`(param1 STRING) \nRETURNS TABLE(name STRING) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT param1 AS param_param1) \nSELECT t.name AS name FROM test_schema.inner_func(param1) AS t;',
-               meta::relational::functions::sqlQueryToString::databricks::createFunction($outerFunc, $dbConfig, $extensions));
+  assertSameSQL('CREATE OR REPLACE FUNCTION `test_schema`.`outer_func`(param1 STRING) \nRETURNS TABLE(name STRING) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT param1 AS param_param1) \nSELECT t.name AS name FROM test_schema.inner_func(param1) AS t;',
+                meta::relational::functions::sqlQueryToString::databricks::createFunction($outerFunc, $dbConfig, $extensions));
 }

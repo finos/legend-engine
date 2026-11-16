@@ -24,9 +24,10 @@ import meta::relational::functions::toDDL::*;
 import meta::relational::mapping::*;
 import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::ddl::sybase::testCreateTempTableStatement():Boolean[1]
 {
    let sybase = createTempTableStatement()->eval('tt',  ^Column(name='col', type=^meta::relational::metamodel::datatype::Integer()), DatabaseType.Sybase );
-   assertEquals('Declare LOCAL TEMPORARY TABLE tt(col INT) on commit preserve rows;', $sybase);
+   assertSameSQL('Declare LOCAL TEMPORARY TABLE tt(col INT) on commit preserve rows;', $sybase);
 }

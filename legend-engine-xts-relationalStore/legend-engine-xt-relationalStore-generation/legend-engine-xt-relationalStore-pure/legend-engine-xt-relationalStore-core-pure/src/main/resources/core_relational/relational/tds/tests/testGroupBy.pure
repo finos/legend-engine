@@ -24,6 +24,7 @@ import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::pure::metamodel::tds::*;
+import meta::relational::functions::asserts::*;
 
 
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy::testValidateTdsGroupByWithIsNotEmpty():Boolean[1]
@@ -36,7 +37,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
    let tds = $result.values->at(0);
    assertEquals(1, $tds.rows->size());
    assertEquals(['tradesNotDoubleBooked', 'Error', 'Account has more than one trade with the same id', 2], $tds.rows->at(0).values);
-   assertEquals('select \'tradesNotDoubleBooked\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Account has more than one trade with the same id\' as "MESSAGE", "root".ID as "ID" from accountTable as "root" left outer join (select distinct "tradetable_0".accountID, "tradetable_0".ID as "tradeId" from accountTable as "root" left outer join tradeTable as "tradetable_0" on ("tradetable_0".accountID = "root".ID) group by "tradetable_0".accountID, "tradeId" having count(*) > 1) as "accounttable_1" on ("accounttable_1".accountID = "root".ID) where not "accounttable_1".accountID is null', $result->sqlRemoveFormatting());
+   assertSameSQL('select \'tradesNotDoubleBooked\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Account has more than one trade with the same id\' as "MESSAGE", "root".ID as "ID" from accountTable as "root" left outer join (select distinct "tradetable_0".accountID, "tradetable_0".ID as "tradeId" from accountTable as "root" left outer join tradeTable as "tradetable_0" on ("tradetable_0".accountID = "root".ID) group by "tradetable_0".accountID, "tradeId" having count(*) > 1) as "accounttable_1" on ("accounttable_1".accountID = "root".ID) where not "accounttable_1".accountID is null', $result->sqlRemoveFormatting());
 }
 
 
@@ -53,7 +54,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupCount()
    assertEquals(['Firm X', 2], $tds.rows->at(1).values);
    assertEquals(['Firm C', 5], $tds.rows->at(2).values);
    assertEquals(['Firm A', 3], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", count(*) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", count(*) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 10. Tricky usage of variables
@@ -71,7 +72,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
    assertEquals(['Firm X', 2], $tds.rows->at(1).values);
    assertEquals(['Firm C', 5], $tds.rows->at(2).values);
    assertEquals(['Firm A', 3], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", count(*) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", count(*) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 
@@ -84,7 +85,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupDistinc
    assertEquals(['John Hill', 2], $tds.rows->at(1).values);
    assertEquals(['Peter Smith', 2], $tds.rows->at(2).values);
    assertEquals(['Fabrice Roberts', 1], $tds.rows->at(3).values);
-   assertEquals('select concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "sourceName", count(distinct("root".ID)) as "count" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) group by "sourceName" order by "count" desc, "sourceName" asc', $result->sqlRemoveFormatting());
+   assertSameSQL('select concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "sourceName", count(distinct("root".ID)) as "count" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) group by "sourceName" order by "count" desc, "sourceName" asc', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupDistinctCountWithExtendedPrimitives():Boolean[1]
@@ -96,7 +97,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupDistinc
    assertEquals(['John Hill', 2], $tds.rows->at(1).values);
    assertEquals(['Peter Smith', 2], $tds.rows->at(2).values);
    assertEquals(['Fabrice Roberts', 1], $tds.rows->at(3).values);
-   assertEquals('select concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "sourceName", count(distinct("root".ID)) as "count" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) group by "sourceName" order by "count" desc, "sourceName" asc', $result->sqlRemoveFormatting());
+   assertSameSQL('select concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "sourceName", count(distinct("root".ID)) as "count" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) group by "sourceName" order by "count" desc, "sourceName" asc', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleFilterWithGroupByWithDistinct():Boolean[1]
@@ -114,7 +115,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleFilterWithGr
   assertEquals([25.0, 1], $tds.rows->at(0).values);
   assertEquals([320.0, 1], $tds.rows->at(1).values);
 
-  assertEquals('select "tradetable_0"."quantity" as "quantity", count("quantity") as "qty" from (select distinct "root".quantity as "quantity" from tradeTable as "root" where "root".ID < 4 and "root".quantity > 11) as "tradetable_0" group by "quantity"', $result->sqlRemoveFormatting());
+  assertSameSQL('select "tradetable_0"."quantity" as "quantity", count("quantity") as "qty" from (select distinct "root".quantity as "quantity" from tradeTable as "root" where "root".ID < 4 and "root".quantity > 11) as "tradetable_0" group by "quantity"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupBySum():Boolean[1]
@@ -129,7 +130,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupBySum()
    assertEquals(['Firm X', 345.0], $tds.rows->at(1).values);
    assertEquals(['Firm C', 176.0], $tds.rows->at(2).values);
    assertEquals(['Firm A', 66.0], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupConstantAggregates():Boolean[1]
@@ -147,7 +148,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupConstan
    assertEquals(['Firm X', 2, 2], $tds.rows->at(1).values);
    assertEquals(['Firm C', 5, 5], $tds.rows->at(2).values);
    assertEquals(['Firm A', 3, 3], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", sum(1) as "sum", count(*) as "count" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", sum(1) as "sum", count(*) as "count" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 10. Tricky usage of variables
@@ -164,7 +165,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
    assertEquals(['Firm X', 345.0], $tds.rows->at(1).values);
    assertEquals(['Firm C', 176.0], $tds.rows->at(2).values);
    assertEquals(['Firm A', 66.0], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 10. Tricky usage of variables
@@ -181,7 +182,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
    assertEquals(['Firm X', 345.0], $tds.rows->at(1).values);
    assertEquals(['Firm C', 176.0], $tds.rows->at(2).values);
    assertEquals(['Firm A', 66.0], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAggFuncAsLambdaWithTake():Boolean[1]
@@ -199,7 +200,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAggFu
    assertEquals(['Firm X', 345.0], $tds.rows->at(1).values);
    assertEquals(['Firm C', 176.0], $tds.rows->at(2).values);
    assertEquals(['Firm A', 66.0], $tds.rows->at(3).values);
-   assertEquals('select top 100 "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select top 100 "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 
@@ -215,7 +216,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAvera
    assertEquals(['Firm X', 172.5], $tds.rows->at(1).values);
    assertEquals(['Firm C', 35.2], $tds.rows->at(2).values);
    assertEquals(['Firm A', 22.0], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", avg(1.0 * "root".quantity) as "avg" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", avg(1.0 * "root".quantity) as "avg" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 
@@ -232,7 +233,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByTwo()
    assertEquals(['Firm X', 2, 345.0], $tds.rows->at(1).values);
    assertEquals(['Firm C', 5, 176.0], $tds.rows->at(2).values);
    assertEquals(['Firm A', 3, 66.0], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", count(*) as "count", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", count(*) as "count", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 
@@ -248,7 +249,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByMax()
    assertEquals(['Firm X', 320.0], $tds.rows->at(1).values);
    assertEquals(['Firm C', 45.0], $tds.rows->at(2).values);
    assertEquals(['Firm A', 32.0], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", max("root".quantity) as "max" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", max("root".quantity) as "max" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByMin():Boolean[1]
@@ -263,7 +264,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByMin()
    assertEquals(['Firm X', 25.0], $tds.rows->at(1).values);
    assertEquals(['Firm C', 22.0], $tds.rows->at(2).values);
    assertEquals(['Firm A', 11.0], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", min("root".quantity) as "min" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", min("root".quantity) as "min" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAnd():Boolean[1]
@@ -281,7 +282,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAnd()
    assertEquals(['Firm X', true], $tds.rows->at(1).values);
    assertEquals(['Firm C', true], $tds.rows->at(2).values);
    assertEquals(['Firm A', false], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", bool_and("root".quantity > 20) as "and" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", bool_and("root".quantity > 20) as "and" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 
@@ -300,7 +301,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByOr():
    assertEquals(['Firm X', true], $tds.rows->at(1).values);
    assertEquals(['Firm C', false], $tds.rows->at(2).values);
    assertEquals(['Firm A', false], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", bool_or("root".quantity > 50) as "or" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", bool_or("root".quantity > 50) as "or" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithMapFnConstant():Boolean[1]
@@ -315,7 +316,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithMapFnCo
    assertEquals(['Firm X', 1035.0], $tds.rows->at(1).values);
    assertEquals(['Firm C', 528.0], $tds.rows->at(2).values);
    assertEquals(['Firm A', 198.0], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", sum("root".quantity * 3) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", sum("root".quantity * 3) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithMapFnColumns():Boolean[1]
@@ -330,7 +331,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithMapFnCo
    assertEquals(['Firm X', 103025.0], $tds.rows->at(1).values);
    assertEquals(['Firm C', 6618.0], $tds.rows->at(2).values);
    assertEquals(['Firm A', 1674.0], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", sum("root".quantity * "root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", sum("root".quantity * "root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithIfInMap():Boolean[1]
@@ -345,7 +346,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithIfInMap
    assertEquals(['Firm X', 345.0], $tds.rows->at(1).values);
    assertEquals(['Firm C', 176.0], $tds.rows->at(2).values);
    assertEquals(['Firm A', 66.0], $tds.rows->at(3).values);
-   assertEqualsH2Compatible(
+   assertSameSQLH2Compatible(
     'select "producttable_0".NAME as "prodName", sum(case when "root".quantity > 2.0 then "root".quantity else ((1.0 * "root".quantity) / 2) end) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', 
     'select "producttable_0".NAME as "prodName", sum(case when "root".quantity > cast(2.0 as float) then "root".quantity else (1.0 * "root".quantity) / 2 end) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', 
     $result->sqlRemoveFormatting()
@@ -362,7 +363,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByWithJ
    assertEquals(['Smith'], $tds.rows->filter(p | $p.getString('firstName') == 'Peter')->first()->toOne().getString('lastNames'));
    assertEquals(['Johnson*Hill'], $tds.rows->filter(p | $p.getString('firstName') == 'John')->first()->toOne().getString('lastNames'));
    assertEquals([], $tds.rows->filter(p | $p.getString('firstName') == 'Unknown'));
-   assertEquals('select "root".FIRSTNAME as "firstName", listagg("root".LASTNAME, \'*\') as "lastNames" from personTable as "root" group by "firstName"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName", listagg("root".LASTNAME, \'*\') as "lastNames" from personTable as "root" group by "firstName"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByWithAssociationWithJoinStrings():Boolean[1]
@@ -374,7 +375,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByWithA
    assertEquals(4, $tds.rows->size());
    assertEquals(['Smith*Johnson*Hill*Allen'], $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm X')->first()->toOne().getString('lastNames'));
    assertEquals(['Harris'], $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm C')->first()->toOne().getString('lastNames'));
-   assertEquals('select "root".LEGALNAME as "legalName", listagg("persontable_0".LASTNAME, \'*\') as "lastNames" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) group by "legalName"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".LEGALNAME as "legalName", listagg("persontable_0".LASTNAME, \'*\') as "lastNames" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) group by "legalName"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::groupByAfterASortOnColumnInGroupBy():Boolean[1]
@@ -387,7 +388,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::groupByAfterASortO
    assertEquals(4, $tds.rows->size());
    assertEquals(['Smith*Johnson*Hill*Allen'], $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm X')->first()->toOne().getString('lastNames'));
    assertEquals(['Harris'], $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm C')->first()->toOne().getString('lastNames'));
-   assertEquals('select "root".LEGALNAME as "legalName", listagg("persontable_0".LASTNAME, \'*\') as "lastNames" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) group by "legalName" order by "legalName" asc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".LEGALNAME as "legalName", listagg("persontable_0".LASTNAME, \'*\') as "lastNames" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) group by "legalName" order by "legalName" asc', $result->sqlRemoveFormatting());
 }
 
 
@@ -401,7 +402,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::groupByAfterASortO
    assertEquals(4, $tds.rows->size());
    assertEquals(['Allen*Hill*Johnson*Smith'], $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm X')->first()->toOne().getString('lastNames'));
    assertEquals(['Harris'], $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm C')->first()->toOne().getString('lastNames'));
-   assertEquals('select "firmtable_0"."legalName" as "legalName", listagg("lastName", \'*\') as "lastNames" from (select "root".LEGALNAME as "legalName", "persontable_0".LASTNAME as "lastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) order by "lastName" asc) as "firmtable_0" group by "legalName"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "firmtable_0"."legalName" as "legalName", listagg("lastName", \'*\') as "lastNames" from (select "root".LEGALNAME as "legalName", "persontable_0".LASTNAME as "lastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) order by "lastName" asc) as "firmtable_0" group by "legalName"', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 10. Tricky usage of variables
@@ -419,7 +420,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
    assertEquals(['Firm X', 'Firm X'], $tds.rows->at(1).values);
    assertEquals(['Firm C', 'Firm C'], $tds.rows->at(2).values);
    assertEquals(['Firm A', 'Firm A'], $tds.rows->at(3).values);
-   assertEquals('select "producttable_0".NAME as "prodName", case when count(distinct("producttable_0".NAME)) = 1 then max("producttable_0".NAME) else null end as "unique" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+   assertSameSQL('select "producttable_0".NAME as "prodName", case when count(distinct("producttable_0".NAME)) = 1 then max("producttable_0".NAME) else null end as "unique" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::groupByAfterConcatenate():Boolean[1]
@@ -435,7 +436,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::groupByAfterConcat
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(4, $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm X')->first()->toOne().getInteger('lastNamesCount')->sort());
-   assertEquals('select "unionalias_0"."legalName" as "legalName", count(distinct("lastName")) as "lastNamesCount" from (select distinct "unionalias_1"."legalName" as "legalName", "unionalias_1"."lastName" as "lastName" from (select "root".LEGALNAME as "legalName", "persontable_0".LASTNAME as "lastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) union all select "root".LEGALNAME as "legalName", "persontable_0".LASTNAME as "lastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)) as "unionalias_1") as "unionalias_0" group by "legalName"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "unionalias_0"."legalName" as "legalName", count(distinct("lastName")) as "lastNamesCount" from (select distinct "unionalias_1"."legalName" as "legalName", "unionalias_1"."lastName" as "lastName" from (select "root".LEGALNAME as "legalName", "persontable_0".LASTNAME as "lastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) union all select "root".LEGALNAME as "legalName", "persontable_0".LASTNAME as "lastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)) as "unionalias_1") as "unionalias_0" group by "legalName"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::testTableToTDSWithQuotedColumns():Boolean[1]
@@ -458,7 +459,8 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testTableToTDSWith
 
    let expectedSql = 'select "root"."FIRST NAME" as "FIRST NAME", count("root"."FIRST NAME") as "cnt" from tableWithQuotedColumns as "root" group by "FIRST NAME"';
 
-   assertEquals($expectedSql, $resWithoutQuotes->sqlRemoveFormatting());
+   assertSameSQL($expectedSql, $resWithoutQuotes->sqlRemoveFormatting());
+   assertSameElements(['Peter|1', 'John|2', 'Anthony|1'], $resWithoutQuotes.values.rows->map(r|$r.values->makeString('|')));
 
    let queryWithQuotes = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db, 'default', 'tableWithQuotedColumns'))
                                     ->project([
@@ -474,7 +476,8 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testTableToTDSWith
 
    let resWithQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
 
-   assertEquals($expectedSql, $resWithQuotes->sqlRemoveFormatting());
+   assertSameSQL($expectedSql, $resWithQuotes->sqlRemoveFormatting());
+   assertSameElements(['Peter|1', 'John|2', 'Anthony|1'], $resWithQuotes.values.rows->map(r|$r.values->makeString('|')));
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::groupBy::testTDSGroupByPercentile():Boolean[1]
@@ -537,6 +540,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
       meta::relational::extension::relationalExtensions());
 
    meta::relational::functions::asserts::assertSameSQL('select dateadd(week, 1, max("root".tradeDate)) as "Date Adjust" from tradeTable as "root"', $result);
+   assertEquals(['2014-12-12'], $result.values.rows->map(r|$r.values->makeString('|')));
 }
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::testGroupByWithWavgAggregation(): Boolean[1]

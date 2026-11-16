@@ -41,6 +41,13 @@ function meta::relational::functions::sqlQueryToString::h2::assertEqualsH2Compat
   );
 }
 
+function meta::relational::functions::sqlQueryToString::h2::assertSameSQLH2Compatible(legacyExpected: String[1], upgradedExpected: String[1], actual: String[1]): Boolean[1]
+{
+  let h2Versions = getH2Versions();
+  assertEquals(1, size($h2Versions), 'More than one H2 version found asserting test outputs');
+  meta::relational::functions::asserts::assertSameSQL(if($h2Versions->toOne()->eq('1.4.200'), | $legacyExpected, | $upgradedExpected), $actual);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::getH2Versions(): Any[*]
 {
   let conn = ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2);

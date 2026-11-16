@@ -21,6 +21,7 @@ import meta::relational::mapping::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
 import meta::relational::metamodel::execute::tests::*;
+import meta::relational::functions::asserts::*;
 
 function meta::relational::metamodel::execute::tests::executeLegendFunction(modelFileName: String[1], funcName: String[1], mappingName: String[1], databaseName: String[1], connName: String[1], csvs: String[*] , expectedCsv: String[1]):Boolean[1]
 {
@@ -137,7 +138,7 @@ function <<access.private>> meta::relational::metamodel::execute::tests::buildTe
   // assert SQL if expected is provided
   if($expectedSql->isNotEmpty(),
     | let actualSql = $rawPlan->extractSqlFromPlan();
-      assertEquals($expectedSql->toOne(), $actualSql);,
+      assertSameSQL($expectedSql->toOne(), $actualSql);,
     | true;
   );
 

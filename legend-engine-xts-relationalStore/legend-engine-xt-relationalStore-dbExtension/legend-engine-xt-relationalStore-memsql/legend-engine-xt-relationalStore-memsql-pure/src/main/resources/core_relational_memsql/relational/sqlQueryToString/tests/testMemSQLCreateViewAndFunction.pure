@@ -24,17 +24,17 @@ function <<test.Test>> meta::relational::memsql::tests::db::testCreateViewForMem
    // Test basic create or replace view (no copyGrants, no secure)
    let basicView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', generatedSQL = 'select FIRSTNAME, LASTNAME, AGE from personTable', secure = false, copyGrants = false);
    let basicResult = meta::relational::functions::sqlQueryToString::memsql::createView($basicView, $dbConfig, $extensions);
-   assertEquals('CREATE OR REPLACE VIEW personView as select FIRSTNAME, LASTNAME, AGE from personTable;', $basicResult);
+   assertSameSQL('CREATE OR REPLACE VIEW personView as select FIRSTNAME, LASTNAME, AGE from personTable;', $basicResult);
 
    // Test create view with schema name
    let schemaView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', schemaName = 'hr', generatedSQL = 'select FIRSTNAME, LASTNAME, AGE from personTable', secure = false, copyGrants = false);
    let schemaResult = meta::relational::functions::sqlQueryToString::memsql::createView($schemaView, $dbConfig, $extensions);
-   assertEquals('CREATE OR REPLACE VIEW hr.personView as select FIRSTNAME, LASTNAME, AGE from personTable;', $schemaResult);
+   assertSameSQL('CREATE OR REPLACE VIEW hr.personView as select FIRSTNAME, LASTNAME, AGE from personTable;', $schemaResult);
 
    // Test create view with copyGrants generates two SQL statements, preserving entitlements -- same as Databricks
    let copyGrantsView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', schemaName = 'hr', generatedSQL = 'select FIRSTNAME, LASTNAME, AGE from personTable', secure = false, copyGrants = true);
    let copyGrantsResult = meta::relational::functions::sqlQueryToString::memsql::createView($copyGrantsView, $dbConfig, $extensions);
-   assertEquals('CREATE VIEW IF NOT EXISTS hr.personView as select FIRSTNAME, LASTNAME, AGE from personTable; \nALTER VIEW hr.personView as select FIRSTNAME, LASTNAME, AGE from personTable;', $copyGrantsResult);
+   assertSameSQL('CREATE VIEW IF NOT EXISTS hr.personView as select FIRSTNAME, LASTNAME, AGE from personTable; \nALTER VIEW hr.personView as select FIRSTNAME, LASTNAME, AGE from personTable;', $copyGrantsResult);
 
    let secureView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', generatedSQL = 'select FIRSTNAME, LASTNAME, AGE from personTable', secure = true, copyGrants = false);
    assertError({|meta::relational::functions::sqlQueryToString::memsql::createView($secureView, $dbConfig, $extensions)}, 'For MemSQL we dont support SECURE views yet.');
@@ -52,7 +52,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testCreateFunctionFo
       generatedSQL = 'SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.name = name'
    );
    let basicResult = meta::relational::functions::sqlQueryToString::memsql::createFunction($basicFunc, $dbConfig, $extensions);
-   assertEquals('CREATE OR REPLACE FUNCTION test_schema.my_func(name VARCHAR(200)) RETURNS TABLE AS RETURN SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.name = name;', $basicResult);
+   assertSameSQL('CREATE OR REPLACE FUNCTION test_schema.my_func(name VARCHAR(200)) RETURNS TABLE AS RETURN SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.name = name;', $basicResult);
 
    let noSchemaFunc = ^meta::relational::metamodel::CreateFunctionSQL(
       name = 'my_func',
@@ -60,7 +60,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testCreateFunctionFo
       generatedSQL = 'SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= batchId'
    );
    let noSchemaResult = meta::relational::functions::sqlQueryToString::memsql::createFunction($noSchemaFunc, $dbConfig, $extensions);
-   assertEquals('CREATE OR REPLACE FUNCTION my_func(batchId DECIMAL(10, 0)) RETURNS TABLE AS RETURN SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= batchId;', $noSchemaResult);
+   assertSameSQL('CREATE OR REPLACE FUNCTION my_func(batchId DECIMAL(10, 0)) RETURNS TABLE AS RETURN SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= batchId;', $noSchemaResult);
 
    let multiParamFunc = ^meta::relational::metamodel::CreateFunctionSQL(
       name = 'my_func_multi',
@@ -72,7 +72,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testCreateFunctionFo
       generatedSQL = 'SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= startId AND t.END_ID >= endId'
    );
    let multiParamResult = meta::relational::functions::sqlQueryToString::memsql::createFunction($multiParamFunc, $dbConfig, $extensions);
-   assertEquals('CREATE OR REPLACE FUNCTION test_schema.my_func_multi(startId DECIMAL(10, 0), endId DECIMAL(10, 0)) RETURNS TABLE AS RETURN SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= startId AND t.END_ID >= endId;', $multiParamResult);
+   assertSameSQL('CREATE OR REPLACE FUNCTION test_schema.my_func_multi(startId DECIMAL(10, 0), endId DECIMAL(10, 0)) RETURNS TABLE AS RETURN SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= startId AND t.END_ID >= endId;', $multiParamResult);
 
    // MemSQL createFunction requires the typed parameters field -- the deprecated string-based
    // parameters field alone is not supported.

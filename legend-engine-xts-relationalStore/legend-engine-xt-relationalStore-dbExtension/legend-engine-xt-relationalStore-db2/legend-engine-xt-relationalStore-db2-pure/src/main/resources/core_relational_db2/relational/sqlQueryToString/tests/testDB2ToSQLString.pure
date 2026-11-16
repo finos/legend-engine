@@ -16,15 +16,21 @@ import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::runtime::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::sqlQueryToString::db2::testDB2StringLength():Boolean[1]
 {
   let sql = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
-  assertEquals('select CHARACTER_LENGTH("root".FIRSTNAME,CODEUNITS32) as "nameLength" from personTable as "root"', $sql);
+  assertSameSQL('select CHARACTER_LENGTH("root".FIRSTNAME,CODEUNITS32) as "nameLength" from personTable as "root"', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::sqlQueryToString::db2::testDB2ReverseString():Boolean[1]
 {
   let sql = toSQLString(|Person.all()->project(p|reverseString($p.firstName), 'reverse'), simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
-  assertEquals('select reverse("root".FIRSTNAME) as "reverse" from personTable as "root"', $sql);
+  assertSameSQL('select reverse("root".FIRSTNAME) as "reverse" from personTable as "root"', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::db2::testNoSqlAssertBypassesInDB2():Boolean[1]
+{
+  meta::relational::functions::asserts::assertNoSqlAssertBypasses('/core_relational_db2/');
 }

@@ -32,7 +32,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2DateUserDefinedFormatddMONyyyy], ['parseDate']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select to_date(`root`.string2date,\'ddMMMyyyy\') as `parseDate` from dataTable as `root`', $result);
+   assertSameSQL('select to_date(`root`.string2date,\'ddMMMyyyy\') as `parseDate` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringParseDateddMMMyyyyDatabricks():Boolean[1]
@@ -40,7 +40,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2DateUserDefinedFormatddMMMyyyy], ['parseDate']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select to_date(`root`.string2date,\'ddMMMyyyy\') as `parseDate` from dataTable as `root`', $result);
+   assertSameSQL('select to_date(`root`.string2date,\'ddMMMyyyy\') as `parseDate` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringParseIntegerDatabricks():Boolean[1]
@@ -48,7 +48,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(`root`.string2Integer as bigint) as `parseInteger` from dataTable as `root`', $result);
+   assertSameSQL('select cast(`root`.string2Integer as bigint) as `parseInteger` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringParseFloatDatabricks():Boolean[1]
@@ -56,7 +56,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Float], ['parseFloat']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(`root`.string2float as double) as `parseFloat` from dataTable as `root`', $result);
+   assertSameSQL('select cast(`root`.string2float as double) as `parseFloat` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringSubstringDatabricks():Boolean[1]
@@ -64,7 +64,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->project([p | $p.firstName->substring(1, 3)], ['sub']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select substring(`root`.FIRSTNAME, 1, 3) as `sub` from personTable as `root`', $result);
+   assertSameSQL('select substring(`root`.FIRSTNAME, 1, 3) as `sub` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringLengthDatabricks():Boolean[1]
@@ -72,7 +72,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->project([p | $p.firstName->length()], ['len']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select length(`root`.FIRSTNAME) as `len` from personTable as `root`', $result);
+   assertSameSQL('select length(`root`.FIRSTNAME) as `len` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringIndexOfDatabricks():Boolean[1]
@@ -80,7 +80,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->project([p | $p.firstName->indexOf('Jo')], ['index']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select locate(\'Jo\', `root`.FIRSTNAME) as `index` from personTable as `root`', $result);
+   assertSameSQL('select locate(\'Jo\', `root`.FIRSTNAME) as `index` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringConcatDatabricks():Boolean[1]
@@ -88,7 +88,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->project([p | $p.firstName + $p.lastName], ['concat']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select concat(`root`.FIRSTNAME, `root`.LASTNAME) as `concat` from personTable as `root`', $result);
+   assertSameSQL('select concat(`root`.FIRSTNAME, `root`.LASTNAME) as `concat` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringLevenshteinDistanceDatabricks():Boolean[1]
@@ -96,7 +96,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->project([p | $p.firstName->levenshteinDistance('John')], ['dist']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select levenshtein(`root`.FIRSTNAME, \'John\') as `dist` from personTable as `root`', $result);
+   assertSameSQL('select levenshtein(`root`.FIRSTNAME, \'John\') as `dist` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringToDecimalDatabricks():Boolean[1]
@@ -104,7 +104,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project([t | $t.quantity->toDecimal()], ['decimal']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(`root`.quantity as decimal) as `decimal` from tradeTable as `root`', $result);
+   assertSameSQL('select cast(`root`.quantity as decimal) as `decimal` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringToFloatDatabricks():Boolean[1]
@@ -112,7 +112,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project([t | $t.quantity->toFloat()], ['float']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(`root`.quantity as double) as `float` from tradeTable as `root`', $result);
+   assertSameSQL('select cast(`root`.quantity as double) as `float` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringRoundDatabricks():Boolean[1]
@@ -120,7 +120,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project([t | $t.quantity->round(2)], ['rounded']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select round(`root`.quantity, 2) as `rounded` from tradeTable as `root`', $result);
+   assertSameSQL('select round(`root`.quantity, 2) as `rounded` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDayOfYearDatabricks():Boolean[1]
@@ -128,7 +128,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->dayOfYear(), 'doy')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select dayofyear(`root`.tradeDate) as `doy` from tradeTable as `root`', $result);
+   assertSameSQL('select dayofyear(`root`.tradeDate) as `doy` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDayOfMonthDatabricks():Boolean[1]
@@ -136,7 +136,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->dayOfMonth(), 'dom')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select dayofmonth(`root`.tradeDate) as `dom` from tradeTable as `root`', $result);
+   assertSameSQL('select dayofmonth(`root`.tradeDate) as `dom` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringFirstDayOfMonthDatabricks():Boolean[1]
@@ -144,7 +144,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->firstDayOfMonth(), 'fdom')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select trunc(`root`.tradeDate, \'MONTH\') as `fdom` from tradeTable as `root`', $result);
+   assertSameSQL('select trunc(`root`.tradeDate, \'MONTH\') as `fdom` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringFirstDayOfYearDatabricks():Boolean[1]
@@ -152,7 +152,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->firstDayOfYear(), 'fdoy')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select trunc(`root`.tradeDate, \'YEAR\') as `fdoy` from tradeTable as `root`', $result);
+   assertSameSQL('select trunc(`root`.tradeDate, \'YEAR\') as `fdoy` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringFirstDayOfQuarterDatabricks():Boolean[1]
@@ -160,7 +160,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->firstDayOfQuarter(), 'fdoq')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select trunc(`root`.tradeDate, \'QUARTER\') as `fdoq` from tradeTable as `root`', $result);
+   assertSameSQL('select trunc(`root`.tradeDate, \'QUARTER\') as `fdoq` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringHourDatabricks():Boolean[1]
@@ -168,7 +168,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.settlementDateTime->toOne()->hour(), 'hr')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select hour(`root`.settlementDateTime) as `hr` from tradeTable as `root`', $result);
+   assertSameSQL('select hour(`root`.settlementDateTime) as `hr` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringMinuteDatabricks():Boolean[1]
@@ -176,7 +176,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.settlementDateTime->toOne()->minute(), 'min')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select minute(`root`.settlementDateTime) as `min` from tradeTable as `root`', $result);
+   assertSameSQL('select minute(`root`.settlementDateTime) as `min` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringSecondDatabricks():Boolean[1]
@@ -184,7 +184,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.settlementDateTime->toOne()->second(), 'sec')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select second(`root`.settlementDateTime) as `sec` from tradeTable as `root`', $result);
+   assertSameSQL('select second(`root`.settlementDateTime) as `sec` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringYearDatabricks():Boolean[1]
@@ -192,7 +192,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->year(), 'yr')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select year(`root`.tradeDate) as `yr` from tradeTable as `root`', $result);
+   assertSameSQL('select year(`root`.tradeDate) as `yr` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringMonthNumberDatabricks():Boolean[1]
@@ -200,7 +200,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->monthNumber(), 'mn')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select month(`root`.tradeDate) as `mn` from tradeTable as `root`', $result);
+   assertSameSQL('select month(`root`.tradeDate) as `mn` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringWeekOfYearDatabricks():Boolean[1]
@@ -208,7 +208,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->weekOfYear(), 'woy')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select weekofyear(`root`.tradeDate) as `woy` from tradeTable as `root`', $result);
+   assertSameSQL('select weekofyear(`root`.tradeDate) as `woy` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringQuarterNumberDatabricks():Boolean[1]
@@ -216,7 +216,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->quarterNumber(), 'qn')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select quarter(`root`.tradeDate) as `qn` from tradeTable as `root`', $result);
+   assertSameSQL('select quarter(`root`.tradeDate) as `qn` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDayOfWeekDatabricks():Boolean[1]
@@ -224,7 +224,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->dayOfWeek(), 'dow')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select DECODE(EXTRACT(dayofweek FROM `root`.tradeDate), 2, \'Monday\', 3, \'Tuesday\', 4, \'Wednesday\', 5, \'Thursday\', 6, \'Friday\', 7, \'Saturday\', 1, \'Sunday\') as `dow` from tradeTable as `root`', $result);
+   assertSameSQL('select DECODE(EXTRACT(dayofweek FROM `root`.tradeDate), 2, \'Monday\', 3, \'Tuesday\', 4, \'Wednesday\', 5, \'Thursday\', 6, \'Friday\', 7, \'Saturday\', 1, \'Sunday\') as `dow` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringFirstHourOfDayDatabricks():Boolean[1]
@@ -232,7 +232,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->firstHourOfDay(), 'fhod')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select date_trunc(\'DAY\', `root`.tradeDate) as `fhod` from tradeTable as `root`', $result);
+   assertSameSQL('select date_trunc(\'DAY\', `root`.tradeDate) as `fhod` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringFirstMinuteOfHourDatabricks():Boolean[1]
@@ -240,7 +240,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project(col(t | $t.date->firstMinuteOfHour(), 'fmoh')),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select date_trunc(\'HOUR\', `root`.tradeDate) as `fmoh` from tradeTable as `root`', $result);
+   assertSameSQL('select date_trunc(\'HOUR\', `root`.tradeDate) as `fmoh` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringConvertVarchar128Databricks():Boolean[1]
@@ -248,7 +248,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertVarchar128], ['cv']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(`root`.int1 as STRING) as `cv` from dataTable as `root`', $result);
+   assertSameSQL('select cast(`root`.int1 as STRING) as `cv` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringToStringDatabricks():Boolean[1]
@@ -256,7 +256,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->project([p | $p.age->toOne()->toString()], ['ageStr']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(`root`.AGE as string) as `ageStr` from personTable as `root`', $result);
+   assertSameSQL('select cast(`root`.AGE as string) as `ageStr` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringEncodeBase64Databricks():Boolean[1]
@@ -264,7 +264,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|SqlFunctionDemo.all()->project([s | $s.encodeBase64Result], ['enc']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select base64(`root`.alphaNumericString) as `enc` from dataTable as `root`', $result);
+   assertSameSQL('select base64(`root`.alphaNumericString) as `enc` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDecodeBase64Databricks():Boolean[1]
@@ -272,7 +272,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|SqlFunctionDemo.all()->project([s | $s.decodeBase64Result], ['dec']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(unbase64(base64(`root`.alphaNumericString)) AS STRING) as `dec` from dataTable as `root`', $result);
+   assertSameSQL('select cast(unbase64(base64(`root`.alphaNumericString)) AS STRING) as `dec` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringFilterDatabricks():Boolean[1]
@@ -280,7 +280,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->filter(p | $p.firstName == 'John')->project([p | $p.firstName], ['name']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.FIRSTNAME as `name` from personTable as `root` where `root`.FIRSTNAME = \'John\'', $result);
+   assertSameSQL('select `root`.FIRSTNAME as `name` from personTable as `root` where `root`.FIRSTNAME = \'John\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringStartsWithDatabricks():Boolean[1]
@@ -288,7 +288,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->filter(p | $p.firstName->startsWith('Jo'))->project([p | $p.firstName], ['name']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.FIRSTNAME as `name` from personTable as `root` where `root`.FIRSTNAME like \'Jo%\'', $result);
+   assertSameSQL('select `root`.FIRSTNAME as `name` from personTable as `root` where `root`.FIRSTNAME like \'Jo%\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringContainsDatabricks():Boolean[1]
@@ -296,7 +296,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->filter(p | $p.firstName->contains('oh'))->project([p | $p.firstName], ['name']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.FIRSTNAME as `name` from personTable as `root` where `root`.FIRSTNAME like \'%oh%\'', $result);
+   assertSameSQL('select `root`.FIRSTNAME as `name` from personTable as `root` where `root`.FIRSTNAME like \'%oh%\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringInDatabricks():Boolean[1]
@@ -304,7 +304,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->filter(p | $p.firstName->in(['John', 'Jane']))->project([p | $p.firstName], ['name']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.FIRSTNAME as `name` from personTable as `root` where `root`.FIRSTNAME in (\'John\', \'Jane\')', $result);
+   assertSameSQL('select `root`.FIRSTNAME as `name` from personTable as `root` where `root`.FIRSTNAME in (\'John\', \'Jane\')', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringIsNotEmptyDatabricks():Boolean[1]
@@ -312,7 +312,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->filter(p | $p.firstName->isNotEmpty())->project([p | $p.firstName], ['name']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.FIRSTNAME as `name` from personTable as `root` where (`root`.FIRSTNAME is not null)', $result);
+   assertSameSQL('select `root`.FIRSTNAME as `name` from personTable as `root` where (`root`.FIRSTNAME is not null)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDistinctDatabricks():Boolean[1]
@@ -320,7 +320,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->project([p | $p.firstName], ['name'])->distinct(),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select distinct `root`.FIRSTNAME as `name` from personTable as `root`', $result);
+   assertSameSQL('select distinct `root`.FIRSTNAME as `name` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringProjectDatabricks():Boolean[1]
@@ -328,7 +328,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->project([p | $p.firstName, p | $p.lastName], ['first', 'last']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.FIRSTNAME as `first`, `root`.LASTNAME as `last` from personTable as `root`', $result);
+   assertSameSQL('select `root`.FIRSTNAME as `first`, `root`.LASTNAME as `last` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringJoinDatabricks():Boolean[1]
@@ -336,7 +336,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->project([t | $t.product.name], ['prodName']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `productTable_d#4_d_m1`.NAME as `prodName` from tradeTable as `root` left outer join productSchema.productTable as `productTable_d#4_d_m1` on (`root`.prodId = `productTable_d#4_d_m1`.ID)', $result);
+   assertSameSQL('select `productTable_d#4_d_m1`.NAME as `prodName` from tradeTable as `root` left outer join productSchema.productTable as `productTable_d#4_d_m1` on (`root`.prodId = `productTable_d#4_d_m1`.ID)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringAdjustDateDatabricks():Boolean[1]
@@ -344,7 +344,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|SqlFunctionDemo.all()->project([s | $s.adjustDate], ['dt']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.dateTime + INTERVAL -7 DAY as `dt` from dataTable as `root`', $result);
+   assertSameSQL('select `root`.dateTime + INTERVAL -7 DAY as `dt` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringNowDatabricks():Boolean[1]
@@ -352,7 +352,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->filter(t | $t.date < now())->project([t | $t.id], ['id']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.ID as `id` from tradeTable as `root` where `root`.tradeDate < current_timestamp', $result);
+   assertSameSQL('select `root`.ID as `id` from tradeTable as `root` where `root`.tradeDate < current_timestamp', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringTodayDatabricks():Boolean[1]
@@ -360,7 +360,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Trade.all()->filter(t | $t.date == today())->project([t | $t.id], ['id']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.ID as `id` from tradeTable as `root` where `root`.tradeDate = current_date', $result);
+   assertSameSQL('select `root`.ID as `id` from tradeTable as `root` where `root`.tradeDate = current_date', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringAllDatabricks():Boolean[1]
@@ -368,7 +368,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all(),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root`', $result);
+   assertSameSQL('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringMapDatabricks():Boolean[1]
@@ -376,7 +376,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->filter(p | $p.firstName == 'John')->map(p | $p.lastName),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.LASTNAME from personTable as `root` where `root`.FIRSTNAME = \'John\'', $result);
+   assertSameSQL('select `root`.LASTNAME from personTable as `root` where `root`.FIRSTNAME = \'John\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringCastDatabricks():Boolean[1]
@@ -384,7 +384,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->project([p | $p.age->toOne()->toDecimal()], ['ageDec']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(`root`.AGE as decimal) as `ageDec` from personTable as `root`', $result);
+   assertSameSQL('select cast(`root`.AGE as decimal) as `ageDec` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringExtractFromSemiStructuredDatabricks():Boolean[1]
@@ -396,7 +396,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
       meta::relational::runtime::DatabaseType.Databricks,
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select `root`.FIRM_DETAILS:`legalName`::STRING as `Legal Name` from FIRM_TABLE as `root`', $result);
+   assertSameSQL('select `root`.FIRM_DETAILS:`legalName`::STRING as `Legal Name` from FIRM_TABLE as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringExtractFromSemiStructuredIntDatabricks():Boolean[1]
@@ -408,7 +408,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
       meta::relational::runtime::DatabaseType.Databricks,
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select `root`.FIRM_DETAILS:`employeeCount`::INT as `Employee Count` from FIRM_TABLE as `root`', $result);
+   assertSameSQL('select `root`.FIRM_DETAILS:`employeeCount`::INT as `Employee Count` from FIRM_TABLE as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringExtractFromSemiStructuredFilterDatabricks():Boolean[1]
@@ -421,7 +421,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
       meta::relational::runtime::DatabaseType.Databricks,
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select `root`.FIRM_DETAILS:`legalName`::STRING as `Legal Name` from FIRM_TABLE as `root` where `root`.FIRM_DETAILS:`legalName`::STRING = \'Firm X\'', $result);
+   assertSameSQL('select `root`.FIRM_DETAILS:`legalName`::STRING as `Legal Name` from FIRM_TABLE as `root` where `root`.FIRM_DETAILS:`legalName`::STRING = \'Firm X\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringExtractFromSemiStructuredBoolDatabricks():Boolean[1]
@@ -433,7 +433,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
       meta::relational::runtime::DatabaseType.Databricks,
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select `root`.FIRM_DETAILS:`mnc`::BOOLEAN as `Is MNC` from FIRM_TABLE as `root`', $result);
+   assertSameSQL('select `root`.FIRM_DETAILS:`mnc`::BOOLEAN as `Is MNC` from FIRM_TABLE as `root`', $result);
 }
 
 ###Pure

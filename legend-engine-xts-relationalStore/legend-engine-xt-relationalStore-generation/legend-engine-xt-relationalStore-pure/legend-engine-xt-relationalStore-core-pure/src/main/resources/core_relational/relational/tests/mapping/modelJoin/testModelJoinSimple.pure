@@ -22,6 +22,7 @@ import meta::pure::runtime::*;
 import meta::relational::tests::mapping::modelJoin::domain::*;
 import meta::relational::tests::mapping::modelJoin::simple::*;
 import meta::relational::tests::mapping::modelJoin::store::*;
+import meta::relational::functions::asserts::*;
 
 // =============================================================================
 // Simple equality: employees.firmId == firm.id
@@ -70,7 +71,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
          'from (select "persontable_2".ID as ID, "persontable_2".FIRSTNAME as FIRSTNAME, "persontable_2".LASTNAME as LASTNAME, ' +
               '"persontable_2".FIRMID as FIRMID, "persontable_2".AGE as AGE from personTable as "persontable_2") as "persontable_1") as "persontable_0" ' +
     'on ("persontable_0"."FIRMID" = "firmtable_0"."ID")';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -130,7 +131,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
          'from (select "firmtable_2".ID as ID, "firmtable_2".LEGALNAME as LEGALNAME, "firmtable_2".CITY as CITY, ' +
               '"firmtable_2".COUNTRY as COUNTRY, "firmtable_2".CODE as CODE from firmTable as "firmtable_2") as "firmtable_1") as "firmtable_0" ' +
     'on ("persontable_0"."FIRMID" = "firmtable_0"."ID" and "persontable_0"."LASTNAME" = "firmtable_0"."CODE")';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -190,7 +191,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
          'from (select "firmtable_2".ID as ID, "firmtable_2".LEGALNAME as LEGALNAME, "firmtable_2".CITY as CITY, ' +
               '"firmtable_2".COUNTRY as COUNTRY, "firmtable_2".CODE as CODE from firmTable as "firmtable_2") as "firmtable_1") as "firmtable_0" ' +
     'on ("persontable_0"."FIRMID" = "firmtable_0"."ID" or "persontable_0"."LASTNAME" = "firmtable_0"."CODE")';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -250,7 +251,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
          'from (select "firmtable_2".ID as ID, "firmtable_2".LEGALNAME as LEGALNAME, "firmtable_2".CITY as CITY, ' +
               '"firmtable_2".COUNTRY as COUNTRY, "firmtable_2".CODE as CODE from firmTable as "firmtable_2") as "firmtable_1") as "firmtable_0" ' +
     'on (lower("persontable_0"."LASTNAME") is not distinct from lower("firmtable_0"."CODE"))';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -309,7 +310,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
          'from (select "firmtable_2".ID as ID, "firmtable_2".LEGALNAME as LEGALNAME, "firmtable_2".CITY as CITY, ' +
               '"firmtable_2".COUNTRY as COUNTRY, "firmtable_2".CODE as CODE from firmTable as "firmtable_2") as "firmtable_1") as "firmtable_0" ' +
     'on (concat("persontable_0"."FIRSTNAME", \' \', "persontable_0"."LASTNAME") = "firmtable_0"."CODE")';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -368,7 +369,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
          'from (select "firmtable_2".ID as ID, "firmtable_2".LEGALNAME as LEGALNAME, "firmtable_2".CITY as CITY, ' +
               '"firmtable_2".COUNTRY as COUNTRY, "firmtable_2".CODE as CODE from firmTable as "firmtable_2") as "firmtable_1") as "firmtable_0" ' +
     'on ("persontable_0"."FIRMID" + "firmtable_0"."ID" = "persontable_0"."AGE")';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -428,7 +429,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
          'from (select "firmtable_2".ID as ID, "firmtable_2".LEGALNAME as LEGALNAME, "firmtable_2".CITY as CITY, ' +
               '"firmtable_2".COUNTRY as COUNTRY, "firmtable_2".CODE as CODE from firmTable as "firmtable_2") as "firmtable_1") as "firmtable_0" ' +
     'on (concat("persontable_0"."FIRSTNAME", \' \', "persontable_0"."LASTNAME") = "firmtable_0"."CODE")';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -489,7 +490,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
               'where "persontable_2".LASTNAME in (\'Smith\', \'Brown\')) as "persontable_1" ' +
          'where "persontable_1".LASTNAME in (\'Smith\', \'Brown\')) as "persontable_0" ' +
     'on ("persontable_0"."FIRMID" = "firmtable_0"."ID" and "persontable_0"."LASTNAME" in (\'Smith\', \'Brown\'))';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -541,7 +542,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
   let expectedSql =
     'select "root".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
     'from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".FIRMID = "root".ID)';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals(
     #TDS
@@ -591,7 +592,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".LASTNAME as LASTNAME, ' +
          '"persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE, "persontable_1".SALARY as SALARY ' +
          'from personTable as "persontable_1") as "persontable_0"';
-  assertEquals($expectedSql, $result->sql());
+  assertSameSQL($expectedSql, $result->sql());
 
   assertEquals( '#TDS\n' +
             '   \'First Name\',Salary\n' +

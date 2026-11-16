@@ -22,6 +22,7 @@ import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::relational::tests::functions::sqlstring::databricks::*;
 import meta::relational::tests::model::simple::*;
+import meta::relational::functions::asserts::*;
 
 function <<access.private>> meta::relational::tests::functions::sqlstring::databricks::databricksTestRuntime():meta::core::runtime::Runtime[1]
 {
@@ -54,7 +55,7 @@ function <<access.private>> meta::relational::tests::functions::sqlstring::datab
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testActivationInWithCollectionParameterIsFlattened():Boolean[1]
 {
   let sql = activationSql(inWithCollectionParameterQuery());
-  assertEquals('select `root`.FIRSTNAME as `firstName` from personTable as `root` where `root`.AGE in (select `root`.value from (select `col` as `VALUE` from (select explode_outer(param_ages) from func_param_table)) as `root`)', $sql);
+  assertSameSQL('select `root`.FIRSTNAME as `firstName` from personTable as `root` where `root`.AGE in (select `root`.value from (select `col` as `VALUE` from (select explode_outer(param_ages) from func_param_table)) as `root`)', $sql);
 }
 
 // A bounded to-many multiplicity is as much a collection as [*] and [1..*]; it must not be rendered
@@ -62,19 +63,19 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testActivationInWithBoundedCollectionParameterIsFlattened():Boolean[1]
 {
   let sql = activationSql({ages:Integer[1..3]|Person.all()->filter(p|$p.age->toOne()->in($ages))->project([col(p:Person[1]|$p.firstName, 'firstName')])});
-  assertEquals(activationSql(inWithCollectionParameterQuery()), $sql);
+  assertSameSQL(activationSql(inWithCollectionParameterQuery()), $sql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testActivationContainsWithCollectionParameterMatchesInForm():Boolean[1]
 {
   let containsSql = activationSql({ages:Integer[1..*]|Person.all()->filter(p|$ages->contains($p.age->toOne()))->project([col(p:Person[1]|$p.firstName, 'firstName')])});
-  assertEquals(activationSql(inWithCollectionParameterQuery()), $containsSql);
+  assertSameSQL(activationSql(inWithCollectionParameterQuery()), $containsSql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testActivationScalarParameterUsesParameterTable():Boolean[1]
 {
   let sql = activationSql({threshold:Integer[1]|Person.all()->filter(p|$p.age->toOne() > $threshold)->project([col(p:Person[1]|$p.firstName, 'firstName')])});
-  assertEquals('select `root`.FIRSTNAME as `firstName` from personTable as `root` where `root`.AGE > (SELECT param_threshold FROM func_param_table)', $sql);
+  assertSameSQL('select `root`.FIRSTNAME as `firstName` from personTable as `root` where `root`.AGE > (SELECT param_threshold FROM func_param_table)', $sql);
 }
 
 // On the plan path the same placeholder is supplied by the allocation node processInOperation adds, which
@@ -82,5 +83,10 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testInWithCollectionParameterUsesInFilterClauseOnThePlanPath():Boolean[1]
 {
   let sql = generatedSql(inWithCollectionParameterQuery(), ^meta::pure::runtime::ExecutionContext());
-  assertEquals('select `root`.FIRSTNAME as `firstName` from personTable as `root` where `root`.AGE in (${inFilterClause_ages})', $sql);
+  assertSameSQL('select `root`.FIRSTNAME as `firstName` from personTable as `root` where `root`.AGE in (${inFilterClause_ages})', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testNoSqlAssertBypassesInDatabricks():Boolean[1]
+{
+  meta::relational::functions::asserts::assertNoSqlAssertBypasses('/core_relational_databricks/');
 }

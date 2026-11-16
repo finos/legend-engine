@@ -20,6 +20,7 @@ import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testStringConcatSQLGeneration():Boolean[1]
 {
@@ -32,5 +33,5 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testStringConcatS
    let mapping = meta::relational::tests::simpleRelationalMapping;
 
    let sqlResultSybaseIQ = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals($sqlResultSybaseIQ, 'select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", "root".FIRSTNAME+"root".LASTNAME as "exprString3" from personTable as "root"');
+   assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", "root".FIRSTNAME+"root".LASTNAME as "exprString3" from personTable as "root"', $sqlResultSybaseIQ);
 }

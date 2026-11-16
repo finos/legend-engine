@@ -83,7 +83,7 @@ function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testT
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testBusinessDateForAllVersionsInRange():Boolean[1]
 {
    let result = execute(|ProductSynonym.allVersionsInRange(%2012-1-1, %2016-1-1), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEqualsH2Compatible(
+   assertSameSQLH2Compatible(
     'select "root".name as "pk_0", "root".synonym as "pk_1", "root".type as "pk_2", "root".synonym as "synonym", "root".type as "type", "root".from_z as "k_businessDate" from ProductSynonymTable as "root" where "root".from_z <= \'2016-01-01\' and "root".thru_z > \'2012-01-01\'', 
     'select "root".name as "pk_0", "root".synonym as "pk_1", "root".type as "pk_2", "root".synonym as "synonym", "root".type as "type", "root".from_z as "k_businessDate" from ProductSynonymTable as "root" where "root".from_z <= DATE\'2016-01-01\' and "root".thru_z > DATE\'2012-01-01\'', 
     $result->sqlRemoveFormatting()
@@ -95,7 +95,7 @@ function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testB
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testProcessingDateForAllVersionsInRange():Boolean[1]
 {
    let result = execute(|Trader.allVersionsInRange(%2012-1-1, %2016-1-1), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEqualsH2Compatible(
+   assertSameSQLH2Compatible(
     'select "root".kerberos as "pk_0", "root".kerberos as "kerberos", "root".in_z as "k_processingDate" from TraderTable as "root" where "root".in_z <= \'2016-01-01\' and "root".out_z > \'2012-01-01\'', 
     'select "root".kerberos as "pk_0", "root".kerberos as "kerberos", "root".in_z as "k_processingDate" from TraderTable as "root" where "root".in_z <= DATE\'2016-01-01\' and "root".out_z > DATE\'2012-01-01\'', 
     $result->sqlRemoveFormatting()

@@ -24,6 +24,7 @@ import meta::relational::functions::toDDL::*;
 import meta::relational::mapping::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>>  meta::relational::tests::ddl::findTableByName():Boolean[1]
 {
@@ -33,22 +34,22 @@ function <<test.Test>>  meta::relational::tests::ddl::findTableByName():Boolean[
 
 function <<test.Test>>  meta::relational::tests::ddl::createDropTableStatement():Boolean[1]
 {
-   assertEquals('Drop table if exists bar_t;', dropTableStatement(foo_db, 'bar_t'));
-   assertEquals('Drop table if exists baz_t;', dropTableStatement(foo_db, 'baz_t'));
+   assertSameSQL('Drop table if exists bar_t;', dropTableStatement(foo_db, 'bar_t'));
+   assertSameSQL('Drop table if exists baz_t;', dropTableStatement(foo_db, 'baz_t'));
 }
 
 function <<test.Test>>  meta::relational::tests::ddl::createCreateTableStatement():Boolean[1]
 {
    let s = createTableStatement(foo_db, 'bar_t');
-   assertEquals('Create Table bar_t(id INT NOT NULL,version INT NOT NULL,description CHAR(32) NULL, PRIMARY KEY(id,version));', $s);
+   assertSameSQL('Create Table bar_t(id INT NOT NULL,version INT NOT NULL,description CHAR(32) NULL, PRIMARY KEY(id,version));', $s);
 
-   assertEquals('Create Table baz_t(id INT NOT NULL,size FLOAT NULL,poem VARCHAR(255) NULL, PRIMARY KEY(id));', createTableStatement(meta::relational::tests::ddl::foo_db, 'baz_t'));
+   assertSameSQL('Create Table baz_t(id INT NOT NULL,size FLOAT NULL,poem VARCHAR(255) NULL, PRIMARY KEY(id));', createTableStatement(meta::relational::tests::ddl::foo_db, 'baz_t'));
 }
 
 function <<test.Test>> meta::relational::tests::ddl::createCreateTableStatementWithReservedWorks():Boolean[1]
 {
   let s = createTableStatement(foo_db, 'keyword_t');
-  assertEquals('Create Table keyword_t(id INT NOT NULL,"order" INT NULL,"limit" INT NULL,"window" INT NULL,"current_date" DATE NULL, PRIMARY KEY(id));', $s);
+  assertSameSQL('Create Table keyword_t(id INT NOT NULL,"order" INT NULL,"limit" INT NULL,"window" INT NULL,"current_date" DATE NULL, PRIMARY KEY(id));', $s);
 }
 
 function <<test.Test>>  meta::relational::tests::ddl::dropAndCreateTable():Boolean[1]
@@ -69,7 +70,7 @@ function <<test.Test>>  meta::relational::tests::ddl::dropAndCreateTable():Boole
 function <<test.Test>> meta::relational::tests::ddl::testCreateTempTableStatement():Boolean[1]
 {
    let h2 = createTempTableStatement()->eval('tt',  ^Column(name='col', type=^meta::relational::metamodel::datatype::Integer()), DatabaseType.H2 );
-   assertEquals('Create LOCAL TEMPORARY TABLE tt(col INT);', $h2);
+   assertSameSQL('Create LOCAL TEMPORARY TABLE tt(col INT);', $h2);
 }
 
 function <<test.Test>> meta::relational::tests::ddl::dropAndCreateTempTable():Boolean[1]

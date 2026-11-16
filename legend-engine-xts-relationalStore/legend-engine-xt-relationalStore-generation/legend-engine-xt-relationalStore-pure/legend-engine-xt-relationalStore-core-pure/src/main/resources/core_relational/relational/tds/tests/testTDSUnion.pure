@@ -23,6 +23,7 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
+import meta::relational::functions::asserts::*;
 
 
 function <<test.Test>> meta::relational::tests::projection::union::testSimpleRelationalUnion():Boolean[1]
@@ -35,7 +36,7 @@ function <<test.Test>> meta::relational::tests::projection::union::testSimpleRel
       simpleRelationalMapping,
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
       $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
@@ -56,7 +57,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsUnion::testSimpleUnion()
    assertEquals('Allen,Harris,Hill,Johnson,Roberts,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -73,7 +74,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsUnion::testUnionWithGrou
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName", sum("unionalias_0"."age") as "age" from (select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" union select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root") as "unionalias_0" group by "lastName"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName", sum("unionalias_0"."age") as "age" from (select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" union select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root") as "unionalias_0" group by "lastName"',
       $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
@@ -91,7 +92,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsUnion::testMultiUnion():
       simpleRelationalMapping,
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select concat("root".LASTNAME, \'_0\') as "lastName" from personTable as "root" union select concat("root".LASTNAME, \'_1\') as "lastName" from personTable as "root" union select concat("root".LASTNAME, \'_2\') as "lastName" from personTable as "root" union select concat("root".LASTNAME, \'_3\') as "lastName" from personTable as "root") as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select concat("root".LASTNAME, \'_0\') as "lastName" from personTable as "root" union select concat("root".LASTNAME, \'_1\') as "lastName" from personTable as "root" union select concat("root".LASTNAME, \'_2\') as "lastName" from personTable as "root" union select concat("root".LASTNAME, \'_3\') as "lastName" from personTable as "root") as "unionalias_0"',
        $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
@@ -106,7 +107,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsUnion::testUnionWithPreO
       simpleRelationalMapping,
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME is distinct from \'hello\' union select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME is distinct from \'hello\' union select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
       $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
@@ -122,7 +123,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsUnion::testUnionWithPost
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME is distinct from \'hello\') as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME is distinct from \'hello\') as "unionalias_0"',
      $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
@@ -137,7 +138,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsUnion::testUnionWithPreP
       simpleRelationalMapping,
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\' union select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\') as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\' union select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\') as "unionalias_0"',
       $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
@@ -155,7 +156,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsUnion::testUnionWithJoin
       simpleRelationalMapping,
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals('select "unionalias_0"."lhs_lastName" as "lhs_lastName", "unionalias_0"."rhs_firstName" as "rhs_firstName" from (select * from (select "unionalias_2"."lhs_lastName" as "lhs_lastName" from (select "root".LASTNAME as "lhs_lastName" from personTable as "root" union select "root".LASTNAME as "lhs_lastName" from personTable as "root") as "unionalias_2") as "unionalias_1" inner join (select "root".LASTNAME as "rhs_lastName", "root".FIRSTNAME as "rhs_firstName" from personTable as "root") as "persontable_1" on ("unionalias_1"."lhs_lastName" = "persontable_1"."rhs_lastName")) as "unionalias_0"',
+   assertSameSQL('select "unionalias_0"."lhs_lastName" as "lhs_lastName", "unionalias_0"."rhs_firstName" as "rhs_firstName" from (select * from (select "unionalias_2"."lhs_lastName" as "lhs_lastName" from (select "root".LASTNAME as "lhs_lastName" from personTable as "root" union select "root".LASTNAME as "lhs_lastName" from personTable as "root") as "unionalias_2") as "unionalias_1" inner join (select "root".LASTNAME as "rhs_lastName", "root".FIRSTNAME as "rhs_firstName" from personTable as "root") as "persontable_1" on ("unionalias_1"."lhs_lastName" = "persontable_1"."rhs_lastName")) as "unionalias_0"',
      $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 
 }
