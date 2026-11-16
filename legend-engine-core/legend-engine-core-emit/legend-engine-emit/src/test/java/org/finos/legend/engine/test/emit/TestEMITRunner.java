@@ -29,20 +29,31 @@ import org.finos.legend.engine.test.emit.EMITRunner.FileGenerationOutput;
 import org.finos.legend.engine.test.emit.error.EMITAssertionError;
 import org.finos.legend.engine.test.emit.extensions.EmitDemoArtifactGenerationExtension;
 import org.finos.legend.engine.test.emit.extensions.EmitDemoModelGenerationExtension;
+import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
 import org.finos.legend.engine.testable.model.RunTestsResult;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class TestEMITRunner
 {
+    private static final String FUNCTION_TEST_RUNNER = "org.finos.legend.engine.testable.function.extension.FunctionTestableRunnerExtension";
+
     @Test
     void classSimpleRunsThroughAllPhases()
     {
@@ -301,6 +312,58 @@ public class TestEMITRunner
         Assertions.assertTrue(result.isSuccess(), () -> "Expected EMIT run to succeed (dep tests must be ignored):\n" + result.getSummary());
     }
 
+    @Test
+    void functionTestsExecuteAndPass()
+    {
+        Path emitYaml = resource("emit-models/basic/function-test.emit.yaml");
+
+        EMITResult result = new EMITRunner().runFromYaml(emitYaml);
+
+        EMITPhaseResult testPhase = result.getPhase(EMITPhase.TEST_EXECUTION);
+        List<?> outputs = testPhase.getOutputs();
+        Assertions.assertEquals(1, outputs.size(), () -> "Expected one RunTestsResult but got:\n" + result.getSummary());
+        RunTestsResult runTests = (RunTestsResult) outputs.get(0);
+        Assertions.assertEquals(Status.SUCCESS, testPhase.getStatus(),
+                () -> "Expected TEST_EXECUTION SUCCESS but got:\n" + result.getSummary() + "\n" + describeTestResults(runTests));
+        Assertions.assertEquals(
+                "demo::functiontest::greeting_String_1__String_1_/greetingSuite/greetsJohn "
+                        + "demo::functiontest::greeting_String_1__String_1_/greetingSuite/greetsJane "
+                        + "demo::functiontest::worldGreeting__String_1_/default/greetsWorld ",
+                describe(runTests));
+        Assertions.assertTrue(result.isSuccess(), () -> "Expected EMIT run to succeed but got:\n" + result.getSummary());
+    }
+
+    @Test
+    void testableWithoutATestRunnerFailsTestExecution()
+    {
+        Path emitYaml = resource("emit-models/basic/function-test.emit.yaml");
+
+        EMITResult result = withoutTestRunner(FUNCTION_TEST_RUNNER, () -> new EMITRunner().runFromYaml(emitYaml));
+
+        Assertions.assertFalse(result.isSuccess(), () -> "Expected EMIT run to fail without the function test runner but got:\n" + result.getSummary());
+        EMITPhaseResult testPhase = result.getPhase(EMITPhase.TEST_EXECUTION);
+        Assertions.assertEquals(Status.FAILURE, testPhase.getStatus(), () -> "Expected TEST_EXECUTION FAILURE but got:\n" + result.getSummary());
+        Assertions.assertEquals(
+                "2 tests (testable: 0, testable without a runner: 2, legacy mapping: 0, legacy service: 0); 2 failed; "
+                        + "no test runner on the classpath for demo::functiontest::greeting_String_1__String_1_, demo::functiontest::worldGreeting__String_1_",
+                testPhase.getMessage());
+    }
+
+    private static <T> T withoutTestRunner(String runnerClassName, Supplier<T> action)
+    {
+        Thread thread = Thread.currentThread();
+        ClassLoader original = thread.getContextClassLoader();
+        thread.setContextClassLoader(new TestRunnerHidingClassLoader(original, runnerClassName));
+        try
+        {
+            return action.get();
+        }
+        finally
+        {
+            thread.setContextClassLoader(original);
+        }
+    }
+
     private static String describe(RunTestsResult runTests)
     {
         StringBuilder sb = new StringBuilder();
@@ -347,6 +410,46 @@ public class TestEMITRunner
         catch (URISyntaxException e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static final class TestRunnerHidingClassLoader extends ClassLoader
+    {
+        private static final String REGISTRATIONS = "META-INF/services/" + TestableRunnerExtension.class.getName();
+
+        private final String hiddenRunner;
+
+        private TestRunnerHidingClassLoader(ClassLoader parent, String hiddenRunner)
+        {
+            super(parent);
+            this.hiddenRunner = hiddenRunner;
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException
+        {
+            List<URL> resources = Collections.list(super.getResources(name));
+            if (REGISTRATIONS.equals(name))
+            {
+                List<URL> visible = new ArrayList<>(resources.size());
+                for (URL resource : resources)
+                {
+                    if (!registersHiddenRunner(resource))
+                    {
+                        visible.add(resource);
+                    }
+                }
+                return Collections.enumeration(visible);
+            }
+            return Collections.enumeration(resources);
+        }
+
+        private boolean registersHiddenRunner(URL registrations) throws IOException
+        {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(registrations.openStream(), StandardCharsets.UTF_8)))
+            {
+                return reader.lines().anyMatch(line -> this.hiddenRunner.equals(line.trim()));
+            }
         }
     }
 }

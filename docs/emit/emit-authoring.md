@@ -95,7 +95,7 @@ Apply the rule from `emit.md` §3.2:
 | Relational store / mapping / connection (including embedded service tests) | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit`, under `src/test/resources/relational-emit-models/`, run by `RelationalEMITTests` |
 | Relation (`~func`) function-based class mapping — `ClassName: Relation { ~func f():Relation<Any>[1]; ... }` | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit`, under `src/test/resources/relation-emit-models/`, run by `RelationEMITTests` |
 | Service shapes — multi-execution, test data shared between services, and the deprecated `test: Single` block on a Service (Phase 5's legacy service test runner) | `legend-engine-xts-service/legend-engine-xt-service-emit`, under `src/test/resources/emit-models/`, run by `ServiceEMITTests` |
-| A Service over an M2M mapping | `legend-engine-xts-service/legend-engine-xt-service-emit`, as above. `legend-engine-core-emit-tests` has no service test runner, and giving it one would make a core module depend on `legend-engine-xts-service` |
+| A Service over an M2M mapping | `legend-engine-xts-service/legend-engine-xt-service-emit`, as above |
 | File / model generation | `legend-engine-xts-generation/legend-engine-xt-generation-emit` |
 | External format / binding | The format's `-emit` module under `legend-engine-core-external-format` or its `xts-*` peer (e.g. `legend-engine-xts-json/legend-engine-external-format-jsonSchema-emit`) |
 | Flat-data store | `legend-engine-xts-flatdata/legend-engine-xt-flatdata-emit` |
@@ -526,9 +526,11 @@ To create a new `-emit` module:
     - Test-scoped dependencies on the feature's grammar, protocol,
       compiler, Pure runtime, and (where relevant) execution / Java
       platform binding artifacts.
-    - Any test runner SPI the model needs — e.g.
-      `legend-engine-test-runner-mapping` for models with mapping test
-      suites.
+    - Any test runner SPI the model needs beyond the mapping, service,
+      and function runners, which `legend-engine-emit-junit` already
+      brings — e.g. `legend-engine-xt-persistence-test-runner` for
+      Persistence tests. A missing runner fails the model's Test phase
+      with a `No Test Runner` task rather than skipping its tests.
 3. Add one or more `*EMITTests` JUnit classes as shown in §8.
 4. Add `src/test/resources/emit-models/` and start dropping descriptors.
 

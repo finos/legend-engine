@@ -20,6 +20,8 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.test.emit.error.EMITAssertionError;
+import org.finos.legend.engine.test.emit.error.EMITException;
+import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
@@ -27,14 +29,25 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.TestAbortedException;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TestEMITTestSuiteBuilder
 {
+    private static final String FUNCTION_TEST_RUNNER = "org.finos.legend.engine.testable.function.extension.FunctionTestableRunnerExtension";
+
     @Test
     void discoversOneContainerPerModel()
     {
@@ -42,9 +55,9 @@ public class TestEMITTestSuiteBuilder
 
         // Every discovered yaml becomes exactly one top-level container, named after the model.
         Assertions.assertEquals(
-                Lists.fixedSize.with("artifact-generation", "class-simple", "file-generation", "m2m-passing", "model-generation"),
+                Lists.fixedSize.with("artifact-generation", "class-simple", "file-generation", "function-test", "m2m-passing", "model-generation"),
                 modelNames,
-                () -> "Expected one container per discovered model (artifact-generation, class-simple, file-generation, m2m-passing, model-generation); got: " + modelNames);
+                () -> "Expected one container per discovered model (artifact-generation, class-simple, file-generation, function-test, m2m-passing, model-generation); got: " + modelNames);
     }
 
     @Test
@@ -328,6 +341,55 @@ public class TestEMITTestSuiteBuilder
     }
 
     @Test
+    void functionTestYieldsOneTaskPerAtomicTest() throws Throwable
+    {
+        MutableList<DynamicTest> tasks = tasksFor("emit-models/", "basic/function-test");
+
+        Assertions.assertEquals(
+                Lists.mutable.with(
+                        "[function-test] Load Model Descriptor",
+                        "[function-test] Initialization: Parsing",
+                        "[function-test] Initialization: Compilation",
+                        "[function-test] Initialization: Model Generation",
+                        "[function-test] Test: demo::functiontest::greeting_String_1__String_1_ / greetingSuite / Open Test Suite",
+                        "[function-test] Test: demo::functiontest::greeting_String_1__String_1_ / greetingSuite / greetsJohn",
+                        "[function-test] Test: demo::functiontest::greeting_String_1__String_1_ / greetingSuite / greetsJane",
+                        "[function-test] Test: demo::functiontest::greeting_String_1__String_1_ / greetingSuite / Close Test Suite",
+                        "[function-test] Test: demo::functiontest::worldGreeting__String_1_ / default / Open Test Suite",
+                        "[function-test] Test: demo::functiontest::worldGreeting__String_1_ / default / greetsWorld",
+                        "[function-test] Test: demo::functiontest::worldGreeting__String_1_ / default / Close Test Suite"),
+                tasks.collect(DynamicTest::getDisplayName),
+                () -> "function-test should yield the load + init phase plus the session-framed atomic-test tasks; got:\n" + names(tasks));
+
+        executeAll(tasks);
+    }
+
+    @Test
+    void functionTestWithoutItsRunnerYieldsFailingTasks() throws Throwable
+    {
+        MutableList<DynamicTest> tasks = withoutTestRunner(FUNCTION_TEST_RUNNER, () -> tasksFor("emit-models/", "basic/function-test"));
+
+        Assertions.assertEquals(
+                Lists.mutable.with(
+                        "[function-test] Load Model Descriptor",
+                        "[function-test] Initialization: Parsing",
+                        "[function-test] Initialization: Compilation",
+                        "[function-test] Initialization: Model Generation",
+                        "[function-test] Test: demo::functiontest::greeting_String_1__String_1_ / No Test Runner",
+                        "[function-test] Test: demo::functiontest::worldGreeting__String_1_ / No Test Runner"),
+                tasks.collect(DynamicTest::getDisplayName),
+                () -> "function-test without its runner should yield one failing task per testable; got:\n" + names(tasks));
+
+        executeAll(tasks.subList(0, 4));
+        EMITException thrown = Assertions.assertThrows(EMITException.class, () -> tasks.get(4).getExecutable().execute());
+        Assertions.assertEquals(
+                "ERROR [Test Execution]: No test runner on the classpath for the tests of Function 'demo::functiontest::greeting_String_1__String_1_'; "
+                        + "add the module that registers its TestableRunnerExtension to this EMIT module's test dependencies",
+                thrown.getMessage());
+        Assertions.assertThrows(EMITException.class, () -> tasks.get(5).getExecutable().execute());
+    }
+
+    @Test
     void compileFailureYieldsFailingCompilationTask() throws Throwable
     {
         MutableList<DynamicTest> tasks = tasksFor("emit-models-failure/", "compile-failure");
@@ -447,6 +509,21 @@ public class TestEMITTestSuiteBuilder
         return Lists.mutable.fromStream(EMITTestSuiteBuilder.tests(classpathRoot, name));
     }
 
+    private static <T> T withoutTestRunner(String runnerClassName, Supplier<T> action)
+    {
+        Thread thread = Thread.currentThread();
+        ClassLoader original = thread.getContextClassLoader();
+        thread.setContextClassLoader(new TestRunnerHidingClassLoader(original, runnerClassName));
+        try
+        {
+            return action.get();
+        }
+        finally
+        {
+            thread.setContextClassLoader(original);
+        }
+    }
+
     // DynamicContainer#getChildren may only be consumed once, so materialise it eagerly.
     private static MutableList<DynamicNode> childrenOf(DynamicContainer container)
     {
@@ -505,5 +582,45 @@ public class TestEMITTestSuiteBuilder
         StringBuilder sb = new StringBuilder();
         tasks.forEach(t -> sb.append("  - ").append(t.getDisplayName()).append('\n'));
         return sb.toString();
+    }
+
+    private static final class TestRunnerHidingClassLoader extends ClassLoader
+    {
+        private static final String REGISTRATIONS = "META-INF/services/" + TestableRunnerExtension.class.getName();
+
+        private final String hiddenRunner;
+
+        private TestRunnerHidingClassLoader(ClassLoader parent, String hiddenRunner)
+        {
+            super(parent);
+            this.hiddenRunner = hiddenRunner;
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException
+        {
+            List<URL> resources = Collections.list(super.getResources(name));
+            if (REGISTRATIONS.equals(name))
+            {
+                List<URL> visible = new ArrayList<>(resources.size());
+                for (URL resource : resources)
+                {
+                    if (!registersHiddenRunner(resource))
+                    {
+                        visible.add(resource);
+                    }
+                }
+                return Collections.enumeration(visible);
+            }
+            return Collections.enumeration(resources);
+        }
+
+        private boolean registersHiddenRunner(URL registrations) throws IOException
+        {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(registrations.openStream(), StandardCharsets.UTF_8)))
+            {
+                return reader.lines().anyMatch(line -> this.hiddenRunner.equals(line.trim()));
+            }
+        }
     }
 }

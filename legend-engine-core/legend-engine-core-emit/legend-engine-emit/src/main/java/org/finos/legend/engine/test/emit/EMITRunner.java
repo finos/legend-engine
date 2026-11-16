@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.collections.impl.utility.MapIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.test.emit.EMITTasks.ArtifactCandidate;
@@ -263,10 +264,11 @@ public class EMITRunner
         long start = System.currentTimeMillis();
         MutableList<Object> outputs = Lists.mutable.empty();
         MutableList<RunTestsTestableInput> testableInputs = EMITTasks.findTestableInputs(model);
+        List<PackageableElement> testablesWithoutRunner = EMITTasks.findTestablesWithoutRunner(model);
         List<LegacyMappingTestCandidate> legacyMappingCandidates = EMITTasks.findLegacyMappingTestCandidates(model);
         List<LegacyServiceTestCandidate> legacyServiceCandidates = EMITTasks.findLegacyServiceTestCandidates(model);
 
-        if (testableInputs.isEmpty() && legacyMappingCandidates.isEmpty() && legacyServiceCandidates.isEmpty())
+        if (testableInputs.isEmpty() && testablesWithoutRunner.isEmpty() && legacyMappingCandidates.isEmpty() && legacyServiceCandidates.isEmpty())
         {
             result.add(EMITPhaseResult.skipped(EMITPhase.TEST_EXECUTION, "no Testable or legacy test elements in primary scope"));
             return;
@@ -274,8 +276,8 @@ public class EMITRunner
         EMITPhaseResult phaseResult;
         try
         {
-            int total = 0;
-            int failed = 0;
+            int total = testablesWithoutRunner.size();
+            int failed = testablesWithoutRunner.size();
 
             // Modern Testable tests
             if (testableInputs.notEmpty())
@@ -326,10 +328,19 @@ public class EMITRunner
             }
 
             long elapsed = System.currentTimeMillis() - start;
-            String message = total + " tests (testable: " + testableInputs.size() + ", legacy mapping: " + legacyMappingCandidates.size() + ", legacy service: " + legacyServiceCandidates.size() + "); " + failed + " failed";
+            StringBuilder message = new StringBuilder().append(total).append(" tests (testable: ").append(testableInputs.size());
+            if (!testablesWithoutRunner.isEmpty())
+            {
+                message.append(", testable without a runner: ").append(testablesWithoutRunner.size());
+            }
+            message.append(", legacy mapping: ").append(legacyMappingCandidates.size()).append(", legacy service: ").append(legacyServiceCandidates.size()).append("); ").append(failed).append(" failed");
+            if (!testablesWithoutRunner.isEmpty())
+            {
+                message.append("; no test runner on the classpath for ").append(ListIterate.collect(testablesWithoutRunner, PackageableElement::getPath).makeString(", "));
+            }
             phaseResult = (failed == 0)
-                          ? EMITPhaseResult.success(EMITPhase.TEST_EXECUTION, elapsed, message, outputs)
-                          : EMITPhaseResult.failure(EMITPhase.TEST_EXECUTION, elapsed, message, null, outputs);
+                          ? EMITPhaseResult.success(EMITPhase.TEST_EXECUTION, elapsed, message.toString(), outputs)
+                          : EMITPhaseResult.failure(EMITPhase.TEST_EXECUTION, elapsed, message.toString(), null, outputs);
         }
         catch (EMITAssertionError | Exception e)
         {

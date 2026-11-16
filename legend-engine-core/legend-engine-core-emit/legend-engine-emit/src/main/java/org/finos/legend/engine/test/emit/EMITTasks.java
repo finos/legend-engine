@@ -600,6 +600,29 @@ public final class EMITTasks
                 });
     }
 
+    /**
+     * Primary-scope elements that compile to a {@link Testable} with tests, but that no
+     * {@code TestableRunnerExtension} on the classpath claims. {@link #findTestCandidates} and
+     * {@link #findTestableInputs} see an element only through a runner that claims it, so
+     * without this check these tests would be skipped silently.
+     */
+    public static List<PackageableElement> findTestablesWithoutRunner(EMITModel model)
+    {
+        return ListIterate.select(model.getPmcd().getElements(),
+                e -> model.isPrimary(e) && !TestableRunnerExtensionLoader.isTestable(e) && hasTests(resolvePureElement(model.getPureModel(), e)));
+    }
+
+    public static EMITException noTestRunnerFailure(PackageableElement element)
+    {
+        return new EMITException(EMITPhase.TEST_EXECUTION, "No test runner on the classpath for the tests of " + element.getClass().getSimpleName() + " '" + element.getPath()
+                + "'; add the module that registers its TestableRunnerExtension to this EMIT module's test dependencies");
+    }
+
+    private static boolean hasTests(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement pureElement)
+    {
+        return (pureElement instanceof Testable) && ((Testable) pureElement)._tests().notEmpty();
+    }
+
     // ----- helpers -----
 
     private static String readFile(EMITSourceFile file)

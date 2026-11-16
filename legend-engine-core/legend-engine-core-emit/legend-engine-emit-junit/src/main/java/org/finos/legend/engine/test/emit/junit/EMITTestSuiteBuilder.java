@@ -15,6 +15,7 @@
 package org.finos.legend.engine.test.emit.junit;
 
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
@@ -585,12 +586,18 @@ public final class EMITTestSuiteBuilder
     private static void testTasks(boolean verboseNames, String label, EMITModel model, Consumer<? super DynamicContainer> containerConsumer)
     {
         List<TestCandidate> testCandidates = EMITTasks.findTestCandidates(model);
+        List<PackageableElement> testablesWithoutRunner = EMITTasks.findTestablesWithoutRunner(model);
         List<EMITTasks.LegacyMappingTestCandidate> legacyMappingTestCandidates = EMITTasks.findLegacyMappingTestCandidates(model);
         List<EMITTasks.LegacyServiceTestCandidate> legacyServiceTestCandidates = EMITTasks.findLegacyServiceTestCandidates(model);
-        if (!(testCandidates.isEmpty() && legacyMappingTestCandidates.isEmpty() && legacyServiceTestCandidates.isEmpty()))
+        if (!(testCandidates.isEmpty() && testablesWithoutRunner.isEmpty() && legacyMappingTestCandidates.isEmpty() && legacyServiceTestCandidates.isEmpty()))
         {
             String containerName = "Test";
-            Stream<DynamicNode> testableStream = testCandidates.isEmpty() ? null : sessionGroupedTestStream(verboseNames, label, containerName, model, testCandidates);
+            Stream<DynamicNode> noRunnerStream = testablesWithoutRunner.isEmpty() ? null : testablesWithoutRunner.stream().map(element ->
+                    failingTask(EMITTasks.noTestRunnerFailure(element), verboseNames, label, containerName, element.getPath() + " / No Test Runner"));
+            Stream<DynamicNode> runnableStream = testCandidates.isEmpty() ? null : sessionGroupedTestStream(verboseNames, label, containerName, model, testCandidates);
+            Stream<DynamicNode> testableStream = (noRunnerStream == null)
+                                                 ? runnableStream
+                                                 : ((runnableStream == null) ? noRunnerStream : Stream.concat(noRunnerStream, runnableStream));
             Stream<DynamicNode> legacyMappingTestStream = legacyMappingTestCandidates.isEmpty() ? null : legacyMappingTestCandidates.stream().map(candidate ->
                     test(() -> EMITTasks.assertLegacyMappingTestPassed(EMITTasks.runLegacyMappingTest(candidate.mappingPath, candidate.test, model.getPureModel())), verboseNames, label, containerName, "Legacy Mapping Test", candidate.mappingPath + " / " + candidate.test.name));
             Stream<DynamicNode> legacyServiceTestSteam = legacyServiceTestCandidates.isEmpty() ? null : legacyServiceTestCandidates.stream().map(candidate ->
