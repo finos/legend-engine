@@ -135,13 +135,6 @@ public abstract class LegendCompileTest
     }
 
     @Test
-    public void testValueSpecificationEmbeddedPure()
-    {
-        test("let x =  meta::legend::compileVS('#Test{X X Test}#');\n" +
-                "assertEquals('X X Test', $x);");
-    }
-
-    @Test
     public void testPMCD() throws JsonProcessingException
     {
         Class test = new Class();

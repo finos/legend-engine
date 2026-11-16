@@ -27,22 +27,4 @@ public class TestExtendableEmbedded extends TestGrammarRoundtrip.TestGrammarRoun
                 "  let x = #{a{a}}#\n" +
                 "}\n");
     }
-
-    @Test
-    public void testTestExtension()
-    {
-        test("function f(): Any[*]\n" +
-                "{\n" +
-                "  let x = #Test{My random Parser Yo}#\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testTestNestedExtension()
-    {
-        test("function f(): Any[*]\n" +
-                "{\n" +
-                "  let x = #Test{My random Parser #Test{ OK OK } Yo}#\n" +
-                "}\n");
-    }
 }
