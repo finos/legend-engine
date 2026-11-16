@@ -898,6 +898,21 @@ function <<test.Test>> meta::analytics::lineage::tests::relation::testJoin():Boo
 
 }
 
+function <<test.Test>> meta::analytics::lineage::tests::relation::testJoinThroughLets():Boolean[1]
+{
+  let query = {|let people = #>{meta::analytics::lineage::tests::db.personTable}#->project(~['firstName': x| $x.FIRSTNAME, 'FIRMIDFK': x| $x.FIRMID  ]);
+                let firms = #>{meta::analytics::lineage::tests::db.firmTable}#->project(~['FIRMID': x| $x.FIRM_ID]);
+                $people->join($firms, JoinKind.INNER, {x,y| $x.FIRMIDFK == $y.FIRMID}); };
+
+  let lineage = meta::analytics::lineage::computeLineage($query, [], [], [],propertyLineageConfig());
+
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc','tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable'],
+                                          [],
+                                          '[FIRMID: [Root.FIRMID->[RelationalPropertyOwner_meta::analytics::lineage::tests::dbInc.default.firmTable.FIRM_ID]], FIRMIDFK: [Root.FIRMIDFK->[RelationalPropertyOwner_meta::analytics::lineage::tests::dbInc.default.personTable.FIRMID]], firstName: [Root.firstName->[RelationalPropertyOwner_meta::analytics::lineage::tests::dbInc.default.personTable.FIRSTNAME]]]',
+                                          $lineage);
+
+}
+
 function <<access.private>> meta::analytics::lineage::tests::relation::joinFN():Relation<(firstName:Any[*],FIRMIDFK:Any[*])>[1]
 {
   
