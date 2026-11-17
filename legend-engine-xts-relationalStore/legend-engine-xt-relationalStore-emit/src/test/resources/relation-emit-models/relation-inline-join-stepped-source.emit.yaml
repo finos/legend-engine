@@ -1,0 +1,56 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-inline-join-stepped-source
+title: "Relation Function Mapping — navigationJoin / filterJoin over $src Transformed by extend, filter, select, rename and sort"
+description: |
+  navigationJoin and filterJoin whose source is `$src` with extend, filter, select, rename and sort steps
+  applied ahead of the first join, alone and combined, followed by a second join, a modelJoin or a to-many join,
+  and a window-extend gate. A filter gates the join without dropping the mapped instance. A ###Relational twin
+  expects the same rows, except for the window suite. Every query returns a Relation, so the tests run on
+  DuckDB only.
+
+modelSources:
+  model:
+    root: relation-inline-join-stepped-source
+    files:
+      - store/steppedJoinDb.pure
+      - data/steppedJoinData.pure
+      - mapping/steppedJoinMapping.pure
+      - mapping/relationalSteppedJoinMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:function
+  - mapping:relation-filter-join
+  - mapping:relation-inline-model-join
+  - mapping:relation-join-source-steps
+  - mapping:relation-navigation-join
+  - mapping:relation-window-function
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-dyna-function
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - duckdb
+  - mapping-test
+  - relation
+  - navigationjoin
+  - filterjoin

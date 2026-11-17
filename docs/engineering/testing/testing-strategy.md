@@ -384,11 +384,36 @@ layout, `.emit.yaml` schema, feature taxonomy) see
 mvn test -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit -Dtest=RelationEMITTests
 ```
 
-Inline-join execution coverage lives in `relation-inline-join` (single hop of each construct),
-`relation-inline-self-join` and `relation-inline-join-advanced` (chains, filterJoin, to-many and
-self modelJoins, filter / isEmpty / exists / groupBy over join properties, derived properties,
-embedded and union mappings, business-temporal sources and modelJoin targets, and the same keyed property at two
-navigation depths).
+Inline-join execution coverage, by model:
+- `relation-inline-join`: a single hop of each construct
+- `relation-inline-self-join`, `relation-inline-join-advanced`: chains, filterJoin, to-many and self modelJoins,
+  filter / isEmpty / exists / groupBy over join properties, derived properties, embedded and union mappings,
+  business-temporal sources and modelJoin targets, the same keyed property at two navigation depths,
+  `JoinKind.INNER` on later hops, joins inside a property's expression
+- `relation-inline-join-milestoning`: processing-, business- and bi-temporal join targets at `%latest` and at a
+  point in time
+- `relation-inline-join-graphfetch`: graphFetch through a modelJoin keyed on single-hop LEFT and INNER and two-hop
+  navigationJoins
+- `relation-inline-embedded-model-join`: project, filter and graphFetch through a modelJoin inside an `Inline`
+  target and an embedded set, under a single and a union owner, including a processing-temporal target
+- `relation-inline-nested-inline`: the same through an `Inline` target nested in another `Inline` target
+- `relation-inline-join-computed-key`: single-hop, chained and `filterJoin` conditions on a column the source or a
+  join's target computes, including one named in mixed case, and a `modelJoin` onto a computed property
+- `relation-inline-join-variant`: the Variant column of a joined relation read through `get`/`toMany` and then
+  filtered or folded, and a second join inside the filter lambda
+- `relation-inline-join-stepped-source`: `$src` transformed by `extend`, `filter`, `select`, `rename` and `sort`
+  ahead of a `navigationJoin`/`filterJoin`, a window extend followed by a filter, a second join after the steps; runs
+  on DuckDB only
+- `relation-class-mapping-extends`: class mappings that `extends` a parent set, reached through `subType`, a union of
+  leaves and a leaf, reading the inherited join, plain, embedded and `Inline` properties
+
+Each of `relation-inline-join-milestoning`, `-graphfetch`, `-computed-key`, `-stepped-source` (except its window
+suite), `relation-inline-embedded-model-join`, `relation-inline-nested-inline` and `relation-class-mapping-extends`
+is checked against a `###Relational` mapping of the same tables that expects
+the same rows. Exact SQL for these constructs is asserted in
+`core_relational/relational/tests/mapping/relation/` (`Test_Pure_RelationMappingJoins`): `inlineJoin.pure`,
+`inlineJoinSteppedSource.pure` for a transformed `$src`, and `inlineJoinComputedTarget.pure` for a target that
+computes the column its condition reads.
 
 ### Which layer to add a new test to
 

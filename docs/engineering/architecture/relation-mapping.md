@@ -94,6 +94,10 @@ A **property mapping** is one of:
   column reached through an inline join (see
   [§2.11](#211-relationship-join-property-mappings)).
 
+The class mapping header may extend another Relation class mapping,
+`*Class[id] extends [parentId]: Relation { ... }`, inheriting the property mappings
+it does not map itself (see [§2.12](#212-extending-a-class-mapping-extends)).
+
 Concrete ANTLR is in `RelationFunctionMappingParserGrammar.g4`; the walker in
 `RelationFunctionMappingParseTreeWalker.java` produces the protocol POJOs.
 
@@ -201,6 +205,12 @@ Mapping myPkg::EmployeeMapping
 )
 ```
 
+graphFetch decodes an enum property exactly as it does a `###Relational` one: the SQL selects the store
+value, to-one and to-many alike, and the generated Java maps it through the `EnumerationMapping`, failing
+on a value the mapping does not list. As on `###Relational`, an enum property with no `EnumerationMapping`
+cannot be fetched or compared to an enum value. A TDS projection instead decodes in SQL, so an unlisted
+value comes back null.
+
 ### 2.8 Normal embedded mapping
 
 ```
@@ -238,6 +248,9 @@ Child columns come from the same relation as the parent.
 
 The sub-object is fully independent — different function, different columns.
 
+An inline target may itself declare an `Inline` property, and a `modelJoin` declared in the innermost target
+resolves, under a single or a union owner, as it does one level up.
+
 ### 2.10 Union mapping
 
 ```
@@ -274,7 +287,9 @@ property's *value*, not whether the instance exists, so a source row with no mat
 the property is simply empty for it (projected as `null`; a filter on the property excludes it), the
 same as a `###Relational` join property. `filterJoin`'s defining semantic — keep only source rows
 that match a row of target — is itself an inner filter, so it defaults `INNER`; an explicit kind
-always overrides either default. So `firstName : ... .FIRSTNAME` through a `filterJoin` is not merely
+always overrides either default, on any hop of a chain. An `INNER` hop after the first one behaves like
+`###Relational`'s `@J1 > (INNER) @J2 | col`: the source row is kept, and the property is empty for it when
+that hop finds no match. So `firstName : ... .FIRSTNAME` through a `filterJoin` is not merely
 "the source column" — it is empty for rows with no matching target row (a plain source-column mapping
 would not be), while a row failing the filterJoin's own gate is excluded from that gate's candidate
 set the way a `###Relational` filter would be. `JoinKind.RIGHT`/`FULL` are not supported.
@@ -319,32 +334,97 @@ column-name collision to resolve — self-joins (e.g. `person -> manager`,
 both sides backed by the same relation function) fall out for free; the SQL
 layer aliases the two occurrences distinctly.
 
-**Operands.** The source of a `navigationJoin`/`filterJoin` must be `$src` or
-another `navigationJoin`/`filterJoin` call; transforming `$src` first (e.g.
-`$src->filter(...)->navigationJoin(...)`) is not supported for now. A
-`navigationJoin`/`filterJoin` target can be any expression that evaluates to a
+**Operands.** The source of the first `navigationJoin`/`filterJoin` of a chain is `$src`, optionally
+transformed by `extend`, `filter`, `select`, `rename` and `sort` (see **Source steps** below); the source of
+each later hop is the previous join. A `navigationJoin`/`filterJoin` target can be any expression that evaluates to a
 `Relation` — a bare function call (`demo::firmFn()`), one with arguments, an
 operator chain, or a more complex expression; SQL generation processes it as a
 plain value specification (the same way TDS v2's own `Relation::join()`
 processes its right-hand side), so no particular expression shape is
 required.
 
-**Placement.** A `navigationJoin`/`filterJoin` chain must be the property's entire value, or be
-followed by a single `.col` — not wrapped in another call, combined with another join in one
-expression, or used as another join's target. `$src` may appear only as the chain's root source,
-and `$row` may not appear in any join argument (the join is over the whole source relation, not the
+**Source steps.** `$src->extend(~K: x | $x.FIRM_ID + 1)->filter(x | $x.ACTIVE == 'Y')->navigationJoin(demo::firmFn(), {p, f | $p.K == $f.ID}).LEGAL_NAME`
+joins from the class mapping's own relation after the steps, in the order written. The steps are the
+row-preserving ones — each source row survives exactly once, so the join result can still be matched back to
+the mapped row — and only on `$src`, ahead of the first join:
+
+- The join condition's first parameter ranges over the transformed relation: an `extend` column (a window
+  function included) is visible to it and to every later step, `rename` moves the renamed column to the end,
+  and `select` narrows what it sees.
+- `filter` gates the join, never the mapped instance: a source row the filter removes keeps its instance and
+  gets no joined row, so the joined columns are empty for it. It is not a `where` on the class mapping's rows.
+  A window `extend` ahead of a `filter` runs first, so `filter(x | $x.RN == 1)` keeps the first row per
+  partition.
+- The join result is matched to the owning row by the mapping's `~primaryKey` (declared or inferred), so the
+  transformed relation must still carry every primary key column. A `select` or `rename` that drops one fails
+  at plan generation, naming the missing column and the columns that are left.
+- Any other function between `$src` and the first join (`groupBy`, `distinct`, `join`, `project`,
+  `concatenate`, `limit`, `drop`, ...) is rejected, as are the five steps between two joins or after a join, and
+  steps that do not lead into a join (`$src->extend(...)->size()`: use `$row` for the mapped row's columns).
+  A step's lambdas range over the source rows and use neither `$row`, `$src` nor a join chain.
+
+**Placement.** A `navigationJoin`/`filterJoin` chain is either the property's entire value, or
+followed by a `.col` — and a chain followed by `.col` may appear anywhere in the value expression,
+as a `###Relational` `@J | col` may: inside `if` branches, comparisons, `isEmpty`/`isNotEmpty`,
+`coalesce`, arithmetic, string `+` and `joinStrings`, alongside the mapping's own `$row` columns,
+and several chains in one expression. The expression is evaluated on the source row, so a source row with no joined row still
+gets the expression's value (`if(<chain>.CODE == 'Y', | true, | false)` is `false`, not empty, when
+nothing matches), and each chain's join is added only when a query reads the property:
+
+```
+isLiquid : if($src->navigationJoin(demo::classificationFn(), {p, c | $p.ID == $c.PRODUCT_ID}).CODE == 'Y', | true, | false),
+issueDate: if($row.SUB_TYPE == 'Future', | $src->navigationJoin(demo::futureFn(), {p, f | $p.ID == $f.ID}).ISSUE_DATE,
+              | if($row.SUB_TYPE == 'Option', | $src->navigationJoin(demo::optionFn(), {p, o | $p.ID == $o.ID}).ISSUE_DATE, | []))
+```
+
+A chain not followed by `.col` must be the whole value, and a chain may not appear in another
+join's arguments (its target or condition). `$src`, with or without steps, may appear only as a chain's root source, and
+`$row` may not appear in any join argument (the join is over the whole source relation, not the
 mapped row); a nested lambda's own `{row | ...}` is unaffected. An explicit `JoinKind` must be a
 literal (`JoinKind.INNER`), not a computed expression.
 
 These rules, and the `modelJoin` rules in [§5.5](#55-join-property-mappings), are defined and
 enforced by legend-pure's Relation-mapping compiler (`RelationFunctionInstanceSetImplementationProcessor`,
-documented in legend-pure's `mapping-grammar-reference.md` §15.10). The engine's Java compiler
-compiles the constructs but does not repeat those checks — as with association `ModelJoin`, it
-only fails where it cannot build the mapping.
+documented in legend-pure's `mapping-grammar-reference.md` §15.10), which rejects a `.pure` source at compile
+time. A model compiled from protocol never passes through that compiler, and the engine does not repeat its checks:
+as with association `ModelJoin`, the engine's Java compiler only fails where it cannot build the mapping. A protocol
+model that violates these rules gets whatever SQL generation produces for it, except for two cases that would
+silently produce wrong SQL and are asserted at plan generation, with legend-pure's messages, when a query reaches the
+property:
+
+- **`$src` is only a chain's root.** An unbound `$src` reaching SQL generation from a property value (`$src->size()`,
+  `$src->filter(...)->size()`) is rejected in `processVariableExpression`; otherwise it would generate invalid or wrong
+  SQL (`$src->size()` becomes a `count(*)` without a `GROUP BY`, the filter is dropped). The error carries no grammar
+  source position. A `$src` inside a join's own condition or target is not caught here.
+- **A chain's root source is `$src` plus the five steps.** SQL generation lowers `extend`, `filter`, `select`,
+  `rename` and `sort` over the class mapping's relation and nothing else, so `assertRelationMappingJoinSourceSteps`
+  rejects any other function between `$src` and the first join (`limit`, `join`, `distinct`, ...): `limit` would
+  otherwise cut the source copy to its first rows and leave every other row with an empty joined column.
+
+A bare `filter`, `extend`, `select`, `rename` or `sort` is a step when the engine resolves it over a Relation;
+one qualified with another package (`meta::pure::functions::collection::filter`) is not.
+
+`sort` is accepted as a step and has no effect: the join is matched back by primary key, so row order cannot change
+the result (see §9.5).
+
+**Possible future enhancement: aggregates over a join.** A join chain is row-level: `.COL` reads one value from the
+joined row, so `$src->navigationJoin(...).COL` followed by `->size()`, `->sum()` or a similar aggregate is not
+supported (`chain.COL->size()` compiles but is always 1). `Relational` mappings have no equivalent either: they
+aggregate over a to-many property in the query, and a Relation mapping does the same through a `modelJoin` to a class
+with a to-many association. Supporting an aggregate over the chain inside a property expression (`size`, `isEmpty`,
+`exists`, `sum`/`min`/`max`/`avg` over a column) would need a compile rule that allows a chain as the first argument
+of those functions and an aggregated keyed sub-select (`GROUP BY` the primary key, `COALESCE` to 0 for rows without a
+match) in SQL generation.
 
 **Qualified `modelJoin`.** `modelJoin(...)` and `meta::pure::functions::relation::modelJoin(...)`
 are equivalent. Exporting a compiled inline model join always emits the qualified name; the
 compiled metamodel does not store the original call spelling.
+
+**Milestoning.** Every milestoned table a `navigationJoin`/`filterJoin` reaches is read at the
+query's milestoning dates, as a `###Relational` join's target is: each hop of a chain, the source
+copy a chain or `filterJoin` is keyed on, and accessors nested inside a target expression (a
+`->join(...)`'s right side, a `->filter(...)` over an accessor). Processing-, business- and
+bi-temporal tables are filtered at `%latest` and at a point in time alike.
 
 **Typed targets.** The condition lambda's parameters are typed from the two
 operands' row types, so the condition can only name a target's columns when
@@ -390,7 +470,9 @@ for why.
   Operation mappings count when deciding the root, as for `*`: a starred
   Operation is the root and is rejected as unsupported, rather than an
   unstarred instance class mapping beside it being picked instead.
-- No cross-store joins and no graphFetch traversal of join properties.
+- No cross-store joins. graphFetch traverses `modelJoin`, `navigationJoin` and `filterJoin` properties like any
+  other property (EMIT models `relation-inline-join-graphfetch`, `relation-graphfetch-enum` and
+  `relation-class-mapping-extends`).
 
 **Comparison with `###Relational`:**
 
@@ -413,6 +495,54 @@ XStore associations lower to — see [`model-join.md`](model-join.md));
 Neither requires a metamodel change. See [§5.5](#55-join-property-mappings),
 [§6](#6-validate), and [§9.5](#95-join-sql-generation) for how each stage
 handles them.
+
+### 2.12 Extending a class mapping (`extends`)
+
+```
+*Product[product]: Relation
+{
+  ~func productRel():Relation<Any>[1]
+  id: ID,
+  issuerName: $src->navigationJoin(issuerRel(), {p, i | $p.ISSUER_ID == $i.ID}).NAME,
+  +productKey: Integer[1]: ID,
+  sharesOutstanding: modelJoin({p, s | $p.productKey == $s.productId})
+}
+*Stock: Operation { meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(commonStock, preferredStock) }
+Stock[stock] extends [product]: Relation { ~func stockRel():Relation<Any>[1]  stockClass: STOCK_CLASS }
+*CommonStock[commonStock] extends [stock]: Relation { ~func commonStockRel():Relation<Any>[1] }
+*PreferredStock[preferredStock] extends [stock]: Relation { ~func preferredStockRel():Relation<Any>[1]  name: 'Preferred ' + $row.NAME->toOne() }
+```
+
+A Relation class mapping can extend another Relation class mapping of the same
+class or of the class's single direct superclass. legend-pure's
+`MappingValidator` enforces this (`CommonStock extends [product]` is rejected
+because `Product` is not `CommonStock`'s direct superclass); the engine compiler
+does not check it, for any mapping type. The extending mapping still declares its
+own `~func`/`~src`, and inherits every property mapping of the extended sets that it
+does not map itself: columns, `$row` expressions, local properties, embedded and
+`Inline` properties, `navigationJoin`/`filterJoin` and `modelJoin`. A property it
+maps itself overrides the inherited one. Local properties are not inherited
+*as properties*: a set's own property mappings can only use the locals it
+declares, so a `modelJoin` declared on `CommonStock` cannot read `productKey`.
+
+An inherited property mapping keeps the extended set as its owner and source
+set id (`allPropertyMappings`, the same as for classic mappings). Its columns are
+read, by name, from the relation of the set being queried, so that relation must
+expose the columns the inherited mappings read. A `modelJoin` condition is routed
+against the set that declares it ([§7](#7-route--store-contract)). A
+`filterJoin` or chained join builds its keyed sub-select from the declaring
+set's relation and joins it back on that set's primary key
+([§9.5](#95-join-sql-generation)), so it finds a value only for rows that the
+declaring set's relation contains as well (the usual case: the extending
+relation narrows its parent's).
+
+Queries behave as with a `###Relational` mapping of the same `extends`
+hierarchy, including that `subType` does not narrow the rows:
+`Product.all()->project(x | $x->subType(@Stock).sharesOutstanding.amount)` reads
+the inherited `modelJoin` for every product, because the union's leaves resolve
+to the one inherited property mapping. If the leaves each map the property
+themselves instead, the union does not collapse and that query fails in both
+mapping types.
 
 ---
 
@@ -442,7 +572,7 @@ back-flow. Data shapes:
 |---|---|
 | Protocol | Serialisable JSON model. `~func` vs `~src`, `column` vs `valueFn` are mutually-exclusive fields at this layer. |
 | Pure graph | `_relationFunction` typed `FunctionDefinition` (either resolved or freshly compiled), each property with `_valueFn` (a `LambdaFunction` typed at the row type). |
-| Routed graph | Same shape, but `_relationFunction.expressionSequence` is now a `ClusteredValueSpecification` carrying the target store. |
+| Routed graph | Same shape, but `_relationFunction.expressionSequence` is a `ClusteredValueSpecification` carrying the target store. |
 | SQL cursor | `SelectWithCursor` wrapping a `SelectSQLQuery` — this is the value threaded through the rest of query compilation. |
 
 ---
@@ -528,6 +658,17 @@ Normal embedded: both `selfId` and `targetId` are `<parentId>_<propertyName>`.
 
 Inline embedded: `selfId` still `<parentId>_<propertyName>`, but `targetId`
 points to the separately-declared class mapping.
+
+As with a classic `###Relational` inline, resolving an inline set keeps its own
+`selfId` and copies the target's property mappings with `owner` and
+`sourceSetImplementationId` set to the owner, so each owner — each branch of a
+union owner included — resolves to its own set. The router resolves the inline
+set for a single owner and for each branch of the `embedded_operation` it builds
+for a union owner, and SQL generation resolves it again when it navigates from
+the unresolved set (`findPropertyMapping`). Since `targetId` names the inline
+target rather than the set itself, the router finds the owner's property mapping
+for the set by the set's own id, and a `modelJoin` copied from the target finds
+its source set by the owner id.
 
 ### 5.5 Join property mappings
 
@@ -668,6 +809,17 @@ by set id instead of routing the raw mapping body again. Set lookups by id
 `RelationFunction` owners compare the same way across scopes. Inline-embedded
 sets are excluded: they carry the target's id but the owner's function.
 
+**Inherited property mappings** ([§2.12](#212-extending-a-class-mapping-extends)).
+Looking a property up on the routed leaves of a union returns the same inherited
+property mapping for each leaf, and the router keeps one copy, so the property
+reads from a single set as in classic mappings. Its `modelJoin` condition names
+the declaring set as its source, which is not among the routed sets: the
+router (`modelJoinSourceSet` in `router/store/builder.pure`) routes the
+condition against the extended set that the routed sets inherit it from. For a
+`modelJoin` inside an inherited `Inline` target, each leaf resolves its own copy
+of the `Inline` set, all under the declaring owner's id; the router routes the
+condition against one of them.
+
 ---
 
 ## 8. Primary-Key Inference
@@ -788,7 +940,10 @@ empty; that's the marker that identifies it later.
 `updateFunctionParamScope`. Processing the body produces a
 relational operation tree whose leaves are placeholder `TableAliasColumn`s.
 `expressionTouchesVariant` decides whether the body reaches into semi-structured
-territory.
+territory. Only a sub-expression typed `Variant`, or read from a semi-structured
+column, counts; a literal or `@Type` argument (`substring(0, 2)`, `cast(@StrictDate)`,
+an `if` over string literals) does not, so such a body on a to-many primitive property
+stays a plain `RelationalPropertyMapping` instead of being fanned out by an array flatten.
 
 **3. Choose a downstream shape.** Based on the transformer and the variant
 signal:
@@ -814,6 +969,12 @@ the empty `owner` and either reuses a matching projected column in the outer
 select or appends the column to it. This deferred resolution is what allows
 the transformer to be locally simple — it doesn't need to know what outer
 select it will land in.
+
+A composite element — a `DynaFunction`, or the `JoinStrings` that string `+` and `joinStrings`
+produce — resolves each operand against the outer select separately and merges the results with
+`mergeSQLQueryData` (`resolveDynaFunction`, `resolveJoinStrings`). An operand that is a chain's
+`.col` applies the chain's join while it resolves, so the merge is what carries that join into the
+query, and it is also what shares one join between operands reading the same chain.
 
 **Cursor position vs. tree root.** `processColumnFunctionExpression` (the
 general `.col` terminal resolver, not specific to relation mappings) resolves
@@ -899,6 +1060,37 @@ the outer query only ever sees a single-level join (the projection isolation
 logic in `buildCorrelatedSubQuery` does not handle multi-level join trees of
 sub-select-backed nodes).
 
+**Transformed `$src`.** A join whose first source is `$src` with `extend`/`filter`/`select`/`rename`/`sort` steps
+([§2.11](#211-relationship-join-property-mappings)) always takes the keyed sub-select path, even a single `navigationJoin`:
+the join is not anchored on the source's own table alias, whose rows are the whole class mapping. The steps become
+part of the relation the sub-select is keyed on. `applyRelationMappingJoinSourceSteps` substitutes the class mapping's
+own relation function body for `$src` in the step chain, wraps the result in a synthetic
+`RelationFunctionInstanceSetImplementation` (as `relationMappingJoinTarget` does for a target) and lowers it through
+`processRelationFunctionClassMapping`, so the steps are routed, pre-evaluated and milestoned like the body of a
+`~func` that ended in them. The first hop then joins from that relation, reading its columns by the names the steps
+expose them under (`keptColumnsOnAlias`), and the sub-select stays `LEFT OUTER` joined to the real source by primary key:
+
+```
+source  LEFT OUTER JOIN  ( SELECT <copy>.PK AS relJoinKey_PK, <kept columns>
+                           FROM ( <relation function body> + extend / filter / select / rename ) AS copy
+                                LEFT OUTER JOIN <hop1> ON <condition over the transformed columns> )
+        ON source.PK IS NOT DISTINCT FROM relJoinKey_PK
+```
+
+A `filter` therefore removes rows from the copy only: the source row it removes has no row in the sub-select, so the
+joined columns are empty for it and the instance is kept. The steps' lambdas see only the relation's columns, so a
+window `extend` runs inside the copy before a later `filter`, in the order written. The copy must still expose every
+primary key column of the class mapping, which `applyRelationMappingJoinSourceSteps` asserts before lowering, naming the
+missing column and the columns left. A `sort` is not lowered (`dropSortSteps`): it keeps each row once and the join
+matches by key, so it cannot change the result, and `rename` followed by `sort` otherwise orders by a name that only exists
+a level out. Because a sort is dropped rather than lowered, a sorted and an unsorted source share one join and a source of
+`sort` alone is the plain source.
+
+The join names carry the steps. The first hop's source id is `<class mapping id>_<fingerprint of the step chain>`
+(`relationExpressionFingerprint`, the one a join target gets), and so is the keyed sub-select's alias, so two properties
+with the same steps and join merge into one join in `mergeSQLQueryData`, and the same join over different steps, or over
+no steps, stays two.
+
 **Join kind per hop.** Each hop's own `JoinType` (`relationMappingJoinType`) defaults per its
 construct — `LEFT_OUTER` for a `navigationJoin` hop, `INNER` for a `filterJoin` hop (its gating
 semantic) — and an explicit `JoinKind` on that hop's own call overrides either default. The
@@ -907,27 +1099,93 @@ hop's kind, so a source row with no row in the sub-select keeps its row with the
 `INNER` connector would be merged into the query's `FROM` as an inner join, and projection isolation
 would then wrap it in a `LEFT OUTER JOIN (SELECT <second copy of source> INNER JOIN ...) ON PK = PK`
 self-join to keep those rows.) A single-hop `navigationJoin` (not going through the keyed sub-select)
-likewise defaults `LEFT_OUTER`.
+likewise defaults `LEFT_OUTER`; an explicit `INNER` on it is that self-join case. A graphFetch child
+query whose target is a Relation class mapping (`generateNonPrimitivePropertyQuery`) therefore leaves
+isolation until its key and property queries have selected their columns: those are found by name on
+the current node, and the self-join's sub-select exposes only the source's columns. Every hop's
+condition is compiled against a `LEFT_OUTER` placeholder join (`compileModelJoinForBranch`'s
+`placeholderJoinType`) and the hop's own kind is stamped on the compiled tree afterwards
+(`forceJoinTypeTree`): compiling a condition of several terms under an
+`INNER` placeholder makes `processDynaFunction`'s per-argument isolation pull the target into a
+correlated sub-query, which `buildCorrelatedSubQuery` cannot build for a sub-select-backed target.
+An `INNER` hop inside the keyed sub-select removes the sub-select's row for that source row, so the
+`LEFT OUTER` connector keeps the source row with the property empty — the result of
+`###Relational`'s nested `@J1 > (INNER) @J2`.
 
-**Join naming for `mergeSQLQueryData` dedup.** The generated `Join.name` for every construct here
-folds in the compiled condition's own structural fingerprint (`buildUniqueName(...,
-alias=false, ...)`) rather than a positional node id — mirroring how a classic `###Relational`
-`@join` gets one canonical name shared by construction across every property mapping that
-references it. The other half of the name is the `targetId` passed into `compileModelJoinForBranch`:
-for classic/inline `modelJoin` this is the real target class mapping's own (always content-stable)
-`.id`; for `navigationJoin`/`filterJoin`, `relationMappingJoinTarget` fingerprints it as the target's
-`elementToPath()` when the target is a simple zero-arg call to a named function (the common case —
-this is what lets two property mappings navigating through an identical condition to the same named
-target dedup into one `JOIN`), falling back to the (call-site-unique but not cross-call-site-stable)
-`hopNodeId` for a target that isn't a simple named call — e.g. an inline lambda or an operator
-chain — which can't recur verbatim across call sites anyway, so there's no dedup to lose.
+**Milestoning.** The property's value expression is evaluated against a synthetic cursor
+(`evaluateRfpmValueFn`) that carries the query's `milestoningContext`, so every target built from it
+(`buildMappedModelJoinTargetSWC` → `processRelationFunctionClassMapping`) and the keyed source copy
+are processed under it, and `processRelationStoreAccessor` filters each milestoned accessor they
+contain. When both sides of a `->join(...)` carry the same milestoning date column, the right side's
+is dropped (`withoutMilestoningDateColumnsOf`).
 
-A condition compiled against a sub-select-backed alias resolves its columns
-to that sub-select's own root alias, one scope too deep; `reanchorOnAlias`
-points them back at the alias the hop joins from. The single-hop path relies
-on the same thing implicitly: its source wrapper alias carries the source
-sub-select's own root alias name, so the join is re-anchored onto the real
-source by name when it is applied.
+**Join naming for `mergeSQLQueryData` dedup.** `mergeSQLQueryData` merges join-tree children by
+`Join.name` alone, so the name every construct here generates (`modelJoinName`) must be equal for
+two occurrences of the same join — the way a classic `###Relational` `@join` is shared by every
+property mapping that references it — and different for any two different joins, or the second
+join's condition is silently dropped. The name is a role-based fingerprint:
+
+```
+<sourceId>_<targetId>_<joinKind>_<joinType>_<condition by role>_<milestoning context>_ModelJoin
+```
+
+- **Condition by role.** The compiled condition is printed with each alias replaced by its role,
+  never by its call-site-derived name or the relation behind it: `{S}.` for the source side,
+  `{T}.` for the target side, `{S^}.`/`{T^}.` for a side's sub-select root alias (a condition
+  that resolves a column through a sub-select-backed side reads it), and the role followed
+  by the join names leading to it (`{S/<joinName>}.`) for an alias reached by navigating further
+  from a side. Literals and operators are printed as they are. An alias name both sides use keeps
+  the old expansion, since its role would be ambiguous. Printing the relations behind the aliases
+  instead made the name exponential in the nesting depth of the source and target relations
+  (each column's alias expanded its own sub-select again).
+- **Source and target.** The roles only mean something because the ids identify the relations: a
+  class mapping's `.id` for classic and inline `modelJoin`, and for a `navigationJoin`/`filterJoin`
+  target, `relationMappingJoinTarget`'s content key — a structural fingerprint of the target
+  expression (functions by path, lambdas with their bodies, literals, column specs, store
+  accessors by database, schema and table), so `firmRel()->filter(f | $f.ID > 1)` and
+  `firmRel()->filter(f | $f.ID > 2)` are different targets. A chained hop's source is the previous
+  hop's kept target.
+- **Milestoning context.** Both sides are milestoned by the query's context, so the same property
+  read at two dates is two joins.
+
+The keyed sub-select of a chained or `filterJoin` property is named from its hops' join names (its
+root is always the class mapping's own relation). Names longer than 256 characters are cut and
+suffixed with an MD5 of the rest, and carry no double quote because they can end up inside a quoted
+SQL alias.
+
+A hop's condition reads the kept columns off the alias the hop joins from,
+under the names that alias exposes them by (`keptColumnsOnAlias`). Resolved
+through the alias's sub-select instead, a computed column would be inlined as
+its definition, which reads columns the sub-select need not expose: a key
+computed by an `extend` and kept by a `select` would be recomputed from columns
+the `select` dropped. The single-hop path gets the same from its source wrapper
+alias, whose relational element is the source's outer projection and which
+carries the source sub-select's own root alias name, so the join is re-anchored
+onto the real source by name when it is applied.
+
+A hop's target may itself compute the column its condition reads
+(`firmRel()->extend(~KEY: f | $f.ID + 1)` joined on `$p.FIRMID == $f.KEY`), whatever the expression's type
+(arithmetic, `if` with a branch that is empty, string concatenation) and through any mix of `extend`, `select`
+and `filter` on the target. The target is its own sub-select, so the column is read as that sub-select exposes it
+under its name (`exposedColumnOnAlias`) rather than as its defining expression, which would read the target's
+columns from outside it. The column's SQL type is the one the Pure compiler inferred for `$f.KEY`. A computed
+column read in a later hop's condition, a computed column of that later hop's target and a `filterJoin` target all
+go the same way. A `modelJoin` onto a mapped property that is computed by an expression needs none of this: the
+expression is inlined into the join condition. The condition itself cannot do arithmetic on `$p` or `$f`
+(`{p, f | $p.FIRMID + 1 == $f.ID}` fails to compile with `Can't find a match for function 'plus(Any[2])'`, because the
+lambda parameters are untyped); put the computation in an `extend` on the source (`$src->extend(...)`) or on the target.
+
+A join chain may head the collection a Variant `filter`/`fold`/`map` lambda runs over, or sit inside the lambda body:
+`resolveRelationalLambda` merges the select of every lambda parameter and of the body, so each join survives into the
+query. (legend-pure's compiler rejects a `map` over a joined Variant column with a type-inference error; `filter`
+and `fold` compile.)
+
+The columns the keyed sub-select and the outer query read off a kept alias are referenced as that alias's
+sub-select exposes them (`relationColumnOnAlias`): a computed column is exposed quoted (`as "firmKey"`) and a
+table column unquoted, and a reference that differs in quoting fails on a database that folds unquoted
+identifiers (H2). An all-uppercase name is referenced unquoted whichever way it is exposed. DuckDB treats the
+two spellings as one identifier, so a Relation-returning EMIT query does not catch a mismatch; the exact SQL in
+`inlineJoin.pure` (`Test_Pure_RelationMappingJoins`) is what pins the quoting.
 
 **All three constructs' conditions compile to the same `_mj_src`/`_mj_tgt` sentinels** — just at
 different stages. Classic Association `ModelJoin` and inline `modelJoin` rewrite the user's two
@@ -1033,8 +1291,9 @@ in [`CLAUDE.md`](../../CLAUDE.md).
 | `modelJoin` resolution and lowering | `RelationModelJoinBuilder.java` |
 | `modelJoin` protocol POJO (reused) | `.../mapping/modelJoin/ModelJoinPropertyMapping.java` |
 | Join SQL generation | `relationalModelJoins.pure` (`compileModelJoinForBranch`), `pureToSQLQuery.pure` (`processRelationMappingJoin`; `processRelationMappingJoinAsKeyedSubselect` / `buildKeyedJoinChain` for `filterJoin` and chains) |
-| Join validation | legend-pure: `RelationFunctionInstanceSetImplementationProcessor`. Engine: only `ClassMappingThirdPassBuilder.inferRelationModelJoinTarget` (target must resolve) and the plan-time source-PK assertion for chained/`filterJoin` lowering in `pureToSQLQuery.pure` (`processRelationMappingJoinAsKeyedSubselect`) |
-| Join tests | `TestRelationFunctionMappingJoinCompilation.java` (compiler), `TestNavigationJoinSqlGeneration.java`/`TestFilterJoinSqlGeneration.java`/`TestInlineModelJoinSqlGeneration.java` (exact-SQL-text, relational executionPlan), EMIT models `relation-inline-join`, `relation-inline-self-join`, `relation-inline-join-advanced` |
+| Join validation | legend-pure at compile time for `.pure` sources: `RelationFunctionInstanceSetImplementationProcessor`. Engine: `ClassMappingThirdPassBuilder.inferRelationModelJoinTarget` (target must resolve) at compile time; at plan generation, reported only when a query reaches the property and without a source position, the unbound-`$src` assertion (`processVariableExpression`), the source-step assertion (`assertRelationMappingJoinSourceSteps`) and the source-PK assertions for chained/`filterJoin` lowering in `pureToSQLQuery.pure` (`processRelationMappingJoinAsKeyedSubselect`) and, for a transformed `$src`, that its steps keep every primary key column (`applyRelationMappingJoinSourceSteps`) |
+| Join tests | `TestRelationFunctionMappingJoinCompilation.java` (compiler), `TestRelationMappingJoinPlanGeneration.java` (relational executionPlan: protocol compile then plan generation, the `$src` and source-step assertions), `TestNavigationJoinSqlGeneration.java`/`TestFilterJoinSqlGeneration.java`/`TestInlineModelJoinSqlGeneration.java` (exact-SQL-text, relational executionPlan), `inlineJoin.pure`, `inlineJoinSteppedSource.pure` and `inlineJoinComputedTarget.pure` (exact SQL, `Test_Pure_RelationMappingJoins`), EMIT models `relation-inline-join`, `relation-inline-self-join`, `relation-inline-join-advanced`, `relation-inline-join-milestoning`, `relation-inline-join-graphfetch`, `relation-inline-embedded-model-join`, `relation-inline-nested-inline`, `relation-inline-join-computed-key`, `relation-inline-join-variant`, `relation-inline-join-stepped-source` (DuckDB only) |
+| `extends` tests | `inlineJoin.pure` (`ExtendsMapping`: exact SQL for an inherited `modelJoin` under `subType`, under a filter, on a union of leaves, inside an inherited `Inline` target on a union of leaves, and with an inherited `navigationJoin` two levels down, `Test_Pure_RelationMappingJoins`), EMIT model `relation-class-mapping-extends` (project, filter and graphFetch through every inherited property form, checked against a `###Relational` mapping with the same hierarchy) |
 
 ---
 
@@ -1043,7 +1302,7 @@ in [`CLAUDE.md`](../../CLAUDE.md).
 | Question | Answer |
 |----------|--------|
 | Difference between `~func` and `~src`? | `~func` references an existing Pure function; `~src` inlines a zero-arg expression. The compiler treats both uniformly after wrapping `~src` in a synthetic lambda. |
-| What property RHS forms are supported? | Bare column identifier (lowered to `{$row.<col>}`), a full Pure expression over `$row`, a relation-level join construct (`navigationJoin`/`filterJoin`) over `$src`, or a model-level `modelJoin` ([§2.11](#211-relationship-join-property-mappings)). |
+| What property RHS forms are supported? | Bare column identifier (lowered to `{$row.<col>}`), a full Pure expression over `$row`, a relation-level join construct (`navigationJoin`/`filterJoin`) over `$src` (optionally after `extend`/`filter`/`select`/`rename`/`sort`), or a model-level `modelJoin` ([§2.11](#211-relationship-join-property-mappings)). |
 | What's the difference between `$row` and `$src`? | `$row` is the current row (own-column access). `$src` is the class's own **relation** — only meaningful as the left operand of a join construct. `$src.COL` does not compile. |
 | How do I express a relationship to another mapped class? | `modelJoin` — `firm : modelJoin({p,f\|$p.firmId == $f.id})`, a condition over the two classes' properties like an association `ModelJoin`'s. Target class mapping is always resolved from the property's declared type — no explicit target reference. Lowers to the same `ModelJoinPropertyMapping` an XStore association would produce. |
 | How do I pull a column through a join without full class navigation? | `navigationJoin` (joined/right column) or `filterJoin` (this/left column, gated by the join), terminated with `.col`. Target is a relation function, not a set-id. |
@@ -1058,6 +1317,7 @@ in [`CLAUDE.md`](../../CLAUDE.md).
 | How does `$x.address.city` resolve on an inline-embedded set? | Via `_classMappingByIdRecursive` on the mapping (`inlineEmbeddedRelationFunctionMapping`). |
 | Can inline embedded use a different relation function? | Yes — the inline target set is fully independent. |
 | Can a Relation mapping participate in a union? | Yes. All leaves must resolve to the same store. |
+| Can a Relation mapping `extends` another? | Yes, a Relation mapping of the same class or of its direct superclass. It keeps its own `~func`/`~src` and inherits the property mappings it does not map itself, joins included, with classic `extends` semantics ([§2.12](#212-extending-a-class-mapping-extends)). |
 | Can I mix Relation and Relational leaves in a union? | Yes, as long as they share the same store. |
 | What happens to milestoning columns in a union with an RF leaf? | The RF leaf contributes empty milestoning columns; temporal filtering does not apply to that branch. |
 | Cross-store union? | Not supported — enforced during store-contract resolution. |

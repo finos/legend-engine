@@ -118,14 +118,17 @@ function meta::relational::functions::pureToSqlQuery::isAutomapWithVariantInput(
 // Returns true if any sub-expression of `v` involves a Variant. Used by the
 // RelationFunctionPropertyMapping lift router (processRelationFunctionPropertyMapping)
 // to decide whether to wrap the synthesised property mapping as semi-structured.
-// Walks the head spine first via isVariantInputWithInstanceValue (covers most cases:
+// Walks the head spine first via isVariantInput (covers most cases:
 // `$row.payload->...`, `arr->filter(...)`, `arr->size()`, etc.), then recurses into
 // all parametersValues and routed-value-spec wrappers for completeness (covers
 // non-head-spine variants e.g. `if($cond, $variantA, $variantB)`).
+// Not isVariantInputWithInstanceValue: it counts every primitive or empty InstanceValue as
+// variant input, which is right for a literal collection heading filter/map/fold but, applied
+// to every argument here, makes `substring(0, 2)`, `cast(@StrictDate)` or an `if` over literals variant.
 function meta::relational::functions::pureToSqlQuery::expressionTouchesVariant(v:ValueSpecification[1], state:State[1]):Boolean[1]
 {
   let emptyVars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>));
-  if($v->isVariantInputWithInstanceValue($emptyVars, $state),
+  if($v->isVariantInput($emptyVars, $state),
      | true,
      | $v->match([
          fe: FunctionExpression[1]        | $fe.parametersValues->exists(p | $p->expressionTouchesVariant($state)),

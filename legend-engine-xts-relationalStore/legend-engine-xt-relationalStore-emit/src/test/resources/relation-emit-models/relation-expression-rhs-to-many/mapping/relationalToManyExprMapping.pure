@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::relation::mapping::RelationalEmployeeToManyExpressionMapping
+(
+  *demo::relation::domain::EmployeeLabels: Relational
+  {
+    ~mainTable [demo::relation::db::EmployeeDB]EmployeeTable
+    id: [demo::relation::db::EmployeeDB]EmployeeTable.ID,
+    surnames: [demo::relation::db::EmployeeDB]EmployeeTable.LAST_NAME,
+    initials: substring([demo::relation::db::EmployeeDB]EmployeeTable.FIRST_NAME, 0, 1),
+    statuses: case(equal([demo::relation::db::EmployeeDB]EmployeeTable.ACTIVE, 1), 'active', 'inactive'),
+    hireDays: datePart([demo::relation::db::EmployeeDB]EmployeeTable.HIRE_DATE)
+  }
+
+  testSuites:
+  [
+    toManyGraphFetchSuite:
+    {
+      function: |demo::relation::domain::EmployeeLabels.all()
+                  ->graphFetch(#{demo::relation::domain::EmployeeLabels{id, surnames, initials, statuses, hireDays}}#)
+                  ->serialize(#{demo::relation::domain::EmployeeLabels{id, surnames, initials, statuses, hireDays}}#);
+      tests:
+      [
+        allEmployees:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldFetchOneElementPerExpression:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"surnames":["Green"],"initials":["A"],"statuses":["active"],"hireDays":["2020-01-15"]},{"id":2,"surnames":["Smith"],"initials":["B"],"statuses":["active"],"hireDays":["2021-06-01"]},{"id":3,"surnames":["White"],"initials":["C"],"statuses":["inactive"],"hireDays":["2019-03-10"]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    toManyProjectSuite:
+    {
+      function: |demo::relation::domain::EmployeeLabels.all()
+                  ->sortBy(x | $x.id)
+                  ->project(
+                    [x | $x.id, x | $x.surnames, x | $x.initials, x | $x.statuses, x | $x.hireDays],
+                    ['Id', 'Surname', 'Initial', 'Status', 'Hire Day']
+                  );
+      tests:
+      [
+        allEmployees:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldProjectOneRowPerEmployee:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Surname":"Green","Initial":"A","Status":"active","Hire Day":"2020-01-15"},{"Id":2,"Surname":"Smith","Initial":"B","Status":"active","Hire Day":"2021-06-01"},{"Id":3,"Surname":"White","Initial":"C","Status":"inactive","Hire Day":"2019-03-10"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

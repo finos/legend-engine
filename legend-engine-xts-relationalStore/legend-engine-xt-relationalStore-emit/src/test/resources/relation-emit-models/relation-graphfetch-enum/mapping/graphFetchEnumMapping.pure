@@ -1,0 +1,209 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum demo::relation::graphfetchenum::DesignationType
+{
+  RemovedFromEUVenues,
+  RemovedFromUKVenues
+}
+
+Enum demo::relation::graphfetchenum::Status
+{
+  Active,
+  Inactive
+}
+
+Class demo::relation::graphfetchenum::RegulatoryParameters
+{
+  designations: demo::relation::graphfetchenum::DesignationType[*];
+}
+
+Class demo::relation::graphfetchenum::Product
+{
+  name: String[1];
+  status: demo::relation::graphfetchenum::Status[0..1];
+  statuses: demo::relation::graphfetchenum::Status[*];
+  designations: demo::relation::graphfetchenum::DesignationType[*];
+  euParameters: demo::relation::graphfetchenum::RegulatoryParameters[0..1];
+}
+
+function demo::relation::graphfetchenum::func::productRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1], STATUS_CD:String[0..1])>[1]
+{
+  #>{demo::relation::graphfetchenum::db::GraphFetchEnumDB.PRODUCT}#
+}
+
+function demo::relation::graphfetchenum::func::designationRel(): meta::pure::metamodel::relation::Relation<(PRODUCT_ID:Integer[1], ENTITY_ID:Integer[1], DESIGNATION_CD:String[1])>[1]
+{
+  #>{demo::relation::graphfetchenum::db::GraphFetchEnumDB.DESIGNATION}#
+}
+
+###Mapping
+import demo::relation::graphfetchenum::func::*;
+
+Mapping demo::relation::graphfetchenum::mapping::GraphFetchEnumMapping
+(
+  *demo::relation::graphfetchenum::Product: Relation
+  {
+    ~src demo::relation::graphfetchenum::func::productRel()
+    ~primaryKey: ID
+    name: NAME,
+    status: EnumerationMapping StatusMapping : STATUS_CD,
+    statuses: EnumerationMapping StatusMapping : STATUS_CD,
+    designations: EnumerationMapping DesignationTypeMapping : $src->navigationJoin(designationRel(), {p, d | $p.ID == $d.PRODUCT_ID}).DESIGNATION_CD,
+    euParameters
+    (
+      designations: EnumerationMapping DesignationTypeMapping : $src->navigationJoin(designationRel(), {p, d | ($p.ID == $d.PRODUCT_ID) && ($d.ENTITY_ID == 10)}).DESIGNATION_CD
+    )
+  }
+
+  demo::relation::graphfetchenum::DesignationType: EnumerationMapping DesignationTypeMapping
+  {
+    RemovedFromEUVenues: ['METRM'],
+    RemovedFromUKVenues: ['MUTRM']
+  }
+  demo::relation::graphfetchenum::Status: EnumerationMapping StatusMapping
+  {
+    Active: ['A'],
+    Inactive: ['I', 'X']
+  }
+
+  testSuites:
+  [
+    toManyEnumOverLocalColumnSuite:
+    {
+      function: |demo::relation::graphfetchenum::Product.all()->graphFetch(#{demo::relation::graphfetchenum::Product{name, statuses}}#)->serialize(#{demo::relation::graphfetchenum::Product{name, statuses}}#);
+      tests:
+      [
+        decodesTheStatusColumnOfEachProduct:
+        {
+          data:
+          [
+            demo::relation::graphfetchenum::db::GraphFetchEnumDB:
+              Reference
+              #{
+                demo::relation::graphfetchenum::data::GraphFetchEnumData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alpha","statuses":["Active"]},{"name":"Bravo","statuses":["Inactive"]},{"name":"Charlie","statuses":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    toManyEnumOverJoinSuite:
+    {
+      function: |demo::relation::graphfetchenum::Product.all()->graphFetch(#{demo::relation::graphfetchenum::Product{name, designations}}#)->serialize(#{demo::relation::graphfetchenum::Product{name, designations}}#);
+      tests:
+      [
+        decodesEveryDesignationOfEachProduct:
+        {
+          data:
+          [
+            demo::relation::graphfetchenum::db::GraphFetchEnumDB:
+              Reference
+              #{
+                demo::relation::graphfetchenum::data::GraphFetchEnumData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alpha","designations":["RemovedFromEUVenues","RemovedFromUKVenues"]},{"name":"Bravo","designations":["RemovedFromEUVenues","RemovedFromUKVenues"]},{"name":"Charlie","designations":["RemovedFromUKVenues"]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    toManyEnumInEmbeddedBlockSuite:
+    {
+      function: |demo::relation::graphfetchenum::Product.all()->graphFetch(#{demo::relation::graphfetchenum::Product{name, euParameters{designations}}}#)->serialize(#{demo::relation::graphfetchenum::Product{name, euParameters{designations}}}#);
+      tests:
+      [
+        decodesTheEuDesignationsOfEachProduct:
+        {
+          data:
+          [
+            demo::relation::graphfetchenum::db::GraphFetchEnumDB:
+              Reference
+              #{
+                demo::relation::graphfetchenum::data::GraphFetchEnumData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alpha","euParameters":{"designations":["RemovedFromEUVenues"]}},{"name":"Bravo","euParameters":{"designations":["RemovedFromEUVenues","RemovedFromUKVenues"]}},{"name":"Charlie","euParameters":{"designations":[]}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    toOneAndToManyEnumsInOneFetchSuite:
+    {
+      function: |demo::relation::graphfetchenum::Product.all()->graphFetch(#{demo::relation::graphfetchenum::Product{name, status, statuses, designations, euParameters{designations}}}#)->serialize(#{demo::relation::graphfetchenum::Product{name, status, statuses, designations, euParameters{designations}}}#);
+      tests:
+      [
+        decodesEachEnumPropertyThroughItsOwnMapping:
+        {
+          data:
+          [
+            demo::relation::graphfetchenum::db::GraphFetchEnumDB:
+              Reference
+              #{
+                demo::relation::graphfetchenum::data::GraphFetchEnumData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alpha","status":"Active","statuses":["Active"],"designations":["RemovedFromEUVenues","RemovedFromUKVenues"],"euParameters":{"designations":["RemovedFromEUVenues"]}},{"name":"Bravo","status":"Inactive","statuses":["Inactive"],"designations":["RemovedFromEUVenues","RemovedFromUKVenues"],"euParameters":{"designations":["RemovedFromEUVenues","RemovedFromUKVenues"]}},{"name":"Charlie","status":null,"statuses":[],"designations":["RemovedFromUKVenues"],"euParameters":{"designations":[]}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

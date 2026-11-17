@@ -1,0 +1,59 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-inline-nested-inline
+title: "Relation Function Mapping — modelJoin Inside an Inline Target Nested in Another Inline Target, Under a Single and a Union Owner"
+description: |
+  Project, filter and graphFetch through a modelJoin declared in an `Inline [...]` target reached through
+  another `Inline [...]` property, owned by a single class mapping or by each branch of a union.
+  ###Relational twins expect the same rows.
+
+modelSources:
+  model:
+    root: relation-inline-nested-inline
+    files:
+      - store/nestedInlineDb.pure
+      - data/nestedInlineData.pure
+      - model/nestedInlineModel.pure
+      - mapping/nestedInlineMapping.pure
+      - mapping/relationalNestedInlineMapping.pure
+
+features:
+  - execution:data-element
+  - execution:graph-fetch
+  - execution:test-data
+  - grammar:function
+  - mapping:operation-mapping
+  - mapping:relation-inline-embedded
+  - mapping:relation-inline-model-join
+  - mapping:relation-src
+  - mapping:relation-union
+  - mapping:relational-embedded
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-filter
+stores:
+  - relational
+complexity: advanced
+tags:
+  - duckdb
+  - h2
+  - mapping-test
+  - relation
+  - inline
+  - union
+  - modeljoin

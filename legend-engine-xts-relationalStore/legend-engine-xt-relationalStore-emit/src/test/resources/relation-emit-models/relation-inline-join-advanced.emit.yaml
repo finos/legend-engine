@@ -19,9 +19,12 @@ description: |
   shapes the ###Relational join suites exercise: chains, self-joins, to-many joins, filter /
   isEmpty / exists / groupBy over join-backed properties, a derived property over a join, joins
   inside an embedded mapping and inside union branches, a business-temporal source class, an
-  inline modelJoin to a business-temporal target queried at two dates, and
-  the same keyed property resolved at two navigation depths. The seed data includes rows
-  with no join match: the property is empty for them while the row itself is kept.
+  inline modelJoin to a business-temporal target queried at two dates, the same keyed property resolved at two navigation depths, JoinKind.INNER on the last or a
+  middle hop of a chain and on a condition with a target-only term, and joins used inside a
+  property's expression (a default when no row matches, a join path picked per row, joined
+  columns mixed with the mapping's own, string `+` and joinStrings over joined columns). The
+  seed data includes rows with no join match: the property is empty for them (or takes the
+  expression's value) while the row itself is kept.
 
 modelSources:
   model:
