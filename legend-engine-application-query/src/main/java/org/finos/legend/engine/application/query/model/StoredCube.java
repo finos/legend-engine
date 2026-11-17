@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * A Legend Cube saved in the Cube store: its spec, kept as a string, with the
- * owners who may change it. Each save makes a new version.
+ * deployment that owns it. Each save makes a new version, and every version is kept.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class StoredCube
@@ -34,7 +34,10 @@ public class StoredCube
      */
     public Integer version;
     public String name;
-    public List<String> owners;
+    /**
+     * The deployment whose members may change the cube
+     */
+    public CubeOwnership ownership;
     public List<String> tags;
 
     /**

@@ -19,11 +19,13 @@ import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.application.query.model.CubeDeploymentOwnership;
 import org.finos.legend.engine.application.query.model.CubeSearchSpecification;
 import org.finos.legend.engine.application.query.model.CubeSourceRef;
 import org.finos.legend.engine.application.query.model.QuerySearchSortBy;
 import org.finos.legend.engine.application.query.model.StoredCube;
 import org.finos.legend.engine.application.query.utils.TestMongoClientProvider;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.vault.TestVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.After;
@@ -43,6 +45,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -54,6 +57,9 @@ public class TestCubeStoreManager
 {
     private static final String ALICE = "alice";
     private static final String BOB = "bob";
+    private static final String CAROL = "carol";
+    private static final String DEPLOYMENT = "1234";
+    private static final String OTHER_DEPLOYMENT = "5678";
     private static final String CONTENT = "{\"formatVersion\":1,\"name\":\"Orders\",\"query\":{\"nodes\":[]},\"meta\":{\"a.b\":1,\"$c\":null,\"keys\":{\"z\":1,\"a\":2}}}";
     private static final String CONTENT_2 = "{\"formatVersion\":1,\"name\":\"Orders 2\",\"query\":{\"nodes\":[{\"kind\":\"relational\"}]}}";
 
@@ -115,7 +121,7 @@ public class TestCubeStoreManager
     {
         this.testMongoClientProvider = new TestMongoClientProvider();
         this.clock = new TestClock();
-        this.store = new CubeStoreManager(this.testMongoClientProvider.mongoClient, this.clock);
+        this.store = new CubeStoreManager(this.testMongoClientProvider.mongoClient, this.clock, null);
     }
 
     @After
@@ -129,10 +135,54 @@ public class TestCubeStoreManager
         return this.testMongoClientProvider.mongoClient.getDatabase("test").getCollection(name);
     }
 
+    /**
+     * A verifier that knows each deployment's members
+     */
+    private static CubeOwnershipVerifier members(Map<String, Set<String>> members)
+    {
+        return (identity, ownership) -> members.getOrDefault(ownership.identifier, Collections.emptySet()).contains(identity.getName());
+    }
+
+    private static Identity identity(String user)
+    {
+        return new Identity(user);
+    }
+
+    private StoredCube createAs(StoredCube cube, String user)
+    {
+        return this.store.createCube(cube, user, identity(user));
+    }
+
+    private StoredCube updateAs(String cubeId, StoredCube cube, String user)
+    {
+        return this.store.updateCube(cubeId, cube, user, identity(user));
+    }
+
+    private StoredCube patchAs(String cubeId, Map<String, Object> patch, String user)
+    {
+        return this.store.patchCube(cubeId, patch, user, identity(user));
+    }
+
+    private void deleteAs(String cubeId, Integer version, boolean permanent, String user)
+    {
+        this.store.deleteCube(cubeId, version, permanent, user, identity(user));
+    }
+
+    private static String deploymentOf(StoredCube cube)
+    {
+        return ((CubeDeploymentOwnership) cube.ownership).identifier;
+    }
+
+    private static Map<String, Object> deploymentOwnership(String identifier)
+    {
+        return patch("_type", "deploymentOwnership", "identifier", identifier);
+    }
+
     private static StoredCube newCube(String name, String content)
     {
         StoredCube cube = new StoredCube();
         cube.name = name;
+        cube.ownership = new CubeDeploymentOwnership(DEPLOYMENT);
         cube.formatVersion = 1;
         cube.content = content;
         return cube;
@@ -141,6 +191,8 @@ public class TestCubeStoreManager
     private static StoredCube save(Integer version, String name, String content)
     {
         StoredCube cube = newCube(name, content);
+        // a save sends no ownership
+        cube.ownership = null;
         cube.version = version;
         return cube;
     }
@@ -191,18 +243,18 @@ public class TestCubeStoreManager
     // --------------------------------------------- create ---------------------------------------------
 
     @Test
-    public void testCreateMakesIdVersionOwnersAndAudit()
+    public void testCreateMakesIdVersionOwnershipAndAudit()
     {
         StoredCube request = newCube("  Orders  ", CONTENT);
-        request.owners = Arrays.asList(BOB, ALICE, BOB);
+        request.ownership = new CubeDeploymentOwnership("  " + DEPLOYMENT + "  ");
         request.tags = Arrays.asList("finance", " finance ", "eu");
         request.sourceRefs = Collections.singletonList(sourceRef("table", "my::Db", "S.ORDERS", "org.finos:northwind"));
-        StoredCube created = this.store.createCube(request, ALICE);
+        StoredCube created = this.createAs(request, ALICE);
 
         Assert.assertNotNull(created.id);
         Assert.assertEquals(Integer.valueOf(1), created.version);
         Assert.assertEquals("Orders", created.name);
-        Assert.assertEquals(Arrays.asList(ALICE, BOB), created.owners);
+        Assert.assertEquals(DEPLOYMENT, deploymentOf(created));
         Assert.assertEquals(Arrays.asList("finance", "eu"), created.tags);
         Assert.assertEquals(ALICE, created.audit.createdBy);
         Assert.assertEquals(Long.valueOf(this.clock.millis()), created.audit.createdAt);
@@ -216,15 +268,18 @@ public class TestCubeStoreManager
         Assert.assertEquals(Integer.valueOf(1), read.formatVersion);
         Assert.assertEquals("S.ORDERS", read.sourceRefs.get(0).element);
         Assert.assertEquals("org.finos:northwind", read.sourceRefs.get(0).project);
+        Assert.assertEquals(DEPLOYMENT, deploymentOf(read));
         Assert.assertEquals(CONTENT, this.store.getCubeVersion(created.id, 1).content);
+        // the ownership is kept as a Service's is written
+        Assert.assertEquals(new Document("_type", "deploymentOwnership").append("identifier", DEPLOYMENT), this.collection("cube").find(new Document("id", created.id)).first().get("ownership"));
         Assert.assertEquals(1, this.collection("cubeEvent").countDocuments(new Document("queryId", created.id).append("eventType", "CREATED")));
     }
 
     @Test
     public void testCreateMakesNewIds()
     {
-        String first = this.store.createCube(newCube("A", CONTENT), ALICE).id;
-        String second = this.store.createCube(newCube("A", CONTENT), ALICE).id;
+        String first = this.createAs(newCube("A", CONTENT), ALICE).id;
+        String second = this.createAs(newCube("A", CONTENT), ALICE).id;
         Assert.assertNotEquals(first, second);
     }
 
@@ -233,41 +288,50 @@ public class TestCubeStoreManager
     {
         StoredCube withId = newCube("A", CONTENT);
         withId.id = "mine";
-        assertRefused(Response.Status.BAD_REQUEST, "A new cube's id is made by the store: send none", () -> this.store.createCube(withId, ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube name is missing or empty", () -> this.store.createCube(newCube(null, CONTENT), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube name is missing or empty", () -> this.store.createCube(newCube("   ", CONTENT), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube name is longer than 255 characters", () -> this.store.createCube(newCube(String.join("", Collections.nCopies(256, "x")), CONTENT), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube content is missing", () -> this.store.createCube(newCube("A", null), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, null, () -> this.store.createCube(newCube("A", "{not json"), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube content is not a JSON object", () -> this.store.createCube(newCube("A", "[1]"), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube content's formatVersion must be the cube's, 1", () -> this.store.createCube(newCube("A", "{\"formatVersion\":2}"), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube content's formatVersion must be the cube's, 1", () -> this.store.createCube(newCube("A", "{\"formatVersion\":\"1\"}"), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube content's formatVersion must be the cube's, 1", () -> this.store.createCube(newCube("A", "{}"), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "A new cube's id is made by the store: send none", () -> this.createAs(withId, ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube name is missing or empty", () -> this.createAs(newCube(null, CONTENT), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube name is missing or empty", () -> this.createAs(newCube("   ", CONTENT), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube name is longer than 255 characters", () -> this.createAs(newCube(String.join("", Collections.nCopies(256, "x")), CONTENT), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube content is missing", () -> this.createAs(newCube("A", null), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, null, () -> this.createAs(newCube("A", "{not json"), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube content is not a JSON object", () -> this.createAs(newCube("A", "[1]"), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube content's formatVersion must be the cube's, 1", () -> this.createAs(newCube("A", "{\"formatVersion\":2}"), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube content's formatVersion must be the cube's, 1", () -> this.createAs(newCube("A", "{\"formatVersion\":\"1\"}"), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube content's formatVersion must be the cube's, 1", () -> this.createAs(newCube("A", "{}"), ALICE));
 
         StoredCube noFormat = newCube("A", CONTENT);
         noFormat.formatVersion = null;
-        assertRefused(Response.Status.BAD_REQUEST, "Cube format version is missing, or not a whole number of at least 1", () -> this.store.createCube(noFormat, ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube format version is missing, or not a whole number of at least 1", () -> this.createAs(noFormat, ALICE));
         StoredCube zeroFormat = newCube("A", "{\"formatVersion\":0}");
         zeroFormat.formatVersion = 0;
-        assertRefused(Response.Status.BAD_REQUEST, "Cube format version is missing, or not a whole number of at least 1", () -> this.store.createCube(zeroFormat, ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube format version is missing, or not a whole number of at least 1", () -> this.createAs(zeroFormat, ALICE));
 
         String padding = String.join("", Collections.nCopies(CubeStoreManager.MAX_CONTENT_BYTES, "x"));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube content is larger than 1048576 bytes", () -> this.store.createCube(newCube("A", "{\"formatVersion\":1,\"p\":\"" + padding + "\"}"), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube content is larger than 1048576 bytes", () -> this.createAs(newCube("A", "{\"formatVersion\":1,\"p\":\"" + padding + "\"}"), ALICE));
 
-        StoredCube blankOwner = newCube("A", CONTENT);
-        blankOwner.owners = Collections.singletonList(" ");
-        assertRefused(Response.Status.BAD_REQUEST, "Cube owners can't be empty", () -> this.store.createCube(blankOwner, ALICE));
+        StoredCube noOwnership = newCube("A", CONTENT);
+        noOwnership.ownership = null;
+        assertRefused(Response.Status.BAD_REQUEST, "Cube ownership is missing: give the deployment that owns the cube", () -> this.createAs(noOwnership, ALICE));
+        StoredCube blankDeployment = newCube("A", CONTENT);
+        blankDeployment.ownership = new CubeDeploymentOwnership(" ");
+        assertRefused(Response.Status.BAD_REQUEST, "Cube ownership's deployment identifier is missing or empty", () -> this.createAs(blankDeployment, ALICE));
+        StoredCube noDeployment = newCube("A", CONTENT);
+        noDeployment.ownership = new CubeDeploymentOwnership();
+        assertRefused(Response.Status.BAD_REQUEST, "Cube ownership's deployment identifier is missing or empty", () -> this.createAs(noDeployment, ALICE));
+        StoredCube longDeployment = newCube("A", CONTENT);
+        longDeployment.ownership = new CubeDeploymentOwnership(String.join("", Collections.nCopies(256, "1")));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube ownership's deployment identifier is longer than 255 characters", () -> this.createAs(longDeployment, ALICE));
         StoredCube blankTag = newCube("A", CONTENT);
         blankTag.tags = Collections.singletonList("");
-        assertRefused(Response.Status.BAD_REQUEST, "Cube tags can't be empty", () -> this.store.createCube(blankTag, ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube tags can't be empty", () -> this.createAs(blankTag, ALICE));
         StoredCube noType = newCube("A", CONTENT);
         noType.sourceRefs = Collections.singletonList(sourceRef(null, "my::Db", null, null));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube source reference type is missing", () -> this.store.createCube(noType, ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube source reference type is missing", () -> this.createAs(noType, ALICE));
         StoredCube emptyProject = newCube("A", CONTENT);
         emptyProject.sourceRefs = Collections.singletonList(sourceRef("table", "my::Db", null, ""));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube source reference project is empty", () -> this.store.createCube(emptyProject, ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube source reference project is empty", () -> this.createAs(emptyProject, ALICE));
 
-        assertRefused(Response.Status.UNAUTHORIZED, "A cube can only be changed by a signed-in user", () -> this.store.createCube(newCube("A", CONTENT), null));
+        assertRefused(Response.Status.UNAUTHORIZED, "A cube can only be changed by a signed-in user", () -> this.createAs(newCube("A", CONTENT), null));
         Assert.assertEquals(0, this.collection("cube").countDocuments());
     }
 
@@ -276,7 +340,7 @@ public class TestCubeStoreManager
     @Test
     public void testGetSetsLastOpenAtOnly()
     {
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
         this.clock.advance(5_000);
         StoredCube read = this.store.getCube(created.id);
         Assert.assertEquals(Long.valueOf(this.clock.millis()), read.lastOpenAt);
@@ -291,7 +355,7 @@ public class TestCubeStoreManager
     public void testGetMissing()
     {
         assertRefused(Response.Status.NOT_FOUND, "Can't find cube 'nope'", () -> this.store.getCube("nope"));
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
         assertRefused(Response.Status.NOT_FOUND, "Can't find version 2 of cube '" + created.id + "'", () -> this.store.getCubeVersion(created.id, 2));
         assertRefused(Response.Status.NOT_FOUND, "Can't find cube 'nope'", () -> this.store.getCubeVersion("nope", 1));
     }
@@ -301,18 +365,18 @@ public class TestCubeStoreManager
     @Test
     public void testUpdateSavesANewVersion()
     {
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
         this.clock.advance(1_000);
         StoredCube request = save(1, "B", CONTENT_2);
         request.sourceRefs = Collections.singletonList(sourceRef("dataProductAccessPoint", "my::Product", "ap1", null));
-        StoredCube saved = this.store.updateCube(created.id, request, ALICE);
+        StoredCube saved = this.updateAs(created.id, request, ALICE);
 
         Assert.assertEquals(created.id, saved.id);
         Assert.assertEquals(Integer.valueOf(2), saved.version);
         Assert.assertEquals("B", saved.name);
         Assert.assertEquals(CONTENT_2, saved.content);
         Assert.assertEquals("ap1", saved.sourceRefs.get(0).element);
-        Assert.assertEquals(Collections.singletonList(ALICE), saved.owners);
+        Assert.assertEquals(DEPLOYMENT, deploymentOf(saved));
         Assert.assertEquals(created.audit.createdAt, saved.audit.createdAt);
         Assert.assertEquals(Long.valueOf(this.clock.millis()), saved.audit.updatedAt);
 
@@ -326,10 +390,10 @@ public class TestCubeStoreManager
     @Test
     public void testUpdateOverAnOlderVersionConflicts()
     {
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
-        this.store.updateCube(created.id, save(1, "B", CONTENT_2), ALICE);
-        assertRefused(Response.Status.CONFLICT, "Cannot change version 1 of cube '" + created.id + "': its current version is 2.", () -> this.store.updateCube(created.id, save(1, "C", CONTENT), ALICE));
-        assertRefused(Response.Status.CONFLICT, "Cannot change version 3 of cube '" + created.id + "': its current version is 2.", () -> this.store.updateCube(created.id, save(3, "C", CONTENT), ALICE));
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
+        this.updateAs(created.id, save(1, "B", CONTENT_2), ALICE);
+        assertRefused(Response.Status.CONFLICT, "Cannot change version 1 of cube '" + created.id + "': its current version is 2.", () -> this.updateAs(created.id, save(1, "C", CONTENT), ALICE));
+        assertRefused(Response.Status.CONFLICT, "Cannot change version 3 of cube '" + created.id + "': its current version is 2.", () -> this.updateAs(created.id, save(3, "C", CONTENT), ALICE));
         StoredCube read = this.store.getCube(created.id);
         Assert.assertEquals("B", read.name);
         Assert.assertEquals(Integer.valueOf(2), read.version);
@@ -338,7 +402,7 @@ public class TestCubeStoreManager
     @Test
     public void testConcurrentSavesOfOneVersionLetOneWin() throws Exception
     {
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
         int writers = 8;
         ExecutorService executor = Executors.newFixedThreadPool(writers);
         CountDownLatch start = new CountDownLatch(1);
@@ -351,7 +415,7 @@ public class TestCubeStoreManager
                 start.await();
                 try
                 {
-                    this.store.updateCube(created.id, save(1, name, CONTENT_2), ALICE);
+                    this.updateAs(created.id, save(1, name, CONTENT_2), ALICE);
                     return Response.Status.OK;
                 }
                 catch (ApplicationQueryException e)
@@ -375,69 +439,132 @@ public class TestCubeStoreManager
     }
 
     @Test
-    public void testUpdateByAnotherUserIsForbidden()
+    public void testWithoutAVerifierOnlyTheCreatorMayChangeACube()
     {
-        StoredCube request = newCube("A", CONTENT);
-        request.owners = Collections.singletonList("carol");
-        StoredCube created = this.store.createCube(request, ALICE);
-        assertRefused(Response.Status.FORBIDDEN, "Only current owners can change this cube. Current owners are alice, carol.", () -> this.store.updateCube(created.id, save(1, "B", CONTENT_2), BOB));
-        // not an owner comes before a stale version
-        assertRefused(Response.Status.FORBIDDEN, null, () -> this.store.updateCube(created.id, save(7, "B", CONTENT_2), BOB));
-        this.store.updateCube(created.id, save(1, "B", CONTENT_2), "carol");
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
+        String refusal = "Only this cube's creator, alice, can change it: this engine can't check who belongs to deployment 1234, which owns it.";
+        assertRefused(Response.Status.FORBIDDEN, refusal, () -> this.updateAs(created.id, save(1, "B", CONTENT_2), BOB));
+        // not the creator comes before a stale version
+        assertRefused(Response.Status.FORBIDDEN, refusal, () -> this.updateAs(created.id, save(7, "B", CONTENT_2), BOB));
+        assertRefused(Response.Status.FORBIDDEN, refusal, () -> this.patchAs(created.id, patch("version", 1, "name", "B"), BOB));
+        Assert.assertEquals(Integer.valueOf(1), this.store.getCube(created.id).version);
+
+        // giving the cube to another deployment leaves its creator the one who may change it
+        this.patchAs(created.id, patch("version", 1, "ownership", deploymentOwnership(OTHER_DEPLOYMENT)), ALICE);
+        this.updateAs(created.id, save(2, "B", CONTENT_2), ALICE);
+        Assert.assertEquals(OTHER_DEPLOYMENT, deploymentOf(this.store.getCube(created.id)));
+    }
+
+    @Test
+    public void testTheVerifierDecidesWhoMayChangeACube()
+    {
+        Map<String, Set<String>> members = Maps.mutable.empty();
+        members.put(DEPLOYMENT, new java.util.HashSet<>(Arrays.asList(ALICE, BOB)));
+        members.put(OTHER_DEPLOYMENT, new java.util.HashSet<>(Arrays.asList(BOB, CAROL)));
+        this.store = new CubeStoreManager(this.testMongoClientProvider.mongoClient, this.clock, members(members));
+
+        // a cube is only given to a deployment its creator is a member of
+        assertRefused(Response.Status.FORBIDDEN, "A cube can only be given to a deployment you are a member of, and you aren't a member of deployment 1234.", () -> this.createAs(newCube("A", CONTENT), CAROL));
+        Assert.assertEquals(0, this.collection("cube").countDocuments());
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
+
+        // any member changes it, not only its creator
+        Assert.assertEquals(BOB, this.updateAs(created.id, save(1, "B", CONTENT_2), BOB).audit.updatedBy);
+        String notAMember = "Only members of deployment 1234, which owns this cube, can change it.";
+        assertRefused(Response.Status.FORBIDDEN, notAMember, () -> this.updateAs(created.id, save(2, "C", CONTENT), CAROL));
+        assertRefused(Response.Status.FORBIDDEN, notAMember, () -> this.deleteAs(created.id, 2, false, CAROL));
+
+        // and gives it only to a deployment they are a member of
+        assertRefused(Response.Status.FORBIDDEN, "A cube can only be given to a deployment you are a member of, and you aren't a member of deployment 5678.", () -> this.patchAs(created.id, patch("version", 2, "ownership", deploymentOwnership(OTHER_DEPLOYMENT)), ALICE));
+        Assert.assertEquals(Integer.valueOf(2), this.store.getCube(created.id).version);
+        this.patchAs(created.id, patch("version", 2, "ownership", deploymentOwnership(OTHER_DEPLOYMENT)), BOB);
+
+        // the new deployment's members now change it, and its creator no longer does
+        assertRefused(Response.Status.FORBIDDEN, "Only members of deployment 5678, which owns this cube, can change it.", () -> this.updateAs(created.id, save(3, "D", CONTENT), ALICE));
+        this.updateAs(created.id, save(3, "D", CONTENT), CAROL);
+        this.deleteAs(created.id, 4, false, CAROL);
+        assertRefused(Response.Status.NOT_FOUND, null, () -> this.store.getCube(created.id));
     }
 
     @Test
     public void testUpdateValidation()
     {
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
-        assertRefused(Response.Status.BAD_REQUEST, "Cube version is missing: send the version that was read", () -> this.store.updateCube(created.id, newCube("B", CONTENT), ALICE));
-        StoredCube withOwners = save(1, "B", CONTENT);
-        withOwners.owners = Collections.singletonList(BOB);
-        assertRefused(Response.Status.BAD_REQUEST, "A cube's owners and tags are changed with PATCH", () -> this.store.updateCube(created.id, withOwners, ALICE));
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
+        assertRefused(Response.Status.BAD_REQUEST, "Cube version is missing: send the version that was read", () -> this.updateAs(created.id, newCube("B", CONTENT), ALICE));
+        StoredCube withOwnership = save(1, "B", CONTENT);
+        withOwnership.ownership = new CubeDeploymentOwnership(OTHER_DEPLOYMENT);
+        assertRefused(Response.Status.BAD_REQUEST, "A cube's ownership and tags are changed with PATCH", () -> this.updateAs(created.id, withOwnership, ALICE));
         StoredCube otherId = save(1, "B", CONTENT);
         otherId.id = "other";
-        assertRefused(Response.Status.BAD_REQUEST, "A cube's id can't be changed", () -> this.store.updateCube(created.id, otherId, ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube content is not a JSON object", () -> this.store.updateCube(created.id, save(1, "B", "1"), ALICE));
-        assertRefused(Response.Status.NOT_FOUND, "Can't find cube 'nope'", () -> this.store.updateCube("nope", save(1, "B", CONTENT), ALICE));
-        assertRefused(Response.Status.UNAUTHORIZED, null, () -> this.store.updateCube(created.id, save(1, "B", CONTENT), ""));
+        assertRefused(Response.Status.BAD_REQUEST, "A cube's id can't be changed", () -> this.updateAs(created.id, otherId, ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube content is not a JSON object", () -> this.updateAs(created.id, save(1, "B", "1"), ALICE));
+        assertRefused(Response.Status.NOT_FOUND, "Can't find cube 'nope'", () -> this.updateAs("nope", save(1, "B", CONTENT), ALICE));
+        assertRefused(Response.Status.UNAUTHORIZED, null, () -> this.updateAs(created.id, save(1, "B", CONTENT), ""));
         Assert.assertEquals(Integer.valueOf(1), this.store.getCube(created.id).version);
     }
 
     // --------------------------------------------- patch ---------------------------------------------
 
     @Test
-    public void testPatchChangesNameOwnersAndTagsOnly()
+    public void testPatchChangesNameOwnershipAndTagsOnly()
     {
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
-        StoredCube patched = this.store.patchCube(created.id, patch("version", 1, "name", "Renamed", "owners", Arrays.asList(ALICE, BOB), "tags", Collections.singletonList("eu")), ALICE);
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
+        StoredCube patched = this.patchAs(created.id, patch("version", 1, "name", "Renamed", "ownership", deploymentOwnership(" " + OTHER_DEPLOYMENT + " "), "tags", Collections.singletonList("eu")), ALICE);
         Assert.assertEquals(Integer.valueOf(2), patched.version);
         Assert.assertEquals("Renamed", patched.name);
-        Assert.assertEquals(Arrays.asList(ALICE, BOB), patched.owners);
+        Assert.assertEquals(OTHER_DEPLOYMENT, deploymentOf(patched));
         Assert.assertEquals(Collections.singletonList("eu"), patched.tags);
         Assert.assertEquals(CONTENT, patched.content);
-        Assert.assertEquals(Arrays.asList(ALICE, BOB), this.store.getCubeVersion(created.id, 2).owners);
-
-        // giving the cube away: its old owner can no longer change it
-        this.store.patchCube(created.id, patch("version", 2, "owners", Collections.singletonList(BOB)), ALICE);
-        assertRefused(Response.Status.FORBIDDEN, "Only current owners can change this cube. Current owners are bob.", () -> this.store.patchCube(created.id, patch("version", 3, "name", "Mine"), ALICE));
-        Assert.assertEquals("Mine", this.store.patchCube(created.id, patch("version", 3, "name", "Mine"), BOB).name);
+        Assert.assertEquals(OTHER_DEPLOYMENT, deploymentOf(this.store.getCubeVersion(created.id, 2)));
+        Assert.assertEquals(DEPLOYMENT, deploymentOf(this.store.getCubeVersion(created.id, 1)));
+        Assert.assertEquals(new Document("_type", "deploymentOwnership").append("identifier", OTHER_DEPLOYMENT), this.collection("cube").find(new Document("id", created.id)).first().get("ownership"));
     }
 
     @Test
     public void testPatchValidation()
     {
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
-        assertRefused(Response.Status.BAD_REQUEST, "Unknown field 'content': only a cube's name, owners and tags can be patched", () -> this.store.patchCube(created.id, patch("version", 1, "content", CONTENT_2), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube version is missing: send the version that was read", () -> this.store.patchCube(created.id, patch("name", "B"), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube version must be a whole number", () -> this.store.patchCube(created.id, patch("version", "1", "name", "B"), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Nothing to change: give a name, owners or tags", () -> this.store.patchCube(created.id, patch("version", 1), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "A cube needs at least one owner", () -> this.store.patchCube(created.id, patch("version", 1, "owners", Collections.emptyList()), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube owners can't be null", () -> this.store.patchCube(created.id, patch("version", 1, "owners", null), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube owners must be a list", () -> this.store.patchCube(created.id, patch("version", 1, "owners", ALICE), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube owners can't be empty", () -> this.store.patchCube(created.id, patch("version", 1, "owners", Collections.singletonList(1)), ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube name must be a string", () -> this.store.patchCube(created.id, patch("version", 1, "name", 1), ALICE));
-        assertRefused(Response.Status.CONFLICT, null, () -> this.store.patchCube(created.id, patch("version", 2, "name", "B"), ALICE));
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
+        assertRefused(Response.Status.BAD_REQUEST, "Unknown field 'content': only a cube's name, ownership and tags can be patched", () -> this.patchAs(created.id, patch("version", 1, "content", CONTENT_2), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Unknown field 'owners': only a cube's name, ownership and tags can be patched", () -> this.patchAs(created.id, patch("version", 1, "owners", Collections.singletonList(BOB)), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube version is missing: send the version that was read", () -> this.patchAs(created.id, patch("name", "B"), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube version must be a whole number", () -> this.patchAs(created.id, patch("version", "1", "name", "B"), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Nothing to change: give a name, ownership or tags", () -> this.patchAs(created.id, patch("version", 1), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube ownership can't be null", () -> this.patchAs(created.id, patch("version", 1, "ownership", null), ALICE));
+        String notADeployment = "Cube ownership must be a deployment's: {\"_type\": \"deploymentOwnership\", \"identifier\": \"...\"}";
+        assertRefused(Response.Status.BAD_REQUEST, notADeployment, () -> this.patchAs(created.id, patch("version", 1, "ownership", DEPLOYMENT), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, notADeployment, () -> this.patchAs(created.id, patch("version", 1, "ownership", patch("identifier", DEPLOYMENT)), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, notADeployment, () -> this.patchAs(created.id, patch("version", 1, "ownership", patch("_type", "userListOwnership", "users", Collections.singletonList(ALICE))), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube ownership's deployment identifier is missing or empty", () -> this.patchAs(created.id, patch("version", 1, "ownership", deploymentOwnership("")), ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube name must be a string", () -> this.patchAs(created.id, patch("version", 1, "name", 1), ALICE));
+        assertRefused(Response.Status.CONFLICT, null, () -> this.patchAs(created.id, patch("version", 2, "name", "B"), ALICE));
         Assert.assertEquals(Integer.valueOf(1), this.store.getCube(created.id).version);
+    }
+
+    // --------------------------------------------- history ---------------------------------------------
+
+    @Test
+    public void testHistoryListsEveryVersionTheLatestFirst()
+    {
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
+        StoredCube other = this.createAs(newCube("Other", CONTENT), ALICE);
+        this.clock.advance(1_000);
+        this.updateAs(created.id, save(1, "B", CONTENT_2), ALICE);
+        this.clock.advance(1_000);
+        this.patchAs(created.id, patch("version", 2, "ownership", deploymentOwnership(OTHER_DEPLOYMENT)), ALICE);
+
+        List<StoredCube> history = this.store.getCubeHistory(created.id);
+        Assert.assertEquals(Arrays.asList(3, 2, 1), history.stream().map(cube -> cube.version).collect(Collectors.toList()));
+        Assert.assertEquals(Arrays.asList("B", "B", "A"), history.stream().map(cube -> cube.name).collect(Collectors.toList()));
+        Assert.assertEquals(Arrays.asList(OTHER_DEPLOYMENT, DEPLOYMENT, DEPLOYMENT), history.stream().map(TestCubeStoreManager::deploymentOf).collect(Collectors.toList()));
+        Assert.assertEquals(Arrays.asList(this.clock.millis(), this.clock.millis() - 1_000, this.clock.millis() - 2_000), history.stream().map(cube -> cube.audit.updatedAt).collect(Collectors.toList()));
+        // without their content, which each version still has
+        Assert.assertTrue(history.stream().allMatch(cube -> cube.content == null && created.id.equals(cube.id)));
+        Assert.assertEquals(CONTENT, this.store.getCubeVersion(created.id, 1).content);
+        Assert.assertEquals(1, this.store.getCubeHistory(other.id).size());
+
+        assertRefused(Response.Status.NOT_FOUND, "Can't find cube 'nope'", () -> this.store.getCubeHistory("nope"));
+        this.deleteAs(created.id, 3, false, ALICE);
+        assertRefused(Response.Status.NOT_FOUND, "Can't find cube '" + created.id + "'", () -> this.store.getCubeHistory(created.id));
     }
 
     // --------------------------------------------- delete ---------------------------------------------
@@ -445,12 +572,12 @@ public class TestCubeStoreManager
     @Test
     public void testSoftDeleteHidesTheCube()
     {
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
-        this.store.deleteCube(created.id, 1, false, ALICE);
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
+        this.deleteAs(created.id, 1, false, ALICE);
         assertRefused(Response.Status.NOT_FOUND, "Can't find cube '" + created.id + "'", () -> this.store.getCube(created.id));
         assertRefused(Response.Status.NOT_FOUND, null, () -> this.store.getCubeVersion(created.id, 1));
-        assertRefused(Response.Status.NOT_FOUND, null, () -> this.store.updateCube(created.id, save(1, "B", CONTENT), ALICE));
-        assertRefused(Response.Status.NOT_FOUND, null, () -> this.store.deleteCube(created.id, 1, false, ALICE));
+        assertRefused(Response.Status.NOT_FOUND, null, () -> this.updateAs(created.id, save(1, "B", CONTENT), ALICE));
+        assertRefused(Response.Status.NOT_FOUND, null, () -> this.deleteAs(created.id, 1, false, ALICE));
         Assert.assertTrue(this.store.searchCubes(null).isEmpty());
 
         // kept, marked, with its versions
@@ -459,7 +586,7 @@ public class TestCubeStoreManager
         Assert.assertEquals(1, this.collection("cubeVersion").countDocuments(new Document("id", created.id)));
 
         // then for good
-        this.store.deleteCube(created.id, 1, true, ALICE);
+        this.deleteAs(created.id, 1, true, ALICE);
         Assert.assertEquals(0, this.collection("cube").countDocuments());
         Assert.assertEquals(0, this.collection("cubeVersion").countDocuments());
         Assert.assertEquals(2, this.collection("cubeEvent").countDocuments(new Document("queryId", created.id).append("eventType", "DELETED")));
@@ -468,10 +595,10 @@ public class TestCubeStoreManager
     @Test
     public void testPermanentDeleteRemovesVersions()
     {
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
-        StoredCube other = this.store.createCube(newCube("B", CONTENT), ALICE);
-        this.store.updateCube(created.id, save(1, "A", CONTENT_2), ALICE);
-        this.store.deleteCube(created.id, 2, true, ALICE);
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
+        StoredCube other = this.createAs(newCube("B", CONTENT), ALICE);
+        this.updateAs(created.id, save(1, "A", CONTENT_2), ALICE);
+        this.deleteAs(created.id, 2, true, ALICE);
         assertRefused(Response.Status.NOT_FOUND, null, () -> this.store.getCube(created.id));
         Assert.assertEquals(0, this.collection("cubeVersion").countDocuments(new Document("id", created.id)));
         Assert.assertEquals(1, this.collection("cubeVersion").countDocuments(new Document("id", other.id)));
@@ -480,12 +607,12 @@ public class TestCubeStoreManager
     @Test
     public void testDeleteRefusals()
     {
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
-        assertRefused(Response.Status.FORBIDDEN, null, () -> this.store.deleteCube(created.id, 1, false, BOB));
-        assertRefused(Response.Status.FORBIDDEN, null, () -> this.store.deleteCube(created.id, 1, true, BOB));
-        assertRefused(Response.Status.CONFLICT, "Cannot change version 2 of cube '" + created.id + "': its current version is 1.", () -> this.store.deleteCube(created.id, 2, false, ALICE));
-        assertRefused(Response.Status.BAD_REQUEST, "Cube version is missing: send the version that was read", () -> this.store.deleteCube(created.id, null, false, ALICE));
-        assertRefused(Response.Status.NOT_FOUND, null, () -> this.store.deleteCube("nope", 1, true, ALICE));
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
+        assertRefused(Response.Status.FORBIDDEN, null, () -> this.deleteAs(created.id, 1, false, BOB));
+        assertRefused(Response.Status.FORBIDDEN, null, () -> this.deleteAs(created.id, 1, true, BOB));
+        assertRefused(Response.Status.CONFLICT, "Cannot change version 2 of cube '" + created.id + "': its current version is 1.", () -> this.deleteAs(created.id, 2, false, ALICE));
+        assertRefused(Response.Status.BAD_REQUEST, "Cube version is missing: send the version that was read", () -> this.deleteAs(created.id, null, false, ALICE));
+        assertRefused(Response.Status.NOT_FOUND, null, () -> this.deleteAs("nope", 1, true, ALICE));
         Assert.assertEquals("A", this.store.getCube(created.id).name);
     }
 
@@ -497,35 +624,39 @@ public class TestCubeStoreManager
         StoredCube orders = newCube("French orders", CONTENT);
         orders.tags = Arrays.asList("eu", "finance");
         orders.sourceRefs = Arrays.asList(sourceRef("table", "my::Db", "S.ORDERS", "org.finos:northwind"), sourceRef("table", "my::Db", "S.CUSTOMERS", null));
-        StoredCube created = this.store.createCube(orders, ALICE);
+        StoredCube created = this.createAs(orders, ALICE);
         this.clock.advance(1_000);
         StoredCube trades = newCube("Trades a.b", CONTENT);
         trades.tags = Collections.singletonList("eu");
-        trades.owners = Collections.singletonList("Carol.Smith");
+        trades.ownership = new CubeDeploymentOwnership("Rates.EU");
         trades.sourceRefs = Collections.singletonList(sourceRef("dataProductAccessPoint", "my::Trades", "ap1", null));
-        this.store.createCube(trades, BOB);
+        this.createAs(trades, BOB);
         this.clock.advance(1_000);
-        StoredCube deleted = this.store.createCube(newCube("Deleted orders", CONTENT), ALICE);
-        this.store.deleteCube(deleted.id, 1, false, ALICE);
+        StoredCube deleted = this.createAs(newCube("Deleted orders", CONTENT), ALICE);
+        this.deleteAs(deleted.id, 1, false, ALICE);
 
         // the latest saved first, without content, deleted ones left out
         List<StoredCube> all = this.store.searchCubes(new CubeSearchSpecification());
         Assert.assertEquals(Arrays.asList("Trades a.b", "French orders"), all.stream().map(cube -> cube.name).collect(Collectors.toList()));
-        Assert.assertTrue(all.stream().allMatch(cube -> cube.content == null && cube.version == 1 && cube.owners != null && cube.audit != null));
+        Assert.assertTrue(all.stream().allMatch(cube -> cube.content == null && cube.version == 1 && cube.ownership != null && cube.audit != null));
         Assert.assertEquals(2, all.get(1).sourceRefs.size());
 
-        // the term: the id exactly, part of the name or of an owner, in any case, quoted
+        // the term: the id exactly, part of the name or of the owner's deployment identifier, in any case, quoted
         Assert.assertEquals(Collections.singletonList("French orders"), this.searchNames(search(created.id)));
         Assert.assertEquals(Collections.emptyList(), this.searchNames(search(created.id.substring(0, 8))));
         Assert.assertEquals(Collections.singletonList("French orders"), this.searchNames(search("FRENCH")));
-        Assert.assertEquals(Collections.singletonList("Trades a.b"), this.searchNames(search("carol.")));
+        Assert.assertEquals(Collections.singletonList("Trades a.b"), this.searchNames(search("rates.")));
         Assert.assertEquals(Collections.singletonList("Trades a.b"), this.searchNames(search("a.b")));
         Assert.assertEquals(Collections.emptyList(), this.searchNames(search("a.c")));
         Assert.assertEquals(Arrays.asList("Trades a.b", "French orders"), this.searchNames(search("  ")));
 
-        CubeSearchSpecification byOwner = new CubeSearchSpecification();
-        byOwner.owner = BOB;
-        Assert.assertEquals(Collections.singletonList("Trades a.b"), this.searchNames(byOwner));
+        CubeSearchSpecification byDeployment = new CubeSearchSpecification();
+        byDeployment.deployment = "Rates.EU";
+        Assert.assertEquals(Collections.singletonList("Trades a.b"), this.searchNames(byDeployment));
+        byDeployment.deployment = DEPLOYMENT;
+        Assert.assertEquals(Collections.singletonList("French orders"), this.searchNames(byDeployment));
+        byDeployment.deployment = "rates.eu";
+        Assert.assertEquals(Collections.emptyList(), this.searchNames(byDeployment));
         CubeSearchSpecification byCreator = new CubeSearchSpecification();
         byCreator.creator = ALICE;
         Assert.assertEquals(Collections.singletonList("French orders"), this.searchNames(byCreator));
@@ -560,7 +691,7 @@ public class TestCubeStoreManager
     {
         for (int i = 0; i < CubeStoreManager.MAX_SEARCH_RESULTS + 5; i++)
         {
-            this.store.createCube(newCube("Cube " + i, CONTENT), ALICE);
+            this.createAs(newCube("Cube " + i, CONTENT), ALICE);
         }
         CubeSearchSpecification specification = new CubeSearchSpecification();
         specification.limit = 1000;
@@ -572,10 +703,16 @@ public class TestCubeStoreManager
     @Test
     public void testIndexesRefuseDuplicates()
     {
-        StoredCube created = this.store.createCube(newCube("A", CONTENT), ALICE);
+        StoredCube created = this.createAs(newCube("A", CONTENT), ALICE);
         Assert.assertThrows(MongoWriteException.class, () -> this.collection("cube").insertOne(new Document("id", created.id)));
         Assert.assertThrows(MongoWriteException.class, () -> this.collection("cubeVersion").insertOne(new Document("id", created.id).append("version", 1)));
         this.collection("cubeVersion").insertOne(new Document("id", created.id).append("version", 2));
+    }
+
+    @Test
+    public void testTheEngineInstallsNoVerifier()
+    {
+        Assert.assertNull(CubeStoreManager.loadOwnershipVerifier());
     }
 
     @Test

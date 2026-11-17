@@ -32,6 +32,8 @@ import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.application.query.model.CubeDeploymentOwnership;
+import org.finos.legend.engine.application.query.model.CubeOwnership;
 import org.finos.legend.engine.application.query.model.CubeSearchSpecification;
 import org.finos.legend.engine.application.query.model.CubeSourceRef;
 import org.finos.legend.engine.application.query.model.QueryEvent;
@@ -39,6 +41,7 @@ import org.finos.legend.engine.application.query.model.QuerySearchSortBy;
 import org.finos.legend.engine.application.query.model.StoredCube;
 import org.finos.legend.engine.application.query.model.StoredCubeAudit;
 import org.finos.legend.engine.application.query.model.StoredCubeDeletion;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
 import jakarta.ws.rs.core.Response;
@@ -50,26 +53,34 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * The Cube store: Legend Cube's saved cubes, apart from Legend Query's and
  * Data Cube's. Three collections: the latest version of each cube (unique by
- * id), every saved version (unique by id and version) and the events.
+ * id), every saved version (unique by id and version), which is the cube's
+ * history, and the events.
  * <p>
  * A change sends the version it read, and is made by one atomic update
  * filtered on it, so a cube changed since is refused (409) rather than
- * overwritten. Only a cube's owners may change it (403). Ids are made by the
- * store, so a deleted cube's id is never reused.
+ * overwritten. Ids are made by the store, so a deleted cube's id is never
+ * reused.
+ * <p>
+ * A cube is owned by a deployment, as a Service is. Only the deployment's
+ * members may change it, or give a cube to it (403), which the
+ * {@link CubeOwnershipVerifier} the engine's deployment installs tells. With
+ * none installed, the store can't check deployments, and only a cube's
+ * creator may change it.
  */
 public class CubeStoreManager
 {
     static final int MAX_SEARCH_RESULTS = 100;
     static final int MAX_CONTENT_BYTES = 1024 * 1024;
     static final int MAX_TEXT_LENGTH = 255;
-    static final int MAX_OWNERS = 100;
     static final int MAX_TAGS = 100;
     static final int MAX_SOURCE_REFS = 200;
     static final int MAX_SOURCE_REF_FIELD_LENGTH = 1024;
@@ -81,26 +92,46 @@ public class CubeStoreManager
 
     private static final String VERSION_FIELD = "version";
     private static final String NAME_FIELD = "name";
-    private static final String OWNERS_FIELD = "owners";
+    private static final String OWNERSHIP_FIELD = "ownership";
+    private static final String DEPLOYMENT_FIELD = OWNERSHIP_FIELD + ".identifier";
     private static final String TAGS_FIELD = "tags";
-    private static final Set<String> PATCH_FIELDS = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(VERSION_FIELD, NAME_FIELD, OWNERS_FIELD, TAGS_FIELD)));
+    private static final Set<String> PATCH_FIELDS = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(VERSION_FIELD, NAME_FIELD, OWNERSHIP_FIELD, TAGS_FIELD)));
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
     private static final FindOneAndUpdateOptions RETURN_UPDATED = new FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER);
 
     private final MongoClient mongoClient;
     private final Clock clock;
+    /**
+     * Who belongs to a deployment; none when the engine's deployment installs none
+     */
+    private final CubeOwnershipVerifier ownershipVerifier;
     private volatile boolean indexesCreated = false;
 
     public CubeStoreManager(MongoClient mongoClient)
     {
-        this(mongoClient, Clock.systemUTC());
+        this(mongoClient, Clock.systemUTC(), loadOwnershipVerifier());
     }
 
-    CubeStoreManager(MongoClient mongoClient, Clock clock)
+    CubeStoreManager(MongoClient mongoClient, Clock clock, CubeOwnershipVerifier ownershipVerifier)
     {
         this.mongoClient = mongoClient;
         this.clock = clock;
+        this.ownershipVerifier = ownershipVerifier;
+    }
+
+    /**
+     * The verifier installed with {@link ServiceLoader}, if any: more than one is a mistake
+     */
+    static CubeOwnershipVerifier loadOwnershipVerifier()
+    {
+        List<CubeOwnershipVerifier> verifiers = new ArrayList<>();
+        ServiceLoader.load(CubeOwnershipVerifier.class).forEach(verifiers::add);
+        if (verifiers.size() > 1)
+        {
+            throw new IllegalStateException("More than one Cube ownership verifier is installed: " + verifiers.stream().map(verifier -> verifier.getClass().getName()).collect(Collectors.joining(", ")));
+        }
+        return verifiers.isEmpty() ? null : verifiers.get(0);
     }
 
     // --------------------------------------------- collections ---------------------------------------------
@@ -298,6 +329,36 @@ public class CubeStoreManager
         return new ArrayList<>(texts);
     }
 
+    /**
+     * The ownership written in a PATCH, read as a create's or a save's is
+     */
+    private static CubeOwnership readOwnership(Object value)
+    {
+        validate(value != null, "Cube ownership can't be null");
+        try
+        {
+            return OBJECT_MAPPER.convertValue(value, CubeOwnership.class);
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw badRequest("Cube ownership must be a deployment's: {\"_type\": \"deploymentOwnership\", \"identifier\": \"...\"}");
+        }
+    }
+
+    /**
+     * A deployment, the only ownership for now, its identifier trimmed
+     */
+    private static CubeDeploymentOwnership validateOwnership(CubeOwnership ownership)
+    {
+        validate(ownership != null, "Cube ownership is missing: give the deployment that owns the cube");
+        validate(ownership instanceof CubeDeploymentOwnership, "Cube ownership must be a deployment's");
+        String identifier = ((CubeDeploymentOwnership) ownership).identifier;
+        String trimmed = identifier == null ? "" : identifier.trim();
+        validate(!trimmed.isEmpty(), "Cube ownership's deployment identifier is missing or empty");
+        validate(trimmed.length() <= MAX_TEXT_LENGTH, "Cube ownership's deployment identifier is longer than " + MAX_TEXT_LENGTH + " characters");
+        return new CubeDeploymentOwnership(trimmed);
+    }
+
     private static void validateSourceRefField(String value, String field, boolean required)
     {
         if (value == null)
@@ -334,12 +395,76 @@ public class CubeStoreManager
         return new ApplicationQueryException("Can't find cube '" + cubeId + "'", Response.Status.NOT_FOUND);
     }
 
-    /**
-     * Filters the one cube a change may be made to: this id, at the version read, with the caller among its owners
-     */
-    private static Bson changeableCube(String cubeId, Integer version, String currentUser, boolean includeDeleted)
+    private static ApplicationQueryException forbidden(String message)
     {
-        List<Bson> filters = new ArrayList<>(Arrays.asList(Filters.eq("id", cubeId), Filters.eq(VERSION_FIELD, version), Filters.eq(OWNERS_FIELD, currentUser)));
+        return new ApplicationQueryException(message, Response.Status.FORBIDDEN);
+    }
+
+    private static ApplicationQueryException stale(String cubeId, Integer version, Integer currentVersion)
+    {
+        return new ApplicationQueryException("Cannot change version " + version + " of cube '" + cubeId + "': its current version is " + currentVersion + ".", Response.Status.CONFLICT);
+    }
+
+    private static String describeOwnership(CubeOwnership ownership)
+    {
+        return ownership instanceof CubeDeploymentOwnership ? "deployment " + ((CubeDeploymentOwnership) ownership).identifier : "no deployment";
+    }
+
+    /**
+     * Refuses a user who may not change the cube: with a verifier, one who isn't a member of the deployment that owns it; without one, anyone but its creator
+     */
+    private void checkMayChange(StoredCube cube, String currentUser, Identity identity)
+    {
+        if (this.ownershipVerifier == null)
+        {
+            String creator = cube.audit == null ? null : cube.audit.createdBy;
+            if (!currentUser.equals(creator))
+            {
+                throw forbidden("Only this cube's creator, " + creator + ", can change it: this engine can't check who belongs to " + describeOwnership(cube.ownership) + ", which owns it.");
+            }
+        }
+        else if (!(cube.ownership instanceof CubeDeploymentOwnership) || !this.ownershipVerifier.isOwner(identity, (CubeDeploymentOwnership) cube.ownership))
+        {
+            throw forbidden("Only members of " + describeOwnership(cube.ownership) + ", which owns this cube, can change it.");
+        }
+    }
+
+    /**
+     * Refuses giving a cube to a deployment the user isn't a member of, when the store can check
+     */
+    private void checkMayGive(CubeDeploymentOwnership ownership, Identity identity)
+    {
+        if (this.ownershipVerifier != null && !this.ownershipVerifier.isOwner(identity, ownership))
+        {
+            throw forbidden("A cube can only be given to a deployment you are a member of, and you aren't a member of deployment " + ownership.identifier + ".");
+        }
+    }
+
+    /**
+     * The cube a change is made to, read first: missing (404), not the user's to change (403), or at another version than the one read (409)
+     */
+    private StoredCube readChangeable(String cubeId, Integer version, String currentUser, Identity identity, boolean includeDeleted)
+    {
+        Document document = this.getCubeCollection().find(Filters.eq("id", cubeId)).first();
+        if (document == null || (!includeDeleted && document.containsKey("deleted")))
+        {
+            throw notFound(cubeId);
+        }
+        StoredCube current = toCube(document);
+        this.checkMayChange(current, currentUser, identity);
+        if (!version.equals(current.version))
+        {
+            throw stale(cubeId, version, current.version);
+        }
+        return current;
+    }
+
+    /**
+     * Filters the cube at the version read, so that a change made to it since, its ownership's included, refuses this one
+     */
+    private static Bson unchangedSince(String cubeId, Integer version, boolean includeDeleted)
+    {
+        List<Bson> filters = new ArrayList<>(Arrays.asList(Filters.eq("id", cubeId), Filters.eq(VERSION_FIELD, version)));
         if (!includeDeleted)
         {
             filters.add(Filters.exists("deleted", false));
@@ -348,9 +473,9 @@ public class CubeStoreManager
     }
 
     /**
-     * Why a change matched no cube, read after it: the cube is missing, the caller isn't an owner, or it changed since it was read
+     * Why a change matched no cube although it had just been read: the cube was deleted or changed meanwhile
      */
-    private ApplicationQueryException explainRefusal(String cubeId, Integer version, String currentUser, boolean includeDeleted)
+    private ApplicationQueryException explainRefusal(String cubeId, Integer version, boolean includeDeleted)
     {
         Document document = this.getCubeCollection().find(Filters.eq("id", cubeId)).first();
         if (document == null || (!includeDeleted && document.containsKey("deleted")))
@@ -358,13 +483,9 @@ public class CubeStoreManager
             return notFound(cubeId);
         }
         StoredCube current = toCube(document);
-        if (current.owners == null || !current.owners.contains(currentUser))
-        {
-            return new ApplicationQueryException("Only current owners can change this cube. Current owners are " + String.join(", ", current.owners == null ? Collections.emptyList() : current.owners) + ".", Response.Status.FORBIDDEN);
-        }
         if (!version.equals(current.version))
         {
-            return new ApplicationQueryException("Cannot change version " + version + " of cube '" + cubeId + "': its current version is " + current.version + ".", Response.Status.CONFLICT);
+            return stale(cubeId, version, current.version);
         }
         return new ApplicationQueryException("Cube '" + cubeId + "' changed while this change was made: read it again", Response.Status.CONFLICT);
     }
@@ -387,12 +508,32 @@ public class CubeStoreManager
         return toCube(document);
     }
 
-    public StoredCube getCubeVersion(String cubeId, int version)
+    private void requireCube(String cubeId)
     {
         if (this.getCubeCollection().find(Filters.and(Filters.eq("id", cubeId), Filters.exists("deleted", false))).first() == null)
         {
             throw notFound(cubeId);
         }
+    }
+
+    /**
+     * A cube's history: every version saved, the latest first, without their content
+     */
+    public List<StoredCube> getCubeHistory(String cubeId)
+    {
+        this.requireCube(cubeId);
+        return LazyIterate.collect(this.getVersionCollection()
+                .find(Filters.eq("id", cubeId))
+                .projection(Projections.exclude("_id", "content"))
+                .sort(Sorts.descending(VERSION_FIELD)), CubeStoreManager::toCube).toList();
+    }
+
+    /**
+     * One saved version of a cube, with its content
+     */
+    public StoredCube getCubeVersion(String cubeId, int version)
+    {
+        this.requireCube(cubeId);
         Document document = this.getVersionCollection().find(Filters.and(Filters.eq("id", cubeId), Filters.eq(VERSION_FIELD, version))).first();
         if (document == null)
         {
@@ -433,11 +574,11 @@ public class CubeStoreManager
         {
             String term = specification.searchTerm.trim();
             String pattern = Pattern.quote(term);
-            filters.add(Filters.or(Filters.eq("id", term), Filters.regex(NAME_FIELD, pattern, "i"), Filters.regex(OWNERS_FIELD, pattern, "i")));
+            filters.add(Filters.or(Filters.eq("id", term), Filters.regex(NAME_FIELD, pattern, "i"), Filters.regex(DEPLOYMENT_FIELD, pattern, "i")));
         }
-        if (specification.owner != null)
+        if (specification.deployment != null)
         {
-            filters.add(Filters.eq(OWNERS_FIELD, specification.owner));
+            filters.add(Filters.eq(DEPLOYMENT_FIELD, specification.deployment));
         }
         if (specification.creator != null)
         {
@@ -481,31 +622,30 @@ public class CubeStoreManager
     // --------------------------------------------- changes ---------------------------------------------
 
     /**
-     * A new cube at version 1, with an id the store makes; the caller is its first owner
+     * A new cube at version 1, with an id the store makes, owned by a deployment the caller is a member of
      */
-    public StoredCube createCube(StoredCube cube, String currentUser)
+    public StoredCube createCube(StoredCube cube, String currentUser, Identity identity)
     {
         requireUser(currentUser);
         validate(cube != null, "Cube is missing");
         validate(cube.id == null, "A new cube's id is made by the store: send none");
         String name = validateName(cube.name);
         validateContent(cube.formatVersion, cube.content);
-        List<String> givenOwners = validateTexts(cube.owners, "owner", MAX_OWNERS);
-        Set<String> owners = new LinkedHashSet<>();
-        owners.add(currentUser);
-        owners.addAll(givenOwners);
-        validate(owners.size() <= MAX_OWNERS, "A cube can't have more than " + MAX_OWNERS + " owners");
+        CubeDeploymentOwnership ownership = validateOwnership(cube.ownership);
+        List<String> tags = validateTexts(cube.tags, "tag", MAX_TAGS);
+        List<CubeSourceRef> sourceRefs = validateSourceRefs(cube.sourceRefs);
+        this.checkMayGive(ownership, identity);
         long now = this.clock.millis();
 
         StoredCube created = new StoredCube();
         created.id = UUID.randomUUID().toString();
         created.version = 1;
         created.name = name;
-        created.owners = new ArrayList<>(owners);
-        created.tags = validateTexts(cube.tags, "tag", MAX_TAGS);
+        created.ownership = ownership;
+        created.tags = tags;
         created.formatVersion = cube.formatVersion;
         created.content = cube.content;
-        created.sourceRefs = validateSourceRefs(cube.sourceRefs);
+        created.sourceRefs = sourceRefs;
         created.audit = new StoredCubeAudit();
         created.audit.createdBy = currentUser;
         created.audit.createdAt = now;
@@ -519,16 +659,25 @@ public class CubeStoreManager
         return created;
     }
 
-    private StoredCube change(String cubeId, Integer version, String currentUser, List<Bson> updates, long now)
+    /**
+     * Makes a change, as a new version, to a cube the caller may change, at the version read; a new ownership must be the caller's to give
+     */
+    private StoredCube change(String cubeId, Integer version, String currentUser, Identity identity, List<Bson> updates, CubeDeploymentOwnership givenOwnership)
     {
+        this.readChangeable(cubeId, version, currentUser, identity, false);
+        if (givenOwnership != null)
+        {
+            this.checkMayGive(givenOwnership, identity);
+        }
+        long now = this.clock.millis();
         List<Bson> allUpdates = new ArrayList<>(updates);
         allUpdates.add(Updates.set("audit.updatedBy", currentUser));
         allUpdates.add(Updates.set("audit.updatedAt", now));
         allUpdates.add(Updates.inc(VERSION_FIELD, 1));
-        Document document = this.getCubeCollection().findOneAndUpdate(changeableCube(cubeId, version, currentUser, false), Updates.combine(allUpdates), RETURN_UPDATED);
+        Document document = this.getCubeCollection().findOneAndUpdate(unchangedSince(cubeId, version, false), Updates.combine(allUpdates), RETURN_UPDATED);
         if (document == null)
         {
-            throw this.explainRefusal(cubeId, version, currentUser, false);
+            throw this.explainRefusal(cubeId, version, false);
         }
         StoredCube changed = toCube(document);
         this.recordVersion(changed);
@@ -538,33 +687,34 @@ public class CubeStoreManager
 
     /**
      * Saves new content, and the name, over the version read: a newer version is a conflict (409).
-     * Owners and tags are changed with {@link #patchCube}.
+     * Ownership and tags are changed with {@link #patchCube}.
      */
-    public StoredCube updateCube(String cubeId, StoredCube cube, String currentUser)
+    public StoredCube updateCube(String cubeId, StoredCube cube, String currentUser, Identity identity)
     {
         requireUser(currentUser);
         validate(cube != null, "Cube is missing");
         validateVersionRead(cube.version);
         validate(cube.id == null || cube.id.equals(cubeId), "A cube's id can't be changed");
-        validate(cube.owners == null && cube.tags == null, "A cube's owners and tags are changed with PATCH");
+        validate(cube.ownership == null && cube.tags == null, "A cube's ownership and tags are changed with PATCH");
         String name = validateName(cube.name);
         validateContent(cube.formatVersion, cube.content);
         List<CubeSourceRef> sourceRefs = validateSourceRefs(cube.sourceRefs);
-        return this.change(cubeId, cube.version, currentUser, Arrays.asList(
+        return this.change(cubeId, cube.version, currentUser, identity, Arrays.asList(
                 Updates.set(NAME_FIELD, name),
                 Updates.set("formatVersion", cube.formatVersion),
                 Updates.set("content", cube.content),
-                Updates.set("sourceRefs", toDocuments(sourceRefs))), this.clock.millis());
+                Updates.set("sourceRefs", toDocuments(sourceRefs))), null);
     }
 
     /**
-     * Changes a cube's name, owners or tags, and nothing else, over the version read
+     * Changes a cube's name, ownership or tags, and nothing else, over the version read.
+     * A cube can only be given to a deployment the caller is a member of.
      */
-    public StoredCube patchCube(String cubeId, Map<String, Object> patch, String currentUser)
+    public StoredCube patchCube(String cubeId, Map<String, Object> patch, String currentUser, Identity identity)
     {
         requireUser(currentUser);
         validate(patch != null, "Cube patch is missing");
-        patch.keySet().forEach(field -> validate(PATCH_FIELDS.contains(field), "Unknown field '" + field + "': only a cube's name, owners and tags can be patched"));
+        patch.keySet().forEach(field -> validate(PATCH_FIELDS.contains(field), "Unknown field '" + field + "': only a cube's name, ownership and tags can be patched"));
         Object version = patch.get(VERSION_FIELD);
         validate(version == null || version instanceof Integer, "Cube version must be a whole number");
         validateVersionRead((Integer) version);
@@ -573,35 +723,35 @@ public class CubeStoreManager
         {
             updates.add(Updates.set(NAME_FIELD, validateName(patch.get(NAME_FIELD))));
         }
-        if (patch.containsKey(OWNERS_FIELD))
+        CubeDeploymentOwnership ownership = null;
+        if (patch.containsKey(OWNERSHIP_FIELD))
         {
-            validate(patch.get(OWNERS_FIELD) != null, "Cube owners can't be null");
-            List<String> owners = validateTexts(patch.get(OWNERS_FIELD), "owner", MAX_OWNERS);
-            validate(!owners.isEmpty(), "A cube needs at least one owner");
-            updates.add(Updates.set(OWNERS_FIELD, owners));
+            ownership = validateOwnership(readOwnership(patch.get(OWNERSHIP_FIELD)));
+            updates.add(Updates.set(OWNERSHIP_FIELD, toDocument(ownership)));
         }
         if (patch.containsKey(TAGS_FIELD))
         {
             validate(patch.get(TAGS_FIELD) != null, "Cube tags can't be null");
             updates.add(Updates.set(TAGS_FIELD, validateTexts(patch.get(TAGS_FIELD), "tag", MAX_TAGS)));
         }
-        validate(!updates.isEmpty(), "Nothing to change: give a name, owners or tags");
-        return this.change(cubeId, (Integer) version, currentUser, updates, this.clock.millis());
+        validate(!updates.isEmpty(), "Nothing to change: give a name, ownership or tags");
+        return this.change(cubeId, (Integer) version, currentUser, identity, updates, ownership);
     }
 
     /**
      * Deletes a cube at the version read: softly, so it is no longer read, searched or changed, or for good with its versions
      */
-    public void deleteCube(String cubeId, Integer version, boolean permanent, String currentUser)
+    public void deleteCube(String cubeId, Integer version, boolean permanent, String currentUser, Identity identity)
     {
         requireUser(currentUser);
         validateVersionRead(version);
+        this.readChangeable(cubeId, version, currentUser, identity, permanent);
         long now = this.clock.millis();
         if (permanent)
         {
-            if (this.getCubeCollection().findOneAndDelete(changeableCube(cubeId, version, currentUser, true)) == null)
+            if (this.getCubeCollection().findOneAndDelete(unchangedSince(cubeId, version, true)) == null)
             {
-                throw this.explainRefusal(cubeId, version, currentUser, true);
+                throw this.explainRefusal(cubeId, version, true);
             }
             this.getVersionCollection().deleteMany(Filters.eq("id", cubeId));
         }
@@ -610,9 +760,9 @@ public class CubeStoreManager
             StoredCubeDeletion deletion = new StoredCubeDeletion();
             deletion.by = currentUser;
             deletion.at = now;
-            if (this.getCubeCollection().findOneAndUpdate(changeableCube(cubeId, version, currentUser, false), Updates.set("deleted", toDocument(deletion))) == null)
+            if (this.getCubeCollection().findOneAndUpdate(unchangedSince(cubeId, version, false), Updates.set("deleted", toDocument(deletion))) == null)
             {
-                throw this.explainRefusal(cubeId, version, currentUser, false);
+                throw this.explainRefusal(cubeId, version, false);
             }
         }
         this.recordEvent(cubeId, QueryEvent.QueryEventType.DELETED, now);

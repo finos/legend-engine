@@ -25,10 +25,16 @@ import java.util.List;
 public class CubeSearchSpecification
 {
     /**
-     * Matches a cube's id exactly, or part of its name or of an owner, in any case
+     * Matches a cube's id exactly, or part of its name or of its owner's deployment identifier, in any case
      */
     public String searchTerm;
-    public String owner;
+    /**
+     * Cubes this deployment owns, by its identifier
+     */
+    public String deployment;
+    /**
+     * Cubes this user created
+     */
     public String creator;
     /**
      * Cubes with all of these tags
