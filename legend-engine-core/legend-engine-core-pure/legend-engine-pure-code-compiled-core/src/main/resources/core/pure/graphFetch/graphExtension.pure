@@ -509,6 +509,17 @@ function <<access.private>> meta::pure::graphFetch::m2mCurrentPathsForChildSetIm
    );
 }
 
+function <<access.private>> meta::pure::graphFetch::m2mPassThroughPaths(propertyPaths:ScanPropertiesState[*]):List<PropertyPathNode>[*]
+{
+   $propertyPaths->map(state |
+      let sourceTerminals = if($state.conditionalTerminalPaths->isNotEmpty(),
+                               | $state.conditionalTerminalPaths->toOne().paths->filter(path | $path.values->isNotEmpty() && !$path.values->exists(n | $n->instanceOf(ConstructedInstancePathNode))),
+                               | []
+                            );
+      if($sourceTerminals->isEmpty(), | $state.current, | $sourceTerminals->removeDuplicates());
+   );
+}
+
 function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForProperty(srcNode:GraphFetchTree[1], mapping:Mapping[1], setImplementation: PureInstanceSetImplementation[1], tgtPgft:PropertyGraphFetchTree[1], extensions:meta::pure::extension::Extension[*], visitedFunctions:Map<String,ScanPropertiesState>[1], srcBinding:List<PropertyPathNode>[0..1], nestedPropertiesCache:Map<String, List<AbstractProperty<Any>>>[1]): Pair<GraphFetchTree, Map<String, ScanPropertiesState>>[1]
 {
    let srcNodeOwner = $srcNode->match([
@@ -751,7 +762,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          let visitedFunctionsFromEnrichedPaths = $withNextSetImpl.second;
 
          let withPassThruSubTrees = if($childSetImpls->isEmpty() && $returnType->instanceOf(Class) && $requiredProperty->toOne()->isPropertyAutoMapped($setImplementation),
-                                      | let appendAtPaths = $propertyPaths.current->filter(path| $path.values->isNotEmpty());
+                                      | let appendAtPaths = $propertyPaths->m2mPassThroughPaths()->filter(path| $path.values->isNotEmpty());
                                         if($appendAtPaths->isEmpty(),
                                           | $withNextSetImpl.first->addPassThroughSubTrees($tgtPgft, $extensions),
                                           | $appendAtPaths->fold({path,tree | $tree->addPassThroughSubTreesAtPath($path, $tgtPgft, $extensions)}, $withNextSetImpl.first)

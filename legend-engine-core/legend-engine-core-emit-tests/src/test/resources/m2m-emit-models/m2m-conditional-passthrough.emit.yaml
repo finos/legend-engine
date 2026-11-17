@@ -1,0 +1,18 @@
+name: m2m-conditional-passthrough
+title: "M2M passes through class-typed properties read in both branches of an if over a chained source"
+description: |
+  Step B picks Mid.a or Mid.b with if(flag, a, b) and passes the chosen Sub through.
+  The service must return the nested property of whichever branch is chosen,
+  including the else branch.
+modelSources:
+  model:
+    root: m2m-conditional-passthrough
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - model-chain

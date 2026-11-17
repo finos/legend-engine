@@ -1,0 +1,172 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::external::store::model::*;
+import meta::pure::graphFetch::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::test::passThroughConditionals::*;
+
+Class meta::pure::mapping::modelToModel::test::passThroughConditionals::Item
+{
+  name : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::passThroughConditionals::Source
+{
+  flag : Boolean[1];
+  nested : Boolean[1];
+  a : Item[0..1];
+  b : Item[0..1];
+  c : Item[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::passThroughConditionals::Target
+{
+  label : String[1];
+  pick : Item[0..1];
+}
+
+function meta::pure::mapping::modelToModel::test::passThroughConditionals::ifMapping(): Mapping[1]
+{
+  let mapping             = passThroughConditionalBase;
+  let classMapping        = $mapping.classMappings->toOne()->cast(@PureInstanceSetImplementation);
+  let updatedClassMapping = ^$classMapping(propertyMappings += ^PurePropertyMapping(transform={src:Source[1]| if($src.flag, |$src.a, |$src.b)},
+                                                                                    property=Target.properties->filter(p | $p.name == 'pick')->toOne(),
+                                                                                    sourceSetImplementationId='src',
+                                                                                    targetSetImplementationId='',
+                                                                                    owner=$classMapping));
+  ^$mapping(classMappings = $updatedClassMapping);
+}
+
+function meta::pure::mapping::modelToModel::test::passThroughConditionals::reversedIfMapping(): Mapping[1]
+{
+  let mapping             = passThroughConditionalBase;
+  let classMapping        = $mapping.classMappings->toOne()->cast(@PureInstanceSetImplementation);
+  let updatedClassMapping = ^$classMapping(propertyMappings += ^PurePropertyMapping(transform={src:Source[1]| if($src.flag, |$src.b, |$src.a)},
+                                                                                    property=Target.properties->filter(p | $p.name == 'pick')->toOne(),
+                                                                                    sourceSetImplementationId='src',
+                                                                                    targetSetImplementationId='',
+                                                                                    owner=$classMapping));
+  ^$mapping(classMappings = $updatedClassMapping);
+}
+
+function meta::pure::mapping::modelToModel::test::passThroughConditionals::nestedIfMapping(): Mapping[1]
+{
+  let mapping             = passThroughConditionalBase;
+  let classMapping        = $mapping.classMappings->toOne()->cast(@PureInstanceSetImplementation);
+  let updatedClassMapping = ^$classMapping(propertyMappings += ^PurePropertyMapping(transform={src:Source[1]| if($src.flag, |if($src.nested, |$src.a, |$src.b), |$src.c)},
+                                                                                    property=Target.properties->filter(p | $p.name == 'pick')->toOne(),
+                                                                                    sourceSetImplementationId='src',
+                                                                                    targetSetImplementationId='',
+                                                                                    owner=$classMapping));
+  ^$mapping(classMappings = $updatedClassMapping);
+}
+
+function meta::pure::mapping::modelToModel::test::passThroughConditionals::nilIfMapping(): Mapping[1]
+{
+  let mapping             = passThroughConditionalBase;
+  let classMapping        = $mapping.classMappings->toOne()->cast(@PureInstanceSetImplementation);
+  let updatedClassMapping = ^$classMapping(propertyMappings += ^PurePropertyMapping(transform={src:Source[1]| if($src.flag, |[], |$src.b)},
+                                                                                    property=Target.properties->filter(p | $p.name == 'pick')->toOne(),
+                                                                                    sourceSetImplementationId='src',
+                                                                                    targetSetImplementationId='',
+                                                                                    owner=$classMapping));
+  ^$mapping(classMappings = $updatedClassMapping);
+}
+
+function meta::pure::mapping::modelToModel::test::passThroughConditionals::constructedIfMapping(): Mapping[1]
+{
+  let mapping             = passThroughConditionalBase;
+  let classMapping        = $mapping.classMappings->toOne()->cast(@PureInstanceSetImplementation);
+  let updatedClassMapping = ^$classMapping(propertyMappings += ^PurePropertyMapping(transform={src:Source[1]| if($src.flag, |^Item(name='built'), |$src.b)},
+                                                                                    property=Target.properties->filter(p | $p.name == 'pick')->toOne(),
+                                                                                    sourceSetImplementationId='src',
+                                                                                    targetSetImplementationId='',
+                                                                                    owner=$classMapping));
+  ^$mapping(classMappings = $updatedClassMapping);
+}
+
+function meta::pure::mapping::modelToModel::test::passThroughConditionals::singleReadMapping(): Mapping[1]
+{
+  let mapping             = passThroughConditionalBase;
+  let classMapping        = $mapping.classMappings->toOne()->cast(@PureInstanceSetImplementation);
+  let updatedClassMapping = ^$classMapping(propertyMappings += ^PurePropertyMapping(transform={src:Source[1]| $src.a},
+                                                                                    property=Target.properties->filter(p | $p.name == 'pick')->toOne(),
+                                                                                    sourceSetImplementationId='src',
+                                                                                    targetSetImplementationId='',
+                                                                                    owner=$classMapping));
+  ^$mapping(classMappings = $updatedClassMapping);
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::passThroughConditionals::testIfRetainsNestedPropertiesOnBothBranches():Boolean[1]
+{
+  let targetTree = #{Target {pick {name}}}#;
+  let expectedSourceTree = #{Source {flag, a {name}, b {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, ifMapping(), meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::passThroughConditionals::testIfIsIndependentOfBranchOrder():Boolean[1]
+{
+  let targetTree = #{Target {pick {name}}}#;
+  let expectedSourceTree = #{Source {flag, a {name}, b {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, reversedIfMapping(), meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::passThroughConditionals::testNestedIfRetainsEveryBranch():Boolean[1]
+{
+  let targetTree = #{Target {pick {name}}}#;
+  let expectedSourceTree = #{Source {flag, nested, a {name}, b {name}, c {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, nestedIfMapping(), meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::passThroughConditionals::testNilBranchIsUnchanged():Boolean[1]
+{
+  let targetTree = #{Target {pick {name}}}#;
+  let expectedSourceTree = #{Source {flag, b {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, nilIfMapping(), meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::passThroughConditionals::testConstructedBranchIsUnchanged():Boolean[1]
+{
+  let targetTree = #{Target {pick {name}}}#;
+  let expectedSourceTree = #{Source {flag, b {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, constructedIfMapping(), meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::passThroughConditionals::testSingleReadIsUnchanged():Boolean[1]
+{
+  let targetTree = #{Target {pick {name}}}#;
+  let expectedSourceTree = #{Source {a {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, singleReadMapping(), meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::passThroughConditionals::*;
+
+Mapping meta::pure::mapping::modelToModel::test::passThroughConditionals::passThroughConditionalBase
+(
+  *meta::pure::mapping::modelToModel::test::passThroughConditionals::Target[src]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::passThroughConditionals::Source
+
+    label : 'label'
+  }
+)
