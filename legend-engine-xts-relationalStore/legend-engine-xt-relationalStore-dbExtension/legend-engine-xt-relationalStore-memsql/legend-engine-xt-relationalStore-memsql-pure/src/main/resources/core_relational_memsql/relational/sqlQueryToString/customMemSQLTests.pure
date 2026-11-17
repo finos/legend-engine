@@ -156,5 +156,5 @@ function <<test.Test>> meta::relational::memsql::tests::db::testTestDataLoaderQu
                 ^meta::relational::metamodel::LoadTableSQL(table = $table, columnsToLoad = $table.columns->cast(@meta::relational::metamodel::Column),
                    parsedData = list(list(['1', '[{"a":1}]']))),
                 meta::relational::functions::sqlQueryToString::createDbConfig(meta::relational::runtime::DatabaseType.MemSQL));
-   assertSameSQL('insert into Doc (id,payload) values (1,\'[{"a":1}]\');', $sql);
+   assertSameSQLs('insert into Doc (id,payload) values (1,\'[{"a":1}]\');', $sql);
 }
