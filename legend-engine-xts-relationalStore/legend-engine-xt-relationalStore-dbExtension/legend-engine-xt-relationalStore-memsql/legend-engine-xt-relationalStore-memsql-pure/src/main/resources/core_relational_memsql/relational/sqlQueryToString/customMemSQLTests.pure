@@ -136,6 +136,8 @@ Mapping meta::relational::memsql::tests::db::simpleRelationalMappingForMemSQLWin
 )
 
 ###Pure
+import meta::relational::functions::asserts::*;
+
 // USmallInt widens to INT UNSIGNED: the relational metamodel has no unsigned SMALLINT.
 function <<test.Test>> meta::relational::memsql::tests::db::testUnsignedTypes() : Boolean[1]
 {
