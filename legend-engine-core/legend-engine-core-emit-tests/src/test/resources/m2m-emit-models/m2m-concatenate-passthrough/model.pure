@@ -1,0 +1,73 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::m2m::concatenatePassThrough::In  { v: String[1]; }
+Class demo::m2m::concatenatePassThrough::Sub { s: String[1]; }
+Class demo::m2m::concatenatePassThrough::Mid { first: demo::m2m::concatenatePassThrough::Sub[0..1]; second: demo::m2m::concatenatePassThrough::Sub[0..1]; }
+Class demo::m2m::concatenatePassThrough::Out { picks: demo::m2m::concatenatePassThrough::Sub[*]; }
+
+###Mapping
+Mapping demo::m2m::concatenatePassThrough::SubBMapping ( demo::m2m::concatenatePassThrough::Sub[subB]: Pure { ~src demo::m2m::concatenatePassThrough::In  s: $src.v + '-B' } )
+
+###Mapping
+Mapping demo::m2m::concatenatePassThrough::StepA
+(
+  include demo::m2m::concatenatePassThrough::SubBMapping
+  *demo::m2m::concatenatePassThrough::Mid: Pure { ~src demo::m2m::concatenatePassThrough::In  first[subA]: $src, second[subB]: $src }
+  demo::m2m::concatenatePassThrough::Sub[subA]: Pure { ~src demo::m2m::concatenatePassThrough::In  s: $src.v + '-A' }
+)
+
+###Mapping
+Mapping demo::m2m::concatenatePassThrough::StepB
+(
+  *demo::m2m::concatenatePassThrough::Out: Pure { ~src demo::m2m::concatenatePassThrough::Mid  picks: $src.first->concatenate($src.second) }
+)
+
+###Connection
+ModelChainConnection demo::m2m::concatenatePassThrough::Chain { mappings: [ demo::m2m::concatenatePassThrough::StepA ]; }
+
+###Runtime
+Runtime demo::m2m::concatenatePassThrough::Rt
+{
+  mappings: [ demo::m2m::concatenatePassThrough::StepB ];
+  connections: [ ModelStore: [ chain: demo::m2m::concatenatePassThrough::Chain, c1: #{ JsonModelConnection { class: demo::m2m::concatenatePassThrough::In; url: 'data:application/json,${inJson}'; } }# ] ];
+}
+
+###Service
+Service demo::m2m::concatenatePassThrough::Svc
+{
+  pattern: '/m2mConcatenatePassThrough'; owners: [ 'test' ]; documentation: 'M2M reads class-typed properties from both inputs of a concatenate over a chained source';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {inJson: String[1] | demo::m2m::concatenatePassThrough::Out.all()->graphFetch(#{demo::m2m::concatenatePassThrough::Out{picks{s}}}#)->serialize(#{demo::m2m::concatenatePassThrough::Out{picks{s}}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type', includeType=false, removePropertiesWithNullValues=true, removePropertiesWithEmptySets=true))->from(demo::m2m::concatenatePassThrough::StepB, demo::m2m::concatenatePassThrough::Rt)};
+  }
+  testSuites:
+  [
+    s1:
+    {
+      data: []
+      tests:
+      [
+        concatenateReturnsBothInputs:
+        {
+          serializationFormat: PURE;
+          parameters: [ inJson = '{"v":"x"}' ]
+          asserts: [ x: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '{"picks":[{"s":"x-A"},{"s":"x-B"}]}'; }#; }# ]
+        }
+      ]
+    }
+  ]
+}

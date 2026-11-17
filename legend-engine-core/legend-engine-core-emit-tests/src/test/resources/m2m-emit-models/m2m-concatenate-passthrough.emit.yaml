@@ -1,0 +1,17 @@
+name: m2m-concatenate-passthrough
+title: "M2M passes through class-typed properties read from both inputs of a concatenate over a chained source"
+description: |
+  Step B maps picks to first->concatenate(second) over the objects produced by step A.
+  The service must return the nested property of every object, including the one that is not the first input.
+modelSources:
+  model:
+    root: m2m-concatenate-passthrough
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - model-chain

@@ -452,7 +452,11 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                print(if($debug.debug,|$debug.space+'  - param 1\n',|''));
                                                                                let col2 = $params->at(1)->internal_scanProperties($processed, $vars, $config,  $col1.visitedFunctions, ^$debug(space=$debug.space+'    '))->orElseEmptyPath();
                                                                                makeScanPropertiesState(
-                                                                                  $col1.current->concatenate($col2.current)->firstMeaningfulCurrent(),  // TODO handle when both paths are relevant 
+                                                                                  $col1.current->concatenate($col2.current)->firstMeaningfulCurrent(),
+                                                                                  if($config.captureConditionalTerminals->orElse(false),
+                                                                                    |^ConditionalTerminalPaths(paths=$col1->conditionalTerminalPathsOrCurrent()->concatenate($col2->conditionalTerminalPathsOrCurrent())->removeDuplicates()),
+                                                                                    |[]
+                                                                                  ),
                                                                                   $col1.result->concatenate($col2.result),
                                                                                   $col2.visitedFunctions
                                                                                );

@@ -1,0 +1,149 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::external::store::model::*;
+import meta::pure::graphFetch::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::test::passThroughCollections::*;
+
+Class meta::pure::mapping::modelToModel::test::passThroughCollections::Item
+{
+  name : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::passThroughCollections::Source
+{
+  items : Item[*];
+  moreItems : Item[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::passThroughCollections::Target
+{
+  label : String[1];
+  picks : Item[*];
+}
+
+function meta::pure::mapping::modelToModel::test::passThroughCollections::concatenateMapping(): Mapping[1]
+{
+  let mapping             = passThroughCollectionBase;
+  let classMapping        = $mapping.classMappings->toOne()->cast(@PureInstanceSetImplementation);
+  let updatedClassMapping = ^$classMapping(propertyMappings += ^PurePropertyMapping(transform={src:Source[1]| $src.items->concatenate($src.moreItems)},
+                                                                                    property=Target.properties->filter(p | $p.name == 'picks')->toOne(),
+                                                                                    sourceSetImplementationId='src',
+                                                                                    targetSetImplementationId='',
+                                                                                    owner=$classMapping));
+  ^$mapping(classMappings = $updatedClassMapping);
+}
+
+function meta::pure::mapping::modelToModel::test::passThroughCollections::unionMapping(): Mapping[1]
+{
+  let mapping             = passThroughCollectionBase;
+  let classMapping        = $mapping.classMappings->toOne()->cast(@PureInstanceSetImplementation);
+  let updatedClassMapping = ^$classMapping(propertyMappings += ^PurePropertyMapping(transform={src:Source[1]| $src.items->union($src.moreItems)},
+                                                                                    property=Target.properties->filter(p | $p.name == 'picks')->toOne(),
+                                                                                    sourceSetImplementationId='src',
+                                                                                    targetSetImplementationId='',
+                                                                                    owner=$classMapping));
+  ^$mapping(classMappings = $updatedClassMapping);
+}
+
+function meta::pure::mapping::modelToModel::test::passThroughCollections::sameRouteMapping(): Mapping[1]
+{
+  let mapping             = passThroughCollectionBase;
+  let classMapping        = $mapping.classMappings->toOne()->cast(@PureInstanceSetImplementation);
+  let updatedClassMapping = ^$classMapping(propertyMappings += ^PurePropertyMapping(transform={src:Source[1]| $src.items->concatenate($src.items)},
+                                                                                    property=Target.properties->filter(p | $p.name == 'picks')->toOne(),
+                                                                                    sourceSetImplementationId='src',
+                                                                                    targetSetImplementationId='',
+                                                                                    owner=$classMapping));
+  ^$mapping(classMappings = $updatedClassMapping);
+}
+
+function meta::pure::mapping::modelToModel::test::passThroughCollections::constructedMapping(): Mapping[1]
+{
+  let mapping             = passThroughCollectionBase;
+  let classMapping        = $mapping.classMappings->toOne()->cast(@PureInstanceSetImplementation);
+  let updatedClassMapping = ^$classMapping(propertyMappings += ^PurePropertyMapping(transform={src:Source[1]| $src.items->concatenate(^Item(name='built'))},
+                                                                                    property=Target.properties->filter(p | $p.name == 'picks')->toOne(),
+                                                                                    sourceSetImplementationId='src',
+                                                                                    targetSetImplementationId='',
+                                                                                    owner=$classMapping));
+  ^$mapping(classMappings = $updatedClassMapping);
+}
+
+function meta::pure::mapping::modelToModel::test::passThroughCollections::singleReadMapping(): Mapping[1]
+{
+  let mapping             = passThroughCollectionBase;
+  let classMapping        = $mapping.classMappings->toOne()->cast(@PureInstanceSetImplementation);
+  let updatedClassMapping = ^$classMapping(propertyMappings += ^PurePropertyMapping(transform={src:Source[1]| $src.items},
+                                                                                    property=Target.properties->filter(p | $p.name == 'picks')->toOne(),
+                                                                                    sourceSetImplementationId='src',
+                                                                                    targetSetImplementationId='',
+                                                                                    owner=$classMapping));
+  ^$mapping(classMappings = $updatedClassMapping);
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::passThroughCollections::testConcatenateRetainsNestedPropertiesOnBothCollections():Boolean[1]
+{
+  let targetTree = #{Target {picks {name}}}#;
+  let expectedSourceTree = #{Source {items {name}, moreItems {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, concatenateMapping(), meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::passThroughCollections::testUnionRetainsNestedPropertiesOnBothCollections():Boolean[1]
+{
+  let targetTree = #{Target {picks {name}}}#;
+  let expectedSourceTree = #{Source {items {name}, moreItems {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, unionMapping(), meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::passThroughCollections::testConcatenateOfTheSameRouteIsUnchanged():Boolean[1]
+{
+  let targetTree = #{Target {picks {name}}}#;
+  let expectedSourceTree = #{Source {items {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, sameRouteMapping(), meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::passThroughCollections::testConcatenateWithConstructedInstanceIsUnchanged():Boolean[1]
+{
+  let targetTree = #{Target {picks {name}}}#;
+  let expectedSourceTree = #{Source {items {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, constructedMapping(), meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::passThroughCollections::testSingleReadIsUnchanged():Boolean[1]
+{
+  let targetTree = #{Target {picks {name}}}#;
+  let expectedSourceTree = #{Source {items {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, singleReadMapping(), meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::passThroughCollections::*;
+
+Mapping meta::pure::mapping::modelToModel::test::passThroughCollections::passThroughCollectionBase
+(
+  *meta::pure::mapping::modelToModel::test::passThroughCollections::Target[src]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::passThroughCollections::Source
+
+    label : 'label'
+  }
+)
