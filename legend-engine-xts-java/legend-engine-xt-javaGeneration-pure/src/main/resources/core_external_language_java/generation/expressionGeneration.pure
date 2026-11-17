@@ -40,12 +40,12 @@ function meta::external::language::java::transform::generateJavaMethodBody(vses:
    $vses->statementsForBlock($cleanConventions, $debug)->j_block();
 }
 
-function <<access.private>>  meta::external::language::java::transform::generateJavaMethodBody(vses: ValueSpecification[*], conventions: Conventions[1], returnType:meta::external::language::java::metamodel::Type[1], debug: DebugContext[1]):Code[1]
+function <<access.private>>  meta::external::language::java::transform::generateJavaMethodBody(vses: ValueSpecification[*], conventions: Conventions[1], returnType:meta::external::language::java::metamodel::Type[1], parameterNames: String[*], debug: DebugContext[1]):Code[1]
 {
    assert($vses->isNotEmpty(), 'Method body must have at least one expression');
    let cleanConventions = ^$conventions(
       providedVariables = ^Map<String,Code>(),
-      variablesInScope  = []
+      variablesInScope  = $parameterNames
    );
    $vses->statementsForBlock($cleanConventions, $returnType, $debug)->j_block();
 }
@@ -363,7 +363,7 @@ function <<access.private>> meta::external::language::java::transform::processCo
            |print(if($debug.debug,|$debug.space+'Implementation of: \''+$fe.func->elementToPath()+'\'\n',|''));
            let updatedState = $state->addDependencyVisitedFunction($fe.func->elementToPath());
             
-            let implBody    = $fe.func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($newCon, $signature.method.returnType, $debug->indent());
+            let implBody    = $fe.func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($newCon, $signature.method.returnType, $signature.method.parameters.name, $debug->indent());
             let classesUsed = $signature.method->typesUsed()
                                 ->typesToClasses()
                                 ->filter(c | !meta::external::language::java::factory::isKnownPackage($c.package))
