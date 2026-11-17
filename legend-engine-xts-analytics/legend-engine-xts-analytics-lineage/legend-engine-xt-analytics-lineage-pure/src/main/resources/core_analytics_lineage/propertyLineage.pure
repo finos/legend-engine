@@ -28,6 +28,7 @@ import meta::pure::extension::*;
 import meta::pure::metamodel::relation::*;
 import meta::analytics::lineage::property::*;
 import meta::analytics::lineage::property::scanner::*;
+import meta::pure::metamodel::valuespecification::*;
 
 Class meta::analytics::lineage::property::PropertyLineageReport
 {
@@ -160,7 +161,7 @@ function meta::analytics::lineage::property::scanBuildPropertyLineage(vs: Any[1]
   let extended = $extension.buildPropertyReport->map(r|$r->eval($state,$extension));
   $vs->match($extended->concatenate(
               [
-              f:FunctionDefinition<Any>[1]  | $f.expressionSequence->evaluateAndDeactivate()->fold({a,b|$a->scanBuildPropertyLineage($b,$extension)}, $state);,
+              f:FunctionDefinition<Any>[1]  | $f->scanFunctionDefinitionWithLets($state,$extension);,
               fe:FunctionExpression[1]      | let funcPath = $fe.func->elementToPath();
                                               let dispatch = [pair( 'meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_',
                                                                    {|
@@ -354,8 +355,41 @@ function meta::analytics::lineage::property::scanBuildPropertyLineage(vs: Any[1]
                                                                        ),
               r:RelationElementAccessor<Any>[1] | $r->meta::analytics::lineage::property::buildAccessorPropertyNode($state, $extension);,
               s:meta::external::query::sql::expression::SQLExpression<Any>[1] |  $s.pureFunction->scanBuildPropertyLineage($state,$extension),
+              v:VariableExpression[1]          |  let bound = $state.vars->get($v.name);
+                                                  let letState = if($bound->isEmpty() || $bound.values->isEmpty(), |[], |$bound.values->at(0)->match([s:ScannerState[1]|$s, a:Any[*]|[]]));
+                                                  if($letState->isEmpty(),
+                                                     | $state,
+                                                     | ^$state(currentOwner=$letState.currentOwner, lineageColumn=$letState.lineageColumn, propertyOwner=$state.propertyOwner->concatenate($letState.propertyOwner)->distinct(), ownerLink=$state.ownerLink->concatenate($letState.ownerLink)->distinct())
+                                                  );,
               a:Any[*]                                 |  $state;
             ])->toOneMany())->toOne();
+}
+
+// A lambda can be a sequence of 'let name = <query>' followed by a query that refers to those names as variables.
+// Scan each let value as it is encountered and expose the result to the VariableExpression case above through state.vars.
+function meta::analytics::lineage::property::scanFunctionDefinitionWithLets(func:FunctionDefinition<Any>[1], state:ScannerState[1], extension:LineageExtension[*]):ScannerState[1]
+{
+  $func.expressionSequence->evaluateAndDeactivate()->fold({e, s | if($e->isLetExpression(), | $e->scanLetExpression($s, $extension), | $e->scanBuildPropertyLineage($s, $extension))}, $state);
+}
+
+// Entry for callers that scan only the last expression of a lambda: bind the lets that precede it so the variables they define resolve.
+function meta::analytics::lineage::property::scanLetExpressions(expressions:ValueSpecification[*], ownerID:String[1], state:ScannerState[1], extension:LineageExtension[*]):ScannerState[1]
+{
+  let rootOwner = ^RootQuery(name=$ownerID, id=$ownerID);
+  $expressions->evaluateAndDeactivate()->filter(e|$e->isLetExpression())->fold({e, s | ^$s(vars = $e->scanLetExpression(^$s(currentOwner=$rootOwner), $extension).vars)}, $state);
+}
+
+function meta::analytics::lineage::property::isLetExpression(e:Any[1]):Boolean[1]
+{
+  $e->match([fe:FunctionExpression[1] | $fe.func->elementToPath() == 'meta::pure::functions::lang::letFunction_String_1__T_m__T_m_', a:Any[1] | false]);
+}
+
+function meta::analytics::lineage::property::scanLetExpression(e:Any[1], state:ScannerState[1], extension:LineageExtension[*]):ScannerState[1]
+{
+  let fe = $e->cast(@FunctionExpression);
+  let name = $fe.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@String);
+  let value = $fe.parametersValues->at(1)->evaluateAndDeactivate()->scanBuildPropertyLineage($state, $extension);
+  ^$state(vars = $state.vars->put($name, list($value)));
 }
 
 
