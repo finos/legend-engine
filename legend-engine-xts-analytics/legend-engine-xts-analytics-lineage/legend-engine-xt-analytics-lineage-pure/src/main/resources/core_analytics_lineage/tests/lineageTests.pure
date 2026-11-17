@@ -205,6 +205,13 @@ import meta::relational::metamodel::join::*;
 import meta::analytics::lineage::*;
 import meta::relational::tests::*;
 import meta::relational::tests::model::simple::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testProjectWithConstantColumn():Boolean[1]
+{
+    let fn= {|Firm.all()->project(~[legalName: f|$f.legalName, constantCol: f|'constant']);};
+    let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+    meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultfirmTable'], [], '[constantCol: [query.constantCol], legalName: [query.legalName->[MappedClassOwner_meta::relational::tests::simpleRelationalMappingInc.Firm.legalName->[RelationalPropertyOwner_meta::relational::tests::dbInc.default.firmTable.LEGALNAME]]]]', $lineage);
+}
+
 function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testFunctionWithMultiExpression():Boolean[1]
 {
     let fn= {| 
