@@ -2986,8 +2986,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | now(), 'LOCALTIMESTAMP'),
                   col(row:TDSRow[1] | %2023-01-02, 'MAKEDATE'),
                   col(row:TDSRow[1] | %2023-01-02T12:11:10.5, 'MAKETIMESTAMP'),
-                  col(row:TDSRow[1] | datePart(%2023-01-01), 'DATE'),
-                  col(row:TDSRow[1] | datePart($row.getDateTime('DateTime')), 'DATE2')
+                  col(row:TDSRow[1] | datePart(%2023-01-01)->cast(@StrictDate), 'DATE'),
+                  col(row:TDSRow[1] | datePart($row.getDateTime('DateTime'))->cast(@StrictDate), 'DATE2')
                 ])
       },
       {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
@@ -2996,8 +2996,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             LOCALTIMESTAMP : x|now(),
             MAKEDATE : x|%2023-01-02,
             MAKETIMESTAMP : x|%2023-01-02T12:11:10.5+0000,
-            DATE : x|%2023-01-01->datePart(),
-            DATE2 : x|$x.DateTime->datePart()
+            DATE : x|%2023-01-01->datePart()->cast(@StrictDate),
+            DATE2 : x|$x.DateTime->datePart()->cast(@StrictDate)
           ])
       }
     ]
