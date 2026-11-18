@@ -1,0 +1,48 @@
+name: umber-vineyard-5
+title: "Umber Vineyard 5 — A Community Vineyard Block Register Whose Reference Hops Are Planned As Inner Joins And Whose Review Note Is Planned As A Two-Hop Outer Join"
+description: |
+  A community vineyard block register in which one relational store holds the
+  planted blocks alongside the holdings, trellis styles and pruning crews they
+  belong to and the review notes recorded against them. A block reads its
+  holding, its trellis style and its rota crew through joins the mapping marks
+  as inner hops, and it derives its planted vine-metre figure arithmetically from
+  the vine count and the row length while its holding label is built by string
+  functions over the holding name. The review note and the rota member who
+  reviewed it are read through a two-hop path the mapping marks as outer hops, so
+  a block with no note still resolves with empty note columns instead of being
+  dropped. The register carries no fabricated test surface: the group is
+  validated by parsing, compiling and planning the store, mapping, connection and
+  runtime.
+modelSources:
+  model:
+    root: umber-vineyard-5
+    files:
+      - test/umbervineyard5/connection/VineyardConnection.pure
+      - test/umbervineyard5/domain/VineyardDomain.pure
+      - test/umbervineyard5/mapping/VineyardMapping.pure
+      - test/umbervineyard5/runtime/VineyardRuntime.pure
+      - test/umbervineyard5/store/VineyardDB.pure
+features:
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-outer-join
+stores:
+  - relational
+complexity: basic
+tags:
+  - inner-join
+  - outer-join
+  - relational
+  - store-scaffolding
+  - vineyard-blocks

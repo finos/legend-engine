@@ -1,0 +1,201 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralcove2::service::SurveyBatchVersionService
+{
+  pattern: '/coralcove/v1/batches/versions';
+  title: 'Survey Batch Versions';
+  owners:
+  [
+    'reef-monitoring',
+    'survey-planning'
+  ];
+  documentation: 'Publishes every version of every survey pass, so the composite key over the batch identifier and the version boundary column keeps repeated identifiers apart.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::SurveyBatch.all()->project(
+      [
+        b|$b.batchCode,
+        b|$b.versionNo,
+        b|$b.siteCode,
+        b|$b.visibilityM
+      ],
+      [
+        'BATCH_CODE',
+        'VERSION_NO',
+        'SITE_CODE',
+        'VISIBILITY_M'
+      ]
+    )->sort(
+      [
+        asc('BATCH_CODE'),
+        asc('VERSION_NO')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefH2Runtime;
+  }
+  testSuites:
+  [
+    batchVersionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              reef.survey_batch:
+                'batch_code,version_no,site_code,observer_code,surveyed_on,visibility_m\n'+
+                'SB-01,1,RS-01,OB-01,2026-02-01,14\n'+
+                'SB-01,2,RS-01,OB-01,2026-02-08,9\n'+
+                'SB-02,1,RS-02,OB-02,2026-02-09,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyVersionIsAnInstance:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoVersionsOfOneBatchAndOneOfAnother:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BATCH_CODE":"SB-01","VERSION_NO":1,"SITE_CODE":"RS-01","VISIBILITY_M":14},{"BATCH_CODE":"SB-01","VERSION_NO":2,"SITE_CODE":"RS-01","VISIBILITY_M":9},{"BATCH_CODE":"SB-02","VERSION_NO":1,"SITE_CODE":"RS-02","VISIBILITY_M":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::coralcove2::service::ColonyHealthService
+{
+  pattern: '/coralcove/v1/colonies/health';
+  title: 'Colony Health';
+  owners:
+  [
+    'reef-monitoring',
+    'colony-assessment'
+  ];
+  documentation: 'Publishes the colonies whose health score has fallen below the intervention threshold, with the species common name reached over the store join.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::CoralColony.all()->filter(
+      c|$c.healthScore < 4
+    )->project(
+      [
+        c|$c.colonyCode,
+        c|$c.batchCode,
+        c|$c.speciesCommonName,
+        c|$c.healthScore
+      ],
+      [
+        'COLONY_CODE',
+        'BATCH_CODE',
+        'SPECIES_NAME',
+        'HEALTH_SCORE'
+      ]
+    )->sort(
+      [
+        asc('COLONY_CODE')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefRuntime;
+  }
+}
+
+Service test::coralcove2::service::ObserverBatchService
+{
+  pattern: '/coralcove/v1/observers/batches';
+  title: 'Observer Survey Batches';
+  owners:
+  [
+    'reef-monitoring',
+    'shore-operations'
+  ];
+  documentation: 'Publishes each diver with the shore station reached over the station join and the survey batch versions reached through the to-many association end.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::Observer.all()->project(
+      [
+        o|$o.observerCode,
+        o|$o.stationName,
+        o|$o.batches.batchCode,
+        o|$o.batches.versionNo
+      ],
+      [
+        'OBSERVER_CODE',
+        'STATION_NAME',
+        'BATCH_CODE',
+        'VERSION_NO'
+      ]
+    )->sort(
+      [
+        asc('OBSERVER_CODE'),
+        asc('BATCH_CODE')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefRuntime;
+  }
+}
+
+Service test::coralcove2::service::SpeciesFormService
+{
+  pattern: '/coralcove/v1/species/forms';
+  title: 'Species Growth Forms';
+  owners:
+  [
+    'reef-monitoring',
+    'colony-assessment'
+  ];
+  documentation: 'Publishes the species reference with its growth form, the optional column of which yields a null result column where it is unrecorded.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::Species.all()->project(
+      [
+        s|$s.speciesCode,
+        s|$s.commonName,
+        s|$s.growthForm
+      ],
+      [
+        'SPECIES_CODE',
+        'COMMON_NAME',
+        'GROWTH_FORM'
+      ]
+    )->sort(
+      [
+        asc('SPECIES_CODE')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefRuntime;
+  }
+}

@@ -1,0 +1,58 @@
+name: western-prairie
+title: "Prairie Trail Registry — Relational Service, Unitemporal Persistence and File Generation"
+description: |
+  A prairie-preserve trail corpus. A relational store joins trails to their
+  conservation regions through a named inner join, and a relational mapping
+  anchored on a primary-table alias with a declared primary key binds the trail
+  and region classes. A single-execution service projects the joined trails as
+  a tabular result and is asserted through a service testSuite over an
+  in-process H2 connection. A batch persistence materializes that service output
+  into a unitemporal relational target milestoned on processing batch id under a
+  manual trigger, asserted across two snapshot batches. An Avro file-generation
+  specification and a generation specification emit a data-lake schema artifact
+  from the domain classes.
+modelSources:
+  model:
+    root: western-prairie
+    files:
+      - test/westernprairie/connection/PrairieH2Connection.pure
+      - test/westernprairie/connection/PrairieSnowflakeConnection.pure
+      - test/westernprairie/domain/PrairieDomain.pure
+      - test/westernprairie/generation/PrairieGeneration.pure
+      - test/westernprairie/mapping/PrairieMapping.pure
+      - test/westernprairie/persistence/TrailPersistence.pure
+      - test/westernprairie/runtime/PrairieH2Runtime.pure
+      - test/westernprairie/runtime/PrairieRuntime.pure
+      - test/westernprairie/service/TrailSnapshotService.pure
+      - test/westernprairie/store/PrairieDB.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:persistence
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - avro
+  - batch-id-milestoning
+  - file-generation
+  - generation-specification
+  - h2
+  - inner-join
+  - manual-trigger
+  - persistence
+  - prairie
+  - primary-key
+  - relational
+  - service-test
+  - snowflake
+  - unitemporal

@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::mapleaviary6::store::MillDb
+(
+  Schema mill
+  (
+    Table milling_run
+    (
+      run_code VARCHAR(24) PRIMARY KEY,
+      mill_code VARCHAR(24) NOT NULL,
+      estate_name VARCHAR(40) NOT NULL,
+      sail_set VARCHAR(24) NOT NULL,
+      grain_kind VARCHAR(24) NOT NULL,
+      run_grade VARCHAR(16) NOT NULL,
+      sack_count INTEGER NOT NULL,
+      stone_hours DOUBLE NOT NULL,
+      milled_on DATE NOT NULL
+    )
+    Table sail_check
+    (
+      check_code VARCHAR(24) PRIMARY KEY,
+      run_code VARCHAR(24) NOT NULL,
+      check_grade VARCHAR(16) NOT NULL,
+      canvas_metres DOUBLE NOT NULL
+    )
+  )
+  Join Run_Check(mill.milling_run.run_code = mill.sail_check.run_code)
+)

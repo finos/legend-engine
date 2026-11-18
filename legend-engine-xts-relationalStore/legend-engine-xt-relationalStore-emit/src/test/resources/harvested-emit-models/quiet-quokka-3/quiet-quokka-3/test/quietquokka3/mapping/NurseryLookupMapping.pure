@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietquokka3::mapping::NurseryLookupMapping
+(
+  include mapping test::quietquokka3::mapping::NurseryEnumMappings
+
+  *test::quietquokka3::domain::NurseryBlock[block]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietquokka3::store::NurseryDb]nursery.block_current_vw.block_code,
+      [test::quietquokka3::store::NurseryDb]nursery.block_current_vw.valid_from
+    )
+    ~mainTable [test::quietquokka3::store::NurseryDb]nursery.block_current_vw
+    blockCode: [test::quietquokka3::store::NurseryDb]nursery.block_current_vw.block_code,
+    blockName: rtrim([test::quietquokka3::store::NurseryDb]nursery.block_current_vw.block_name)
+  }
+
+  *test::quietquokka3::domain::Bench[bench]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietquokka3::store::NurseryDb]nursery.bench_current_vw.bench_code,
+      [test::quietquokka3::store::NurseryDb]nursery.bench_current_vw.valid_from
+    )
+    ~mainTable [test::quietquokka3::store::NurseryDb]nursery.bench_current_vw
+    benchCode: [test::quietquokka3::store::NurseryDb]nursery.bench_current_vw.bench_code,
+    benchName: rtrim([test::quietquokka3::store::NurseryDb]nursery.bench_current_vw.bench_name),
+    shelterLabel: [test::quietquokka3::store::NurseryDb]nursery.bench_current_vw.shelter_label
+  }
+
+  *test::quietquokka3::domain::ClimateZone[climate]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietquokka3::store::NurseryDb]nursery.climate_current_vw.climate_code,
+      [test::quietquokka3::store::NurseryDb]nursery.climate_current_vw.valid_from
+    )
+    ~mainTable [test::quietquokka3::store::NurseryDb]nursery.climate_current_vw
+    climateCode: [test::quietquokka3::store::NurseryDb]nursery.climate_current_vw.climate_code,
+    climateName: rtrim([test::quietquokka3::store::NurseryDb]nursery.climate_current_vw.climate_name),
+    climateBand: EnumerationMapping ClimateBandMapping: case(
+                   equal(trim([test::quietquokka3::store::NurseryDb]nursery.climate_current_vw.band_raw), 'COOL'),
+                   'C',
+                   case(
+                     equal(trim([test::quietquokka3::store::NurseryDb]nursery.climate_current_vw.band_raw), 'TEMPERATE'),
+                     'T',
+                     case(
+                       equal(trim([test::quietquokka3::store::NurseryDb]nursery.climate_current_vw.band_raw), 'WARM'),
+                       'W',
+                       'Z'
+                     )
+                   )
+                 )
+  }
+
+  *test::quietquokka3::domain::Rootstock[rootstock]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietquokka3::store::NurseryDb]nursery.rootstock_current_vw.rootstock_code,
+      [test::quietquokka3::store::NurseryDb]nursery.rootstock_current_vw.valid_from
+    )
+    ~mainTable [test::quietquokka3::store::NurseryDb]nursery.rootstock_current_vw
+    rootstockCode: [test::quietquokka3::store::NurseryDb]nursery.rootstock_current_vw.rootstock_code,
+    rootstockName: rtrim([test::quietquokka3::store::NurseryDb]nursery.rootstock_current_vw.rootstock_name),
+    vigourBand: EnumerationMapping VigourBandMapping: case(
+                  equal(trim([test::quietquokka3::store::NurseryDb]nursery.rootstock_current_vw.vigour_raw), 'DWARF'),
+                  'D',
+                  case(
+                    equal(trim([test::quietquokka3::store::NurseryDb]nursery.rootstock_current_vw.vigour_raw), 'SEMI'),
+                    'M',
+                    case(
+                      equal(trim([test::quietquokka3::store::NurseryDb]nursery.rootstock_current_vw.vigour_raw), 'VIGOROUS'),
+                      'V',
+                      'Z'
+                    )
+                  )
+                )
+  }
+
+  *test::quietquokka3::domain::Cultivar[cultivar]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.cultivar_code,
+      [test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.valid_from
+    )
+    ~mainTable [test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw
+    cultivarCode: [test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.cultivar_code,
+    cultivarName: rtrim([test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.cultivar_name),
+    cultivarKind: EnumerationMapping CultivarKindMapping: case(
+                    equal(trim([test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.kind_code), 'ACCEPTED'),
+                    'ACCEPTED',
+                    case(
+                      equal(trim([test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.kind_code), 'SYNONYM'),
+                      'SYNONYM',
+                      '#NULL#'
+                    )
+                  )
+  }
+)

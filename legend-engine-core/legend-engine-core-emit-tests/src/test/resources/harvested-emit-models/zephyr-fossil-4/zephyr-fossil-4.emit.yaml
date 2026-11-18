@@ -1,0 +1,45 @@
+name: zephyr-fossil-4
+title: "Zephyr Fossil 4 — Store-less Catalogue Facade with Query-Language Binding Profiles & Parameterised Entry Points"
+description: |
+  A model-only fossil-catalogue register with no store behind it. One flat
+  record class describes a specimen repository — the name it is listed under,
+  an optional short label and purpose statement, the territory it was
+  established in and the lifecycle it stands at — and both typed attributes are
+  backed by a closed enumeration, a twenty-six member territory set carrying an
+  explicit unknown member and a two-member lifecycle, so neither attribute can
+  drift into a free string. Two stateless facade classes publish the typed
+  schema an external query language binds against: a read root and a write root,
+  each carrying a stereotype from the binding profile plus the namespace and
+  operation tags the binding needs, so the model publishes external intent the
+  class grammar cannot express and does so without any store binding. Each
+  facade declares one parameterised property with an expression body: the read
+  root narrows the published register on a requested name and takes the head of
+  what survives, yielding at most one repository, and the write root republishes
+  an offered record, settling its short label by blank-stripping a collection of
+  candidate labels and coercing what survives to the single value the published
+  record requires.
+
+modelSources:
+  model:
+    root: zephyr-fossil-4
+    files:
+      - test/zephyrfossil4/domain/CatalogueEnumerations.pure
+      - test/zephyrfossil4/domain/CatalogueFacade.pure
+      - test/zephyrfossil4/profile/CatalogueBindingProfiles.pure
+
+features:
+  - grammar:enumeration
+  - grammar:profile
+  - grammar:qualified-property
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - closed-enumeration
+  - collection-coercion
+  - external-query-binding
+  - facade-class
+  - model-only
+  - profile
+  - qualified-property
+  - specimen-catalogue

@@ -1,0 +1,202 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::opalfossil2::service::DeterminationRegister
+{
+  pattern: '/opalfossil2/v1/determination-register/{environment}/{businessDate}/{processingDate}';
+  title: 'Opal Fossil 2 - Determination Register As Of';
+  ownership: UserList { users: ['fossil-catalogue-desk'] };
+  documentation: 'Resolves the specimen determinations that were believed on the requested processing date and effective on the requested business date, and publishes them as a fifteen-column contract whose derivations sit above the temporal resolution: case-folded and measured codes, a labelled code built by a model function, arithmetic on the confidence score, a conditional review state, and the determined taxon reached through an association. The same query and mapping are planned under two keyed environments that differ only in their runtime and connection.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {businessDate: StrictDate[1], processingDate: StrictDate[1]|test::opalfossil2::domain::SpecimenDetermination.all($processingDate, $businessDate)->project(
+      [
+        d|$d.determinationCode,
+        d|$d.determinationCode->toUpper(),
+        d|$d.determinationCode->toLower(),
+        d|$d.determinationCode->length(),
+        d|test::opalfossil2::function::catalogLabel($d.determinationCode),
+        d|$d.confidenceScore,
+        d|$d.confidenceScore + 1,
+        d|$d.confidenceScore * 10,
+        d|$d.confidenceScore - 1,
+        d|$d.reviewed,
+        d|if($d.reviewed, |'REVIEWED', |'PENDING'),
+        d|$d.taxon.taxonName,
+        d|$d.taxon.familyName,
+        d|$d.taxon.taxonName->toUpper(),
+        d|$d.taxon.familyName->length()
+      ],
+      [
+        'Determination/Code',
+        'Determination/CodeUpper',
+        'Determination/CodeLower',
+        'Determination/CodeLength',
+        'Determination/CatalogLabel',
+        'Determination/Confidence',
+        'Determination/ConfidencePlusOne',
+        'Determination/ConfidenceTimesTen',
+        'Determination/ConfidenceMinusOne',
+        'Determination/Reviewed',
+        'Determination/ReviewState',
+        'Taxon/Name',
+        'Taxon/Family',
+        'Taxon/NameUpper',
+        'Taxon/FamilyLength'
+      ]
+    )};
+    key: 'environment';
+    executions['live']:
+    {
+      mapping: test::opalfossil2::mapping::FossilCatalogMapping;
+      runtime: test::opalfossil2::runtime::FossilLiveRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::opalfossil2::mapping::FossilCatalogMapping;
+      runtime: test::opalfossil2::runtime::FossilArchiveRuntime;
+    }
+  }
+  testSuites:
+  [
+    liveDeterminationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          fossilLive:
+            Relational
+            #{
+              fossil.taxon:
+                'taxon_id,taxon_name,family_name\n'+
+                '1,Ammonite Serpentinus,Ammonitidae\n'+
+                '2,Trilobite Elongatus,Olenellidae\n';
+
+              fossil.determination:
+                'determination_id,determination_code,confidence_score,reviewed,taxon_id,in_z,out_z,from_z,thru_z\n'+
+                '10,DET-ALPHA,88,true,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '11,DET-BETA,55,false,2,2026-01-01,9999-12-31,2024-01-01,2024-06-30\n';
+
+              fossil.specimen:
+                'specimen_id,specimen_code,matrix_type,mass_g,determination_id,from_z,thru_z\n'+
+                '1,SPC-001,SHALE,120.5,10,2026-01-01,9999-12-31\n'+
+                '2,SPC-002,LIMESTONE,88.25,11,2024-01-01,2024-06-30\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        liveKeyInRangeDetermination:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['live'];
+          parameters:
+          [
+            businessDate = %2026-03-01,
+            processingDate = %2026-03-01
+          ]
+          asserts:
+          [
+            onlyTheDeterminationEffectiveOnTheBusinessDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Determination/Code":"DET-ALPHA","Determination/CodeUpper":"DET-ALPHA","Determination/CodeLower":"det-alpha","Determination/CodeLength":9,"Determination/CatalogLabel":"CAT-DET-ALPHA","Determination/Confidence":88,"Determination/ConfidencePlusOne":89,"Determination/ConfidenceTimesTen":880,"Determination/ConfidenceMinusOne":87,"Determination/Reviewed":true,"Determination/ReviewState":"REVIEWED","Taxon/Name":"Ammonite Serpentinus","Taxon/Family":"Ammonitidae","Taxon/NameUpper":"AMMONITE SERPENTINUS","Taxon/FamilyLength":11}]';
+                  }#;
+              }#
+          ]
+        },
+        liveKeyOutOfRangeBusinessDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['live'];
+          parameters:
+          [
+            businessDate = %2025-03-01,
+            processingDate = %2026-03-01
+          ]
+          asserts:
+          [
+            noDeterminationIsEffectiveOnThatBusinessDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    archiveDeterminationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          fossilArchive:
+            Relational
+            #{
+              fossil.taxon:
+                'taxon_id,taxon_name,family_name\n'+
+                '2,Trilobite Elongatus,Olenellidae\n';
+
+              fossil.determination:
+                'determination_id,determination_code,confidence_score,reviewed,taxon_id,in_z,out_z,from_z,thru_z\n'+
+                '11,DET-BETA,55,false,2,2024-01-01,9999-12-31,2024-01-01,2024-06-30\n';
+
+              fossil.specimen:
+                'specimen_id,specimen_code,matrix_type,mass_g,determination_id,from_z,thru_z\n'+
+                '2,SPC-002,LIMESTONE,88.25,11,2024-01-01,2024-06-30\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        archiveKeyRetiredDetermination:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['archive'];
+          parameters:
+          [
+            businessDate = %2024-03-01,
+            processingDate = %2024-03-01
+          ]
+          asserts:
+          [
+            theRetiredDeterminationIsStillReachableInsideItsOwnWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Determination/Code":"DET-BETA","Determination/CodeUpper":"DET-BETA","Determination/CodeLower":"det-beta","Determination/CodeLength":8,"Determination/CatalogLabel":"CAT-DET-BETA","Determination/Confidence":55,"Determination/ConfidencePlusOne":56,"Determination/ConfidenceTimesTen":550,"Determination/ConfidenceMinusOne":54,"Determination/Reviewed":false,"Determination/ReviewState":"PENDING","Taxon/Name":"Trilobite Elongatus","Taxon/Family":"Olenellidae","Taxon/NameUpper":"TRILOBITE ELONGATUS","Taxon/FamilyLength":11}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

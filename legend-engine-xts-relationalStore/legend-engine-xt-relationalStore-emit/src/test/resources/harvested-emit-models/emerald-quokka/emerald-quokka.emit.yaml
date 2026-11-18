@@ -1,0 +1,49 @@
+name: emerald-quokka
+title: "Emerald Quokka Browse Feeding Register Behind A Key-Routed Multi-Execution Service"
+description: |
+  A wildlife park logging the browse feeding rounds served at its enclosure
+  stations. One register service publishes the full booked width of the rounds
+  with no predicate of its own, and a second service restricts the same rounds to
+  a caller-named set of stations through a membership predicate before projecting
+  them. The second service is keyed on an environment and selects between two
+  runtimes over the same mapping, so an execution plan is generated per key while
+  the model stays fixed, and a standalone test-data element seeds both stacks.
+modelSources:
+  model:
+    root: emerald-quokka
+    files:
+      - test/emeraldquokka/connection/ParkConnections.pure
+      - test/emeraldquokka/data/ParkTestData.pure
+      - test/emeraldquokka/domain/ParkDomain.pure
+      - test/emeraldquokka/mapping/ParkMapping.pure
+      - test/emeraldquokka/runtime/ParkRuntimes.pure
+      - test/emeraldquokka/service/RoundRegisterService.pure
+      - test/emeraldquokka/service/StationRoundService.pure
+      - test/emeraldquokka/store/ParkDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:derived-property
+  - query:filter
+  - query:membership-test
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - membership-test
+  - multi-execution
+  - relational
+  - service
+  - tabular-data-set
+  - wildlife-park

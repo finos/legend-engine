@@ -1,0 +1,48 @@
+name: sunlit-orchard-model
+title: "Sunlit Orchard — Included Relational Mapping, Association Implementations and Model-to-Model Transforms"
+description: |
+  An orchard-management model in which a base relational mapping is included
+  by a second mapping that adds block and harvest-batch root mappings and
+  realises three associations as explicit association implementations over
+  declared joins. Two small model-to-model mappings project single properties
+  out of inbound documents, one of them reaching through a nested
+  document-shaped property, and every mapping carries its own test suite.
+
+modelSources:
+  model:
+    root: sunlit-orchard-model
+    files:
+      - test/sunlitorchard/connection/OrchardH2Connection.pure
+      - test/sunlitorchard/domain/MoistureReading.pure
+      - test/sunlitorchard/domain/Orchard.pure
+      - test/sunlitorchard/mapping/GaugeToMoistureM2M.pure
+      - test/sunlitorchard/mapping/GradeSummaryM2M.pure
+      - test/sunlitorchard/mapping/OrchardBaseMapping.pure
+      - test/sunlitorchard/mapping/OrchardMapping.pure
+      - test/sunlitorchard/runtime/OrchardRuntime.pure
+      - test/sunlitorchard/source/InboundGaugeDocument.pure
+      - test/sunlitorchard/store/OrchardDB.pure
+
+features:
+  - grammar:association
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - agriculture
+  - association-mapping
+  - h2
+  - m2m
+  - mapping-include
+  - mapping-test
+  - relational

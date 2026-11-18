@@ -1,0 +1,73 @@
+name: zephyr-harbor-relational
+title: "Harbour Kelp Monitoring — Relational Mapping Layer with a Cover-Band Ladder and a Union Across Schemas"
+description: |
+  A harbour kelp-monitoring model whose whole behaviour sits in the mapping layer: a
+  relational base mapping derives every buoy station's cover band from a nine-arm
+  conditional ladder over a joined survey column, reads its crew name across a
+  three-hop join path, takes its survey tally from an inline view and carries an
+  inline mooring block that falls back to a standalone crew set when the embedded
+  keys are absent. A second relational mapping unions the same class from two
+  schemas behind an operation set implementation, and an instance-to-instance
+  mapping folds a text-only inbound feed onto a digest through a six-arm readiness
+  ladder.
+
+modelSources:
+  model:
+    root: zephyr-harbor-relational
+    files:
+      - test/zephyrharbor/connection/HarbourFeedConnection.pure
+      - test/zephyrharbor/connection/HarbourSurveyConnection.pure
+      - test/zephyrharbor/domain/HarbourDomain.pure
+      - test/zephyrharbor/function/CoverBands.pure
+      - test/zephyrharbor/mapping/HarbourBaseMapping.pure
+      - test/zephyrharbor/mapping/HarbourInboundM2M.pure
+      - test/zephyrharbor/mapping/HarbourReliefMapping.pure
+      - test/zephyrharbor/runtime/HarbourBaseRuntime.pure
+      - test/zephyrharbor/runtime/HarbourInboundRuntime.pure
+      - test/zephyrharbor/source/IncomingStationFeed.pure
+      - test/zephyrharbor/store/HarbourDB.pure
+
+features:
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:operation-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-otherwise-embedded
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - mapping:store-union
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - test::zephyrharbor::store::HarbourDB
+complexity: basic
+tags:
+  - cover-band-ladder
+  - cross-schema
+  - enumeration-mapping
+  - h2
+  - kelp-monitoring
+  - mapping-test
+  - multi-hop-join
+  - operation-union
+  - otherwise-embedded
+  - relational
+  - store-union
+  - view-backed-property

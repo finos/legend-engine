@@ -1,0 +1,65 @@
+name: golden-otter-7
+title: "Heritage Narrow-Gauge Railway Fleet — Layered Mappings over Cross-Schema Joins, Two Timelines and Decoded Codes"
+description: |
+  A heritage narrow-gauge railway's fleet register, published through a small stack of mappings
+  that each add a layer to the one below. A reference database holds the operating regions and the
+  repaintable livery schemes; the fleet database includes it and adds the locomotive, carriage and
+  wagon tables in one schema next to the depot, workshop-ticket and inspector tables in another, so
+  every join in the store crosses either a schema or a store boundary. The depot join is
+  self-referencing, which lets a sub-shed resolve its parent depot, and the vehicle mappings walk
+  two hops through their depot onto the operating region. Two timelines sit side by side: the
+  locomotive and livery tables are business-milestoned, while the workshop ticket and inspector
+  tables are milestoned on the load window each batch landed under, so a restated ticket keeps its
+  earlier landed picture readable. Gauge, power, running-plan, layout, outcome and inspector-grade
+  codes are all decoded through a shared enumeration mapping that the fleet mapping includes and
+  the depot mapping inherits in turn. A hauled-vehicle superclass carries the shared identity that
+  the carriage and wagon subclasses extend over their own tables, and four associations tie
+  locomotive to livery, ticket to inspector, carriage to depot and depot to region. The mapping
+  test fixtures cover a two-hop region hit, a first-hop miss, a locomotive whose business window
+  closed a year before the read, and a ticket whose landed batch window was closed by a later
+  restatement.
+modelSources:
+  model:
+    root: golden-otter-7
+    files:
+      - test/goldenotter7/domain/RailwayDomain.pure
+      - test/goldenotter7/mapping/RailwayDepotMapping.pure
+      - test/goldenotter7/mapping/RailwayEnumMappings.pure
+      - test/goldenotter7/mapping/RailwayFleetMapping.pure
+      - test/goldenotter7/profile/RailwayProfiles.pure
+      - test/goldenotter7/store/RailwayFleetDB.pure
+      - test/goldenotter7/store/RailwayReferenceDB.pure
+features:
+  - execution:mapping-test
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-multi-table
+  - store:relational-nested-join
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - batch-landed-window
+  - cross-schema-join
+  - enumeration-mapping
+  - h2
+  - heritage-railway
+  - mapping-include
+  - multi-hop-join-path
+  - self-referencing-join
+  - two-timelines

@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::tealvineyard::store::CycleNetworkDb
+(
+  Schema cyclenet
+  (
+    Table dock_station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(20) NOT NULL,
+      station_name VARCHAR(200) NOT NULL,
+      district_code VARCHAR(20) NOT NULL,
+      surface_kind VARCHAR(30) NOT NULL,
+      stand_count INTEGER NOT NULL,
+      override_band VARCHAR(30),
+      installed_on DATE NOT NULL
+    )
+
+    Table journey_record
+    (
+      journey_id INTEGER PRIMARY KEY,
+      journey_code VARCHAR(20) NOT NULL,
+      station_code VARCHAR(20) NOT NULL,
+      rider_class VARCHAR(30) NOT NULL,
+      trip_kind VARCHAR(30) NOT NULL,
+      duration_minutes INTEGER NOT NULL,
+      started_on DATE NOT NULL
+    )
+  )
+)

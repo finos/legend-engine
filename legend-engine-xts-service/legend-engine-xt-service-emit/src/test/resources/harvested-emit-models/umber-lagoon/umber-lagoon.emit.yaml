@@ -1,0 +1,54 @@
+name: umber-lagoon
+title: "Umber Lagoon — Trail Patrol Sweeps, Three Model-To-Model Mappings and Projected Kiosk Digests"
+description: |
+  A store-less trail-patrol corpus in which three model-to-model mappings turn
+  inbound patrol sweep lines into a published patrol summary and two flavours of
+  kiosk notice card. Every mapping derives its labels through string-function,
+  literal-set and arithmetic transforms over the source properties — cased and
+  space-stripped references, joined warden and surface labels, a set-membership
+  surface flag, a rate divided by a literal, a multiplied tally and a rounded
+  rank — and each carries a mapping test suite whose model-store fixtures assert
+  the mapped object tree. Two single-execution services project the mapped
+  targets into tabular digests and assert them through the service test runner,
+  while a multi-execution service routes one graph-fetched kiosk query to keyed
+  execution environments. A profile annotates the domain classes and their
+  externally named properties.
+modelSources:
+  model:
+    root: umber-lagoon
+    files:
+      - test/umberlagoon/connection/PatrolConnections.pure
+      - test/umberlagoon/domain/PatrolDomain.pure
+      - test/umberlagoon/mapping/KioskCardMapping.pure
+      - test/umberlagoon/mapping/PatrolCardMapping.pure
+      - test/umberlagoon/mapping/PatrolSummaryMapping.pure
+      - test/umberlagoon/profile/TrailProfile.pure
+      - test/umberlagoon/query/PatrolRegisterQueries.pure
+      - test/umberlagoon/runtime/PatrolRuntimes.pure
+      - test/umberlagoon/service/KioskRoutedService.pure
+      - test/umberlagoon/service/PatrolDigestServices.pure
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:profile
+  - mapping:m2m-transform
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-literal-list
+  - mapping:relational-string-function-transform
+  - query:project
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - arithmetic-transform
+  - literal-set-membership
+  - mapping-test
+  - model-to-model
+  - multi-execution
+  - profile
+  - projection
+  - service-test
+  - trail-patrol

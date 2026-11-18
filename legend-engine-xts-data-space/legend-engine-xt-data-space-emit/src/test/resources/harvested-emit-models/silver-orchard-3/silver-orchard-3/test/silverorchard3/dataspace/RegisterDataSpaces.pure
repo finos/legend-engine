@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::silverorchard3::dataspace::NorthRegisterSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'northRegister';
+      description: 'The register datasets read through the northern regional deployment.';
+      mapping: test::silverorchard3::mapping::ApiaryMapping;
+      defaultRuntime: test::silverorchard3::runtime::NorthRuntime;
+    }
+  ];
+  defaultExecutionContext: 'northRegister';
+  title: 'Apiary Register - Northern Region';
+  description: 'Entry point over the delivered hive datasets of the northern region and the featured hive endpoints.';
+  elements:
+  [
+    test::silverorchard3::domain
+  ];
+  executables:
+  [
+    {
+      title: 'Hive register as of a day';
+      description: 'Current hive versions with their inspection extension.';
+      executable: test::silverorchard3::service::HiveRegisterAsOf;
+    },
+    {
+      title: 'Hive label search';
+      description: 'Northern hives matched on a label fragment.';
+      executable: test::silverorchard3::service::HiveLabelSearch;
+    }
+  ];
+}
+
+DataSpace test::silverorchard3::dataspace::SouthRegisterSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'southRegister';
+      description: 'The register datasets read through the southern regional deployment.';
+      mapping: test::silverorchard3::mapping::ApiaryMapping;
+      defaultRuntime: test::silverorchard3::runtime::SouthRuntime;
+    }
+  ];
+  defaultExecutionContext: 'southRegister';
+  title: 'Apiary Register - Southern Region';
+  description: 'Entry point over the delivered apiary site datasets of the southern region and the featured site endpoints.';
+  elements:
+  [
+    test::silverorchard3::domain
+  ];
+  executables:
+  [
+    {
+      title: 'Apiary identifier lookup';
+      description: 'Requested apiaries with declared forage and their shelter.';
+      executable: test::silverorchard3::service::ApiaryIdentifierLookup;
+    },
+    {
+      title: 'Apiary register history';
+      description: 'Every delivered apiary version.';
+      executable: test::silverorchard3::service::ApiaryRegisterHistory;
+    }
+  ];
+}

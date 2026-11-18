@@ -1,0 +1,91 @@
+name: verdant-isle-4
+title: "Verdant Isle 4 — an island nursery dispatch register composed from three producer stores and published through a data space"
+description: |
+  An island seed nursery records the trays it dispatches to the zones of its
+  island. Three producer stores — a seed register holding sown lots and the
+  cultivar reference they cite, a bench register holding benches, keepers and
+  keeper rotas, and an island reference holding zones — are composed by a fourth
+  store that includes all three and adds the dispatch register and its tag table
+  of its own. The cultivar side is not reached by a plain column equality: the
+  join folds the lot's cultivar code to upper case inside the condition, so a lot
+  recorded in lower case still resolves while a lot citing an absent cultivar
+  resolves to nothing. The binding is layered the same way: each producer store
+  has its own mapping, the composed mapping pulls all three in under store
+  substitutions and adds the dispatch set — reaching the bench over a two-hop
+  join path — and the published mapping is include-only over the composed mapping
+  plus the tag and watch mappings. Two associations give the lot/cultivar and
+  bench/keeper sides navigable properties in both directions, and a declared
+  profile carries the stewardship vocabulary the curated classes annotate
+  themselves with. Reads are published as single-execution endpoints: a banded
+  board bands every released dispatch through an eight-arm conditional cascade
+  with an empty fallback arm and defaults each reference column the register
+  cannot resolve, a tally carries a conditional aggregate alongside a count and a
+  maximum, a rank board ranks dispatches inside each zone with a dense window
+  rank, and a roster walks bench to keeper to rota. The optional collections are
+  widening rather than narrowing: an empty zone or state collection keeps every
+  zone. One mapper-post-processed Snowflake connection rewrites every composed
+  schema onto the published one, and a data space names the published and
+  composed contexts a consumer can execute against without picking a mapping.
+modelSources:
+  model:
+    root: verdant-isle-4
+    files:
+      - test/verdantisle4/connection/NurseryConnections.pure
+      - test/verdantisle4/dataspace/NurseryDataSpace.pure
+      - test/verdantisle4/domain/NurseryDomain.pure
+      - test/verdantisle4/mapping/BenchRegistryMapping.pure
+      - test/verdantisle4/mapping/BenchWatchMapping.pure
+      - test/verdantisle4/mapping/DispatchTagMapping.pure
+      - test/verdantisle4/mapping/IslandRefMapping.pure
+      - test/verdantisle4/mapping/NurseryComposedMapping.pure
+      - test/verdantisle4/mapping/NurseryPublishedMapping.pure
+      - test/verdantisle4/mapping/SeedRegistryMapping.pure
+      - test/verdantisle4/profile/NurseryProfile.pure
+      - test/verdantisle4/runtime/NurseryRuntimes.pure
+      - test/verdantisle4/service/DispatchBoard.pure
+      - test/verdantisle4/service/DispatchRankBoard.pure
+      - test/verdantisle4/service/KeeperRoster.pure
+      - test/verdantisle4/service/ZoneDispatchTally.pure
+      - test/verdantisle4/store/BenchRegistryDB.pure
+      - test/verdantisle4/store/IslandRefDB.pure
+      - test/verdantisle4/store/NurseryComposedDB.pure
+      - test/verdantisle4/store/SeedRegistryDB.pure
+features:
+  - connection:mapper-postprocessor
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:profile
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:conditional-expression
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-inner-join
+stores:
+  - test::verdantisle4::store::BenchRegistryDB
+  - test::verdantisle4::store::IslandRefDB
+  - test::verdantisle4::store::NurseryComposedDB
+  - test::verdantisle4::store::SeedRegistryDB
+complexity: advanced
+tags:
+  - association-mapping
+  - composed-store
+  - data-space
+  - dense-rank
+  - dyna-function-join
+  - eight-armed-cascade
+  - h2
+  - mapping-include
+  - nursery-register

@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::scarletthistle4::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'One volunteer contact on the trail register. Only the code and the display name are held here; every other published attribute of a contact is reached through the subscription association.'} test::scarletthistle4::domain::TrailContact
+{
+  contactCode: String[1];
+  contactName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The programme subscription a contact holds. It supplies five of the seven published grouping keys, and is optional because a contact may be registered before a programme has been allocated to it.'} test::scarletthistle4::domain::TrailSubscription
+{
+  subscriptionCode: String[1];
+  programName: String[1];
+  regionCode: String[1];
+  cadenceCode: String[1];
+  tierCode: String[1];
+  channelCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One offering published under a subscription. A subscription may carry several offerings or none at all, so the folded digest of offering names collapses a collection whose size is not fixed.'} test::scarletthistle4::domain::TrailOffering
+{
+  offeringCode: String[1];
+  offeringName: String[1];
+}
+
+Association test::scarletthistle4::domain::ContactSubscription
+{
+  subscription: TrailSubscription[0..1];
+  subscribedContacts: TrailContact[*];
+}
+
+Association test::scarletthistle4::domain::SubscriptionOffering
+{
+  offerings: TrailOffering[*];
+  offeredSubscriptions: TrailSubscription[*];
+}

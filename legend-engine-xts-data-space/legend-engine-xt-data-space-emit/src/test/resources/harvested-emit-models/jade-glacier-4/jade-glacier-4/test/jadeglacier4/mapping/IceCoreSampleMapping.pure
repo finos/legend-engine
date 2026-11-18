@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadeglacier4::mapping::IceCoreSampleMapping
+(
+  *test::jadeglacier4::domain::IceCoreSample[sample]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.core_code
+    )
+    ~mainTable [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample
+    coreCode: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.core_code,
+    glacierName: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.glacier_name,
+    basinCode: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.basin_code,
+    siteCode: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.site_code,
+    drillCrewCode: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.drill_crew_code,
+    surfaceKindCode: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.surface_kind_code,
+    layerLabel: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.layer_label,
+    crystalGradeCode: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.crystal_grade_code,
+    debrisKindCode: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.debris_kind_code,
+    meltStateCode: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.melt_state_code,
+    samplerCode: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.sampler_code,
+    storageBoxCode: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.storage_box_code,
+    conditionNote: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.condition_note,
+    reviewerName: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.reviewer_name,
+    archiveStatusCode: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.archive_status_code,
+    drilledAt: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.drilled_at,
+    loggedAt: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.logged_at,
+    coreDepthM: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.core_depth_m,
+    coreLengthCm: [test::jadeglacier4::store::GlacierSurveyDb]icefield.ice_core_sample.core_length_cm
+  }
+)

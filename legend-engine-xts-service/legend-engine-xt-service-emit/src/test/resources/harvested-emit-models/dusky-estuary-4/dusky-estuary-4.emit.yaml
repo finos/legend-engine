@@ -1,0 +1,31 @@
+name: dusky-estuary-4
+title: "Dusky Estuary Wildlife Rescue Intake Profiles"
+description: |
+  A model-to-model rescue register that converts intake records into public
+  animal profiles. Nine source properties pass directly and a tenth profile
+  property expands an intake weight through an arithmetic transform over a
+  literal set. A PureSingleExecution service then filters, projects, sorts and
+  limits the mapped profiles through an inline ModelStore runtime; mapping and
+  service suites assert the same rescued animal through their separate paths.
+modelSources:
+  model:
+    root: dusky-estuary-4
+    files:
+      - test/duskyestuary4/domain/RescueDomain.pure
+      - test/duskyestuary4/mapping/ProfileMapping.pure
+      - test/duskyestuary4/service/ProfileService.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - model-store
+  - rescue
+  - service
+  - wildlife

@@ -1,0 +1,68 @@
+name: opal-lantern-3
+title: "Opal Lantern 3 — Processing-Milestoned Harbour Lamp Register, Included Mappings and Two Data Spaces"
+description: |
+  A harbour navigation lamp corpus in which every mapped class carries the
+  processing-temporal stereotype and every table carries a matching table-level
+  milestoning block with an infinity sentinel, so each query is rewritten into a
+  window predicate over the in/out columns. A structure mapping binds the lamp
+  units and their district keepers to aliased main tables with explicit
+  primary-key clauses over the code and window-in columns, and a servicing
+  mapping includes it and adds the visit bindings, so the resolved mapping set is
+  assembled from two elements and both association ends are backed by named
+  inner joins. One service enters through the point-in-time accessor with a date
+  parameter, filters on optionality, a negated literal membership set, a
+  parameterised membership test and a substring test, and projects a wide
+  tabular result; a second scans every stored version instead, projecting both
+  window columns so the version count is interpretable. Two data spaces publish
+  the mapping and runtime pairs as named execution contexts with a default
+  context, featured executables and support contact information.
+modelSources:
+  model:
+    root: opal-lantern-3
+    files:
+      - test/opallantern3/connection/LanternConnection.pure
+      - test/opallantern3/dataspace/LanternDataSpaces.pure
+      - test/opallantern3/domain/LanternDomain.pure
+      - test/opallantern3/mapping/LanternServicingMapping.pure
+      - test/opallantern3/mapping/LanternStructureMapping.pure
+      - test/opallantern3/runtime/LanternRuntimes.pure
+      - test/opallantern3/service/LampUnitRegister.pure
+      - test/opallantern3/service/LampVisitHistory.pure
+      - test/opallantern3/store/LanternDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:all-versions-query
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - all-versions
+  - association-mapping
+  - data-space
+  - h2
+  - harbour-lights
+  - mapping-include
+  - point-in-time
+  - processing-temporal
+  - service-test
+  - snowflake
+  - tabular-data-set

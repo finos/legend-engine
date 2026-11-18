@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::frostedfossil4::data::IceArchiveData
+{
+  Relational
+  #{
+    archive.ice_core:
+      'core_code,site_code,drill_depth_metres,isotope_index,sealed_at,retrieved_on,in_z,out_z\n'+
+      'IC-1,DS-1,120.5,3.25,2026-01-15 08:30:00,2026-01-10,2026-01-01,2026-03-01\n'+
+      'IC-1,DS-1,180.5,4.10,2026-03-20 09:00:00,2026-03-15,2026-03-01,9999-12-31\n'+
+      'IC-2,DS-2,60.0,1.75,2026-02-01 12:00:00,2026-01-28,2026-02-01,9999-12-31\n'+
+      'IC-3,DS-1,240.0,5.50,2026-08-01 07:00:00,2026-07-25,2026-07-01,9999-12-31\n'+
+      'IC-4,DS-9,90.0,2.00,2026-02-18 10:15:00,2026-02-20,2026-02-01,9999-12-31\n'+
+      'IC-5,DS-2,300.0,6.25,2026-02-05 06:00:00,2026-02-02,2026-02-01,9999-12-31\n';
+
+    archive.core_segment:
+      'segment_code,core_code,segment_length_cm,density_g_cm3,in_z,out_z\n'+
+      'SG-1,IC-1,50,0.92,2026-03-01,9999-12-31\n'+
+      'SG-2,IC-1,45,0.88,2026-03-01,9999-12-31\n'+
+      'SG-3,IC-2,30,0.91,2026-02-01,9999-12-31\n'+
+      'SG-4,IC-3,60,0.85,2026-07-01,9999-12-31\n';
+
+    archive.drill_site:
+      'site_code,site_name,region_name\n'+
+      'DS-1,Frosted Saddle Station,North Plateau\n'+
+      'DS-2,Cirque Camp,South Basin\n';
+  }#
+}

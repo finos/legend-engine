@@ -1,0 +1,48 @@
+name: frosted-thicket
+title: "Reedbed Ringing Survey Metamodel — package-scoped OpenAPI-YAML schema generation over an annotated, constrained nested value-object graph"
+description: |
+  A pure-model class graph for a reedbed bird-ringing survey: three containers
+  nest three deep — programme holds seasons, a season holds visits, a visit
+  holds the catches made in it — and the catch leaf is itself composed of four
+  optional sub-records of one shared measurement class, so wing chord, tarsus,
+  head-and-beak and mass are all described identically and carry their own unit.
+  Properties are almost entirely optional scalars plus optional and to-many
+  references to sibling records, so every traversal is nullable and
+  cardinality-sensitive. A single profile declares two stereotypes and five
+  tags and is applied pervasively: several classes carry both stereotypes and
+  several properties carry repeated tagged values, so multiplicity is exercised
+  on both annotation axes. Three of the record classes each carry one guarded
+  class-level constraint that narrows an optional short code to a single value,
+  folds case and whitespace off it and tests it against a closed literal set,
+  with a boolean literal in the false arm so an absent code is vacuously valid;
+  no constraint carries a failure message, so each is enforced as a plain error.
+  A JSON-schema file generation scoped at the two whole model packages — rather
+  than at individual elements — emits a plain-YAML OpenAPI specification
+  flavour as a schema collection, which makes generation walk transitively into
+  every constrained and annotated class reachable from the containers, and a
+  generation specification sequences that single element as the model's only
+  generation step.
+modelSources:
+  model:
+    root: frosted-thicket
+    files:
+      - test/frostedthicket/generation/SurveyGeneration.pure
+      - test/frostedthicket/profile/SchemaHint.pure
+      - test/frostedthicket/record/CaptureRecords.pure
+      - test/frostedthicket/survey/SurveyRecords.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:constraint
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - code-generation
+  - constraints
+  - enumerations
+  - json-schema
+  - nested-value-objects
+  - package-scope
+  - profile-annotations

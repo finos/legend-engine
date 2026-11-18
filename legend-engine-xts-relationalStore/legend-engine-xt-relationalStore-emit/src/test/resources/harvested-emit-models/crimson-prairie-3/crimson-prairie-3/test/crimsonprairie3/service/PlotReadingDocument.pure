@@ -1,0 +1,123 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::crimsonprairie3::service::PlotReadingDocument
+{
+  pattern: '/crimsonprairie/v1/plot-readings/{readingRef}';
+  title: 'Crimson Prairie - Plot Reading Document';
+  owners:
+  [
+    'crimson-prairie-monitoring'
+  ];
+  documentation: 'Answers with the whole plot-reading document for one reading reference - the payload attributes together with the digest identity and both lake batch boundary markers - materialised as a nested object graph and serialised rather than projected into a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {readingRef: String[1]|test::crimsonprairie3::domain::PlotReading.all()->filter(
+      r|$r.readingRef == $readingRef
+    )->graphFetch(
+      #{
+        test::crimsonprairie3::domain::PlotReading{
+          readingDigest,
+          readingRef,
+          plotName,
+          grassCoverPct,
+          observedOn,
+          lakeBatchIn,
+          lakeBatchOut
+        }
+      }#
+    )->serialize(
+      #{
+        test::crimsonprairie3::domain::PlotReading{
+          readingDigest,
+          readingRef,
+          plotName,
+          grassCoverPct,
+          observedOn,
+          lakeBatchIn,
+          lakeBatchOut
+        }
+      }#
+    )};
+    mapping: test::crimsonprairie3::mapping::PrairieMapping;
+    runtime: test::crimsonprairie3::runtime::PrairieRuntime;
+  }
+  testSuites:
+  [
+    plotReadingDocumentSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              grassland.plot_reading:
+                'reading_digest,reading_ref,plot_name,grass_cover_pct,observed_on,lake_batch_in,lake_batch_out\n'+
+                'D-AAA1,RD-01,north swale,42.400,2025-04-02,1001,999999999\n'+
+                'D-BBB2,RD-02,mid ridge,27.200,2025-04-09,1002,999999999\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        knownReferenceResolvesOneDocument:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            readingRef = 'RD-02'
+          ]
+          asserts:
+          [
+            midRidgeDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"readingDigest":"D-BBB2","readingRef":"RD-02","plotName":"mid ridge","grassCoverPct":27.200,"observedOn":"2025-04-09","lakeBatchIn":1002,"lakeBatchOut":999999999}';
+                  }#;
+              }#
+          ]
+        },
+        unknownReferenceResolvesNothing:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            readingRef = 'RD-99'
+          ]
+          asserts:
+          [
+            noReadingDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

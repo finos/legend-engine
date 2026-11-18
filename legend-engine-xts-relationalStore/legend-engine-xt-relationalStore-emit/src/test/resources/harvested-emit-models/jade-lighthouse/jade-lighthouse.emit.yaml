@@ -1,0 +1,70 @@
+name: jade-lighthouse
+title: "Jade Lighthouse — A Layered Relational Mapping Stack over a Bi-Temporal Coastal Aid Register"
+description: |
+  A coastal navigation-aid register whose store carries base tables, four derived
+  views and named filters, and whose five mappings are chained by includes so a
+  shared enumeration layer, a structure layer, a detail layer, a rule layer and a
+  free-text note layer compile in order. Enumeration translations are driven by
+  computed expressions on both the relational and the model-to-model side, class
+  mappings route across two backing populations through a union operation, and the
+  bi-temporal inspection extent resolves at an independent processing and business
+  instant for both the mapping tests and the read service.
+modelSources:
+  model:
+    root: jade-lighthouse
+    files:
+      - test/jadelighthouse/connection/LighthouseConnections.pure
+      - test/jadelighthouse/domain/LighthouseDomain.pure
+      - test/jadelighthouse/mapping/LighthouseDetailMapping.pure
+      - test/jadelighthouse/mapping/LighthouseEnumMappings.pure
+      - test/jadelighthouse/mapping/LighthouseNoteMapping.pure
+      - test/jadelighthouse/mapping/LighthouseRuleMapping.pure
+      - test/jadelighthouse/mapping/LighthouseStructureMapping.pure
+      - test/jadelighthouse/runtime/LighthouseRuntimes.pure
+      - test/jadelighthouse/service/InspectionRegisterFeed.pure
+      - test/jadelighthouse/store/LighthouseDB.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:bi-temporal
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - bitemporal
+  - class-inheritance
+  - coastal-aid-register
+  - enumeration-mapping
+  - h2
+  - layered-mappings
+  - mapping-include
+  - operation-union
+  - point-in-time
+  - processing-temporal
+  - relational-views
+  - store-filter
+  - tabular-data-set

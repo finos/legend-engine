@@ -1,0 +1,292 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenarboretum3::mapping::NurseryCoreMapping
+(
+  test::goldenarboretum3::domain::LotStage: EnumerationMapping StageMapping
+  {
+    SOWN: ['SOWN'],
+    GERMINATED: ['GERMINATED'],
+    POTTED: ['POTTED'],
+    HARDENED: ['HARDENED'],
+    DISPATCHED: ['DISPATCHED']
+  }
+
+  *test::goldenarboretum3::domain::PropagationLot[lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.lot_code
+    )
+    ~mainTable [test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot
+    lotCode: [test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.lot_code,
+    lotLabel: [test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.lot_label,
+    stage: EnumerationMapping StageMapping: toUpper([test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.stage_code),
+    vigourLabel: case(
+                   equal([test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.vigour_code, 'A'),
+                   'EXCEPTIONAL',
+                   case(
+                     equal([test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.vigour_code, 'B'),
+                     'STRONG',
+                     case(
+                       equal([test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.vigour_code, 'C'),
+                       'STEADY',
+                       case(
+                         equal([test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.vigour_code, 'D'),
+                         'SLOW',
+                         case(
+                           equal([test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.vigour_code, 'E'),
+                           'CHECKED BACK',
+                           case(
+                             equal([test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.vigour_code, 'F'),
+                             'DRAWN',
+                             case(
+                               equal([test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.vigour_code, 'G'),
+                               'STALLED',
+                               case(
+                                 equal([test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.vigour_code, 'H'),
+                                 'FAILING',
+                                 sqlNull()
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 ),
+    healthLabel: case(
+                   equal([test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.health_flag, 1),
+                   'CHECKED',
+                   case(
+                     equal([test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.health_flag, 0),
+                     'AWAITING CHECK',
+                     sqlNull()
+                   )
+                 ),
+    sourceRegister: 'NURSERY REGISTER',
+    sownCount: [test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.sown_count,
+    struckCount: [test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.struck_count,
+    pottedOn: [test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.potted_on,
+    bedName: [test::goldenarboretum3::store::NurseryDb]@Lot_Bed | [test::goldenarboretum3::store::NurseryDb]nursery.nursery_bed.bed_name,
+    speciesName: [test::goldenarboretum3::store::NurseryDb]@Lot_Species | [test::goldenarboretum3::store::NurseryReferenceDb]reference.species_ref.species_name,
+    familyName: [test::goldenarboretum3::store::NurseryDb]@Lot_Species | [test::goldenarboretum3::store::NurseryReferenceDb]reference.species_ref.family_name,
+    substrateName: [test::goldenarboretum3::store::NurseryDb]@Lot_Substrate | [test::goldenarboretum3::store::NurseryReferenceDb]reference.substrate_ref.substrate_name,
+    bed[bed]: [test::goldenarboretum3::store::NurseryDb]@Lot_Bed
+  }
+
+  *test::goldenarboretum3::domain::NurseryBed[bed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum3::store::NurseryDb]nursery.nursery_bed.bed_code
+    )
+    ~mainTable [test::goldenarboretum3::store::NurseryDb]nursery.nursery_bed
+    bedCode: [test::goldenarboretum3::store::NurseryDb]nursery.nursery_bed.bed_code,
+    bedName: [test::goldenarboretum3::store::NurseryDb]nursery.nursery_bed.bed_name,
+    benchMetres: [test::goldenarboretum3::store::NurseryDb]nursery.nursery_bed.bench_metres,
+    shadingLabel: case(
+                    equal([test::goldenarboretum3::store::NurseryDb]nursery.nursery_bed.shaded_flag, 1),
+                    'SHADED',
+                    case(
+                      equal([test::goldenarboretum3::store::NurseryDb]nursery.nursery_bed.shaded_flag, 0),
+                      'OPEN',
+                      sqlNull()
+                    )
+                  ),
+    zoneName: [test::goldenarboretum3::store::NurseryDb]@Bed_Zone | [test::goldenarboretum3::store::NurseryReferenceDb]reference.zone_ref.zone_name,
+    shelterClass: [test::goldenarboretum3::store::NurseryDb]@Bed_Zone | [test::goldenarboretum3::store::NurseryReferenceDb]reference.zone_ref.shelter_class
+  }
+
+  *test::goldenarboretum3::domain::StockPlant[stock]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum3::store::NurseryDb]nursery.stock_plant.stock_code
+    )
+    ~mainTable [test::goldenarboretum3::store::NurseryDb]nursery.stock_plant
+    stockCode: [test::goldenarboretum3::store::NurseryDb]nursery.stock_plant.stock_code,
+    stockLabel: [test::goldenarboretum3::store::NurseryDb]nursery.stock_plant.stock_label,
+    girthMillimetres: [test::goldenarboretum3::store::NurseryDb]nursery.stock_plant.girth_millimetres,
+    cuttingsTaken: [test::goldenarboretum3::store::NurseryDb]nursery.stock_plant.cuttings_taken,
+    lotLabel: [test::goldenarboretum3::store::NurseryDb]@Stock_Lot | [test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.lot_label
+  }
+
+  *test::goldenarboretum3::domain::TreatmentLog[treatment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum3::store::NurseryDb]nursery.treatment_log.treatment_ref
+    )
+    ~mainTable [test::goldenarboretum3::store::NurseryDb]nursery.treatment_log
+    treatmentRef: [test::goldenarboretum3::store::NurseryDb]nursery.treatment_log.treatment_ref,
+    treatmentName: [test::goldenarboretum3::store::NurseryDb]nursery.treatment_log.treatment_name,
+    appliedOn: [test::goldenarboretum3::store::NurseryDb]nursery.treatment_log.applied_on,
+    doseMillilitres: [test::goldenarboretum3::store::NurseryDb]nursery.treatment_log.dose_millilitres,
+    lotLabel: [test::goldenarboretum3::store::NurseryDb]@Treatment_Lot | [test::goldenarboretum3::store::NurseryDb]nursery.propagation_lot.lot_label
+  }
+
+  testSuites:
+  [
+    vigourBandSuite:
+    {
+      function: |test::goldenarboretum3::domain::PropagationLot.all()->project(
+  [
+    l|$l.lotCode,
+    l|$l.vigourLabel,
+    l|$l.healthLabel,
+    l|$l.stage,
+    l|$l.sourceRegister,
+    l|$l.bedName,
+    l|$l.speciesName,
+    l|$l.substrateName
+  ],
+  [
+    'Lot',
+    'Vigour',
+    'Health',
+    'Stage',
+    'Register',
+    'Bed',
+    'Species',
+    'Substrate'
+  ]
+)->sort(
+  [
+    asc('Lot')
+  ]
+);
+      tests:
+      [
+        everyVigourArmAndItsFallback:
+        {
+          doc: 'Covers all eight arms of the vigour conditional and its null sentinel fallback, both arms of the numeric health conditional and that conditional null fallback, the constant register binding, and columns reached through the bed join and the two cross-store reference joins including a lot whose species code has no reference row.';
+          data:
+          [
+            test::goldenarboretum3::store::NurseryDb:
+              Relational
+              #{
+                nursery.propagation_lot:
+                  'lot_code,lot_label,bed_code,species_code,substrate_code,stage_code,vigour_code,health_flag,sown_count,struck_count,potted_on,keeper_note\n'+
+                  'LOT-01,Winter whips,BED-1,SP-OAK,SUB-LOAM,sown,A,1,240,201,2026-02-10,first flush\n'+
+                  'LOT-02,Spring liners,BED-1,SP-BEECH,SUB-LOAM,germinated,B,1,180,150,2026-02-11,\n'+
+                  'LOT-03,Privet plugs,BED-2,SP-HAZEL,SUB-BARK,potted,C,0,320,288,2026-02-12,\n'+
+                  'LOT-04,Screen liners,BED-2,SP-OAK,SUB-BARK,hardened,D,0,140,96,2026-02-13,\n'+
+                  'LOT-05,Windbreak stock,BED-3,SP-BEECH,SUB-GRIT,dispatched,E,1,90,54,2026-02-14,\n'+
+                  'LOT-06,Coppice cuttings,BED-3,SP-HAZEL,SUB-GRIT,potted,F,0,410,196,2026-02-15,\n'+
+                  'LOT-07,Avenue liners,BED-4,SP-OAK,SUB-LOAM,sown,G,1,260,120,2026-02-16,\n'+
+                  'LOT-08,Understorey plugs,BED-4,SP-HAZEL,SUB-BARK,germinated,H,7,150,60,2026-02-17,\n'+
+                  'LOT-09,Trial seedlings,BED-1,SP-UNLISTED,SUB-GRIT,unlisted,Z,,75,40,2026-02-18,outside the graded set\n';
+
+                nursery.nursery_bed:
+                  'bed_code,bed_name,zone_code,bench_metres,shaded_flag\n'+
+                  'BED-1,Long frame,ZONE-N,24,1\n'+
+                  'BED-2,Cold frame,ZONE-N,18,0\n'+
+                  'BED-3,Open bench,ZONE-S,30,9\n'+
+                  'BED-4,Shade tunnel,ZONE-S,22,1\n';
+                reference.species_ref:
+                  'species_code,species_name,family_name,native_range\n'+
+                  'SP-OAK,Sessile oak,Fagaceae,western uplands\n'+
+                  'SP-BEECH,Common beech,Fagaceae,lowland scarp\n'+
+                  'SP-HAZEL,Common hazel,Betulaceae,mixed woodland\n';
+
+                reference.substrate_ref:
+                  'substrate_code,substrate_name,drainage_class\n'+
+                  'SUB-LOAM,Sieved loam,MODERATE\n'+
+                  'SUB-BARK,Composted bark,FREE\n'+
+                  'SUB-GRIT,Sharp grit blend,VERY FREE\n';
+
+                reference.zone_ref:
+                  'zone_code,zone_name,shelter_class\n'+
+                  'ZONE-N,North quarter,WALLED\n'+
+                  'ZONE-S,South quarter,OPEN\n';
+              }#
+          ];
+          asserts:
+          [
+            nineGradedLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"LOT-01","Vigour":"EXCEPTIONAL","Health":"CHECKED","Stage":"SOWN","Register":"NURSERY REGISTER","Bed":"Long frame","Species":"Sessile oak","Substrate":"Sieved loam"},{"Lot":"LOT-02","Vigour":"STRONG","Health":"CHECKED","Stage":"GERMINATED","Register":"NURSERY REGISTER","Bed":"Long frame","Species":"Common beech","Substrate":"Sieved loam"},{"Lot":"LOT-03","Vigour":"STEADY","Health":"AWAITING CHECK","Stage":"POTTED","Register":"NURSERY REGISTER","Bed":"Cold frame","Species":"Common hazel","Substrate":"Composted bark"},{"Lot":"LOT-04","Vigour":"SLOW","Health":"AWAITING CHECK","Stage":"HARDENED","Register":"NURSERY REGISTER","Bed":"Cold frame","Species":"Sessile oak","Substrate":"Composted bark"},{"Lot":"LOT-05","Vigour":"CHECKED BACK","Health":"CHECKED","Stage":"DISPATCHED","Register":"NURSERY REGISTER","Bed":"Open bench","Species":"Common beech","Substrate":"Sharp grit blend"},{"Lot":"LOT-06","Vigour":"DRAWN","Health":"AWAITING CHECK","Stage":"POTTED","Register":"NURSERY REGISTER","Bed":"Open bench","Species":"Common hazel","Substrate":"Sharp grit blend"},{"Lot":"LOT-07","Vigour":"STALLED","Health":"CHECKED","Stage":"SOWN","Register":"NURSERY REGISTER","Bed":"Shade tunnel","Species":"Sessile oak","Substrate":"Sieved loam"},{"Lot":"LOT-08","Vigour":"FAILING","Health":null,"Stage":"GERMINATED","Register":"NURSERY REGISTER","Bed":"Shade tunnel","Species":"Common hazel","Substrate":"Composted bark"},{"Lot":"LOT-09","Vigour":null,"Health":null,"Stage":null,"Register":"NURSERY REGISTER","Bed":"Long frame","Species":null,"Substrate":"Sharp grit blend"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    bedAndStockSuite:
+    {
+      function: |test::goldenarboretum3::domain::NurseryBed.all()->project(
+  [
+    b|$b.bedCode,
+    b|$b.bedName,
+    b|$b.shadingLabel,
+    b|$b.zoneName,
+    b|$b.shelterClass
+  ],
+  [
+    'Bed',
+    'Name',
+    'Shading',
+    'Zone',
+    'Shelter'
+  ]
+)->sort(
+  [
+    asc('Bed')
+  ]
+);
+      tests:
+      [
+        shadingArmsAndZoneReach:
+        {
+          doc: 'Reads the bed extent with both arms of the shading conditional, its null sentinel fallback for an unrecognised flag, and the zone name and shelter class reached through the cross-store zone join including a bed whose zone code has no reference row.';
+          data:
+          [
+            test::goldenarboretum3::store::NurseryDb:
+              Relational
+              #{
+                nursery.nursery_bed:
+                  'bed_code,bed_name,zone_code,bench_metres,shaded_flag\n'+
+                  'BED-1,Long frame,ZONE-N,24,1\n'+
+                  'BED-2,Cold frame,ZONE-N,18,0\n'+
+                  'BED-3,Open bench,ZONE-UNLISTED,30,4\n';
+                reference.zone_ref:
+                  'zone_code,zone_name,shelter_class\n'+
+                  'ZONE-N,North quarter,WALLED\n';
+              }#
+          ];
+          asserts:
+          [
+            threeBeds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bed":"BED-1","Name":"Long frame","Shading":"SHADED","Zone":"North quarter","Shelter":"WALLED"},{"Bed":"BED-2","Name":"Cold frame","Shading":"OPEN","Zone":"North quarter","Shelter":"WALLED"},{"Bed":"BED-3","Name":"Open bench","Shading":null,"Zone":null,"Shelter":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::quietmarsh3::domain::*;
+
+Class test::quietmarsh3::domain::MarshSurveyRecord
+{
+  recordCode: String[1];
+  details: MarshSurveyDetail[1];
+}
+
+Class test::quietmarsh3::domain::MarshSurveyDetail
+[
+  gaugeCodePresent: $this.gaugeCode->isNotEmpty(),
+  surveyedOnDatePresent: $this.surveyedOnDate->isNotEmpty(),
+  sourceSystemLabelPresent: $this.sourceSystemLabel->isNotEmpty()
+]
+{
+  gaugeCode: String[1];
+  reachCode: String[1];
+  basinCode: String[1];
+  transectCode: String[1];
+  habitatClassLabel: String[1];
+  surveyedOnDate: String[1];
+  openedOnDate: String[1];
+  retiredOnDate: String[1];
+  lastVisitedOnDate: String[1];
+  nextVisitDueOnDate: String[1];
+  sourceSystemLabel: String[1];
+  measurementUnitLabel: String[1];
+  elevationUnitLabel: String[1];
+  volumeUnitLabel: String[1];
+  surveyorTeamLabel: String[1];
+  instrumentModelLabel: String[1];
+  calibrationBatchLabel: String[1];
+  accessibleByBoat: Boolean[1];
+  waterDepthMetres: Float[1];
+  waterLevelMetres: Float[1];
+  tidalRangeMetres: Float[1];
+  freeboardMetres: Float[1];
+  channelWidthMetres: Float[1];
+  channelSlopePercent: Float[1];
+  bankHeightMetres: Float[1];
+  sedimentDepthCentimetres: Float[1];
+  salinityPracticalSalinityUnits: Float[1];
+  dissolvedOxygenMilligramsPerLitre: Float[1];
+  turbidityNephelometricUnits: Float[1];
+  waterTemperatureCelsius: Float[1];
+  airTemperatureCelsius: Float[1];
+  conductivityMicroSiemens: Float[1];
+  acidityIndex: Float[1];
+  nitrateMilligramsPerLitre: Float[1];
+  phosphateMilligramsPerLitre: Float[1];
+  chlorophyllMicrogramsPerLitre: Float[1];
+  canopyCoverPercent: Float[1];
+  vegetationDensityIndex: Float[1];
+  reedStemCountPerSquareMetre: Float[1];
+  litterDepthCentimetres: Float[1];
+  dischargeCubicMetresPerSecond: Float[1];
+  residenceTimeHours: Float[1];
+  curvatureIndex: Float[1];
+  gaugeSchedule: GaugeScheduleProfile[1];
+}
+
+Class test::quietmarsh3::domain::GaugeScheduleProfile
+[
+  scheduleWindowLabelled: $this.profileCode->trim()->isNotEmpty() && $this.scheduleLabel->trim()->isNotEmpty()
+]
+{
+  profileCode: String[1];
+  scheduleLabel: String[1];
+  scheduleRows: GaugeScheduleRow[1..240];
+}
+
+Class test::quietmarsh3::domain::GaugeScheduleRow
+{
+  rowSequence: Integer[1];
+  readingOnDate: String[1];
+  readingWaterLevelMetres: Float[1];
+  readingFlagLabel: String[1];
+}
+
+Class test::quietmarsh3::domain::HabitatLogRecord
+{
+  recordCode: String[1];
+  details: HabitatLogDetail[1];
+}
+
+Class test::quietmarsh3::domain::HabitatLogDetail
+{
+  loggedOnDate: String[1];
+  sourceSystemLabel: String[1];
+  observerTeamLabel: String[1];
+}

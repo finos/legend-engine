@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::quietreef::store::ReefDB
+(
+  Schema reefs
+  (
+    Table coral_patch
+    (
+      patch_id INTEGER PRIMARY KEY,
+      patch_code VARCHAR(20) NOT NULL,
+      patch_name VARCHAR(60) NOT NULL,
+      reef_code VARCHAR(20) NOT NULL,
+      tier_code INTEGER NOT NULL,
+      health_grade VARCHAR(20) NOT NULL,
+      cover_pct INTEGER NOT NULL,
+      note_text VARCHAR(80)
+    )
+    Table reef
+    (
+      reef_id INTEGER PRIMARY KEY,
+      reef_code VARCHAR(20) NOT NULL,
+      reef_name VARCHAR(60) NOT NULL,
+      zone_code VARCHAR(20) NOT NULL,
+      reef_state VARCHAR(20) NOT NULL
+    )
+    Table reef_zone
+    (
+      zone_id INTEGER PRIMARY KEY,
+      zone_code VARCHAR(20) NOT NULL,
+      zone_name VARCHAR(60) NOT NULL,
+      district_code VARCHAR(20) NOT NULL
+    )
+    Table reef_district
+    (
+      district_id INTEGER PRIMARY KEY,
+      district_code VARCHAR(20) NOT NULL,
+      district_name VARCHAR(60) NOT NULL
+    )
+    Table patch_survey
+    (
+      survey_id INTEGER PRIMARY KEY,
+      patch_code VARCHAR(20) NOT NULL,
+      diver_name VARCHAR(60) NOT NULL,
+      taken_at TIMESTAMP NOT NULL
+    )
+
+    View patch_survey_summary
+    (
+      ~groupBy (reefs.patch_survey.patch_code)
+      patch_code: reefs.patch_survey.patch_code PRIMARY KEY,
+      survey_count: count(reefs.patch_survey.survey_id),
+      last_taken_at: max(reefs.patch_survey.taken_at)
+    )
+
+    View patch_cover_band
+    (
+      ~groupBy (reefs.coral_patch.patch_code)
+      patch_code: reefs.coral_patch.patch_code PRIMARY KEY,
+      cover_band: case(equal(max(reefs.coral_patch.cover_pct), 0), 'BARE', 'COVERED')
+    )
+  )
+
+  Filter OpenReef(reefs.reef.reef_state = 'OPEN' and reefs.reef.reef_code <> 'RF-DECOMMISSIONED')
+
+  Join Patch_Reef(reefs.coral_patch.reef_code = reefs.reef.reef_code)
+
+  Join Reef_Zone(reefs.reef.zone_code = reefs.reef_zone.zone_code)
+
+  Join Zone_District(reefs.reef_zone.district_code = reefs.reef_district.district_code)
+
+  Join Patch_Summary(reefs.coral_patch.patch_code = reefs.patch_survey_summary.patch_code)
+
+  Join Patch_CoverBand(reefs.coral_patch.patch_code = reefs.patch_cover_band.patch_code)
+)

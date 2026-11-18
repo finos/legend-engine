@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::azurethistle::dataspace::TurbineEstateDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'primary';
+      description: 'Primary environment - the estate binding served through the main hill warehouse.';
+      mapping: test::azurethistle::mapping::TurbineEstateMapping;
+      defaultRuntime: test::azurethistle::runtime::EstateWarehouseRuntime;
+    },
+    {
+      name: 'standby';
+      description: 'Standby environment - the same estate binding served through the second-region warehouse.';
+      mapping: test::azurethistle::mapping::TurbineEstateMapping;
+      defaultRuntime: test::azurethistle::runtime::EstateStandbyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'primary';
+  title: 'Upland Turbine Estate';
+  description: 'Discovery surface over the upland wind-farm maintenance estate: the daily turbine register and the nacelle, blade, feeder, track and mast records read alongside it.';
+  elements:
+  [
+    test::azurethistle::domain::TurbineRecord,
+    test::azurethistle::domain::NacelleReading,
+    test::azurethistle::domain::BladeInspection,
+    test::azurethistle::domain::SubstationFeeder,
+    test::azurethistle::domain::AccessTrack,
+    test::azurethistle::domain::MetMast
+  ];
+  supportInfo: Email
+  {
+    address: 'estate-maintenance-desk@uplandturbineestate.invalid';
+  };
+}

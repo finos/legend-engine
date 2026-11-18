@@ -1,0 +1,170 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitwarren2::mapping::WarrenMapping
+(
+  include mapping test::sunlitwarren2::mapping::BurrowBaseMapping
+  include mapping test::sunlitwarren2::mapping::HeathBaseMapping
+  include mapping test::sunlitwarren2::mapping::KeeperBaseMapping
+  include mapping test::sunlitwarren2::mapping::RosterBaseMapping
+
+  test::sunlitwarren2::domain::Burrow_Warren: Relational
+  {
+    AssociationMapping
+    (
+      warren[burrow, warren]: [test::sunlitwarren2::store::WarrenDb]@Burrow_Warren,
+      burrows[warren, burrow]: [test::sunlitwarren2::store::WarrenDb]@Burrow_Warren
+    )
+  }
+
+  test::sunlitwarren2::domain::Warren_Heath: Relational
+  {
+    AssociationMapping
+    (
+      heath[warren, heath]: [test::sunlitwarren2::store::WarrenDb]@Warren_Heath,
+      warrens[heath, warren]: [test::sunlitwarren2::store::WarrenDb]@Warren_Heath
+    )
+  }
+
+  test::sunlitwarren2::domain::Heath_Reserve: Relational
+  {
+    AssociationMapping
+    (
+      reserve[heath, reserve]: [test::sunlitwarren2::store::WarrenDb]@Heath_Reserve,
+      heaths[reserve, heath]: [test::sunlitwarren2::store::WarrenDb]@Heath_Reserve
+    )
+  }
+
+  test::sunlitwarren2::domain::Burrow_Keeper: Relational
+  {
+    AssociationMapping
+    (
+      keeper[burrow, keeper]: [test::sunlitwarren2::store::WarrenDb]@Burrow_Keeper,
+      burrowsKept[keeper, burrow]: [test::sunlitwarren2::store::WarrenDb]@Burrow_Keeper
+    )
+  }
+
+  test::sunlitwarren2::domain::Keeper_Zone: Relational
+  {
+    AssociationMapping
+    (
+      zone[keeper, zone]: [test::sunlitwarren2::store::WarrenDb]@Keeper_Zone,
+      keepers[zone, keeper]: [test::sunlitwarren2::store::WarrenDb]@Keeper_Zone
+    )
+  }
+
+  test::sunlitwarren2::domain::Burrow_Reserve: Relational
+  {
+    AssociationMapping
+    (
+      reserveOfRecord[burrow, reserve]: [test::sunlitwarren2::store::WarrenDb]@Burrow_Warren > @Warren_Heath > @Heath_Reserve,
+      burrowsInReserve[reserve, burrow]: [test::sunlitwarren2::store::WarrenDb]@Heath_Reserve > @Warren_Heath > @Burrow_Warren
+    )
+  }
+
+  test::sunlitwarren2::domain::Warren_Zone: Relational
+  {
+    AssociationMapping
+    (
+      patrolZones[warren, zone]: [test::sunlitwarren2::store::WarrenDb]@Burrow_Warren > @Burrow_Keeper > @Keeper_Zone,
+      warrensCovered[zone, warren]: [test::sunlitwarren2::store::WarrenDb]@Keeper_Zone > @Burrow_Keeper > @Burrow_Warren
+    )
+  }
+
+  testSuites:
+  [
+    multiHopWarrenSuite:
+    {
+      function: |test::sunlitwarren2::domain::Burrow.all()->project(
+  [
+    x|$x.burrowCode,
+    x|$x.warren.warrenName,
+    x|$x.warren.heath.heathName,
+    x|$x.reserveOfRecord.reserveName,
+    x|$x.keeper.keeperName,
+    x|$x.keeper.zone.zoneName,
+    x|$x.burrowLabel,
+    x|$x.chamberCount
+  ],
+  [
+    'Burrow',
+    'WarrenName',
+    'HeathName',
+    'ReserveName',
+    'KeeperName',
+    'ZoneName',
+    'BurrowLabel',
+    'ChamberCount'
+  ]
+)->sort(
+  [
+    asc('Burrow')
+  ]
+);
+      tests:
+      [
+        multiHopJoinHit:
+        {
+          doc: 'Every burrow resolves its warren over one hop, its heath over two hops and its reserve over the three-hop association path, while the keeper is reached only where the case-folding join condition and the zone predicate both hold, and the keeper zone arrives over a further chained hop.';
+          data:
+          [
+            test::sunlitwarren2::store::WarrenDb:
+              Relational
+              #{
+                warrens.burrow:
+                  'burrow_id,burrow_code,warren_code,keeper_code,zone_code,chamber_count\n'+
+                  '1,BR-0001,WR-01,KP-01,ZN-01,6\n'+
+                  '2,BR-0002,WR-02,KP-02,ZN-02,4\n'+
+                  '3,BR-0003,WR-01,KP-01,ZN-01,3\n';
+                warrens.warren:
+                  'warren_code,warren_name,heath_code\n'+
+                  'WR-01,North Warren,HT-01\n'+
+                  'WR-02,South Warren,HT-02\n';
+                warrens.heath:
+                  'heath_code,heath_name,reserve_code\n'+
+                  'HT-01,Gorse Heath,RS-01\n'+
+                  'HT-02,Bracken Heath,RS-02\n';
+                warrens.reserve:
+                  'reserve_code,reserve_name,biome_kind\n'+
+                  'RS-01,Sunlit Warren Reserve,Lowland Heath\n'+
+                  'RS-02,Bracken Ridge Reserve,Wet Heath\n';
+                warrens.keeper:
+                  'keeper_code,keeper_name,zone_code\n'+
+                  'kp-01,Ida Keeper,ZN-01\n'+
+                  'kp-02,Jae Keeper,ZN-02\n';
+                warrens.zone:
+                  'zone_code,zone_name\n'+
+                  'ZN-01,Upper Zone\n'+
+                  'ZN-02,Lower Zone\n';
+              }#
+          ];
+          asserts:
+          [
+            everyHopResolves:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Burrow":"BR-0001","WarrenName":"North Warren","HeathName":"Gorse Heath","ReserveName":"Sunlit Warren Reserve","KeeperName":"Ida Keeper","ZoneName":"Upper Zone","BurrowLabel":"BR-0001-ida keeper","ChamberCount":6},{"Burrow":"BR-0002","WarrenName":"South Warren","HeathName":"Bracken Heath","ReserveName":"Bracken Ridge Reserve","KeeperName":"Jae Keeper","ZoneName":"Lower Zone","BurrowLabel":"BR-0002-jae keeper","ChamberCount":4},{"Burrow":"BR-0003","WarrenName":"North Warren","HeathName":"Gorse Heath","ReserveName":"Sunlit Warren Reserve","KeeperName":"Ida Keeper","ZoneName":"Upper Zone","BurrowLabel":"BR-0003-ida keeper","ChamberCount":3}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

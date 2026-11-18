@@ -1,0 +1,120 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedquarry2::service::GradeMatchLookup
+{
+  pattern: '/frostedquarry2/v1/grade-match/{gradeCode}/{cycleCode}';
+  title: 'Frosted Quarry - Grade And Cycle Match Lookup';
+  documentation: 'Projects the block, its harvest cycle and its clarity grade first and only then screens the projected rows on two caller-supplied values joined by a conjunction, de-duplicating what survives. Because the screen sits above the projection, a block carrying two grades contributes one row per grade and the conjunction decides each row independently.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {gradeCode: String[1], cycleCode: String[1]|test::frostedquarry2::domain::IceBlock.all()->project(
+      [
+        r|$r.blockCode,
+        r|$r.cycle.cycleCode,
+        r|$r.grades.gradeCode
+      ],
+      [
+        'Block',
+        'Cycle',
+        'Grade'
+      ]
+    )->filter(
+      x|$x.getString('Grade') == $gradeCode && $x.getString('Cycle') == $cycleCode
+    )->distinct()->sort([asc('Block')])};
+    mapping: test::frostedquarry2::mapping::FrostQuarryMapping;
+    runtime: test::frostedquarry2::runtime::FrostQuarryRuntime;
+  }
+  testSuites:
+  [
+    gradeMatchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          frostQuarryWarehouse:
+            Relational
+            #{
+              frostquarry.harvest_cycle:
+                'cycle_id,panel_id,cycle_code,started_on,crew_size\n'+
+                'CYC-01,PNL-01,C-001,2026-01-05,6\n'+
+                'CYC-02,PNL-02,C-002,2026-01-06,4\n';
+              frostquarry.ice_block:
+                'block_id,cycle_id,block_code,mass_kg,melt_loss_ratio\n'+
+                'BLK-01,CYC-01,B-001,180,0.25\n'+
+                'BLK-02,CYC-01,B-002,220,0.4\n'+
+                'BLK-03,CYC-02,B-003,200,0.25\n';
+              frostquarry.clarity_grade:
+                'grade_id,block_id,grade_code,clarity_score\n'+
+                'GRD-01,BLK-01,CLEAR,91\n'+
+                'GRD-02,BLK-01,BUBBLED,72\n'+
+                'GRD-03,BLK-02,BUBBLED,68\n'+
+                'GRD-04,BLK-03,CLEAR,88\n';
+              }#
+        ]
+      ]
+      tests:
+      [
+        bothLegsOfTheConjunctionMustHoldForARowToSurvive:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            gradeCode = 'CLEAR',
+            cycleCode = 'C-001'
+          ]
+          asserts:
+          [
+            theBlockCarryingTwoGradesKeepsOnlyItsMatchingGradeRowAndTheOtherCyclesMatchingGradeIsExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"B-001","Cycle":"C-001","Grade":"CLEAR"}]';
+                  }#;
+              }#
+          ]
+        },
+        aGradeThatNoRowCarriesLeavesTheLookupEmpty:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            gradeCode = 'FRACTURED',
+            cycleCode = 'C-001'
+          ]
+          asserts:
+          [
+            theConjunctionFailsOnEveryProjectedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

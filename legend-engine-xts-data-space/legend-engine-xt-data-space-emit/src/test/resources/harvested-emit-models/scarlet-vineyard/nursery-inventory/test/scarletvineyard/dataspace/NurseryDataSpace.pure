@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace <<test::scarletvineyard::profile::NurseryProfile.curated>> {test::scarletvineyard::profile::NurseryProfile.steward = 'nursery-operations', test::scarletvineyard::profile::NurseryProfile.refreshCadence = 'DAILY'} test::scarletvineyard::dataspace::NurseryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'local';
+      description: 'In-process tier used by the mapping and service suites over a handful of beds and seedling lots.';
+      mapping: test::scarletvineyard::mapping::NurseryMapping;
+      defaultRuntime: test::scarletvineyard::runtime::NurseryRuntime;
+    },
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier binding the same mapping to the token-authenticated warehouse connection.';
+      mapping: test::scarletvineyard::mapping::NurseryMapping;
+      defaultRuntime: test::scarletvineyard::runtime::NurseryWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'local';
+  title: 'Nursery Propagation Inventory';
+  description: 'A curated entry point over the nursery propagation inventory - the propagation beds and the seedling lots raised in them - grouping the relational mapping, both runtimes and the published register endpoint into one consumable unit.';
+  elements:
+  [
+    test::scarletvineyard::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Seedling register';
+      description: 'The published endpoint projecting every seedling lot with its normalised cultivar label.';
+      executable: test::scarletvineyard::service::SeedlingRegister;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'nursery-stewards@nurseryops';
+  };
+}

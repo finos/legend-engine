@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::crimsonfossil9::domain::*;
+
+Enum test::crimsonfossil9::domain::ConservationStage
+{
+  STABILIZED,
+  CLEANING,
+  CONSOLIDATING,
+  UNASSESSED
+}
+
+Enum test::crimsonfossil9::domain::MatrixFamily
+{
+  SHALE,
+  LIMESTONE,
+  SANDSTONE,
+  UNKNOWN
+}
+
+Enum test::crimsonfossil9::domain::QueueTier
+{
+  IMMEDIATE,
+  STANDARD,
+  DEFERRED,
+  UNQUEUED
+}
+
+Class test::crimsonfossil9::domain::FieldJacketIntake
+{
+  jacketTag: String[1];
+  localityHint: String[0..1];
+  matrixCode: String[0..1];
+  conservationCode: String[0..1];
+  queueCode: String[0..1];
+  completeness: Integer[0..1];
+  weightKg: Float[0..1];
+  arrivalStamp: String[0..1];
+  crewCode: String[0..1];
+}
+
+Class test::crimsonfossil9::domain::PreparationRecord
+{
+  recordRef: String[1];
+  localityLabel: String[1];
+  conditionBand: String[0..1];
+  conservation: ConservationStage[1];
+  matrix: MatrixFamily[1];
+  queue: QueueTier[0..1];
+  arrivalYear: Integer[1];
+  priorityFlag: Boolean[1];
+  handlingNote: String[1];
+}

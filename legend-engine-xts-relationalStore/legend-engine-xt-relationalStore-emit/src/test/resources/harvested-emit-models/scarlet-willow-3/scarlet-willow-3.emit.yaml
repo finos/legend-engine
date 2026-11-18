@@ -1,0 +1,104 @@
+name: scarlet-willow-3
+title: "Scarlet Willow — Layered Wetland-Reserve Estate with Two Parallel Store Families, a Store-Substituted Mapping Composition, Enum-Of-Expression Translations and Environment-Keyed Multi-Executions"
+description: |
+  A non-financial wetland-reserve estate whose habitat patches and survey visits are
+  versioned by when the survey office recorded them, so every read pins a processing
+  instant and the association between them is milestoned. Two structurally identical
+  relational families — a warehouse-resident one and a lake-resident one — declare the
+  same schemas and tables, and one transformation-heavy leaf mapping serves both: a
+  plain inclusion binds it to the warehouse family and a bracketed store substitution
+  re-points the identical class bindings at the lake family. That leaf mapping carries
+  the model's logic: conditional transforms falling through to a null sentinel, three
+  enumeration translations computed from expressions rather than columns, string-built
+  labels, a literal-bound scheme, a grouped-view-backed aggregate, a three-hop warden
+  path and an attribute join whose condition carries a constant predicate. Above it a
+  composing store adds a cross-schema view and join, a locally declared profile marks
+  a class as excluded from distribution while duplicating its physical table name as a
+  tag, and the service layer projects, groups, de-duplicates, orders and truncates the
+  result — once per physical environment through an environment-keyed multi-execution
+  whose unknown keys have no fallback.
+
+modelSources:
+  model:
+    root: scarlet-willow-3
+    files:
+      - test/scarletwillow3/connection/ReserveConnections.pure
+      - test/scarletwillow3/data/ReserveTestData.pure
+      - test/scarletwillow3/domain/ReserveDomain.pure
+      - test/scarletwillow3/mapping/ReserveBaseMapping.pure
+      - test/scarletwillow3/mapping/ReserveEnumMappings.pure
+      - test/scarletwillow3/mapping/ReserveLakeMapping.pure
+      - test/scarletwillow3/mapping/ReserveWarehouseMapping.pure
+      - test/scarletwillow3/runtime/ReserveRuntimes.pure
+      - test/scarletwillow3/service/PatchRoster.pure
+      - test/scarletwillow3/service/VisitDigest.pure
+      - test/scarletwillow3/store/ReserveEstateDB.pure
+      - test/scarletwillow3/store/ReserveLakeDB.pure
+      - test/scarletwillow3/store/ReserveWarehouseDB.pure
+
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - milestoning:milestoned-association
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-cross-table-filter
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - conditional-transform
+  - cross-schema
+  - enum-of-expression
+  - enumeration-mapping
+  - group-by
+  - h2
+  - inline-view
+  - mapping-include
+  - milestoned-association
+  - multi-execution
+  - multi-hop-join
+  - point-in-time
+  - processing-temporal
+  - profile
+  - qualified-property
+  - relational
+  - service-test
+  - store-substitution
+  - wetland-reserve

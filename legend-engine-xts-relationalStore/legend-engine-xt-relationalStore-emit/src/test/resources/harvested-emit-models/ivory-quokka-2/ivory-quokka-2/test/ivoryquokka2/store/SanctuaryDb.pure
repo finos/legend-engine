@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::ivoryquokka2::store::SanctuaryDb
+(
+  Schema sanctuary
+  (
+    Table colony_member
+    (
+      member_code VARCHAR(24) PRIMARY KEY,
+      enclosure_code VARCHAR(24) NOT NULL,
+      given_name VARCHAR(60) NOT NULL,
+      forage_habit_code VARCHAR(4),
+      health_code VARCHAR(4),
+      pouch_code VARCHAR(4),
+      weight_grams INTEGER NOT NULL,
+      weighed_at TIMESTAMP NOT NULL
+    )
+
+    Table enclosure_record
+    (
+      enclosure_code VARCHAR(24) PRIMARY KEY,
+      enclosure_name VARCHAR(60) NOT NULL,
+      terrain_code VARCHAR(4) NOT NULL,
+      canopy_pct INTEGER NOT NULL
+    )
+  )
+
+  Filter NamedMembers(toUpper(trim(sanctuary.colony_member.given_name)) != 'UNNAMED')
+
+  Join Member_Enclosure(sanctuary.colony_member.enclosure_code = sanctuary.enclosure_record.enclosure_code)
+)
+
+Database test::ivoryquokka2::store::SanctuaryRosterDb
+(
+  include test::ivoryquokka2::store::SanctuaryDb
+
+  Schema roster
+  (
+    Table keeper_shift
+    (
+      shift_code VARCHAR(24) PRIMARY KEY,
+      enclosure_code VARCHAR(24) NOT NULL,
+      keeper_name VARCHAR(60) NOT NULL,
+      shift_kind_code VARCHAR(4),
+      checks_done INTEGER NOT NULL,
+      started_at TIMESTAMP NOT NULL
+    )
+
+    View shift_tally_vw
+    (
+      ~groupBy
+      (
+        roster.keeper_shift.enclosure_code,
+        roster.keeper_shift.keeper_name
+      )
+      enclosure_code: roster.keeper_shift.enclosure_code PRIMARY KEY,
+      keeper_name: roster.keeper_shift.keeper_name PRIMARY KEY,
+      shift_total: count(roster.keeper_shift.shift_code),
+      most_checks: max(roster.keeper_shift.checks_done),
+      fewest_checks: min(roster.keeper_shift.checks_done),
+      first_start_key: min(plus(times(plus(times(year(roster.keeper_shift.started_at), 100), monthNumber(roster.keeper_shift.started_at)), 100), dayOfMonth(roster.keeper_shift.started_at))),
+      latest_start_key: coalesce(max(plus(times(plus(times(year(roster.keeper_shift.started_at), 100), monthNumber(roster.keeper_shift.started_at)), 100), dayOfMonth(roster.keeper_shift.started_at))), 0)
+    )
+  )
+
+  Join Shift_Enclosure(roster.keeper_shift.enclosure_code = sanctuary.enclosure_record.enclosure_code)
+)

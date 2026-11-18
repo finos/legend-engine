@@ -1,0 +1,141 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulestuary::mapping::ReserveRegistryMapping
+(
+  include mapping test::wistfulestuary::mapping::ReserveDigestM2M
+
+  *test::wistfulestuary::domain::ParcelEnvelope[parcelEnvelopeSet]: ServiceStore
+  {
+    ~service [test::wistfulestuary::store::ParcelApi] ParcelServices.ParcelFeedService
+
+    ~service [test::wistfulestuary::store::ParcelApi] ParcelServices.ParcelLookupService
+    (
+      ~request
+      (
+        parameters
+        (
+          treeName = $this.treeName->toOne(),
+          parcelPath = $this.parcelPath
+        )
+      )
+    )
+  }
+
+  testSuites:
+  [
+    remoteParcelReadSuite:
+    {
+      function: |test::wistfulestuary::domain::ParcelEnvelope.all()->graphFetch(
+        #{
+          test::wistfulestuary::domain::ParcelEnvelope
+          {
+            parcelPath,
+            classifierPath,
+            treeName,
+            content
+            {
+              contentKind,
+              title,
+              summaryText,
+              stewardTag,
+              revisionTag,
+              origin
+              {
+                startLine,
+                startColumn,
+                endLine,
+                endColumn,
+                charOffset,
+                sourceFile
+              }
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::wistfulestuary::domain::ParcelEnvelope
+          {
+            parcelPath,
+            classifierPath,
+            treeName,
+            content
+            {
+              contentKind,
+              title,
+              summaryText,
+              stewardTag,
+              revisionTag,
+              origin
+              {
+                startLine,
+                startColumn,
+                endLine,
+                endColumn,
+                charOffset,
+                sourceFile
+              }
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        stubbedParcelFeedReturnsBothEnvelopes:
+        {
+          doc: 'Resolves the remote parcel-feed operation of the request-shaped store through the stubbed response, proving the whole envelope graph including a body whose source-location node is absent.';
+          data:
+          [
+            test::wistfulestuary::store::ParcelApi:
+              ServiceStore
+              #{
+                [
+                  {
+                    request:
+                    {
+                      method: GET;
+                      url: '/parcels/parcel-feed';
+                    };
+                    response:
+                    {
+                      body:
+                        ExternalFormat
+                        #{
+                          contentType: 'application/json';
+                          data: '[{"parcelPath":"registry/tideflat/p-01","classifierPath":"meta::reserve::Parcel","treeName":"tideflat","content":{"contentKind":"reserve","title":"North Tideflat","summaryText":"Open tideflat under seasonal watch","stewardTag":"tideflat-crew","revisionTag":"r1","origin":{"startLine":1,"startColumn":1,"endLine":8,"endColumn":2,"charOffset":0,"sourceFile":"tideflat.json"}}},{"parcelPath":"registry/channel/p-09","classifierPath":"meta::reserve::Parcel","content":{"contentKind":"boardwalk","title":"Visitor Boardwalk","summaryText":"Raised boardwalk over the marsh","stewardTag":"access-crew","revisionTag":"r9"}}]';
+                        }#;
+                    };
+                  }
+                ]
+              }#
+          ];
+          asserts:
+          [
+            bothEnvelopesSurface:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"parcelPath":"registry/tideflat/p-01","classifierPath":"meta::reserve::Parcel","treeName":"tideflat","content":{"contentKind":"reserve","title":"North Tideflat","summaryText":"Open tideflat under seasonal watch","stewardTag":"tideflat-crew","revisionTag":"r1","origin":{"startLine":1,"startColumn":1,"endLine":8,"endColumn":2,"charOffset":0,"sourceFile":"tideflat.json"}}},{"parcelPath":"registry/channel/p-09","classifierPath":"meta::reserve::Parcel","treeName":null,"content":{"contentKind":"boardwalk","title":"Visitor Boardwalk","summaryText":"Raised boardwalk over the marsh","stewardTag":"access-crew","revisionTag":"r9","origin":null}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

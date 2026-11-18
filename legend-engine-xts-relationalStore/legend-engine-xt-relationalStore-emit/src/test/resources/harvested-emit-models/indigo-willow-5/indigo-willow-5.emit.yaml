@@ -1,0 +1,37 @@
+name: indigo-willow-5
+title: "Indigo Willow Habitat Inspection Services"
+description: |
+  A business-temporal willow habitat model exposing a filtered roster and a
+  broader point-in-time projection. The services exercise date-aware retrieval,
+  string predicates, derived labels, duplicate elimination, and representative
+  literal-defaulted and function-derived columns over an inline relational
+  fixture.
+modelSources:
+  model:
+    root: indigo-willow-5
+    files:
+      - test/indigowillow5/connection/WillowH2Connection.pure
+      - test/indigowillow5/domain/WillowDomain.pure
+      - test/indigowillow5/function/WillowHorizon.pure
+      - test/indigowillow5/mapping/WillowMapping.pure
+      - test/indigowillow5/runtime/WillowArchiveRuntime.pure
+      - test/indigowillow5/runtime/WillowRuntime.pure
+      - test/indigowillow5/service/WillowHabitatRosterService.pure
+      - test/indigowillow5/service/WillowHabitatSnapshotService.pure
+      - test/indigowillow5/store/WillowDatabase.pure
+features:
+  - execution:service
+  - milestoning:business-temporal
+  - query:filter
+  - query:project
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - h2
+  - habitat-monitoring
+  - point-in-time
+  - service-test
+  - willow-grove

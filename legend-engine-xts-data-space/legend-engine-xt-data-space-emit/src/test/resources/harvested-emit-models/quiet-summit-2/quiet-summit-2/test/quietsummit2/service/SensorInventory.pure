@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietsummit2::service::SensorInventory
+{
+  pattern: '/alpine/v1/sensors/{sensorKind}';
+  title: 'Alpine - Sensor Inventory';
+  owners:
+  [
+    'alpine-observation-network',
+    'ridge-instrumentation'
+  ];
+  documentation: 'Returns the installed instruments of one kind as a flat projection of code, label and calibration date, ordered by instrument code.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {sensorKind: String[1]|test::quietsummit2::domain::Sensor.all()->filter(
+      s|$s.sensorKind == $sensorKind
+    )->project(
+      [
+        s|$s.sensorCode,
+        s|$s.label,
+        s|$s.calibratedOn
+      ],
+      [
+        'Code',
+        'Label',
+        'Calibrated'
+      ]
+    )->sort(
+      [
+        asc('Code')
+      ]
+    )};
+    mapping: test::quietsummit2::mapping::SummitMapping;
+    runtime: test::quietsummit2::runtime::SummitH2Runtime;
+  }
+  testSuites:
+  [
+    sensorInventorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              alpine.sensor:
+                'sensor_code,label,sensor_kind,calibrated_on\n'+
+                'ANEM,Ridge Anemometer,WIND,2026-02-11\n'+
+                'SNOW,Snow Pillow,SNOW,2026-01-08\n'+
+                'VANE,Ridge Wind Vane,WIND,2026-03-02\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        windInstruments:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            sensorKind = 'WIND'
+          ]
+          asserts:
+          [
+            twoWindInstruments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"ANEM","Label":"Ridge Anemometer","Calibrated":"2026-02-11"},{"Code":"VANE","Label":"Ridge Wind Vane","Calibrated":"2026-03-02"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

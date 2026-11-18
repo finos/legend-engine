@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelbeacon3::service::DefectEscalationFeed
+{
+  pattern: '/hazelbeacon/v1/defects/escalations';
+  title: 'Hazel Beacon - Escalated Defect Feed';
+  owners:
+  [
+    'coastal-trust-beacon-register',
+    'district-engineer-desk'
+  ];
+  documentation: 'Publishes the defects whose severity code appears in the shared escalation list, banded by the mapping and carrying the visit date and keeper resolved across the visit hop. The projection is de-duplicated, ordered on the defect reference and capped.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::hazelbeacon3::domain::InspectionDefect.all()->filter(
+      d|$d.severityCode->in(test::hazelbeacon3::function::escalatedSeverityCodes())
+    )->project(
+      [
+        d|$d.defectRef,
+        d|$d.defectCode,
+        d|$d.severityBand,
+        d|$d.inspectorCode,
+        d|$d.raisedOn
+      ],
+      [
+        'DEFECT_REF',
+        'DEFECT_CODE',
+        'SEVERITY_BAND',
+        'KEEPER',
+        'RAISED_ON'
+      ]
+    )->distinct()->sort(
+      [
+        asc('DEFECT_REF')
+      ]
+    )->limit(20);
+    mapping: test::hazelbeacon3::mapping::BeaconRegistryMapping;
+    runtime: test::hazelbeacon3::runtime::BeaconH2Runtime;
+  }
+  testSuites:
+  [
+    escalatedDefectSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconH2Connection:
+            Relational
+            #{
+              survey.inspection_record:
+                'inspection_ref,beacon_code,inspected_on,inspector_code,lens_score,battery_pct\n'+
+                'IN-01,BC-01,2026-04-02,keeper-a,88,96\n'+
+                'IN-02,BC-01,2026-04-09,keeper-b,74,35\n';
+              survey.defect_record:
+                'defect_ref,inspection_ref,defect_code,severity_code,raised_on\n'+
+                'DF-01,IN-01,lens-crazed,S2,2026-04-03\n'+
+                'DF-02,IN-01,gasket-perished,S3,2026-04-03\n'+
+                'DF-03,IN-02,lamp-failed,S1,2026-04-10\n'+
+                'DF-04,IN-99,ladder-corroded,S2,2026-04-11\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyEscalatedSeverityCodesAreServed:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            bandedEscalationsIncludingTheUnresolvedVisitHop:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"DEFECT_REF":"DF-01","DEFECT_CODE":"lens-crazed","SEVERITY_BAND":"range-reduced","KEEPER":"keeper-a","RAISED_ON":"2026-04-03"},{"DEFECT_REF":"DF-03","DEFECT_CODE":"lamp-failed","SEVERITY_BAND":"light-out","KEEPER":"keeper-b","RAISED_ON":"2026-04-10"},{"DEFECT_REF":"DF-04","DEFECT_CODE":"ladder-corroded","SEVERITY_BAND":"range-reduced","KEEPER":null,"RAISED_ON":"2026-04-11"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

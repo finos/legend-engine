@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskywillow::mapping::CoppiceDigestM2M
+(
+  include mapping test::duskywillow::mapping::WillowEnumMappings
+
+  *test::duskywillow::domain::CoppiceDigest[coppiceDigest]: Pure
+  {
+    ~src test::duskywillow::domain::RawCoppiceNote
+    recordRef: $src.normalizedRef(),
+    steward: 'tool-library-desk',
+    noteRef: $src.noteRef,
+    borrowerLabel: $src.borrowerName->toUpper(),
+    toolLabel: $src.toolName->toUpper() + ' (' + $src.normalizedRef() + ')',
+    overdueDays: $src.overdueDays(),
+    depositLabel: $src.depositLabel(),
+    handlingIndex: $src.handlingIndex(),
+    state: EnumerationMapping StateMapping: [if($src.stateText->startsWith('issued'), |'I', |if($src.stateText->startsWith('returned'), |'R', |if($src.stateText->startsWith('overdue'), |'O', |'U')))],
+    toolClass: EnumerationMapping ClassMapping: [if($src.classText->startsWith('hand'), |'H', |if($src.classText->startsWith('power'), |'P', |if($src.classText->startsWith('garden'), |'G', |'X')))]
+  }
+
+  testSuites:
+  [
+    coppiceDigestSuite:
+    {
+      function: test::duskywillow::domain::CoppiceDigest.all()->graphFetch(#{test::duskywillow::domain::CoppiceDigest{recordRef,steward,noteRef,borrowerLabel,toolLabel,overdueDays,depositLabel,handlingIndex,state,toolClass}}#)->serialize(#{test::duskywillow::domain::CoppiceDigest{recordRef,steward,noteRef,borrowerLabel,toolLabel,overdueDays,depositLabel,handlingIndex,state,toolClass}}#);
+      tests:
+      [
+        everyVocabularyArmAndDepositBand:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::duskywillow::domain::RawCoppiceNote:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"noteRef":"ln-1001","borrowerName":"A Reed","toolName":"hand plane","stateText":"issued","classText":"hand bench","daysOut":20,"depositPence":1500},{"noteRef":"ln-1002","borrowerName":"B Nolan","toolName":"thicket trimmer","stateText":"returned","classText":"power bench","daysOut":7,"depositPence":0},{"noteRef":"ln-1003","borrowerName":"C Ojo","toolName":"garden fork","stateText":"overdue","classText":"garden bench","daysOut":14},{"noteRef":"ln-1004","borrowerName":"D Silva","toolName":"unlisted gadget","stateText":"not stated","classText":"loose kit","daysOut":3,"depositPence":250}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            resolvedDigestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordRef":"LN-1001","steward":"tool-library-desk","noteRef":"ln-1001","borrowerLabel":"A REED","toolLabel":"HAND PLANE (LN-1001)","overdueDays":6,"depositLabel":"deposit held","handlingIndex":2288,"state":"Issued","toolClass":"HandTool"},{"recordRef":"LN-1002","steward":"tool-library-desk","noteRef":"ln-1002","borrowerLabel":"B NOLAN","toolLabel":"THICKET TRIMMER (LN-1002)","overdueDays":0,"depositLabel":"nominal deposit","handlingIndex":468,"state":"Returned","toolClass":"PowerTool"},{"recordRef":"LN-1003","steward":"tool-library-desk","noteRef":"ln-1003","borrowerLabel":"C OJO","toolLabel":"GARDEN FORK (LN-1003)","overdueDays":0,"depositLabel":"no deposit held","handlingIndex":1280,"state":"Overdue","toolClass":"GardenTool"},{"recordRef":"LN-1004","steward":"tool-library-desk","noteRef":"ln-1004","borrowerLabel":"D SILVA","toolLabel":"UNLISTED GADGET (LN-1004)","overdueDays":0,"depositLabel":"nominal deposit","handlingIndex":180,"state":"Unrecorded","toolClass":"Unrecorded"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,62 @@
+name: cedar-quarry-2
+title: "Museum Ceramics Catalogue With Three Milestoning Flavours"
+description: |
+  A ceramics collection catalogue whose entry hierarchy carries constrained
+  measurements, three enumerations, a governance profile and a display
+  association, alongside three registers milestoned three different ways —
+  business time for kiln firings, processing time for catalogue revisions and
+  both for outward display placements. Two JSON schema generations, gathered in one
+  generation specification, publish the catalogue and register shapes; the
+  mapping suites hold each register at a date so the rows outside their windows
+  drop out.
+modelSources:
+  model:
+    root: cedar-quarry-2
+    files:
+      - test/cedarquarry2/connection/CeramicsConnection.pure
+      - test/cedarquarry2/data/CeramicsTestData.pure
+      - test/cedarquarry2/domain/CeramicsCatalogue.pure
+      - test/cedarquarry2/domain/CeramicsRegisters.pure
+      - test/cedarquarry2/generation/CeramicsGeneration.pure
+      - test/cedarquarry2/mapping/CeramicsRegisterMapping.pure
+      - test/cedarquarry2/runtime/CeramicsRuntime.pure
+      - test/cedarquarry2/store/CeramicsRegisterDatabase.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association
+  - bi-temporal
+  - business-temporal
+  - ceramics
+  - class-inheritance
+  - constraint
+  - enumeration
+  - enumeration-mapping
+  - file-generation
+  - generation-specification
+  - json-schema
+  - mapping-test
+  - milestoning
+  - processing-temporal
+  - profile
+  - relational

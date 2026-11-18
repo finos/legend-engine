@@ -1,0 +1,30 @@
+name: indigo-lantern-5-shore
+title: "Indigo Lantern 5 Shore — Headland Reference Model Shared by the Lighthouse Register"
+description: |
+  A reference model for a coastal lighthouse register. It declares a headland
+  class with an exposure enumeration, two reference stores (a headland table
+  and a cove gazetteer) and a relational mapping whose exposure codes are
+  translated through an enumeration mapping. The lighthouse register model
+  depends on it for its headland reference, its included stores and its
+  included enumeration mapping.
+modelSources:
+  model:
+    root: indigo-lantern-5-shore
+    files:
+      - test/indigolantern5/shore/ShoreDomain.pure
+      - test/indigolantern5/shore/ShoreMapping.pure
+      - test/indigolantern5/shore/ShoreStores.pure
+features:
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - enumeration-mapping
+  - h2
+  - headland
+  - lighthouse
+  - reference
+  - relational

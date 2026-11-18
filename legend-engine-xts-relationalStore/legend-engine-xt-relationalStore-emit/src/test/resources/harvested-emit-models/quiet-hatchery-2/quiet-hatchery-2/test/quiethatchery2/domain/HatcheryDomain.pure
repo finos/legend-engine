@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::quiethatchery2::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'How the count on an incubation tray was arrived at.'} test::quiethatchery2::domain::TallyMethod
+{
+  HEADCOUNT,
+  SAMPLE_SCALE,
+  VOLUME_ESTIMATE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Where in the incubation window a tray reading falls; two separate properties translate through this one band.'} test::quiethatchery2::domain::TrayBand
+{
+  EARLY,
+  MIDDLE,
+  LATE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Whether a tray reading was seen directly or inferred from a neighbouring tray.'} test::quiethatchery2::domain::ObservationKind
+{
+  DIRECT,
+  INFERRED
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A restated reading of one incubation tray. A reading is visible only when both its processing window and its recording window contain their respective instant, so a correction made later is a separate version of the same tray.'} test::quiethatchery2::domain::TrayRevision
+{
+  basisCode: String[1];
+  trayCode: String[1];
+  batchCode: String[1];
+  recordDate: StrictDate[1];
+  tallyMethod: TallyMethod[0..1];
+  earlyBand: TrayBand[0..1];
+  lateBand: TrayBand[0..1];
+  observationKind: ObservationKind[0..1];
+  eggCount: Integer[0..1];
+  fryCount: Integer[0..1];
+  trayNote: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A rearing pond whose name and valley change over time.'} test::quiethatchery2::domain::HatchPond
+{
+  pondCode: String[1];
+  pondName: String[0..1];
+  district: HatchDistrict[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'The valley a set of rearing ponds is grouped under.'} test::quiethatchery2::domain::HatchDistrict
+{
+  districtCode: String[1];
+  districtName: String[1];
+}

@@ -1,0 +1,132 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::sablewharf::service::BerthStowageAsOf
+{
+  pattern: '/harbour/v1/berth-stowage/{businessDate}';
+  title: 'Berth Stowage As Of';
+  owners:
+  [
+    'wharf-operations',
+    'stowage-planning'
+  ];
+  documentation: 'Point-in-time wharf stowage sheet: the business date opens the berth-assignment extent and is passed again into the milestoned stowage-plan property inside every column lambda, so each column resolves the milestoned edge independently before casting to a concrete specification or cargo-unit subtype.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|demo::sablewharf::domain::BerthAssignment.all($businessDate)->project(
+      [
+        x|$x.assignmentRef,
+        x|$x.berthCode,
+        x|$x.plan($businessDate)->toOne().planRef,
+        x|$x.plan($businessDate)->toOne().specification->toOne().specRef,
+        x|$x.plan($businessDate)->toOne().specification->toOne()->subType(@demo::sablewharf::domain::ChilledLotSpecification).setPointCelsius,
+        x|$x.plan($businessDate)->toOne().stowageLines->filter(l|$l.handlingClass == demo::sablewharf::domain::HandlingClass.CHILLED)->toOne().lineRef,
+        x|$x.plan($businessDate)->toOne().stowageLines->filter(l|$l.handlingClass == demo::sablewharf::domain::HandlingClass.CHILLED)->toOne().grossKilos,
+        x|$x.plan($businessDate)->toOne().stowageLines->filter(l|$l.handlingClass == demo::sablewharf::domain::HandlingClass.CHILLED)->toOne().handlingClass->toOne()->toString(),
+        x|$x.plan($businessDate)->toOne().stowageLines->filter(l|$l.handlingClass == demo::sablewharf::domain::HandlingClass.CHILLED)->toOne().unit->toOne().unitRef,
+        x|$x.plan($businessDate)->toOne().stowageLines->filter(l|$l.handlingClass == demo::sablewharf::domain::HandlingClass.CHILLED)->toOne().unit->toOne()->subType(@demo::sablewharf::domain::ReeferCargoUnit).plugSlots,
+        x|$x.plan($businessDate)->toOne().stowageLines->filter(l|$l.handlingClass == demo::sablewharf::domain::HandlingClass.CHILLED)->toOne().spareUnit->toOne()->subType(@demo::sablewharf::domain::FlatRackCargoUnit).deckLength,
+        x|$x.plan($businessDate)->toOne().stowageLines->filter(l|$l.handlingClass == demo::sablewharf::domain::HandlingClass.HAZARDOUS)->toOne().lineRef,
+        x|$x.plan($businessDate)->toOne().stowageLines->filter(l|$l.handlingClass == demo::sablewharf::domain::HandlingClass.HAZARDOUS)->toOne().grossKilos,
+        x|$x.plan($businessDate)->toOne().stowageLines->filter(l|$l.handlingClass == demo::sablewharf::domain::HandlingClass.HAZARDOUS)->toOne().unit->toOne().unitRef
+      ],
+      [
+        'Assignment Ref',
+        'Berth Code',
+        'Plan Ref',
+        'Spec Ref',
+        'Set Point Celsius',
+        'Chilled Line Ref',
+        'Chilled Gross Kilos',
+        'Chilled Handling Class',
+        'Chilled Unit Ref',
+        'Chilled Plug Slots',
+        'Chilled Spare Deck Length',
+        'Hazardous Line Ref',
+        'Hazardous Gross Kilos',
+        'Hazardous Unit Ref'
+      ]
+    )->sort(
+      [
+        asc('Assignment Ref')
+      ]
+    )};
+    mapping: demo::sablewharf::mapping::WharfMapping;
+    runtime: demo::sablewharf::runtime::WharfRuntime;
+  }
+  testSuites:
+  [
+    berthStowageAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          wharfConnection:
+            Relational
+            #{
+              HARBOUR.BERTH_ASSIGNMENT:
+                'ASSIGNMENT_REF,BERTH_CODE,PLAN_REF,FROM_Z,THRU_Z\n'+
+                'BA-1,WHARF-A3,PL-1,2024-01-01,9999-12-31\n'+
+                'BA-2,WHARF-B1,PL-2,2023-01-01,2024-01-01\n';
+              HARBOUR.STOWAGE_PLAN:
+                'PLAN_REF,SPEC_REF,FROM_Z,THRU_Z\n'+
+                'PL-1,SPEC-1,2024-01-01,9999-12-31\n'+
+                'PL-2,SPEC-2,2023-01-01,2024-01-01\n';
+              HARBOUR.LOT_SPEC:
+                'SPEC_REF,SPEC_KIND,SET_POINT_CELSIUS\n'+
+                'SPEC-1,CHILLED,2.5\n'+
+                'SPEC-2,CHILLED,6.75\n';
+              HARBOUR.STOWAGE_LINE:
+                'LINE_REF,PLAN_REF,HANDLING_CLASS,GROSS_KILOS,UNIT_REF,SPARE_UNIT_REF\n'+
+                'SL-1,PL-1,CHILLED,1450.5,CU-1,CU-3\n'+
+                'SL-2,PL-1,HAZARDOUS,880.25,CU-2,CU-3\n'+
+                'SL-3,PL-2,CHILLED,610.75,CU-2,CU-3\n';
+              HARBOUR.CARGO_UNIT:
+                'UNIT_REF,UNIT_KIND,PLUG_SLOTS,DECK_LENGTH\n'+
+                'CU-1,REEFER,4,\n'+
+                'CU-2,FLATRACK,,12.25\n'+
+                'CU-3,FLATRACK,,9.75\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        midYearAsOf:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2024-06-01
+          ]
+          asserts:
+          [
+            onlyTheInRangeAssignment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Assignment Ref":"BA-1","Berth Code":"WHARF-A3","Plan Ref":"PL-1","Spec Ref":"SPEC-1","Set Point Celsius":2.5,"Chilled Line Ref":"SL-1","Chilled Gross Kilos":1450.5,"Chilled Handling Class":"CHILLED","Chilled Unit Ref":"CU-1","Chilled Plug Slots":4,"Chilled Spare Deck Length":9.75,"Hazardous Line Ref":"SL-2","Hazardous Gross Kilos":880.25,"Hazardous Unit Ref":"CU-2"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

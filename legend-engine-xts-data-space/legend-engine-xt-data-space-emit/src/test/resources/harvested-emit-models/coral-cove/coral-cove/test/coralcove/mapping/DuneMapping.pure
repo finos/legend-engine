@@ -1,0 +1,237 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralcove::mapping::DuneMapping
+(
+  *test::coralcove::domain::PlotRegistration[plotRegistration]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove::store::DuneDb]dune.plot_register.plot_code,
+      [test::coralcove::store::DuneDb]dune.plot_register.in_z
+    )
+    ~mainTable [test::coralcove::store::DuneDb]dune.plot_register
+    plotCode: [test::coralcove::store::DuneDb]dune.plot_register.plot_code,
+    sectorCode: [test::coralcove::store::DuneDb]dune.plot_register.sector_code,
+    plotName: [test::coralcove::store::DuneDb]dune.plot_register.plot_name,
+    crestHeightM: [test::coralcove::store::DuneDb]dune.plot_register.crest_height_m,
+    stabilisedAreaHa: [test::coralcove::store::DuneDb]dune.plot_register.stabilised_area_ha,
+    surveyedOn: [test::coralcove::store::DuneDb]dune.plot_register.surveyed_on,
+    lastCheckedAt: [test::coralcove::store::DuneDb]dune.plot_register.last_checked_at,
+    warden: [test::coralcove::store::DuneDb]dune.plot_register.warden
+  }
+
+  *test::coralcove::domain::PlantingBatch[plantingBatch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove::store::DuneDb]dune.planting_batch.batch_id,
+      [test::coralcove::store::DuneDb]dune.planting_batch.in_z
+    )
+    ~mainTable [test::coralcove::store::DuneDb]dune.planting_batch
+    batchId: [test::coralcove::store::DuneDb]dune.planting_batch.batch_id,
+    plotCode: [test::coralcove::store::DuneDb]dune.planting_batch.plot_code,
+    speciesCode: [test::coralcove::store::DuneDb]dune.planting_batch.species_code,
+    culmCount: [test::coralcove::store::DuneDb]dune.planting_batch.culm_count,
+    survivalRate: [test::coralcove::store::DuneDb]dune.planting_batch.survival_rate,
+    meanCulmHeightCm: [test::coralcove::store::DuneDb]dune.planting_batch.mean_culm_height_cm,
+    plantedOn: [test::coralcove::store::DuneDb]dune.planting_batch.planted_on,
+    recordedAt: [test::coralcove::store::DuneDb]dune.planting_batch.recorded_at
+  }
+
+  *test::coralcove::domain::FenceRun[fenceRun]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove::store::DuneDb]dune.fence_run.fence_code,
+      [test::coralcove::store::DuneDb]dune.fence_run.in_z
+    )
+    ~mainTable [test::coralcove::store::DuneDb]dune.fence_run
+    fenceCode: [test::coralcove::store::DuneDb]dune.fence_run.fence_code,
+    sectorCode: [test::coralcove::store::DuneDb]dune.fence_run.sector_code,
+    fenceMaterial: [test::coralcove::store::DuneDb]dune.fence_run.fence_material,
+    fenceLengthM: [test::coralcove::store::DuneDb]dune.fence_run.fence_length_m,
+    driftCaptureRatio: [test::coralcove::store::DuneDb]dune.fence_run.drift_capture_ratio,
+    installedOn: [test::coralcove::store::DuneDb]dune.fence_run.installed_on,
+    inspectedAt: [test::coralcove::store::DuneDb]dune.fence_run.inspected_at
+  }
+
+  testSuites:
+  [
+    plotRegistrationSuite:
+    {
+      function: |test::coralcove::domain::PlotRegistration.all(%2026-05-01)->project(
+        [
+          p|$p.plotCode,
+          p|$p.sectorCode,
+          p|$p.plotName,
+          p|$p.crestHeightM,
+          p|$p.stabilisedAreaHa,
+          p|$p.surveyedOn,
+          p|$p.warden
+        ],
+        [
+          'Plot/Code',
+          'Plot/Sector',
+          'Plot/Name',
+          'Plot/CrestHeightM',
+          'Plot/StabilisedAreaHa',
+          'Plot/SurveyedOn',
+          'Plot/Warden'
+        ]
+      )->sort([asc('Plot/Code')]);
+      tests:
+      [
+        versionValidAtInstantOnly:
+        {
+          doc: 'Reads the plot register at one processing instant over a mixed type surface. Two versions share the plot key: the version closed before the instant is out of range and only the still-open version surfaces, while a second plot with a distinct key surfaces alongside it.';
+          data:
+          [
+            test::coralcove::store::DuneDb:
+              Relational
+              #{
+                dune.plot_register:
+                  'plot_code,in_z,sector_code,plot_name,crest_height_m,stabilised_area_ha,surveyed_on,last_checked_at,warden,out_z\n'+
+                  'CC-PL-01,2025-02-01,SECT-01,Foredune Terrace,4.5,1.250,2025-01-20,2025-01-20 07:15:00,ines vardy,2026-02-01\n'+
+                  'CC-PL-01,2026-02-01,SECT-01,Foredune Terrace,5.25,1.480,2026-01-18,2026-01-18 06:40:00,ines vardy,9999-12-31\n'+
+                  'CC-PL-02,2026-02-01,SECT-02,Slack Hollow,2.75,0.640,2026-01-19,2026-01-19 08:05:00,teodor rask,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            closedVersionIsExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot/Code":"CC-PL-01","Plot/Sector":"SECT-01","Plot/Name":"Foredune Terrace","Plot/CrestHeightM":5.25,"Plot/StabilisedAreaHa":1.480,"Plot/SurveyedOn":"2026-01-18","Plot/Warden":"ines vardy"},{"Plot/Code":"CC-PL-02","Plot/Sector":"SECT-02","Plot/Name":"Slack Hollow","Plot/CrestHeightM":2.75,"Plot/StabilisedAreaHa":0.640,"Plot/SurveyedOn":"2026-01-19","Plot/Warden":"teodor rask"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    plantingBatchSuite:
+    {
+      function: |test::coralcove::domain::PlantingBatch.all(%2026-05-01)->project(
+        [
+          b|$b.batchId,
+          b|$b.plotCode,
+          b|$b.speciesCode,
+          b|$b.culmCount,
+          b|$b.survivalRate,
+          b|$b.meanCulmHeightCm,
+          b|$b.plantedOn
+        ],
+        [
+          'Batch/Id',
+          'Batch/PlotCode',
+          'Batch/Species',
+          'Batch/CulmCount',
+          'Batch/SurvivalRate',
+          'Batch/MeanCulmHeightCm',
+          'Batch/PlantedOn'
+        ]
+      )->sort([asc('Batch/Id')]);
+      tests:
+      [
+        openBatchVersionsSurface:
+        {
+          doc: 'Reads the planting batches at one processing instant. The superseded count of the first batch is closed before the instant and drops out, so each batch key contributes exactly the version open at the instant.';
+          data:
+          [
+            test::coralcove::store::DuneDb:
+              Relational
+              #{
+                dune.planting_batch:
+                  'batch_id,in_z,plot_code,species_code,culm_count,survival_rate,mean_culm_height_cm,planted_on,recorded_at,out_z\n'+
+                  '1,2025-03-01,CC-PL-01,AMMO-ARE,4200,0.62,31.50,2025-02-25,2025-02-25 09:00:00,2026-03-01\n'+
+                  '1,2026-03-01,CC-PL-01,AMMO-ARE,4400,0.71,38.25,2026-02-24,2026-02-24 09:10:00,9999-12-31\n'+
+                  '2,2026-03-01,CC-PL-02,ELYM-FAR,1850,0.55,22.75,2026-02-26,2026-02-26 09:20:00,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            supersededCountIsExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch/Id":1,"Batch/PlotCode":"CC-PL-01","Batch/Species":"AMMO-ARE","Batch/CulmCount":4400,"Batch/SurvivalRate":0.71,"Batch/MeanCulmHeightCm":38.25,"Batch/PlantedOn":"2026-02-24"},{"Batch/Id":2,"Batch/PlotCode":"CC-PL-02","Batch/Species":"ELYM-FAR","Batch/CulmCount":1850,"Batch/SurvivalRate":0.55,"Batch/MeanCulmHeightCm":22.75,"Batch/PlantedOn":"2026-02-26"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    fenceRunSuite:
+    {
+      function: |test::coralcove::domain::FenceRun.all(%2026-05-01)->project(
+        [
+          f|$f.fenceCode,
+          f|$f.sectorCode,
+          f|$f.fenceMaterial,
+          f|$f.fenceLengthM,
+          f|$f.driftCaptureRatio,
+          f|$f.installedOn
+        ],
+        [
+          'Fence/Code',
+          'Fence/Sector',
+          'Fence/Material',
+          'Fence/LengthM',
+          'Fence/CaptureRatio',
+          'Fence/InstalledOn'
+        ]
+      )->sort([asc('Fence/Code')]);
+      tests:
+      [
+        fenceRunsAtInstant:
+        {
+          doc: 'Reads the fence runs at one processing instant. A run whose window opens after the instant is out of range and never surfaces, proving the window predicate bounds the read on the upper side as well as the lower.';
+          data:
+          [
+            test::coralcove::store::DuneDb:
+              Relational
+              #{
+                dune.fence_run:
+                  'fence_code,in_z,sector_code,fence_material,fence_length_m,drift_capture_ratio,installed_on,inspected_at,out_z\n'+
+                  'CC-FR-01,2026-01-15,SECT-01,chestnut paling,180.40,0.48,2026-01-10,2026-01-10 11:00:00,9999-12-31\n'+
+                  'CC-FR-02,2026-01-15,SECT-02,brushwood,96.25,0.33,2026-01-12,2026-01-12 11:30:00,9999-12-31\n'+
+                  'CC-FR-03,2026-09-01,SECT-03,chestnut paling,142.00,0.41,2026-08-28,2026-08-28 12:00:00,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            futureWindowIsExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Fence/Code":"CC-FR-01","Fence/Sector":"SECT-01","Fence/Material":"chestnut paling","Fence/LengthM":180.40,"Fence/CaptureRatio":0.48,"Fence/InstalledOn":"2026-01-10"},{"Fence/Code":"CC-FR-02","Fence/Sector":"SECT-02","Fence/Material":"brushwood","Fence/LengthM":96.25,"Fence/CaptureRatio":0.33,"Fence/InstalledOn":"2026-01-12"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

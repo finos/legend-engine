@@ -1,0 +1,39 @@
+name: fabled-fjord-3
+title: "Fabled Fjord 3 — Kelp shoreline survey"
+description: |
+  A kelp-forest shoreline corpus follows survey sites, seaweed samples,
+  visits, and tidal reference zones across sheltered and exposed coastlines.
+  Relational tables carry the field observations while a sample-summary view
+  provides a compact read surface for density and band review. The digest
+  mapping turns source bands into labeled survey bands, and its fixtures
+  reach every conditional arm, the fallback, and an unmapped source value.
+modelSources:
+  model:
+    root: fabled-fjord-3
+    files:
+      - test/fabledfjord3/connection/ShoreConnections.pure
+      - test/fabledfjord3/domain/ShoreDomain.pure
+      - test/fabledfjord3/mapping/ShoreDigestMapping.pure
+      - test/fabledfjord3/mapping/ShoreEnumMapping.pure
+      - test/fabledfjord3/mapping/ShoreReferenceMapping.pure
+      - test/fabledfjord3/mapping/ShoreRelationalMappings.pure
+      - test/fabledfjord3/runtime/ShoreRuntimes.pure
+      - test/fabledfjord3/store/ShoreStores.pure
+features:
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inline-view
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - kelp
+  - relational
+  - shoreline
+  - survey

@@ -1,0 +1,120 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenotter2::service::VolunteerRoster
+{
+  pattern: '/garden/v1/volunteers/{rotaCode}';
+  title: 'Golden Otter - Volunteer roster';
+  owners:
+  [
+    'glasshouse-register-desk',
+    'botanic-collections-office'
+  ];
+  documentation: 'Volunteer roster read from the second store: volunteers on the requested rota codes are projected with the badge they hold and sorted by volunteer code.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {rotaCodes: String[*]|test::goldenotter2::domain::Volunteer.all()->filter(
+      v|$rotaCodes->contains($v.rotaCode)
+    )->project(
+      [
+        v|$v.volunteerCode,
+        v|$v.volunteerName,
+        v|$v.rotaCode,
+        v|$v.badgeLabel
+      ],
+      [
+        'Volunteer/Code',
+        'Volunteer/Name',
+        'Volunteer/Rota',
+        'Volunteer/Badge'
+      ]
+    )->sort(
+      [
+        asc('Volunteer/Code')
+      ]
+    );};
+    mapping: test::goldenotter2::mapping::VolunteerMapping;
+    runtime: test::goldenotter2::runtime::VolunteerRuntime;
+  }
+  testSuites:
+  [
+    volunteerRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          volunteerConnection:
+            Relational
+            #{
+              people.badge:
+                'badge_code,badge_label,badge_grade\n'+
+                'BG-1,Propagation Badge,SENIOR\n';
+              people.volunteer:
+                'volunteer_code,volunteer_name,badge_code,rota_code\n'+
+                'VL-1,Ada Green,BG-1,WR-1\n'+
+                'VL-2,Bram Reed,BG-9,WR-2\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        volunteersOnTheRequestedRotas:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            rotaCodes = ['WR-1', 'WR-2']
+          ]
+          asserts:
+          [
+            twoVolunteers:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Volunteer/Code":"VL-1","Volunteer/Name":"ADA GREEN","Volunteer/Rota":"WR-1","Volunteer/Badge":"Propagation Badge"},{"Volunteer/Code":"VL-2","Volunteer/Name":"BRAM REED","Volunteer/Rota":"WR-2","Volunteer/Badge":null}]';
+                  }#;
+              }#
+          ]
+        },
+        rotaWithNoVolunteer:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            rotaCodes = ['WR-9']
+          ]
+          asserts:
+          [
+            emptyResult:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easterncove4::service::MooringBoard
+{
+  pattern: '/easterncove4/v1/mooring-board/{asOf}';
+  title: 'Eastern Cove - Mooring Buoy Board At A Pinned Instant';
+  owners:
+  [
+    'cove-tide-watch-desk'
+  ];
+  documentation: 'Resolves the buoy inspections that are live at the requested processing instant and projects each one beside the station whose water it was made in, reaching the sensor the station carries by navigating the association rather than by reading a mapped column.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::easterncove4::domain::MooringCheck.all($asOf)->project(
+      [
+        c|$c.checkId,
+        c|$c.buoyCode,
+        c|$c.conditionCode,
+        c|$c.scourDepthCm,
+        c|$c.stationName,
+        c|$c.station.sensorType
+      ],
+      [
+        'Check',
+        'Buoy',
+        'Condition',
+        'ScourCm',
+        'Station',
+        'Sensor'
+      ]
+    )->sort([asc('Check')])};
+    mapping: test::easterncove4::mapping::CoveMapping;
+    runtime: test::easterncove4::runtime::CoveWarehouseRuntime;
+  }
+  testSuites:
+  [
+    mooringBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveWarehouseConnection:
+            Relational
+            #{
+              tide.station:
+                'station_code,station_name,cove_code,sensor_type\n'+
+                'ST-1,Kelp Point,EAST-COVE,PRESSURE\n'+
+                'ST-2,Shingle Bar,EAST-COVE,ACOUSTIC\n';
+
+              crew.mooring_check:
+                'check_id,in_z,station_code,buoy_code,condition_code,scour_depth_cm,checked_on,out_z\n'+
+                '1,2026-01-01,ST-1,BY-001,SOUND,35,2026-01-10,9999-12-31\n'+
+                '2,2026-01-01,ST-2,BY-002,CHAFED,62,2026-01-11,9999-12-31\n'+
+                '3,2026-01-01,ST-1,BY-003,SOUND,28,2026-01-12,2026-02-01\n'+
+                '4,2026-04-01,ST-2,BY-004,SCOURED,110,2026-03-28,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        supersededAndFutureInspectionsAreOutOfRange:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-01
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Check":1,"Buoy":"BY-001","Condition":"SOUND","ScourCm":35,"Station":"Kelp Point","Sensor":"PRESSURE"},{"Check":2,"Buoy":"BY-002","Condition":"CHAFED","ScourCm":62,"Station":"Shingle Bar","Sensor":"ACOUSTIC"}]';
+                  }#;
+              }#
+          ]
+        },
+        laterInstantSeesTheReInspection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-01
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Check":1,"Buoy":"BY-001","Condition":"SOUND","ScourCm":35,"Station":"Kelp Point","Sensor":"PRESSURE"},{"Check":2,"Buoy":"BY-002","Condition":"CHAFED","ScourCm":62,"Station":"Shingle Bar","Sensor":"ACOUSTIC"},{"Check":4,"Buoy":"BY-004","Condition":"SCOURED","ScourCm":110,"Station":"Shingle Bar","Sensor":"ACOUSTIC"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

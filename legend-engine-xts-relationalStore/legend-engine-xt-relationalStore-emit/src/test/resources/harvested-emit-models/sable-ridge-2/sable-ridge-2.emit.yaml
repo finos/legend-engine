@@ -1,0 +1,63 @@
+name: sable-ridge-2
+title: "Sable Ridge 2 - Alpine Hut Stays Across A Kerberos-Delegated Pair Of Stores And A Cross-Store Digest Layer"
+description: |
+  An alpine hut-stay model whose four-table trail store resolves stays to huts, huts to trail
+  segments and wardens back to the segments they patrol through inner joins, banding occupancy
+  across five arms over an arithmetic occupancy transform and decoding hut classes and trail
+  grades through enumeration mappings applied to trimmed, upper-cased codes. A separate
+  in-memory refinement layer reads a hand-written stay feed, parses its tallies and reduces the
+  notes to a digest, and a cross-store association binds those digests to the relational huts.
+  Two Kerberos-delegated connections back the keyed board service while a single-execution
+  register service graph-fetches the stays for one hut.
+modelSources:
+  model:
+    root: sable-ridge-2
+    files:
+      - test/sableridge2/connection/RidgeConnections.pure
+      - test/sableridge2/domain/RidgeDomain.pure
+      - test/sableridge2/mapping/RidgeCrossMapping.pure
+      - test/sableridge2/mapping/RidgeMapping.pure
+      - test/sableridge2/mapping/StayDigestM2M.pure
+      - test/sableridge2/runtime/RidgeRuntimes.pure
+      - test/sableridge2/service/HutClassBoard.pure
+      - test/sableridge2/service/StayRegister.pure
+      - test/sableridge2/store/RidgeDB.pure
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:enumeration
+  - mapping:cross-store
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:filter
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - db2
+  - h2

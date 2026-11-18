@@ -1,0 +1,275 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::meadowmarsh2::mapping::MarshMapping
+(
+  *demo::meadowmarsh2::domain::Station[stationSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowmarsh2::store::MarshDB]geo.station.station_code
+    )
+    ~mainTable [demo::meadowmarsh2::store::MarshDB]geo.station
+    stationCode: [demo::meadowmarsh2::store::MarshDB]geo.station.station_code,
+    stationName: [demo::meadowmarsh2::store::MarshDB]geo.station.station_name,
+    wardName: [demo::meadowmarsh2::store::MarshDB]geo.station.ward_name,
+    dockCapacity: [demo::meadowmarsh2::store::MarshDB]geo.station.dock_capacity
+  }
+
+  *demo::meadowmarsh2::domain::Dock[dockSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowmarsh2::store::MarshDB]fleet.dock.dock_code
+    )
+    ~mainTable [demo::meadowmarsh2::store::MarshDB]fleet.dock
+    dockCode: [demo::meadowmarsh2::store::MarshDB]fleet.dock.dock_code,
+    dockStatus: [demo::meadowmarsh2::store::MarshDB]fleet.dock.dock_status,
+    installedOn: [demo::meadowmarsh2::store::MarshDB]fleet.dock.installed_on,
+    stationName: [demo::meadowmarsh2::store::MarshDB]@StationDock | geo.station.station_name
+  }
+
+  *demo::meadowmarsh2::domain::Bicycle[bicycleSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowmarsh2::store::MarshDB]fleet.bicycle.bicycle_tag
+    )
+    ~mainTable [demo::meadowmarsh2::store::MarshDB]fleet.bicycle
+    bicycleTag: [demo::meadowmarsh2::store::MarshDB]fleet.bicycle.bicycle_tag,
+    modelName: [demo::meadowmarsh2::store::MarshDB]fleet.bicycle.model_name,
+    gearCount: [demo::meadowmarsh2::store::MarshDB]fleet.bicycle.gear_count,
+    wheelSizeMm: [demo::meadowmarsh2::store::MarshDB]fleet.bicycle.wheel_size_mm,
+    dockStatus: [demo::meadowmarsh2::store::MarshDB]@DockBicycle | fleet.dock.dock_status
+  }
+
+  *demo::meadowmarsh2::domain::Rider[riderSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowmarsh2::store::MarshDB]fleet.rider.rider_code
+    )
+    ~mainTable [demo::meadowmarsh2::store::MarshDB]fleet.rider
+    riderCode: [demo::meadowmarsh2::store::MarshDB]fleet.rider.rider_code,
+    riderName: [demo::meadowmarsh2::store::MarshDB]fleet.rider.rider_name,
+    membershipTier: [demo::meadowmarsh2::store::MarshDB]fleet.rider.membership_tier,
+    joinedOn: [demo::meadowmarsh2::store::MarshDB]fleet.rider.joined_on
+  }
+
+  *demo::meadowmarsh2::domain::Ride[rideSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowmarsh2::store::MarshDB]fleet.ride.ride_code
+    )
+    ~mainTable [demo::meadowmarsh2::store::MarshDB]fleet.ride
+    rideCode: [demo::meadowmarsh2::store::MarshDB]fleet.ride.ride_code,
+    startedAt: [demo::meadowmarsh2::store::MarshDB]fleet.ride.started_at,
+    distanceKm: [demo::meadowmarsh2::store::MarshDB]fleet.ride.distance_km,
+    routeLabel: [demo::meadowmarsh2::store::MarshDB]fleet.ride.route_label,
+    bicycleModel: [demo::meadowmarsh2::store::MarshDB]@BicycleRide | fleet.bicycle.model_name
+  }
+
+  *demo::meadowmarsh2::domain::Ticket[ticketSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowmarsh2::store::MarshDB]fleet.ticket.ticket_code
+    )
+    ~mainTable [demo::meadowmarsh2::store::MarshDB]fleet.ticket
+    ticketCode: [demo::meadowmarsh2::store::MarshDB]fleet.ticket.ticket_code,
+    raisedOn: [demo::meadowmarsh2::store::MarshDB]fleet.ticket.raised_on,
+    severityLabel: [demo::meadowmarsh2::store::MarshDB]fleet.ticket.severity_label,
+    noteText: [demo::meadowmarsh2::store::MarshDB]fleet.ticket.note_text
+  }
+
+  demo::meadowmarsh2::domain::Station_Dock: Relational
+  {
+    AssociationMapping
+    (
+      docks[stationSet, dockSet]: [demo::meadowmarsh2::store::MarshDB]@StationDock,
+      station[dockSet, stationSet]: [demo::meadowmarsh2::store::MarshDB]@StationDock
+    )
+  }
+
+  demo::meadowmarsh2::domain::Dock_Bicycle: Relational
+  {
+    AssociationMapping
+    (
+      bicycles[dockSet, bicycleSet]: [demo::meadowmarsh2::store::MarshDB]@DockBicycle,
+      dock[bicycleSet, dockSet]: [demo::meadowmarsh2::store::MarshDB]@DockBicycle
+    )
+  }
+
+  demo::meadowmarsh2::domain::Bicycle_Ride: Relational
+  {
+    AssociationMapping
+    (
+      bicycle[rideSet, bicycleSet]: [demo::meadowmarsh2::store::MarshDB]@BicycleRide,
+      rides[bicycleSet, rideSet]: [demo::meadowmarsh2::store::MarshDB]@BicycleRide
+    )
+  }
+
+  demo::meadowmarsh2::domain::Rider_Ride: Relational
+  {
+    AssociationMapping
+    (
+      rider[rideSet, riderSet]: [demo::meadowmarsh2::store::MarshDB]@RiderRide,
+      riderRides[riderSet, rideSet]: [demo::meadowmarsh2::store::MarshDB]@RiderRide
+    )
+  }
+
+  demo::meadowmarsh2::domain::Bicycle_Ticket: Relational
+  {
+    AssociationMapping
+    (
+      ticketedBicycle[ticketSet, bicycleSet]: [demo::meadowmarsh2::store::MarshDB]@BicycleTicket,
+      tickets[bicycleSet, ticketSet]: [demo::meadowmarsh2::store::MarshDB]@BicycleTicket
+    )
+  }
+
+  testSuites:
+  [
+    dockRosterSuite:
+    {
+      function: |demo::meadowmarsh2::domain::Dock.all()->filter(
+        d|$d.dockStatus->toUpper() == 'OPEN'
+      )->project(
+        [
+          d|$d.dockCode,
+          d|$d.stationName,
+          d|$d.station.wardName,
+          d|$d.installedOn
+        ],
+        [
+          'Dock/Code',
+          'Dock/StationName',
+          'Station/Ward',
+          'Dock/InstalledOn'
+        ]
+      )->sort(
+        [
+          asc('Dock/Code')
+        ]
+      );
+      tests:
+      [
+        openDocksCarryTheirStationLabels:
+        {
+          doc: 'Projects the open docks with the station name reached as a join-path-bound column and the ward reached by navigating the association end, so the same physical join serves a scalar binding and a model-level traversal. The fixture keeps one closed dock out of the population.';
+          data:
+          [
+            demo::meadowmarsh2::store::MarshDB:
+              Relational
+              #{
+                geo.station:
+                  'station_code,station_name,ward_name,dock_capacity\n'+
+                  'SN-01,Marsh Meadow Green,Reedbank,12\n'+
+                  'SN-02,Willow Causeway,Alderfen,8\n';
+
+                fleet.dock:
+                  'dock_code,station_code,dock_status,installed_on\n'+
+                  'DK-01,SN-01,OPEN,2024-03-01\n'+
+                  'DK-02,SN-02,OPEN,2024-05-14\n'+
+                  'DK-03,SN-02,CLOSED,2023-11-02\n';
+              }#
+          ];
+          asserts:
+          [
+            twoOpenDocksSurvive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Dock/Code":"DK-01","Dock/StationName":"Marsh Meadow Green","Station/Ward":"Reedbank","Dock/InstalledOn":"2024-03-01"},{"Dock/Code":"DK-02","Dock/StationName":"Willow Causeway","Station/Ward":"Alderfen","Dock/InstalledOn":"2024-05-14"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    rideLogSuite:
+    {
+      function: |demo::meadowmarsh2::domain::Ride.all()->project(
+        [
+          r|$r.rideCode,
+          r|$r.bicycleModel,
+          r|$r.rider.riderName,
+          r|$r.bicycle.dockStatus,
+          r|$r.distanceKm
+        ],
+        [
+          'Ride/Code',
+          'Ride/BicycleModel',
+          'Rider/Name',
+          'Bicycle/DockStatus',
+          'Ride/DistanceKm'
+        ]
+      )->sort(
+        [
+          asc('Ride/Code')
+        ]
+      );
+      tests:
+      [
+        ridesReachRiderAndBicycleThroughTheirAssociations:
+        {
+          doc: 'Projects every ride together with the model reached as a join-path-bound column, the rider name reached across one association end and the dock status of the bicycle reached across a second association end onto a join-path-bound column of that class, so the projection composes an association traversal with an inherited join binding.';
+          data:
+          [
+            demo::meadowmarsh2::store::MarshDB:
+              Relational
+              #{
+                geo.station:
+                  'station_code,station_name,ward_name,dock_capacity\n'+
+                  'SN-01,Marsh Meadow Green,Reedbank,12\n';
+
+                fleet.dock:
+                  'dock_code,station_code,dock_status,installed_on\n'+
+                  'DK-01,SN-01,OPEN,2024-03-01\n';
+
+                fleet.bicycle:
+                  'bicycle_tag,dock_code,model_name,gear_count,wheel_size_mm\n'+
+                  'BC-01,DK-01,Reedcutter Seven,7,700\n';
+
+                fleet.rider:
+                  'rider_code,rider_name,membership_tier,joined_on\n'+
+                  'RD-01,Avery Fen,ANNUAL,2023-04-01\n';
+
+                fleet.ride:
+                  'ride_code,bicycle_tag,rider_code,started_at,distance_km,route_label\n'+
+                  'RI-01,BC-01,RD-01,2026-05-02 07:15:00,4.5,Causeway Loop\n';
+              }#
+          ];
+          asserts:
+          [
+            theRideCarriesBothTraversals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ride/Code":"RI-01","Ride/BicycleModel":"Reedcutter Seven","Rider/Name":"Avery Fen","Bicycle/DockStatus":"OPEN","Ride/DistanceKm":4.5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

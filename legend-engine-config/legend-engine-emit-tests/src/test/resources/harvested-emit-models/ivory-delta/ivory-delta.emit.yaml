@@ -1,0 +1,33 @@
+name: ivory-delta
+title: "Ivory Delta — Bidirectional Property Graph, Constraints and a Diagram"
+description: |
+  A store-less river-delta survey vocabulary in which every relationship is a
+  pair of mutually-navigable class-typed properties rather than an association
+  element, with deliberately varied multiplicities across the four pairs
+  (mandatory-to-many, mandatory-to-one-or-many, optional-to-one and a
+  many-valued end that may be empty). One class carries independent
+  non-emptiness constraints over a character and a date attribute plus a
+  cross-property constraint that walks back through the pair it participates
+  in. A diagram pins all five classes and draws both directions of every pair,
+  making it a second, independent compile-time consumer of the same property
+  names.
+
+modelSources:
+  model:
+    root: ivory-delta
+    files:
+      - test/ivorydelta/diagram/DeltaSurveyDiagram.pure
+      - test/ivorydelta/domain/DeltaSurvey.pure
+
+features:
+  - grammar:constraint
+  - grammar:diagram
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - bidirectional-properties
+  - constraint
+  - diagram
+  - domain-only
+  - store-less

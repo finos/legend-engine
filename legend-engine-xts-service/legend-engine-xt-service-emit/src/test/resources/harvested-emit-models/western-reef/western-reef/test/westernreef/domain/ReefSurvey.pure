@@ -1,0 +1,47 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::westernreef::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A completed reef survey transect, carrying the bleaching band derived for it, the text rendering of its reef zone and the site and observer graphs it belongs to.'} test::westernreef::domain::ReefSurvey
+{
+  surveyRef: String[1];
+  healthBand: String[1];
+  zoneLabel: String[0..1];
+  site: ReefSite[1];
+  observer: SurveyObserver[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A monitored reef site, reached from a survey and itself reaching the region it sits in.'} test::westernreef::domain::ReefSite
+{
+  siteCode: String[1];
+  region: ReefRegion[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A reef region and the ocean basin it belongs to, forming the deepest level of the survey graph.'} test::westernreef::domain::ReefRegion
+{
+  regionCode: String[1];
+  oceanBasin: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The diver who recorded a survey transect, reaching the team they belong to.'} test::westernreef::domain::SurveyObserver
+{
+  observerCode: String[1];
+  team: ObserverTeam[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A monitoring team that fields reef survey divers.'} test::westernreef::domain::ObserverTeam
+{
+  teamCode: String[1];
+}

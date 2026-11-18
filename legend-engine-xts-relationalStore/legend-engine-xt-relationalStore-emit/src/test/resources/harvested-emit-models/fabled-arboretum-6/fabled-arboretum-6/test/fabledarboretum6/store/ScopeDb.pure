@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::fabledarboretum6::store::ScopeDb
+(
+  Schema hirepool
+  (
+    Table sky_region
+    (
+      region_code VARCHAR(16) PRIMARY KEY,
+      region_name VARCHAR(64) NOT NULL,
+      light_code VARCHAR(8) NOT NULL
+    )
+
+    Table mount_site
+    (
+      site_code VARCHAR(16) PRIMARY KEY,
+      site_name VARCHAR(64) NOT NULL,
+      region_code VARCHAR(16) NOT NULL,
+      altitude_m INTEGER NOT NULL
+    )
+
+    Table telescope
+    (
+      scope_id INTEGER PRIMARY KEY,
+      scope_code VARCHAR(16) NOT NULL,
+      scope_name VARCHAR(64) NOT NULL,
+      aperture_mm INTEGER NOT NULL,
+      mount_code VARCHAR(8) NOT NULL,
+      optic_code VARCHAR(8) NOT NULL,
+      tube_state VARCHAR(16) NOT NULL,
+      site_code VARCHAR(16) NOT NULL,
+      logged_hours INTEGER NOT NULL,
+      service_note VARCHAR(48)
+    )
+  )
+
+  Join Scope_Site(hirepool.telescope.site_code = hirepool.mount_site.site_code)
+  Join Site_Region(hirepool.mount_site.region_code = hirepool.sky_region.region_code)
+)

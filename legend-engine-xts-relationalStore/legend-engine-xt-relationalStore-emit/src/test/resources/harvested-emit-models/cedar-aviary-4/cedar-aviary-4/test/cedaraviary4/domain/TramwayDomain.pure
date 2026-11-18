@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::cedaraviary4::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Livery family a heritage tram car is painted in, including the placeholder used while a car carries no livery at all.'} test::cedaraviary4::domain::LiveryClass
+{
+  HERITAGE,
+  MODERN,
+  WORKS,
+  UNLIVERIED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Physical form of the shed a tram car is stabled in.'} test::cedaraviary4::domain::ShelterKind
+{
+  OPEN,
+  COVERED,
+  UNRECORDED
+}
+
+Class {meta::pure::profiles::doc.doc = 'An upland or coastal area the tramway network is divided into for reporting.'} test::cedaraviary4::domain::Region
+{
+  regionId: Integer[1];
+  regionName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A running line of the heritage tramway, laid to one of the two gauges the network still operates.'} test::cedaraviary4::domain::TramLine
+{
+  lineId: Integer[1];
+  lineName: String[0..1];
+  gaugeCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A shed where tram cars are stabled overnight, attached to one running line.'} test::cedaraviary4::domain::Depot
+{
+  depotId: Integer[1];
+  depotName: String[1];
+  shelterCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A tram car in the operating fleet, carrying the labels, route tag and alignment verdict derived in the relational mapping from the shed, line and region above it.'} test::cedaraviary4::domain::TramCar
+{
+  carTag: String[1];
+  seatCount: Integer[1];
+  liveryLabel: String[1];
+  liveryClass: LiveryClass[0..1];
+  shelterState: ShelterKind[0..1];
+  depotLabel: String[1];
+  gaugeLabel: String[1];
+  routeTag: String[1];
+  alignmentFlag: String[1];
+  regionLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One dated line in the running-shed log for a tram car.'} test::cedaraviary4::domain::ServiceEntry
+{
+  entryId: Integer[1];
+  entryNote: String[0..1];
+  loggedOn: StrictDate[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a tram car to the shed-log lines written against it, navigable in either direction.'} test::cedaraviary4::domain::Car_ServiceEntries
+{
+  car: TramCar[0..1];
+  entries: ServiceEntry[*];
+}

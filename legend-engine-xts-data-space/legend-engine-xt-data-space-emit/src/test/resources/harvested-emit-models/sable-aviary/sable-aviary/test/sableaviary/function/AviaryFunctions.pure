@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::functions::date::*;
+import test::sableaviary::domain::*;
+import test::sableaviary::function::*;
+
+function {meta::pure::profiles::doc.doc = 'Bands a ringed bird on its wing span and mass through seven thresholded arms and an unbanded fallback, so one shared branch set backs the mapping-derived digest and every service body.'} test::sableaviary::function::conditionBand(wingSpanCm: Integer[1], massGrams: Integer[1]): String[1]
+{
+  if(($wingSpanCm * 10) >= 400,
+    | if($massGrams >= 900,
+      | 'PRIME FLIER',
+      | 'LONG WING LIGHT'
+    ),
+    | if(($wingSpanCm * 10) >= 300,
+      | if($massGrams >= 700,
+        | 'STRONG FLIER',
+        | 'MID WING LIGHT'
+      ),
+      | if(($wingSpanCm * 10) >= 200,
+        | if($massGrams >= 500,
+          | 'STEADY FLIER',
+          | 'SHORT WING LIGHT'
+        ),
+        | if(($wingSpanCm * 10) >= 100,
+          | 'FLEDGLING',
+          | 'UNBANDED'
+        )
+      )
+    )
+  )
+}
+
+function {meta::pure::profiles::doc.doc = 'Days between the ringing date of a bird and the register date.'} test::sableaviary::function::registerAgeDays(ringedOn: StrictDate[1], asOf: StrictDate[1]): Integer[1]
+{
+  $ringedOn->dateDiff($asOf, DurationUnit.DAYS)
+}
+
+function {meta::pure::profiles::doc.doc = 'Composes the aviary register headline of a bird out of its condition band, its register age in days and the truncated keeper note, folding a missing note onto a sentinel.'} test::sableaviary::function::birdHeadline(wingSpanCm: Integer[1], massGrams: Integer[1], ringedOn: StrictDate[1], asOf: StrictDate[1], note: String[0..1]): String[1]
+{
+  test::sableaviary::function::conditionBand($wingSpanCm, $massGrams)
+    + ' @ '
+    + test::sableaviary::function::registerAgeDays($ringedOn, $asOf)->toString()
+    + 'd / '
+    + if($note->isEmpty(),
+        | 'NO NOTE',
+        | if($note->toOne()->trim()->length() > 14,
+          | $note->toOne()->trim()->substring(0, 14)->toUpper(),
+          | $note->toOne()->trim()->toUpper()
+        )
+      )
+}

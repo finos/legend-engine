@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenreef5::mapping::NestingBaseMapping
+(
+  *test::goldenreef5::domain::NestSite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenreef5::store::NestingCoastDB]coast.nest_site.site_code
+    )
+    ~mainTable [test::goldenreef5::store::NestingCoastDB]coast.nest_site
+    siteCode: [test::goldenreef5::store::NestingCoastDB]coast.nest_site.site_code,
+    siteName: [test::goldenreef5::store::NestingCoastDB]coast.nest_site.site_name,
+    beachCode: [test::goldenreef5::store::NestingCoastDB]coast.nest_site.beach_code,
+    sectorCode: [test::goldenreef5::store::NestingCoastDB]coast.nest_site.sector_code,
+    substrateCode: [test::goldenreef5::store::NestingCoastDB]coast.nest_site.substrate_code,
+    beachName: [test::goldenreef5::store::NestingCoastDB]@Site_Beach | [test::goldenreef5::store::NestingCoastDB]coast.beach.beach_name,
+    coastRegion: [test::goldenreef5::store::NestingCoastDB]@Site_Beach | [test::goldenreef5::store::NestingCoastDB]coast.beach.coast_region,
+    regionStationName: [test::goldenreef5::store::NestingCoastDB]@Site_Beach > @Beach_Station | [test::goldenreef5::store::NestingCoastDB]patrol.field_station.station_name
+  }
+
+  *test::goldenreef5::domain::NestRecord[nest]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenreef5::store::NestingCoastDB]patrol.nest_record.nest_ref
+    )
+    ~mainTable [test::goldenreef5::store::NestingCoastDB]patrol.nest_record
+    nestRef: [test::goldenreef5::store::NestingCoastDB]patrol.nest_record.nest_ref,
+    siteCode: [test::goldenreef5::store::NestingCoastDB]patrol.nest_record.site_code,
+    laidDate: [test::goldenreef5::store::NestingCoastDB]patrol.nest_record.laid_date,
+    clutchSize: [test::goldenreef5::store::NestingCoastDB]patrol.nest_record.clutch_size,
+    hatchCount: [test::goldenreef5::store::NestingCoastDB]patrol.nest_record.hatch_count,
+    predationCode: [test::goldenreef5::store::NestingCoastDB]patrol.nest_record.predation_code,
+    surveyProgram: 'NEST-WATCH',
+    stationName: [test::goldenreef5::store::NestingCoastDB]@Nest_Team > @Team_Station | [test::goldenreef5::store::NestingCoastDB]patrol.field_station.station_name
+  }
+
+  *test::goldenreef5::domain::PatrolTeam[team]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenreef5::store::NestingCoastDB]patrol.patrol_team.team_code
+    )
+    ~mainTable [test::goldenreef5::store::NestingCoastDB]patrol.patrol_team
+    teamCode: [test::goldenreef5::store::NestingCoastDB]patrol.patrol_team.team_code,
+    teamName: [test::goldenreef5::store::NestingCoastDB]patrol.patrol_team.team_name
+  }
+)

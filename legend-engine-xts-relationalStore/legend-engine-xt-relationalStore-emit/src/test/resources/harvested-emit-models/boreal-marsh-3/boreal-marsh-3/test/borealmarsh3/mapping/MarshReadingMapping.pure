@@ -1,0 +1,257 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealmarsh3::mapping::MarshReadingMapping
+(
+  include mapping test::borealmarsh3::mapping::MarshRefMapping
+
+  test::borealmarsh3::domain::MoistureBand: EnumerationMapping MoistureBands
+  {
+    SATURATED: ['S'],
+    DAMP: ['D'],
+    DRY: ['Y']
+  }
+
+  *test::borealmarsh3::domain::PlotReading[plotReading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealmarsh3::store::MarshSurveyDb]marsh.plot_reading.reading_id
+    )
+    ~mainTable [test::borealmarsh3::store::MarshSurveyDb]marsh.plot_reading
+    readingCode: [test::borealmarsh3::store::MarshSurveyDb]marsh.plot_reading.reading_code,
+    moistureBand: EnumerationMapping MoistureBands: [test::borealmarsh3::store::MarshSurveyDb]marsh.plot_reading.moisture_code,
+    waterTableCm: [test::borealmarsh3::store::MarshSurveyDb]marsh.plot_reading.water_table_cm,
+    peatTempC: [test::borealmarsh3::store::MarshSurveyDb]marsh.plot_reading.peat_temp_c,
+    probeCount: [test::borealmarsh3::store::MarshSurveyDb]marsh.plot_reading.probe_count,
+    readingOn: [test::borealmarsh3::store::MarshSurveyDb]marsh.plot_reading.reading_on,
+    pointName: [test::borealmarsh3::store::MarshSurveyDb]@Reading_Point | [test::borealmarsh3::store::MarshSurveyDb]marsh.monitor_point.point_name,
+    basinName: [test::borealmarsh3::store::MarshSurveyDb]@Reading_Point > @Point_Basin | [test::borealmarsh3::store::MarshSurveyDb]marsh.basin_block.basin_name,
+    surveyorName: [test::borealmarsh3::store::MarshSurveyDb]@Reading_Surveyor | [test::borealmarsh3::store::MarshSurveyDb]marsh.surveyor_roster.surveyor_name
+  }
+
+  test::borealmarsh3::domain::Point_Reading: Relational
+  {
+    AssociationMapping
+    (
+      point[plotReading, monitorPoint]: [test::borealmarsh3::store::MarshSurveyDb]@Reading_Point,
+      readings[monitorPoint, plotReading]: [test::borealmarsh3::store::MarshSurveyDb]@Reading_Point
+    )
+  }
+
+  testSuites:
+  [
+    plotReadingTransformSuite:
+    {
+      function: |test::borealmarsh3::domain::PlotReading.all(%2026-06-01)->project(
+        [
+          x|$x.readingCode,
+          x|$x.moistureBand,
+          x|$x.waterTableCm,
+          x|$x.peatTempC,
+          x|$x.probeCount,
+          x|$x.readingOn,
+          x|$x.pointName,
+          x|$x.basinName,
+          x|$x.surveyorName,
+          x|$x.probeIndex(),
+          x|$x.wetnessBand()
+        ],
+        [
+          'Reading',
+          'Moisture',
+          'Water Table',
+          'Peat Temp',
+          'Probes',
+          'Read On',
+          'Point',
+          'Basin',
+          'Surveyor',
+          'Probe Index',
+          'Wetness'
+        ]
+      )->sort([asc('Reading')]);
+      tests:
+      [
+        everyBandAtOneBusinessDate:
+        {
+          doc: 'Reads the survey book at one business date over a fixture whose rows walk all four arms of the wetness banding and fall through to the floor, resolve the point one hop out, the basin of that point two hops out and the surveyor on a second one-hop path, fold the probe arithmetic deep enough that the plan has to compute it before it reads the columns, and drop the row whose business window closed two years earlier.';
+          data:
+          [
+            test::borealmarsh3::store::MarshSurveyDb:
+              Reference
+              #{
+                test::borealmarsh3::data::MarshTestData
+              }#
+          ];
+          asserts:
+          [
+            fiveOpenWindowReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"PR-01","Moisture":"SATURATED","Water Table":45.0,"Peat Temp":6.0,"Probes":3,"Read On":"2026-04-02","Point":"Sphagnum Hollow","Basin":"Upper Fen Basin","Surveyor":"j.rowan","Probe Index":25.625,"Wetness":"BAND ONE WET"},{"Reading":"PR-02","Moisture":"DAMP","Water Table":30.0,"Peat Temp":9.0,"Probes":7,"Read On":"2026-04-03","Point":"Sphagnum Hollow","Basin":"Upper Fen Basin","Surveyor":"j.rowan","Probe Index":10.0625,"Wetness":"BAND TWO DAMP"},{"Reading":"PR-03","Moisture":"DRY","Water Table":15.0,"Peat Temp":5.0,"Probes":3,"Read On":"2026-04-04","Point":null,"Basin":"Upper Fen Basin","Surveyor":"k.aspen","Probe Index":10.125,"Wetness":"BAND THREE DRAWN"},{"Reading":"PR-04","Moisture":"DAMP","Water Table":5.0,"Peat Temp":13.0,"Probes":3,"Read On":"2026-04-05","Point":"Sedge Margin","Basin":null,"Surveyor":"k.aspen","Probe Index":9.125,"Wetness":"BAND FOUR WARM"},{"Reading":"PR-05","Moisture":"DRY","Water Table":2.0,"Peat Temp":4.0,"Probes":7,"Read On":"2026-04-06","Point":null,"Basin":"Upper Fen Basin","Surveyor":"j.rowan","Probe Index":1.8125,"Wetness":"BAND FLOOR"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    plotReadingClosedWindowSuite:
+    {
+      function: |test::borealmarsh3::domain::PlotReading.all(%2024-06-01)->project(
+        [
+          x|$x.readingCode,
+          x|$x.point.pointCode,
+          x|$x.pointName,
+          x|$x.basinName,
+          x|$x.probeIndex(),
+          x|$x.wetnessBand()
+        ],
+        [
+          'Reading',
+          'Point Code',
+          'Point',
+          'Basin',
+          'Probe Index',
+          'Wetness'
+        ]
+      )->sort([asc('Reading')]);
+      tests:
+      [
+        outOfRangeWindowAtAnEarlierBusinessDate:
+        {
+          doc: 'Reads the same book at a business date inside the window that closed two years earlier, so the explicit date rather than the extent decides which row is returned, and reaches the point of that row through the association rather than through the mapped column.';
+          data:
+          [
+            test::borealmarsh3::store::MarshSurveyDb:
+              Reference
+              #{
+                test::borealmarsh3::data::MarshTestData
+              }#
+          ];
+          asserts:
+          [
+            onlyTheClosedWindowReading:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"PR-06","Point Code":"MP-01","Point":"Sphagnum Hollow","Basin":"Upper Fen Basin","Probe Index":28.875,"Wetness":"BAND ONE WET"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    peatPointSubtypeSuite:
+    {
+      function: |test::borealmarsh3::domain::PeatPoint.all()->project(
+        [
+          x|$x.pointCode,
+          x|$x.pointName,
+          x|$x.basinName,
+          x|$x.peatDepthCm,
+          x|$x.probeKind,
+          x|$x.collarLabel()
+        ],
+        [
+          'Point Code',
+          'Point',
+          'Basin',
+          'Peat Depth',
+          'Probe Kind',
+          'Collar'
+        ]
+      )->sort([asc('Point Code')]);
+      tests:
+      [
+        onlyThePeatCutPointsWidenedByTheirDetailRow:
+        {
+          doc: 'Reads the subtype of the point book whose own attributes are carried on a detail table joined to it rather than on the point book, so the two peat-cut points are widened by their detail row while the mineral point is filtered out of the subtype altogether.';
+          data:
+          [
+            test::borealmarsh3::store::MarshSurveyDb:
+              Reference
+              #{
+                test::borealmarsh3::data::MarshTestData
+              }#
+          ];
+          asserts:
+          [
+            twoPeatCutPoints:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Point Code":"MP-01","Point":"Sphagnum Hollow","Basin":"Upper Fen Basin","Peat Depth":120.5,"Probe Kind":"collar","Collar":"COLLAR/MP-01"},{"Point Code":"MP-02","Point":null,"Basin":"Upper Fen Basin","Peat Depth":88.0,"Probe Kind":"auger","Collar":"AUGER/MP-02"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    basinLoadGroupBySuite:
+    {
+      function: |test::borealmarsh3::domain::BasinLoad.all()->project(
+        [
+          x|$x.basinId,
+          x|$x.pointTally,
+          x|$x.stakeTotal
+        ],
+        [
+          'Basin',
+          'Points',
+          'Stakes'
+        ]
+      )->sort([asc('Basin')]);
+      tests:
+      [
+        eachBasinFoldedOverItsPoints:
+        {
+          doc: 'Reads the fold of the point book that is grouped by basin inside the mapping rather than by the query, so the tally and the stake total are aggregated behind the class and each basin comes back once.';
+          data:
+          [
+            test::borealmarsh3::store::MarshSurveyDb:
+              Reference
+              #{
+                test::borealmarsh3::data::MarshTestData
+              }#
+          ];
+          asserts:
+          [
+            twoFoldedBasins:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Basin":1,"Points":2,"Stakes":6},{"Basin":2,"Points":1,"Stakes":6}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

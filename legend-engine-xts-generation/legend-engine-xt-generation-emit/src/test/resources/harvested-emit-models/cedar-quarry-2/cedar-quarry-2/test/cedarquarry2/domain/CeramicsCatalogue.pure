@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::cedarquarry2::domain::*;
+
+Profile test::cedarquarry2::domain::CeramicsGovernance
+{
+  stereotypes: [curated, provisional];
+  tags: [custodian, catalogueNote];
+}
+
+Enum test::cedarquarry2::domain::ClayBody
+{
+  EARTHENWARE,
+  STONEWARE,
+  PORCELAIN
+}
+
+Enum test::cedarquarry2::domain::ConditionGrade
+{
+  INTACT,
+  CHIPPED,
+  RESTORED
+}
+
+Enum test::cedarquarry2::domain::FiringAtmosphere
+{
+  OXIDISING,
+  REDUCING,
+  NEUTRAL
+}
+
+Class <<test::cedarquarry2::domain::CeramicsGovernance.curated>> {test::cedarquarry2::domain::CeramicsGovernance.custodian = 'ceramics-collection-desk'} test::cedarquarry2::domain::CatalogueEntry
+[
+  accessionCodeIsUpperCase: $this.accessionCode == $this.accessionCode->toUpper(),
+  heightFitsTheDisplayCase: ($this.heightMm > 0) && ($this.heightMm <= 900)
+]
+{
+  accessionCode: String[1];
+  heightMm: Integer[1];
+  clayBody: ClayBody[1];
+  condition: ConditionGrade[1];
+}
+
+Class <<test::cedarquarry2::domain::CeramicsGovernance.curated>> {test::cedarquarry2::domain::CeramicsGovernance.catalogueNote = 'Thrown or moulded hollow ware measured at the rim and the foot ring.'} test::cedarquarry2::domain::VesselEntry extends CatalogueEntry
+[
+  rimIsNotNarrowerThanHalfTheFootRing: $this.rimDiameterMm >= ($this.baseDiameterMm / 2)
+]
+{
+  rimDiameterMm: Integer[1];
+  baseDiameterMm: Integer[1];
+}
+
+Class <<test::cedarquarry2::domain::CeramicsGovernance.provisional>> {test::cedarquarry2::domain::CeramicsGovernance.catalogueNote = 'Flat ware catalogued by glazed face count rather than by profile.'} test::cedarquarry2::domain::TileEntry extends CatalogueEntry
+[
+  glazedFacesWithinTheRecordedRange: ($this.glazedFaceCount >= 1) && ($this.glazedFaceCount <= 6)
+]
+{
+  glazedFaceCount: Integer[1];
+  tileEdgeMm: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A room in the collection building that holds catalogued ware.'} test::cedarquarry2::domain::CollectionRoom
+[
+  roomCodeIsUpperCase: $this.roomCode == $this.roomCode->toUpper(),
+  roomNameIsRecorded: $this.roomName->toUpper()->trim()->length() > 0
+]
+{
+  roomCode: String[1];
+  roomName: String[1];
+}
+
+Association test::cedarquarry2::domain::VesselDisplay
+{
+  displayedVessels: VesselEntry[*];
+  displayRoom: CollectionRoom[0..1];
+}

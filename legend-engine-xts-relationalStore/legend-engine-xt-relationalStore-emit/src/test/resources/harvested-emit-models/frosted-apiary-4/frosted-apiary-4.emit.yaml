@@ -1,0 +1,62 @@
+name: frosted-apiary-4
+title: "Apiary Hive Register - Processing-Temporal Services Resolved At A Pinned Instant"
+description: |
+  A processing-temporal hive register served by three single-execution services
+  that all resolve the register at a pinned instant rather than at a stored
+  business date. The first restricts the register to a five-member forage-zone
+  literal set and projects a nested strength band, the second keeps only hives
+  whose optional queen tag was actually recorded and reads an audit note that the
+  mapping defaults to a literal when the source column is absent, and the third
+  binds two caller parameters into a prefixed forage label and a threshold band.
+  Every service carries a test suite whose fixture includes a version whose
+  processing window closed in the past, so the milestoning exclusion is asserted
+  as well as the projections.
+modelSources:
+  model:
+    root: frosted-apiary-4
+    files:
+      - test/frostedapiary4/connection/ApiaryConnections.pure
+      - test/frostedapiary4/domain/ApiaryDomain.pure
+      - test/frostedapiary4/mapping/ApiaryMapping.pure
+      - test/frostedapiary4/runtime/ApiaryRuntimes.pure
+      - test/frostedapiary4/service/ForageStandingService.pure
+      - test/frostedapiary4/service/HiveZoneRegisterService.pure
+      - test/frostedapiary4/service/QueenTagWatchService.pure
+      - test/frostedapiary4/store/ApiaryRegisterDb.pure
+features:
+  - execution:plan-generation
+  - scaffolding:relational-connection
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:derived-property
+  - grammar:qualified-property
+  - mapping:relational-join-reached-property
+  - mapping:relational-primary-key
+  - mapping:relational-property-expression
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:membership-test
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - apiary-register
+  - collection-op
+  - h2
+  - literal-defaulted-transform
+  - parameterised-service
+  - pinned-instant
+  - plan-generation
+  - processing-temporal
+  - service-test

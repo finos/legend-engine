@@ -1,0 +1,94 @@
+name: emerald-lantern
+title: "Emerald Lantern - Turning-Optic Specialisation Reached By A Subtype Narrowing Inside The Query, Two Code Vocabularies Folded Onto Enumerations, Across Two Keyed Sybase Depots"
+description: |
+  A harbour board's register of coastal lantern stations. One aliased table carries the whole
+  family: a beacon supertype holding the plate and district, a lantern station carrying the keeper,
+  the lamp, two stored code vocabularies and the measured optics, and a turning-optic
+  specialisation - selected by a store filter on the optic kind - that alone carries a beam label
+  and a rotation period. Every class mapping declares its primary key and main-table alias
+  explicitly, the district code is upper-cased and the plates trimmed in the binding, a blank keeper
+  plate is replaced by a defaulting literal, and the lens-condition and service-tier codes are
+  translated onto enumeration constants by an included enumeration mapping, one of which folds two
+  source codes onto the same constant. The single service narrows each station to the turning-optic
+  specialisation inside the query body to reach the beam label, so a fixed station - which has no
+  beam label to compare - drops out of the roster, then fixes a tabular surface whose columns
+  include both enumerations and the specialised rotation period. That one query body is bound to two
+  keyed depots over the same store, so the key decides only which Sybase target the identical plan
+  is routed to. The mapping itself is tested directly: one suite resolves every binding of the
+  station family including the defaulting literal and both vocabularies, and another resolves the
+  specialised bindings and proves the filtered extent.
+  Keeper visits are keyed by the station and a running visit number, a two-column primary key the
+  visit class mapping repeats; each visit reaches the district office and the coast sector of its
+  station over two- and three-hop join paths, labels its kind through a nested case with a null
+  fallback and folds its outcome code onto an enumeration that leaves unknown codes empty. Both
+  depot connections carry a table mapper post-processor renaming the visit, office and sector
+  tables onto their current physical copies. A model-to-model digest reduces each visit to a queue
+  urgency chosen by an enumeration mapping over a conditional on the hours on site, and a data
+  space with one board context exposes the documented station and visit classes.
+
+modelSources:
+  model:
+    root: emerald-lantern
+    files:
+      - test/emeraldlantern/connection/LanternConnections.pure
+      - test/emeraldlantern/data/LanternTestData.pure
+      - test/emeraldlantern/dataspace/LanternDataSpace.pure
+      - test/emeraldlantern/domain/LanternDomain.pure
+      - test/emeraldlantern/domain/LanternVisitDomain.pure
+      - test/emeraldlantern/mapping/LanternEnumMappings.pure
+      - test/emeraldlantern/mapping/LanternMapping.pure
+      - test/emeraldlantern/mapping/LanternVisitDigestMapping.pure
+      - test/emeraldlantern/mapping/LanternVisitMapping.pure
+      - test/emeraldlantern/runtime/LanternRuntimes.pure
+      - test/emeraldlantern/service/BeamRotationRosterService.pure
+      - test/emeraldlantern/store/LanternDb.pure
+
+features:
+  - connection:delegated-kerberos-authentication
+  - connection:static-datasource
+  - connection:sybase
+  - connection:mapper-postprocessor
+  - execution:data-space
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:tagged-value
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - store:relational-filter
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-subtype-mapping
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - query:subtype-cast
+  - scaffolding:class
+  - grammar:class-inheritance
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-column-primary-key
+stores:
+  - relational
+complexity: advanced
+tags:
+  - class-hierarchy
+  - composite-key
+  - data-space
+  - defaulting-literal
+  - enumeration-mapping
+  - h2
+  - keyed-execution
+  - lighthouse
+  - multi-execution
+  - relational
+  - store-filter
+  - subtype-cast
+  - sybase
+  - table-mapper

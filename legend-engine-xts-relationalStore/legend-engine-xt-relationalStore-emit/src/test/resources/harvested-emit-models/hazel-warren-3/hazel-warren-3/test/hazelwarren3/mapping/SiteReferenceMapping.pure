@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelwarren3::mapping::SiteReferenceMapping
+(
+  *test::hazelwarren3::domain::AllotmentSite[site_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelwarren3::store::SiteReferenceDb]allotmentref.site.site_code
+    )
+    ~mainTable [test::hazelwarren3::store::SiteReferenceDb]allotmentref.site
+    siteCode: [test::hazelwarren3::store::SiteReferenceDb]allotmentref.site.site_code,
+    siteName: [test::hazelwarren3::store::SiteReferenceDb]allotmentref.site.site_name,
+    districtName: [test::hazelwarren3::store::SiteReferenceDb]allotmentref.site.district_name
+  }
+
+  *test::hazelwarren3::domain::AllotmentCrop[crop_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelwarren3::store::SiteReferenceDb]allotmentref.crop.crop_code
+    )
+    ~mainTable [test::hazelwarren3::store::SiteReferenceDb]allotmentref.crop
+    cropCode: [test::hazelwarren3::store::SiteReferenceDb]allotmentref.crop.crop_code,
+    cropName: [test::hazelwarren3::store::SiteReferenceDb]allotmentref.crop.crop_name,
+    seasonCode: [test::hazelwarren3::store::SiteReferenceDb]allotmentref.crop.season_code
+  }
+
+  *test::hazelwarren3::domain::PlotTending[tending_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelwarren3::store::PlotCoreDb]allotment.tending.plot_code,
+      [test::hazelwarren3::store::PlotCoreDb]allotment.tending.tended_on
+    )
+    ~mainTable [test::hazelwarren3::store::PlotCoreDb]allotment.tending
+    plotCode: [test::hazelwarren3::store::PlotCoreDb]allotment.tending.plot_code,
+    tendedOn: [test::hazelwarren3::store::PlotCoreDb]allotment.tending.tended_on,
+    keeperCode: [test::hazelwarren3::store::PlotCoreDb]allotment.tending.keeper_code,
+    hours: [test::hazelwarren3::store::PlotCoreDb]allotment.tending.hours
+  }
+)

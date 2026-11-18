@@ -1,0 +1,48 @@
+name: gilded-lantern-observatory
+title: "Night Sky Sessions — Site-Scoped Observatory Register"
+description: |
+  A public observatory model for recording night-sky observing sessions and
+  telescope instruments. The relational mapping uses explicit primary keys and
+  a named main-table alias, while an applied night-sky profile marks the
+  published session and calibrated instrument elements. A filtered tabular
+  register projects normalized session labels and exposure bands through a
+  single execution, and a site-keyed multi-execution service serves the same
+  observatory contract through separate mountain and coastal runtimes.
+modelSources:
+  model:
+    root: gilded-lantern-observatory
+    files:
+      - test/gildedlantern/connection/ObservatoryConnection.pure
+      - test/gildedlantern/domain/ObservatoryDomain.pure
+      - test/gildedlantern/mapping/ObservatoryMapping.pure
+      - test/gildedlantern/profile/ObservatoryProfile.pure
+      - test/gildedlantern/runtime/ObservatoryRuntime.pure
+      - test/gildedlantern/service/NightSkyServices.pure
+      - test/gildedlantern/store/ObservatoryStore.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - astronomy
+  - filtering
+  - h2
+  - mapping
+  - observatory
+  - profile
+  - projection
+  - relational
+  - runtime
+  - sessions

@@ -1,0 +1,53 @@
+name: golden-willow
+title: "Golden Willow - Keyed Garden Plantings Services with Cross-Schema Join"
+description: |
+  A botanical garden register served over a cross-schema relational store whose
+  plant catalogue joins to a layout schema of planting beds. A keyed
+  multi-execution service and its single-execution tested counterpart return
+  currently-standing plantings for a requested zone through a deep boolean
+  predicate that combines a date-arithmetic recency test, a status membership
+  test, a far-future retirement sentinel and an adjacent-zone membership set,
+  while an unfiltered directory service gives the trivial projection. The
+  mapping walks the cross-schema inner join for its bed zone and carries its own
+  tabular-data-set test suite alongside the service suites.
+modelSources:
+  model:
+    root: golden-willow
+    files:
+      - test/goldenwillow/connection/GardenConnections.pure
+      - test/goldenwillow/domain/Domain.pure
+      - test/goldenwillow/mapping/GardenMapping.pure
+      - test/goldenwillow/runtime/GardenRuntimes.pure
+      - test/goldenwillow/service/ActivePlantings.pure
+      - test/goldenwillow/service/ActivePlantingsAsOf.pure
+      - test/goldenwillow/service/PlantDirectory.pure
+      - test/goldenwillow/store/GardenDatabase.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - botanical-garden
+  - cross-schema-join
+  - date-arithmetic
+  - h2
+  - keyed-execution
+  - plant-register
+  - service-test

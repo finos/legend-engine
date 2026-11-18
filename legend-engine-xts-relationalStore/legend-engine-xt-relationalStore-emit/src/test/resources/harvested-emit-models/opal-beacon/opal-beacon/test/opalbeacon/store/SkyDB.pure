@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::opalbeacon::store::SkyDB
+(
+  Schema SKY
+  (
+    Table BEACON_STAR
+    (
+      milestoning
+      (
+        business(BUS_FROM = bus_from, BUS_THRU = bus_thru),
+        processing(PROCESSING_IN = proc_in, PROCESSING_OUT = proc_out)
+      )
+      star_code VARCHAR(24) PRIMARY KEY,
+      star_name VARCHAR(120) NOT NULL,
+      magnitude INTEGER NOT NULL,
+      band_code VARCHAR(12) NOT NULL,
+      sector_code VARCHAR(24) NOT NULL,
+      bus_from DATE PRIMARY KEY,
+      bus_thru DATE,
+      proc_in DATE PRIMARY KEY,
+      proc_out DATE
+    )
+    Table SKY_SECTOR
+    (
+      sector_code VARCHAR(24) PRIMARY KEY,
+      sector_name VARCHAR(120) NOT NULL
+    )
+    Table SURVEY_RUN
+    (
+      run_code VARCHAR(24) PRIMARY KEY,
+      run_name VARCHAR(120) NOT NULL,
+      sector_code VARCHAR(24) NOT NULL
+    )
+  )
+
+  Schema OPS
+  (
+    Table SECTOR_TEAM
+    (
+      sector_code VARCHAR(24) PRIMARY KEY,
+      team_code VARCHAR(24) PRIMARY KEY,
+      valid_from DATE NOT NULL,
+      valid_thru DATE NOT NULL
+    )
+    Table OBSERVING_TEAM
+    (
+      team_code VARCHAR(24) PRIMARY KEY,
+      team_name VARCHAR(120) NOT NULL,
+      station_code VARCHAR(24) NOT NULL,
+      valid_from DATE NOT NULL,
+      valid_thru DATE NOT NULL
+    )
+    Table STATION
+    (
+      station_code VARCHAR(24) PRIMARY KEY,
+      station_name VARCHAR(120) NOT NULL,
+      dome_kind VARCHAR(24) NOT NULL
+    )
+  )
+
+  Join Star_Sector(SKY.BEACON_STAR.sector_code = SKY.SKY_SECTOR.sector_code)
+  Join Survey_Sector(SKY.SURVEY_RUN.sector_code = SKY.SKY_SECTOR.sector_code)
+  Join Sector_TeamLink(SKY.SKY_SECTOR.sector_code = OPS.SECTOR_TEAM.sector_code and OPS.SECTOR_TEAM.valid_from <= now() and OPS.SECTOR_TEAM.valid_thru > now())
+  Join TeamLink_Team(OPS.SECTOR_TEAM.team_code = OPS.OBSERVING_TEAM.team_code and OPS.OBSERVING_TEAM.valid_from <= now() and OPS.OBSERVING_TEAM.valid_thru > now())
+  Join Team_Station(OPS.OBSERVING_TEAM.station_code = OPS.STATION.station_code)
+)

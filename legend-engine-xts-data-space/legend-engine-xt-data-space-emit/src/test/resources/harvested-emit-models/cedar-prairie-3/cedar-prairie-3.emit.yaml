@@ -1,0 +1,45 @@
+name: cedar-prairie-3
+title: "Prairie Restoration Register — a cross-schema relational binding, two association implementations and a banded plot chain behind a discovery surface"
+modelSources:
+  model:
+    root: cedar-prairie-3
+    files:
+      - test/cedarprairie3/connection/PrairieConnection.pure
+      - test/cedarprairie3/data/PrairieNetworkData.pure
+      - test/cedarprairie3/dataspace/PrairieDataSpace.pure
+      - test/cedarprairie3/domain/PrairieDomain.pure
+      - test/cedarprairie3/mapping/PrairieBaseMapping.pure
+      - test/cedarprairie3/mapping/PrairieNetworkMapping.pure
+      - test/cedarprairie3/runtime/PrairieRuntime.pure
+      - test/cedarprairie3/service/CrewStewardshipExtract.pure
+      - test/cedarprairie3/service/SectorRestorationBoard.pure
+      - test/cedarprairie3/store/PrairieDB.pure
+features:
+  - execution:data-space
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - h2
+  - sybase

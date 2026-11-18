@@ -1,0 +1,49 @@
+name: noble-meadow-5
+title: "Alpine Meadow Pollinator Survey — Relational Plots Chained Into a JSON-Bound Published Digest"
+description: |
+  An alpine-meadow pollinator survey in which a base plot identity is specialised by a
+  surveyed pollinator plot, so the mapping and query layers can bind against either the
+  general or the specific shape. A relational store carries the surveyed plots and a
+  relational mapping normalises the plot name and the habitat code through nested string
+  functions. A second, model-to-model mapping consumes the instances the relational layer
+  produces through a chaining connection, renames each property onto a published digest
+  shape and stamps a constant feed label, and a JSON binding declares the serialised form
+  of that digest. Two runtimes exist: one binds the warehouse connection for the
+  relational surface, the other chains the model layer so the transform resolves without
+  touching a database. Assertion-backed coverage: a relational mapping test over the
+  nested transforms and a model-to-model mapping test over the chained digest shape.
+modelSources:
+  model:
+    root: noble-meadow-5
+    files:
+      - test/noblemeadow5/connection/MeadowConnections.pure
+      - test/noblemeadow5/domain/MeadowDomain.pure
+      - test/noblemeadow5/external/PlotDigestBinding.pure
+      - test/noblemeadow5/mapping/PlotBaseMapping.pure
+      - test/noblemeadow5/mapping/PlotDigestM2M.pure
+      - test/noblemeadow5/runtime/MeadowRuntimes.pure
+      - test/noblemeadow5/store/MeadowDb.pure
+features:
+  - execution:external-format-binding
+  - grammar:class-inheritance
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - class-inheritance
+  - external-format
+  - h2
+  - json-schema
+  - meadow
+  - model-chain-connection
+  - model-to-model
+  - pollinator-survey
+  - relational
+  - string-function-transform

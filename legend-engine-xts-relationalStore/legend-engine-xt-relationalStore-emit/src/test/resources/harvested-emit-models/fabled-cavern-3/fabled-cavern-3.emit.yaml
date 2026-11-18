@@ -1,0 +1,44 @@
+name: fabled-cavern-3
+title: "Show Cave Passage Register — A Guiding Mapping That Owns No Class Mapping Of Its Own"
+description: |
+  A show cave passage register split across two relational mappings. The base
+  mapping holds the only class mapping for the surveyed passage extent, with an
+  explicit main-table alias, a declared primary key and four alias-qualified
+  column bindings. The guiding mapping declares no class mapping at all: it
+  includes the base mapping and is exercised through a mapping test that filters
+  the extent to guided passages and projects three columns, so the included
+  alias, primary key and column bindings are reached through real compilation and
+  execution rather than declared in isolation. Two connections and two runtimes
+  bind the same store for the guiding and the surveying read paths.
+modelSources:
+  model:
+    root: fabled-cavern-3
+    files:
+      - test/fabledcavern3/connection/CavernConnections.pure
+      - test/fabledcavern3/domain/CavernDomain.pure
+      - test/fabledcavern3/mapping/CavernBaseMapping.pure
+      - test/fabledcavern3/mapping/CavernGuidingMapping.pure
+      - test/fabledcavern3/runtime/CavernRuntimes.pure
+      - test/fabledcavern3/store/CavernDB.pure
+features:
+  - execution:mapping-test
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - cave-survey
+  - h2
+  - main-table-alias
+  - mapping-include
+  - mapping-test
+  - primary-key
+  - relational

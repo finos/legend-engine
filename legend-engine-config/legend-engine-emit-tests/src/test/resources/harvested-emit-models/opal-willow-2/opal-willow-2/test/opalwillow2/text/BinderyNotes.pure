@@ -1,0 +1,20 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Text
+Text test::opalwillow2::text::BinderyNotes
+{
+  type: markdown;
+  content: '# Conservation Bindery Register\n\nThis model publishes the register of a book-conservation bindery as a domain contract.\nFifteen classes carry typed scalar properties, optional properties and to-many label\ncollections, and seven bidirectional associations wire them into one navigable graph.\n\n## Navigable chains\n\n* A workshop reaches its benches, a bench its conservators, a conservator the treatment\n  rounds it leads, a round the volume it was booked against and the condition reports\n  written on it - five associations chained through shared end classes, so navigation from\n  a workshop reaches a condition report in five hops and back again from either end.\n* A volume reaches the text blocks bound into it and a text block its folded gatherings,\n  a second chain that meets the first at the volume end.\n\n## Out of scope\n\nNo store, mapping, connection or runtime is declared: the classes are published purely as\na contract, so the EMIT run exercises parse and compile of the class graph, the diagram\nview laid out over it and this documentation element. Reader-ticket administration,\nexhibition gallery layouts and the materials store inventory are not reachable from here.\n';
+}

@@ -1,0 +1,64 @@
+name: indigo-prairie
+title: "Indigo Prairie — Cross-Schema Grazing Rotation with Associations and a Governed Data Space"
+description: |
+  A non-financial prairie grazing model over a multi-table relational store split
+  across two schemas, where paddocks, clipped forage samples, herd moves and field
+  notes are bound through primary keys and main-table aliases and reached over
+  single-hop and two-hop inner join paths that cross the schema boundary.
+  Two associations are given relational association implementations in two
+  mapping tiers, and filtering, projecting services with parameter profiles
+  publish the joined results. A data space exposes both mapping tiers as
+  execution contexts with featured packageable-element executables and a support
+  email address.
+
+modelSources:
+  model:
+    root: indigo-prairie
+    files:
+      - test/indigoprairie/connection/PaddockH2Connection.pure
+      - test/indigoprairie/connection/PaddockWarehouseConnection.pure
+      - test/indigoprairie/dataspace/PaddockDataSpace.pure
+      - test/indigoprairie/domain/PaddockDomain.pure
+      - test/indigoprairie/mapping/PaddockMapping.pure
+      - test/indigoprairie/mapping/RotationMapping.pure
+      - test/indigoprairie/runtime/PaddockH2Runtime.pure
+      - test/indigoprairie/runtime/PaddockWarehouseRuntime.pure
+      - test/indigoprairie/runtime/RotationH2Runtime.pure
+      - test/indigoprairie/service/ForageDigestService.pure
+      - test/indigoprairie/service/HerdRotationService.pure
+      - test/indigoprairie/store/PaddockDB.pure
+
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - association-mapping
+  - cross-schema
+  - data-space
+  - h2
+  - inner-join
+  - main-table-alias
+  - multi-hop-join
+  - multi-table
+  - primary-key
+  - qualified-property
+  - service
+  - service-test

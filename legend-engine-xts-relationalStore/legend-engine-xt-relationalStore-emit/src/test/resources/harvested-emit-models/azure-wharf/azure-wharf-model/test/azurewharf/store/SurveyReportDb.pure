@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::azurewharf::store::SurveyReportDb
+(
+  Schema surveyreport
+  (
+    Table survey_report
+    (
+      report_id INTEGER PRIMARY KEY,
+      title VARCHAR(200) NOT NULL,
+      survey_area VARCHAR(120) NOT NULL,
+      created_on VARCHAR(40)
+    )
+    Table delivery
+    (
+      delivery_id INTEGER PRIMARY KEY,
+      report_id INTEGER NOT NULL,
+      channel VARCHAR(60) NOT NULL,
+      delivered_on VARCHAR(40)
+    )
+    Table schedule
+    (
+      schedule_id INTEGER PRIMARY KEY,
+      report_id INTEGER NOT NULL,
+      cadence VARCHAR(40) NOT NULL
+    )
+    Table template
+    (
+      template_id INTEGER PRIMARY KEY,
+      template_name VARCHAR(160) NOT NULL,
+      layout VARCHAR(400)
+    )
+    Table dataset_template
+    (
+      dataset_template_id INTEGER PRIMARY KEY,
+      template_id INTEGER NOT NULL,
+      caption VARCHAR(200) NOT NULL
+    )
+    Table report_template_bridge
+    (
+      report_id INTEGER NOT NULL,
+      template_id INTEGER NOT NULL
+    )
+  )
+
+  Join Report_Delivery(surveyreport.survey_report.report_id = surveyreport.delivery.report_id)
+  Join Report_Schedule(surveyreport.survey_report.report_id = surveyreport.schedule.report_id)
+  Join Report_BridgeHalf(surveyreport.survey_report.report_id = surveyreport.report_template_bridge.report_id)
+  Join Bridge_TemplateHalf(surveyreport.report_template_bridge.template_id = surveyreport.template.template_id)
+  Join Template_DatasetTemplate(surveyreport.template.template_id = surveyreport.dataset_template.template_id)
+)

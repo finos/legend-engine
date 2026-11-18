@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::silverdelta::connection::DeltaH2Connection
+{
+  store: test::silverdelta::store::DeltaDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists ringing;',
+      'create schema ringing;',
+      'create table ringing.ringing_station (station_id integer primary key, station_code varchar(20) not null, station_name varchar(120) not null, delta_arm varchar(60) not null, staffed_all_season bit not null);',
+      'create table ringing.species_taxon (species_id integer primary key, species_code varchar(20) not null, common_name varchar(120) not null, migration_strategy varchar(40) not null);',
+      'create table ringing.ringed_bird (bird_id integer primary key, ring_code varchar(20) not null, age_class varchar(10) not null, wing_length_mm double not null, mass_grams double not null, station_id integer not null, species_id integer not null, from_z date not null, thru_z date not null);',
+      'create table ringing.capture_event (event_id integer primary key, event_code varchar(20) not null, captured_on date not null, net_hours double not null, observer_name varchar(120) not null, condition_code varchar(20) not null, bird_id integer not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum {meta::pure::profiles::doc.doc = 'The movement a berth notice announces for a moored vessel.'} demo::silvercove::notice::BerthMovementKind
+{
+  ARRIVAL,
+  DEPARTURE,
+  SHIFT
+}
+
+Class {meta::pure::profiles::doc.doc = 'The nested identifier block a berth notice carries on the wire: the identifier type, the issuing system and the coded value whose numeric tail is the notice number. Every member is optional on the wire.'} demo::silvercove::notice::BerthNoticeIdentifier
+{
+  idType: String[0..1];
+  idSystem: String[0..1];
+  idValue: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One inbound berth notice for the cove, submitted as a document with a nested identifier block and a movement kind. Every field is optional on the wire.'} demo::silvercove::notice::BerthNoticeSubmission
+{
+  noticeRef: String[0..1];
+  identifier: demo::silvercove::notice::BerthNoticeIdentifier[0..1];
+  movement: demo::silvercove::notice::BerthMovementKind[0..1];
+  harbourCode: String[0..1];
+  berthCode: String[0..1];
+  draughtDecimetres: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One published berth notice: the reference, the notice number parsed out of the nested identifier value, the movement and harbour rendered as strings, a composed berth tag and an optional draught label.'} demo::silvercove::notice::BerthNotice
+{
+  noticeRef: String[1];
+  noticeNumber: Integer[1];
+  movementLabel: String[1];
+  harbourLabel: String[1];
+  berthTag: String[1];
+  draughtLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The published berth-notice envelope, carrying at most one notice so a declined submission surfaces as an envelope with no notice inside.'} demo::silvercove::notice::BerthNoticeEnvelope
+{
+  notice: demo::silvercove::notice::BerthNotice[0..1];
+}

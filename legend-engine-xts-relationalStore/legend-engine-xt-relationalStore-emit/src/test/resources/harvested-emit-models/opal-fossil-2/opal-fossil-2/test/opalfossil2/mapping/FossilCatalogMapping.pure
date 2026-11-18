@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::opalfossil2::mapping::FossilCatalogMapping
+(
+  *test::opalfossil2::domain::FossilTaxon[taxon]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalfossil2::store::FossilCatalogDB]fossil.taxon.taxon_id
+    )
+    ~mainTable [test::opalfossil2::store::FossilCatalogDB]fossil.taxon
+    taxonName: [test::opalfossil2::store::FossilCatalogDB]fossil.taxon.taxon_name,
+    familyName: [test::opalfossil2::store::FossilCatalogDB]fossil.taxon.family_name
+  }
+
+  *test::opalfossil2::domain::SpecimenDetermination[determination]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalfossil2::store::FossilCatalogDB]fossil.determination.determination_id
+    )
+    ~mainTable [test::opalfossil2::store::FossilCatalogDB]fossil.determination
+    determinationCode: [test::opalfossil2::store::FossilCatalogDB]fossil.determination.determination_code,
+    confidenceScore: [test::opalfossil2::store::FossilCatalogDB]fossil.determination.confidence_score,
+    reviewed: [test::opalfossil2::store::FossilCatalogDB]fossil.determination.reviewed
+  }
+
+  *test::opalfossil2::domain::FossilSpecimen[specimen]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalfossil2::store::FossilCatalogDB]fossil.specimen.specimen_id
+    )
+    ~mainTable [test::opalfossil2::store::FossilCatalogDB]fossil.specimen
+    specimenCode: [test::opalfossil2::store::FossilCatalogDB]fossil.specimen.specimen_code,
+    matrixType: [test::opalfossil2::store::FossilCatalogDB]fossil.specimen.matrix_type,
+    massG: [test::opalfossil2::store::FossilCatalogDB]fossil.specimen.mass_g
+  }
+
+  test::opalfossil2::domain::Specimen_Determination: Relational
+  {
+    AssociationMapping
+    (
+      determination[specimen, determination]: [test::opalfossil2::store::FossilCatalogDB]@Specimen_Determination,
+      specimen[determination, specimen]: [test::opalfossil2::store::FossilCatalogDB]@Specimen_Determination
+    )
+  }
+
+  test::opalfossil2::domain::Determination_Taxon: Relational
+  {
+    AssociationMapping
+    (
+      taxon[determination, taxon]: [test::opalfossil2::store::FossilCatalogDB]@Determination_Taxon,
+      determination[taxon, determination]: [test::opalfossil2::store::FossilCatalogDB]@Determination_Taxon
+    )
+  }
+)

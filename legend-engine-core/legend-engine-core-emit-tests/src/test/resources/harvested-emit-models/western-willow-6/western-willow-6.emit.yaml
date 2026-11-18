@@ -1,0 +1,33 @@
+name: western-willow-6
+title: "Western Willow 6 — Riverbank Withy Nursery"
+description: |
+  A generic craft-school nursery model for riverbank willow beds, cutting
+  batches, and the crews who tend them. Processing-temporal classes and
+  milestoned associations exercise versioned vocabulary alongside ordinary
+  reference classes.
+
+modelSources:
+  model:
+    root: western-willow-6
+    files:
+      - test/westernwillow6/nursery/BedAssociations.pure
+      - test/westernwillow6/nursery/NurseryDomain.pure
+      - test/westernwillow6/nursery/NurseryProfile.pure
+      - test/westernwillow6/nursery/NurseryVocabulary.pure
+
+features:
+  - grammar:association
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:milestoned-association
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - enumeration
+  - milestoned-association
+  - processing-temporal
+  - profile
+  - self-reference

@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::wistfulhatchery::connection::BroodWarehouseConnection
+{
+  store: test::wistfulhatchery::store::BroodDb;
+  type: Snowflake;
+  timezone: 'UTC';
+  specification: Snowflake
+  {
+    name: 'BROOD_REARING_DB';
+    account: 'conservatory_brood_account';
+    warehouse: 'BROOD_REARING_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    role: 'BROOD_REARING_READER';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'BROOD_REARING_USER';
+    privateKeyVaultReference: 'brood.rearing.privateKey';
+    passPhraseVaultReference: 'brood.rearing.passPhrase';
+  };
+}
+
+###Connection
+RelationalDatabaseConnection test::wistfulhatchery::connection::EmergenceWarehouseConnection
+{
+  store: test::wistfulhatchery::store::EmergenceDb;
+  type: Snowflake;
+  timezone: 'UTC';
+  specification: Snowflake
+  {
+    name: 'EMERGENCE_LOG_DB';
+    account: 'conservatory_emergence_account';
+    warehouse: 'EMERGENCE_LOG_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    role: 'EMERGENCE_LOG_READER';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'EMERGENCE_LOG_USER';
+    privateKeyVaultReference: 'emergence.log.privateKey';
+    passPhraseVaultReference: 'emergence.log.passPhrase';
+  };
+}
+
+###Connection
+RelationalDatabaseConnection test::wistfulhatchery::connection::HabitatWarehouseConnection
+{
+  store: test::wistfulhatchery::store::HabitatDb;
+  type: Snowflake;
+  timezone: 'UTC';
+  specification: Snowflake
+  {
+    name: 'HABITAT_CLIMATE_DB';
+    account: 'conservatory_habitat_account';
+    warehouse: 'HABITAT_CLIMATE_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    role: 'HABITAT_CLIMATE_READER';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'HABITAT_CLIMATE_USER';
+    privateKeyVaultReference: 'habitat.climate.privateKey';
+    passPhraseVaultReference: 'habitat.climate.passPhrase';
+  };
+}

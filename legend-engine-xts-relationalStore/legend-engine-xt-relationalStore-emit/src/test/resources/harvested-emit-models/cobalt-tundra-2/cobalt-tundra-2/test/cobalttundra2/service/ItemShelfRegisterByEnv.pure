@@ -1,0 +1,166 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobalttundra2::service::ItemShelfRegisterByEnv
+{
+  pattern: '/cobalttundra2/items/{environment}';
+  ownership: UserList { users: ['catalogue-stewardship-desk'] };
+  documentation: 'Narrows the catalogue extent to a half-open page-count window given by two parameters, then publishes a thirteen-column tabular contract in which the mapped join-path columns, the assembled title tag and a four-armed size band all appear side by side. The same body is planned against both keyed environments, so the window predicate and the three-hop join path have to survive two different physical bindings.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {minPages: Integer[1], maxPages: Integer[1]|test::cobalttundra2::domain::CatalogueItem.all()->filter(
+      i|($i.pageCount >= $minPages) && ($i.pageCount < $maxPages)
+    )->project(
+      [
+        i|$i.itemCode,
+        i|$i.itemTitle,
+        i|$i.titleTag,
+        i|$i.titleLength,
+        i|$i.pageCount,
+        i|$i.editionYear,
+        i|$i.languageCode,
+        i|$i.languageCode->toUpper(),
+        i|$i.conditionBand,
+        i|$i.sectionLabel,
+        i|$i.branchName,
+        i|$i.districtName,
+        i|if($i.pageCount >= 500,
+             | 'tome',
+             | if($i.pageCount >= 200,
+                  | 'volume',
+                  | if($i.pageCount >= 100, | 'booklet', | 'pamphlet')))
+      ],
+      [
+        'ItemCode',
+        'ItemTitle',
+        'TitleTag',
+        'TitleLength',
+        'PageCount',
+        'EditionYear',
+        'LanguageCode',
+        'LanguageTag',
+        'ConditionBand',
+        'SectionLabel',
+        'BranchName',
+        'DistrictName',
+        'SizeBand'
+      ]
+    )->sort(
+      [
+        asc('ItemCode')
+      ]
+    )};
+    key: 'environment';
+    executions['local']:
+    {
+      mapping: test::cobalttundra2::mapping::CatalogueMapping;
+      runtime: test::cobalttundra2::runtime::CatalogueLocalRuntime;
+    }
+    executions['managed']:
+    {
+      mapping: test::cobalttundra2::mapping::CatalogueMapping;
+      runtime: test::cobalttundra2::runtime::CatalogueManagedRuntime;
+    }
+  }
+  testSuites:
+  [
+    itemShelfRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          catalogueLocal:
+            Relational
+            #{
+              catalogue.district:
+                'district_id,district_code,district_name,steward\n'+
+                '1,DIS-N,Northern Reach,NORTH-CATALOGUE-DESK\n'+
+                '2,DIS-S,Southern Reach,South-Catalogue-Desk\n';
+
+              catalogue.branch:
+                'branch_id,branch_code,branch_name,district_id,opened_year\n'+
+                '1,BR-01,Fernbank Reading Room,1,1974\n'+
+                '2,BR-02,Saltmarsh Reading Room,2,1998\n';
+
+              catalogue.shelf_section:
+                'section_id,section_code,section_label,branch_id,capacity_count,reserved_count\n'+
+                '1,SEC-A,Field Guides,1,120,15\n'+
+                '2,SEC-B,Sky Atlases,2,80,5\n';
+
+              catalogue.catalogue_item:
+                'item_id,item_code,item_title,section_id,page_count,edition_year,language_code,condition_code\n'+
+                '1,IT-001,Moss And Lichen Guide,1,240,2019,en,GOOD\n'+
+                '2,IT-002,Tundra Bird Atlas,1,520,2021,en,FAIR\n'+
+                '3,IT-003,Night Sky Almanac,2,180,2015,fr,WORN\n'+
+                '4,IT-004,Reindeer Track Handbook,2,96,2023,se,UNSET\n';
+            }#,
+          catalogueManaged:
+            Relational
+            #{
+              catalogue.district:
+                'district_id,district_code,district_name,steward\n'+
+                '1,DIS-N,Northern Reach,NORTH-CATALOGUE-DESK\n'+
+                '2,DIS-S,Southern Reach,South-Catalogue-Desk\n';
+
+              catalogue.branch:
+                'branch_id,branch_code,branch_name,district_id,opened_year\n'+
+                '1,BR-01,Fernbank Reading Room,1,1974\n'+
+                '2,BR-02,Saltmarsh Reading Room,2,1998\n';
+
+              catalogue.shelf_section:
+                'section_id,section_code,section_label,branch_id,capacity_count,reserved_count\n'+
+                '1,SEC-A,Field Guides,1,120,15\n'+
+                '2,SEC-B,Sky Atlases,2,80,5\n';
+
+              catalogue.catalogue_item:
+                'item_id,item_code,item_title,section_id,page_count,edition_year,language_code,condition_code\n'+
+                '1,IT-001,Moss And Lichen Guide,1,240,2019,en,GOOD\n'+
+                '2,IT-002,Tundra Bird Atlas,1,520,2021,en,FAIR\n'+
+                '3,IT-003,Night Sky Almanac,2,180,2015,fr,WORN\n'+
+                '4,IT-004,Reindeer Track Handbook,2,96,2023,se,UNSET\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        pageWindowAcrossBothEnvironments:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['local', 'managed'];
+          parameters:
+          [
+            minPages = 100,
+            maxPages = 500
+          ]
+          asserts:
+          [
+            windowedItemsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ItemCode":"IT-001","ItemTitle":"Moss And Lichen Guide","TitleTag":"MOSS/IT-001","TitleLength":21,"PageCount":240,"EditionYear":2019,"LanguageCode":"en","LanguageTag":"EN","ConditionBand":"shelf-ready","SectionLabel":"Field Guides","BranchName":"Fernbank Reading Room","DistrictName":"Northern Reach","SizeBand":"volume"},{"ItemCode":"IT-003","ItemTitle":"Night Sky Almanac","TitleTag":"NIGH/IT-003","TitleLength":17,"PageCount":180,"EditionYear":2015,"LanguageCode":"fr","LanguageTag":"FR","ConditionBand":"bindery","SectionLabel":"Sky Atlases","BranchName":"Saltmarsh Reading Room","DistrictName":"Southern Reach","SizeBand":"booklet"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::russetthicket5::domain::*;
+
+Class <<meta::pure::profiles::typemodifiers.abstract, meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A survey of one woodland trail segment, valid over a business-date window.'} test::russetthicket5::domain::TrailSurveyRecord
+{
+  surveyCode: String[1];
+  segmentCode: String[1];
+  surveyorInitials: String[0..1];
+  markers: TrailheadMarker[*];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A survey of the walking surface of a trail segment.'} test::russetthicket5::domain::SurfaceSurvey extends TrailSurveyRecord
+{
+  surfaceRating: Integer[1];
+  erosionDepthCm: Float[0..1];
+  boardwalkPresent: Boolean[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A survey of the canopy above a trail segment.'} test::russetthicket5::domain::CanopySurvey extends TrailSurveyRecord
+{
+  canopyClosurePct: Integer[1];
+  dominantSpecies: String[1];
+  overhangCleared: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A signed marker at the entry to a trail segment; not milestoned, so it reads without a business date.'} test::russetthicket5::domain::TrailheadMarker
+{
+  markerCode: String[1];
+  markerLabel: String[1];
+  elevationM: Float[0..1];
+  waypointCode: String[*];
+}

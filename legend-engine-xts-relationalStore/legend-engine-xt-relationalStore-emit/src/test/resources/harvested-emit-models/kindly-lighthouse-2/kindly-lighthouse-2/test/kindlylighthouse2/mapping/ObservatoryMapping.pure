@@ -1,0 +1,203 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlylighthouse2::mapping::ObservatoryMapping
+(
+  include mapping test::kindlylighthouse2::mapping::ObservatoryBaseMapping
+
+  test::kindlylighthouse2::domain::TelescopeSlot[slot] extends [entry]: Relational
+  {
+    ~filter [test::kindlylighthouse2::store::ObservatoryDb]OpenSlots
+    ~primaryKey
+    (
+      [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot.slot_code
+    )
+    ~mainTable [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot
+    statusCode: case(
+      equal(trim([test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot.status_code), 'OPEN'),
+      'OPEN',
+      case(
+        equal(trim([test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot.status_code), 'HELD'),
+        'HELD',
+        case(
+          equal(trim([test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot.status_code), 'RESERVED'),
+          'RESERVED',
+          case(
+            equal(trim([test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot.status_code), 'CANCELLED'),
+            'CANCELLED',
+            'OTHER'
+          )
+        )
+      )
+    ),
+    regionName: [test::kindlylighthouse2::store::ObservatoryDb]@Slot_Telescope > @Telescope_Observatory > @Observatory_Campus > @Campus_Region | [test::kindlylighthouse2::store::ObservatoryDb]ground.region.region_name,
+    observatoryLabel: [test::kindlylighthouse2::store::ObservatoryDb]@Slot_Telescope > @Telescope_Observatory > @Observatory_Snapshot | [test::kindlylighthouse2::store::ObservatoryDb]sky.observatory_snapshot.observatory_label
+  }
+
+  test::kindlylighthouse2::domain::Slot_Telescope: Relational
+  {
+    AssociationMapping
+    (
+      slots[slot, telescope]: [test::kindlylighthouse2::store::ObservatoryDb]@Slot_Telescope,
+      telescope[telescope, slot]: [test::kindlylighthouse2::store::ObservatoryDb]@Slot_Telescope
+    )
+  }
+
+  test::kindlylighthouse2::domain::Telescope_Observatory: Relational
+  {
+    AssociationMapping
+    (
+      telescopes[telescope, observatory]: [test::kindlylighthouse2::store::ObservatoryDb]@Telescope_Observatory,
+      observatory[observatory, telescope]: [test::kindlylighthouse2::store::ObservatoryDb]@Telescope_Observatory
+    )
+  }
+
+  test::kindlylighthouse2::domain::Observatory_Campus: Relational
+  {
+    AssociationMapping
+    (
+      observatories[observatory, campus]: [test::kindlylighthouse2::store::ObservatoryDb]@Observatory_Campus,
+      campus[campus, observatory]: [test::kindlylighthouse2::store::ObservatoryDb]@Observatory_Campus
+    )
+  }
+
+  test::kindlylighthouse2::domain::Campus_Region: Relational
+  {
+    AssociationMapping
+    (
+      campuses[campus, region]: [test::kindlylighthouse2::store::ObservatoryDb]@Campus_Region,
+      region[region, campus]: [test::kindlylighthouse2::store::ObservatoryDb]@Campus_Region
+    )
+  }
+
+  testSuites:
+  [
+    multiHopJoinHit:
+    {
+      function: |test::kindlylighthouse2::domain::TelescopeSlot.all(%2026-06-15)->project(
+        [
+          s|$s.slotCode,
+          s|$s.targetName,
+          s|$s.observatoryLabel,
+          s|$s.regionName
+        ],
+        [
+          'Slot',
+          'Target',
+          'Observatory',
+          'Region'
+        ]
+      )->sort([asc('Slot')]);
+      tests:
+      [
+        multiHopJoinHit:
+        {
+          doc: 'The four-hop telescope path crosses inner joins through telescope, observatory, campus and region while the inline view supplies the observatory label.';
+          data:
+          [
+            test::kindlylighthouse2::store::ObservatoryDb:
+              Relational
+              #{
+                sky.telescope_slot:
+                  'slot_code,telescope_code,observatory_code,target_name,status_code,valid_from,valid_thru\n'+
+                  'TS-101,TE-01,OB-01,North Nebula,OPEN,2026-01-01,9999-12-31\n';
+                sky.telescope:
+                  'telescope_code,telescope_name,observatory_code\n'+
+                  'TE-01,Meridian Scope,OB-01\n';
+                sky.observatory:
+                  'observatory_code,observatory_name,campus_code\n'+
+                  'OB-01,North Dome,CA-01\n';
+                ground.campus:
+                  'campus_code,campus_name,region_code\n'+
+                  'CA-01,High Ridge,RG-01\n';
+                ground.region:
+                  'region_code,region_name\n'+
+                  'RG-01,Polar Reach\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Slot":"TS-101","Target":"North Nebula","Observatory":"OB-01North Dome","Region":"Polar Reach"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    milestoningOutOfRangeRow:
+    {
+      function: |test::kindlylighthouse2::domain::TelescopeSlot.all(%2026-06-15)->project(
+        [
+          s|$s.slotCode,
+          s|$s.targetName
+        ],
+        [
+          'Slot',
+          'Target'
+        ]
+      )->sort([asc('Slot')]);
+      tests:
+      [
+        milestoningOutOfRangeRow:
+        {
+          doc: 'Business temporal evaluation at the requested observatory date retains the active schedule and excludes the expired slot.';
+          data:
+          [
+            test::kindlylighthouse2::store::ObservatoryDb:
+              Relational
+              #{
+                sky.telescope_slot:
+                  'slot_code,telescope_code,observatory_code,target_name,status_code,valid_from,valid_thru\n'+
+                  'TS-201,TE-01,OB-01,Expired Target,OPEN,2020-01-01,2024-12-31\n'+
+                  'TS-202,TE-01,OB-01,Current Target,OPEN,2025-01-01,9999-12-31\n';
+                sky.telescope:
+                  'telescope_code,telescope_name,observatory_code\n'+
+                  'TE-01,Meridian Scope,OB-01\n';
+                sky.observatory:
+                  'observatory_code,observatory_name,campus_code\n'+
+                  'OB-01,North Dome,CA-01\n';
+                ground.campus:
+                  'campus_code,campus_name,region_code\n'+
+                  'CA-01,High Ridge,RG-01\n';
+                ground.region:
+                  'region_code,region_name\n'+
+                  'RG-01,Polar Reach\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Slot":"TS-202","Target":"Current Target"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

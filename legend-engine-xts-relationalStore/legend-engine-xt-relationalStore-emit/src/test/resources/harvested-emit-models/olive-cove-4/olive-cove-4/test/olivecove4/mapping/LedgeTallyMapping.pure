@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::olivecove4::mapping::LedgeTallyMapping
+(
+  *test::olivecove4::domain::CliffLedge[ledge]: Relational
+  {
+    ~primaryKey
+    (
+      [test::olivecove4::store::LedgeDb]census.cliff_ledge.ledge_code
+    )
+    ~mainTable [test::olivecove4::store::LedgeDb]census.cliff_ledge
+    ledgeCode: [test::olivecove4::store::LedgeDb]census.cliff_ledge.ledge_code,
+    ledgeName: [test::olivecove4::store::LedgeDb]census.cliff_ledge.ledge_name,
+    coveName: [test::olivecove4::store::LedgeDb]census.cliff_ledge.cove_name,
+    aspect: [test::olivecove4::store::LedgeDb]census.cliff_ledge.aspect,
+    visitCount: [test::olivecove4::store::LedgeDb]@Ledge_Tally | [test::olivecove4::store::LedgeDb]census.ledge_tally_view.visit_count,
+    totalAdults: [test::olivecove4::store::LedgeDb]@Ledge_Tally | [test::olivecove4::store::LedgeDb]census.ledge_tally_view.total_adults
+  }
+
+  testSuites:
+  [
+    ledgeTallySuite:
+    {
+      function: |test::olivecove4::domain::CliffLedge.all()->project(
+  [
+    x|$x.ledgeCode,
+    x|$x.ledgeName,
+    x|$x.coveName,
+    x|$x.aspect,
+    x|$x.visitCount,
+    x|$x.totalAdults
+  ],
+  [
+    'LedgeCode',
+    'LedgeName',
+    'CoveName',
+    'Aspect',
+    'VisitCount',
+    'TotalAdults'
+  ]
+)->sort(
+  [
+    asc('LedgeCode')
+  ]
+);
+      tests:
+      [
+        tallyReachedThroughTheDerivedRelation:
+        {
+          doc: 'Each ledge reads its visit and adult tallies from the grouped relation the store derives rather than from the counts themselves, so a ledge counted twice reports one tally row, the ledge whose aspect was never noted still publishes, and a ledge that has never been counted reports no tally at all.';
+          data:
+          [
+            test::olivecove4::store::LedgeDb:
+              Relational
+              #{
+                census.cliff_ledge:
+                  'ledge_code,ledge_name,cove_name,aspect\n'+
+                  'LG-01,Gannet Shelf,Olive Cove,NE\n'+
+                  'LG-02,Kittiwake Ledge,Olive Cove,\n'+
+                  'LG-03,Storm Gully Ledge,Olive Cove,NW\n';
+                census.ledge_count:
+                  'count_code,ledge_code,species_code,adult_count,chick_count,season_key,counted_on,observer_ref\n'+
+                  'CT-0001,LG-01,GUILLEMOT,120,44,2024,2024-06-04,OB-01\n'+
+                  'CT-0003,LG-01,GUILLEMOT,132,51,2025,2025-06-09,OB-01\n'+
+                  'CT-0002,LG-02,KITTIWAKE,86,,2024,2024-05-12,OB-02\n';
+              }#
+          ];
+          asserts:
+          [
+            threeLedgesWithDerivedTallies:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LedgeCode":"LG-01","LedgeName":"Gannet Shelf","CoveName":"Olive Cove","Aspect":"NE","VisitCount":2,"TotalAdults":252},{"LedgeCode":"LG-02","LedgeName":"Kittiwake Ledge","CoveName":"Olive Cove","Aspect":null,"VisitCount":1,"TotalAdults":86},{"LedgeCode":"LG-03","LedgeName":"Storm Gully Ledge","CoveName":"Olive Cove","Aspect":"NW","VisitCount":null,"TotalAdults":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

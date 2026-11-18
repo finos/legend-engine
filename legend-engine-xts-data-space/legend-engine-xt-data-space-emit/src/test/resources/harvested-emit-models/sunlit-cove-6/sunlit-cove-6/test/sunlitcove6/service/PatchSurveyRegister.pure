@@ -1,0 +1,119 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::sunlitcove6::service::PatchSurveyRegister
+{
+  pattern: '/sunlitcove6/v1/patch-survey-register/{fromInstant}/{asOfInstant}';
+  title: 'Sunlit Cove 6 - Patch Survey Register';
+  documentation: 'The survey register for the mapped kelp patches. Seven conjunctive clauses narrow the register: the last dive instant must fall between two injected instants rather than against the wall clock so the register is reproducible, the survey scheme and the flow regime must both match the scheme definition, a storm-stripped patch carrying no fronds is dropped, and the caller supplied reach and holdfast sets each narrow the register only when they are not empty. The survivors are projected with the band the mapping cascade resolved and the station and holdfast detail reached through the named joins, then ordered and capped.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {fromInstant: DateTime[1], asOfInstant: DateTime[1], reachCodes: String[*], holdfastCodes: String[*]|demo::sunlitcove6::domain::KelpPatch.all()->filter(
+      p|($p.lastDivedAt >= $fromInstant) &&
+        ($p.lastDivedAt <= $asOfInstant) &&
+        ($p.surveyScheme == 'COVE-SURVEY-A') &&
+        ($p.flowRegime == 'SURGE') &&
+        (!($p.frondTally == 0)) &&
+        ($reachCodes->isEmpty() || $reachCodes->contains($p.reachCode)) &&
+        ($holdfastCodes->isEmpty() || $holdfastCodes->contains($p.holdfastCode))
+    )->project(
+      [
+        p|$p.patchLabel,
+        p|$p.reachCode,
+        p|$p.holdfastName,
+        p|$p.coverBand,
+        p|$p.frondTally
+      ],
+      [
+        'Patch',
+        'Reach',
+        'Holdfast',
+        'Band',
+        'Fronds'
+      ]
+    )->sort([asc('Patch')])->limit(10)};
+    mapping: demo::sunlitcove6::mapping::CoveSurveyMapping;
+    runtime: demo::sunlitcove6::runtime::CoveWarehouseRuntime;
+  }
+  testSuites:
+  [
+    patchSurveyRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveWarehouse: Reference
+            #{
+              demo::sunlitcove6::data::CoveSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyClauseRemovesItsOwnPatch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromInstant = %2026-01-01T00:00:00.000,
+            asOfInstant = %2026-06-01T00:00:00.000,
+            reachCodes = ['RC-NORTH'],
+            holdfastCodes = ['bull', 'feather']
+          ]
+          asserts:
+          [
+            onlyTheThreeFullyQualifyingPatchesRemain:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch":"PATCH-01","Reach":"RC-NORTH","Holdfast":"Bull kelp","Band":"BARREN","Fronds":240},{"Patch":"PATCH-02","Reach":"RC-NORTH","Holdfast":"Bull kelp","Band":"SPARSE","Fronds":232},{"Patch":"PATCH-09","Reach":"RC-NORTH","Holdfast":"Feather boa kelp","Band":null,"Fronds":204}]';
+                  }#;
+              }#
+          ]
+        },
+        aReachSetThatMatchesNoStationEmptiesTheRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromInstant = %2026-01-01T00:00:00.000,
+            asOfInstant = %2026-06-01T00:00:00.000,
+            reachCodes = ['RC-WEST'],
+            holdfastCodes = []
+          ]
+          asserts:
+          [
+            theReachMembershipClauseRemovesEveryPatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::emberreef5::connection::ReefBuoyConnection
+{
+  store: test::emberreef5::store::ReefBuoyDb;
+  type: Snowflake;
+  quoteIdentifiers: true;
+  specification: Snowflake
+  {
+    name: 'REEF_BUOY_DB';
+    account: 'reef_buoy_account';
+    warehouse: 'REEF_BUOY_WH';
+    region: 'ap-southeast-2';
+    cloudType: 'aws';
+    role: 'REEF_BUOY_READER';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'REEF_BUOY_READER_USER';
+    privateKeyVaultReference: 'reef-buoy-private-key';
+    passPhraseVaultReference: 'reef-buoy-passphrase';
+  };
+}

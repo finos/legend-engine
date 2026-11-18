@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskyestuary2::store::EstuaryDB
+(
+  include test::duskyestuary2::store::EstuaryRefDB
+
+  Schema survey
+  (
+    Table wader_count
+    (
+      count_code VARCHAR(24) PRIMARY KEY,
+      flat_code VARCHAR(24) NOT NULL,
+      band_code VARCHAR(24) NOT NULL,
+      counted_on DATE NOT NULL,
+      bird_total INTEGER NOT NULL,
+      water_cm INTEGER NOT NULL,
+      weather_state CHAR(1) NOT NULL,
+      sky_state CHAR(1) NOT NULL,
+      note_text VARCHAR(240)
+    )
+
+    Table count_check
+    (
+      count_code VARCHAR(24) PRIMARY KEY,
+      checker_name VARCHAR(120) NOT NULL,
+      check_kind VARCHAR(32) NOT NULL,
+      passed_flag CHAR(1) NOT NULL
+    )
+
+    View count_reach_vw
+    (
+      count_code: survey.wader_count.count_code PRIMARY KEY,
+      flat_label: concat(
+                    toUpper(trim([test::duskyestuary2::store::EstuaryDB]@Count_Flat | [test::duskyestuary2::store::EstuaryRefDB]ref.mudflat.flat_name)),
+                    concat('/', survey.wader_count.flat_code)
+                  ),
+      band_span: minus(
+                   [test::duskyestuary2::store::EstuaryDB]@Count_Band | [test::duskyestuary2::store::EstuaryRefDB]ref.tide_band.high_cm,
+                   [test::duskyestuary2::store::EstuaryDB]@Count_Band | [test::duskyestuary2::store::EstuaryRefDB]ref.tide_band.low_cm
+                 ),
+      checked_state: case(
+                       isNull([test::duskyestuary2::store::EstuaryDB]@Count_Check | survey.count_check.passed_flag),
+                       'U',
+                       [test::duskyestuary2::store::EstuaryDB]@Count_Check | survey.count_check.passed_flag
+                     ),
+      note_digest: substring(toLower(coalesce(survey.wader_count.note_text, 'no note filed')), 0, 8),
+      note_size: length(rtrim(coalesce(survey.wader_count.note_text, ''))),
+      density_per_ha: divide(
+                        survey.wader_count.bird_total,
+                        [test::duskyestuary2::store::EstuaryDB]@Count_Flat | [test::duskyestuary2::store::EstuaryRefDB]ref.mudflat.area_ha
+                      )
+    )
+  )
+
+  Filter CountedBirdFilter(survey.wader_count.bird_total > 0)
+  Filter DeepWaterFilter(survey.wader_count.water_cm >= 100)
+  Filter PassedCheckFilter(survey.wader_count.count_code = survey.count_check.count_code and survey.count_check.passed_flag = 'Y')
+
+  Join Count_Flat(survey.wader_count.flat_code = [test::duskyestuary2::store::EstuaryRefDB]ref.mudflat.flat_code)
+  Join Count_Band(survey.wader_count.band_code = [test::duskyestuary2::store::EstuaryRefDB]ref.tide_band.band_code)
+  Join Count_Check(survey.wader_count.count_code = survey.count_check.count_code)
+  Join Count_Reach(survey.wader_count.count_code = survey.count_reach_vw.count_code)
+)

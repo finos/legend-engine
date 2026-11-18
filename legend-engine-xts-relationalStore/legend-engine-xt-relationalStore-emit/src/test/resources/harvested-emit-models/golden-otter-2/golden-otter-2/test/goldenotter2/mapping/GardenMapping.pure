@@ -1,0 +1,161 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenotter2::mapping::GardenMapping
+(
+  *test::goldenotter2::domain::Glasshouse[glasshouse]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter2::store::GardenDb]glass.glasshouse.glasshouse_code
+    )
+    ~mainTable [test::goldenotter2::store::GardenDb]glass.glasshouse
+    glasshouseCode: [test::goldenotter2::store::GardenDb]glass.glasshouse.glasshouse_code,
+    glasshouseName: [test::goldenotter2::store::GardenDb]glass.glasshouse.glasshouse_name,
+    zoneCode: [test::goldenotter2::store::GardenDb]glass.glasshouse.zone_code
+  }
+
+  *test::goldenotter2::domain::WateringRota[wateringRota]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter2::store::GardenDb]glass.watering_rota.rota_code
+    )
+    ~mainTable [test::goldenotter2::store::GardenDb]glass.watering_rota
+    rotaCode: [test::goldenotter2::store::GardenDb]glass.watering_rota.rota_code,
+    rotaLabel: [test::goldenotter2::store::GardenDb]glass.watering_rota.rota_label,
+    weekNumber: [test::goldenotter2::store::GardenDb]glass.watering_rota.week_number,
+    glasshouse[glasshouse]: [test::goldenotter2::store::GardenDb]@Glasshouse_Rota
+  }
+
+  *test::goldenotter2::domain::PlantBed[plantBed]: Relational
+  {
+    ~filter [test::goldenotter2::store::GardenDb]ActiveBeds
+    ~primaryKey
+    (
+      [test::goldenotter2::store::GardenDb]beds.plant_bed.bed_code
+    )
+    ~mainTable [test::goldenotter2::store::GardenDb]beds.plant_bed
+    bedCode: [test::goldenotter2::store::GardenDb]beds.plant_bed.bed_code,
+    bedName: toUpper(trim([test::goldenotter2::store::GardenDb]beds.plant_bed.bed_name)),
+    soilCode: replace([test::goldenotter2::store::GardenDb]beds.plant_bed.soil_code, ' ', '-'),
+    registerCode: 'BOTANIC-REGISTER',
+    bedLabel: [test::goldenotter2::store::GardenDb]@Bed_Label | [test::goldenotter2::store::GardenDb]beds.bed_label_vw.bed_label,
+    glasshouseName: [test::goldenotter2::store::GardenDb]@Bed_Glasshouse | [test::goldenotter2::store::GardenDb]glass.glasshouse.glasshouse_name,
+    rotaLabel: [test::goldenotter2::store::GardenDb]@Bed_Glasshouse > (INNER) [test::goldenotter2::store::GardenDb]@Glasshouse_Rota | [test::goldenotter2::store::GardenDb]glass.watering_rota.rota_label
+  }
+
+  *test::goldenotter2::domain::PlantAccession[plantAccession]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter2::store::GardenDb]beds.plant_accession.accession_code
+    )
+    ~mainTable [test::goldenotter2::store::GardenDb]beds.plant_accession
+    accessionCode: [test::goldenotter2::store::GardenDb]beds.plant_accession.accession_code,
+    taxonName: [test::goldenotter2::store::GardenDb]beds.plant_accession.taxon_name,
+    pottedCount: [test::goldenotter2::store::GardenDb]beds.plant_accession.potted_count,
+    labelText: [test::goldenotter2::store::GardenDb]beds.plant_accession.label_text
+  }
+
+  test::goldenotter2::domain::Bed_Accession: Relational
+  {
+    AssociationMapping
+    (
+      accessions[plantBed, plantAccession]: [test::goldenotter2::store::GardenDb]@Bed_Accession,
+      bed[plantAccession, plantBed]: [test::goldenotter2::store::GardenDb]@Bed_Accession
+    )
+  }
+
+  testSuites:
+  [
+    bedDerivationSuite:
+    {
+      function: |test::goldenotter2::domain::PlantBed.all()->project(
+  [
+    b|$b.bedCode,
+    b|$b.bedName,
+    b|$b.soilCode,
+    b|$b.registerCode,
+    b|$b.bedLabel,
+    b|$b.glasshouseName,
+    b|$b.rotaLabel,
+    b|$b.accessions.accessionCode
+  ],
+  [
+    'BedCode',
+    'BedName',
+    'SoilCode',
+    'Register',
+    'BedLabel',
+    'Glasshouse',
+    'Rota',
+    'AccessionCode'
+  ]
+)->sort(
+  [
+    asc('BedCode'),
+    asc('AccessionCode')
+  ]
+);
+      tests:
+      [
+        activeBedsWithTheirAccessions:
+        {
+          doc: 'Covers the bed main table alias, both string-function transforms, the literal register value, the dyna-function label view, the cross-schema glasshouse alias column, the inner two-hop rota path, the association-reached accessions and the retired bed removed by the store filter.';
+          data:
+          [
+            test::goldenotter2::store::GardenDb:
+              Relational
+              #{
+                glass.glasshouse:
+                  'glasshouse_code,glasshouse_name,zone_code\n'+
+                  'GH-1,Palm House,ZONE-A\n'+
+                  'GH-2,Fern House,ZONE-B\n';
+                glass.watering_rota:
+                  'rota_code,glasshouse_code,rota_label,week_number\n'+
+                  'WR-1,GH-1,morning-rota,1\n'+
+                  'WR-2,GH-2,evening-rota,2\n';
+                beds.plant_bed:
+                  'bed_code,bed_name,glasshouse_code,soil_code,active_flag\n'+
+                  'PB-1,North Bed,GH-1,loam mix,Y\n'+
+                  'PB-2,South Bed,GH-2,peat free,Y\n'+
+                  'PB-3,Old Bed,GH-1,sand mix,N\n';
+                beds.plant_accession:
+                  'accession_code,bed_code,taxon_name,potted_count,label_text\n'+
+                  'PA-1,PB-1,Nepenthes alata,6,label one\n'+
+                  'PA-2,PB-1,Dryopteris affinis,3,label two\n'+
+                  'PA-3,PB-2,Adiantum raddianum,9,label three\n'+
+                  'PA-4,PB-3,Cyathea dealbata,4,label four\n';
+              }#
+          ];
+          asserts:
+          [
+            twoActiveBedsThreeAccessions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BedCode":"PB-1","BedName":"NORTH BED","SoilCode":"loam-mix","Register":"BOTANIC-REGISTER","BedLabel":"BED-PB-1","Glasshouse":"Palm House","Rota":"morning-rota","AccessionCode":"PA-1"},{"BedCode":"PB-1","BedName":"NORTH BED","SoilCode":"loam-mix","Register":"BOTANIC-REGISTER","BedLabel":"BED-PB-1","Glasshouse":"Palm House","Rota":"morning-rota","AccessionCode":"PA-2"},{"BedCode":"PB-2","BedName":"SOUTH BED","SoilCode":"peat-free","Register":"BOTANIC-REGISTER","BedLabel":"BED-PB-2","Glasshouse":"Fern House","Rota":"evening-rota","AccessionCode":"PA-3"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

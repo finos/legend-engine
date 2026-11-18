@@ -1,0 +1,47 @@
+name: russet-otter
+title: "Russet Otter — bi-temporal holt-survey register pinned at a processing and a business date"
+description: |
+  A river-habitat model whose otter-holt survey visits are corrected over
+  processing time and effective over business time, so every read has to pin
+  both extents. One single-execution service resolves the bi-temporal extent at
+  a pair of reference dates, drops the visits that recorded no observer or no
+  habitat note, composes a survey reference from the reach code and the visit
+  id, upper-cases the observer and publishes the five-column register
+  de-duplicated and ordered. Its embedded test suite seeds a visit whose
+  business window has closed and a visit whose processing window has been
+  superseded alongside the in-range visits, so the temporal predicate is
+  asserted end to end rather than merely compiled.
+
+modelSources:
+  model:
+    root: russet-otter
+    files:
+      - test/russetotter/connection/HoltConnection.pure
+      - test/russetotter/domain/HoltDomain.pure
+      - test/russetotter/mapping/HoltMapping.pure
+      - test/russetotter/runtime/HoltRuntime.pure
+      - test/russetotter/service/HoltSurveyRegister.pure
+      - test/russetotter/store/HoltDB.pure
+
+features:
+  - execution:service
+  - execution:service-test
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bitemporal
+  - h2
+  - milestoning
+  - point-in-time
+  - service
+  - service-test
+  - tabular-data-set

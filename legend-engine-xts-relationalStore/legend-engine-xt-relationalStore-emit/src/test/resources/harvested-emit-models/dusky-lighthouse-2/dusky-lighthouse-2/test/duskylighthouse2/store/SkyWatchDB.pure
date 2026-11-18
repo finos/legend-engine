@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskylighthouse2::store::SkyWatchDB
+(
+  Schema skywatch
+  (
+    Table observing_region
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      region_code VARCHAR(20) PRIMARY KEY,
+      region_name VARCHAR(80) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table observing_site
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      site_code VARCHAR(20) PRIMARY KEY,
+      site_name VARCHAR(80) NOT NULL,
+      sector_name VARCHAR(40) NOT NULL,
+      region_code VARCHAR(20) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table night_watch_log
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      log_code VARCHAR(20) PRIMARY KEY,
+      logged_on DATE NOT NULL,
+      patrol_level INTEGER NOT NULL,
+      seeing_code VARCHAR(4) NOT NULL,
+      catalog_version VARCHAR(20) NOT NULL,
+      season_year VARCHAR(4) NOT NULL,
+      exposure_minutes INTEGER NOT NULL,
+      lamp_note VARCHAR(40),
+      site_code VARCHAR(20) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+  )
+
+  Join Log_Site(skywatch.night_watch_log.site_code = skywatch.observing_site.site_code)
+  Join Site_Region(skywatch.observing_site.region_code = skywatch.observing_region.region_code)
+)

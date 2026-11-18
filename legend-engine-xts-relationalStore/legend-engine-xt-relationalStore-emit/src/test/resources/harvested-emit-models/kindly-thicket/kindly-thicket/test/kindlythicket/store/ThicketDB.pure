@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::kindlythicket::store::ThicketDB
+(
+  Schema civic
+  (
+    Table street_tree
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      tree_id INTEGER PRIMARY KEY,
+      tag_code VARCHAR(20) NOT NULL,
+      species_code VARCHAR(20) NOT NULL,
+      protected_specimen BIT NOT NULL,
+      bed_id INTEGER NOT NULL,
+      inspection_crew_id INTEGER NOT NULL,
+      pruning_crew_id INTEGER NOT NULL,
+      watering_crew_id INTEGER NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+    Table planting_bed
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      bed_id INTEGER PRIMARY KEY,
+      bed_code VARCHAR(20) NOT NULL,
+      surface_type VARCHAR(20) NOT NULL,
+      district_id INTEGER NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table civic_district
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      district_id INTEGER PRIMARY KEY,
+      district_name VARCHAR(60) NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table maintenance_crew
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      crew_id INTEGER PRIMARY KEY,
+      crew_code VARCHAR(20) NOT NULL,
+      contact_zone VARCHAR(30) NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+  )
+
+  Join Tree_Bed(civic.street_tree.bed_id = civic.planting_bed.bed_id)
+
+  Join Bed_District(civic.planting_bed.district_id = civic.civic_district.district_id)
+
+  Join Tree_InspectionCrew(civic.street_tree.inspection_crew_id = civic.maintenance_crew.crew_id)
+
+  Join Tree_PruningCrew(civic.street_tree.pruning_crew_id = civic.maintenance_crew.crew_id)
+
+  Join Tree_WateringCrew(civic.street_tree.watering_crew_id = civic.maintenance_crew.crew_id)
+)

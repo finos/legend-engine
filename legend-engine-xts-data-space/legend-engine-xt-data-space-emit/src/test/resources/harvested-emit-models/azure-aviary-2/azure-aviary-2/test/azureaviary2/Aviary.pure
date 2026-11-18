@@ -1,0 +1,210 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::azureaviary2::*;
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A corrected aviary observation on the processing timeline.'} demo::azureaviary2::Observation
+{
+  observationId: Integer[1];
+  speciesLabel: String[1];
+  wingSpan: Float[1];
+  observedAt: DateTime[1];
+  perchLabel: String[0..1];
+}
+
+###Relational
+Database demo::azureaviary2::AviaryDb
+(
+  Schema aviary
+  (
+    Table observation
+    (
+      milestoning(processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31))
+      observation_id INTEGER,
+      species_label VARCHAR(40),
+      wing_span DOUBLE,
+      observed_at TIMESTAMP,
+      perch_label VARCHAR(40),
+      in_z DATE,
+      out_z DATE
+    )
+  )
+)
+
+###Data
+Data demo::azureaviary2::Observations
+{
+Relational
+#{
+  aviary.observation:
+    'observation_id,species_label,wing_span,observed_at,perch_label,in_z,out_z\n'+
+    '1,FeatherOne,22.5,2026-02-01 10:15:00,PerchA,2026-01-01,2026-03-01\n'+
+    '1,FeatherOne,24.5,2026-02-01 10:15:00,PerchB,2026-03-01,9999-12-31\n'+
+    '2,FeatherTwo,31.0,2026-04-01 09:20:00,,2026-04-01,9999-12-31\n';
+}#
+}
+
+###Mapping
+Mapping demo::azureaviary2::AviaryMapping
+(
+  demo::azureaviary2::Observation: Relational
+  {
+    ~primaryKey ([demo::azureaviary2::AviaryDb]aviary.observation.observation_id)
+    ~mainTable [demo::azureaviary2::AviaryDb]aviary.observation
+    observationId: [demo::azureaviary2::AviaryDb]aviary.observation.observation_id,
+    speciesLabel: [demo::azureaviary2::AviaryDb]aviary.observation.species_label,
+    wingSpan: [demo::azureaviary2::AviaryDb]aviary.observation.wing_span,
+    observedAt: [demo::azureaviary2::AviaryDb]aviary.observation.observed_at,
+    perchLabel: [demo::azureaviary2::AviaryDb]aviary.observation.perch_label
+  }
+  testSuites:
+  [
+    currentObservations:
+    {
+      function: |demo::azureaviary2::Observation.all(%latest)->project(
+        [o|$o.observationId, o|$o.speciesLabel, o|$o.wingSpan, o|$o.perchLabel],
+        ['Id', 'Species', 'Span', 'Perch']
+      )->distinct()->sort([asc('Id')]);
+      tests:
+      [
+        correctedRows:
+        {
+          data: [demo::azureaviary2::AviaryDb: Reference #{demo::azureaviary2::Observations}#];
+          asserts:
+          [
+            latestVersions: EqualToJson
+            #{
+              expected: ExternalFormat
+              #{
+                contentType: 'application/json';
+                data: '[{"Id":1,"Species":"FeatherOne","Span":24.5,"Perch":"PerchB"},{"Id":2,"Species":"FeatherTwo","Span":31.0,"Perch":null}]';
+              }#;
+            }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+###Connection
+RelationalDatabaseConnection demo::azureaviary2::AviaryConnection
+{
+  store: demo::azureaviary2::AviaryDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'AVIARY_DB';
+    account: 'aviary_observations';
+    warehouse: 'AVIARY_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    role: 'AVIARY_READER';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'aviary_reader';
+    privateKeyVaultReference: 'aviary-key';
+    passPhraseVaultReference: 'aviary-phrase';
+  };
+}
+
+###Runtime
+Runtime demo::azureaviary2::AviaryRuntime
+{
+  mappings: [demo::azureaviary2::AviaryMapping];
+  connections:
+  [
+    demo::azureaviary2::AviaryDb:
+    [
+      aviaryConnection: demo::azureaviary2::AviaryConnection
+    ]
+  ];
+}
+
+###Service
+Service demo::azureaviary2::CurrentObservations
+{
+  pattern: '/azureaviary2/current';
+  ownership: DID {identifier: '000000'};
+  documentation: 'Lists the current corrected aviary observations, excluding closed processing intervals.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |demo::azureaviary2::Observation.all(%latest)->project(
+      [o|$o.observationId, o|$o.speciesLabel, o|$o.wingSpan, o|$o.observedAt, o|$o.perchLabel],
+      ['Id', 'Species', 'Span', 'Observed', 'Perch']
+    )->distinct()->sort([asc('Id')]);
+    mapping: demo::azureaviary2::AviaryMapping;
+    runtime: demo::azureaviary2::AviaryRuntime;
+  }
+  testSuites:
+  [
+    currentSuite:
+    {
+      data:
+      [
+        connections: [aviaryConnection: Reference #{demo::azureaviary2::Observations}#]
+      ]
+      tests:
+      [
+        currentRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestOnly: EqualToJson
+            #{
+              expected: ExternalFormat
+              #{
+                contentType: 'application/json';
+                data: '[{"Id":1,"Species":"FeatherOne","Span":24.5,"Observed":"2026-02-01T10:15:00.000000000+0000","Perch":"PerchB"},{"Id":2,"Species":"FeatherTwo","Span":31.0,"Observed":"2026-04-01T09:20:00.000000000+0000","Perch":null}]';
+              }#;
+            }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###DataSpace
+DataSpace demo::azureaviary2::AviarySpace
+{
+  executionContexts:
+  [
+    {
+      name: 'observations';
+      description: 'Current aviary observations.';
+      mapping: demo::azureaviary2::AviaryMapping;
+      defaultRuntime: demo::azureaviary2::AviaryRuntime;
+    }
+  ];
+  defaultExecutionContext: 'observations';
+  title: 'Aviary Observations';
+  description: 'Current corrected observations with the published observation service.';
+  elements: [demo::azureaviary2::Observation];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Current observations';
+      description: 'Reads the latest processing interval.';
+      executable: demo::azureaviary2::CurrentObservations;
+      executionContextKey: 'observations';
+    }
+  ];
+  supportInfo: Email {address: 'desk@aviary';};
+}

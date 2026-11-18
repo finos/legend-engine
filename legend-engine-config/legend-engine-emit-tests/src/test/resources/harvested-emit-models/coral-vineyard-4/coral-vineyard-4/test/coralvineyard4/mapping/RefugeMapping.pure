@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralvineyard4::mapping::RefugeMapping
+(
+  *test::coralvineyard4::domain::Refuge[refuge]: Pure
+  {
+    ~src test::coralvineyard4::feed::RefugeFeed
+    refugeCode: if($src.code->isEmpty(), |'UNCODED', |$src.code->toOne()->trim()->toUpper()),
+    siteName: $src.name,
+    massif: $src.massif->map(m | $m->trim()->toUpper()),
+    altitudeMetres: if($src.altitude->isEmpty(), |0.0, |$src.altitude->toOne()),
+    phone: $src.phone,
+    radioChannels: $src.channels,
+    capacity: $src.beds,
+    seasonLabel: if($src.opensMonth->isEmpty() || $src.closesMonth->isEmpty(), |'UNSCHEDULED', |if(($src.closesMonth->toOne() - $src.opensMonth->toOne()) >= 4, |'LONG-' + $src.opensMonth->toOne()->toString() + '-' + $src.closesMonth->toOne()->toString(), |'SHORT-' + $src.opensMonth->toOne()->toString())),
+    dormitories[dormitory]: $src.rooms
+  }
+
+  test::coralvineyard4::domain::Dormitory[dormitory]: Pure
+  {
+    ~src test::coralvineyard4::feed::DormFeed
+    roomName: $src.label,
+    heated: $src.stove,
+    bunks[bunk]: $src.bunks
+  }
+
+  test::coralvineyard4::domain::Bunk[bunk]: Pure
+  {
+    ~src test::coralvineyard4::feed::BunkFeed
+    bunkNumber: $src.number,
+    tier: if($src.upper->isEmpty(), |'UNKNOWN', |if($src.upper->toOne(), |'UPPER', |'LOWER')),
+    blanketCount: $src.blankets,
+    reservedFor: $src.guide,
+    sizeLabel: if($src.lengthCm->isEmpty(), |'UNMEASURED', |if($src.lengthCm->toOne() >= 200, |'LONG', |if($src.lengthCm->toOne() >= 180, |'STANDARD', |'SHORT')))
+  }
+
+  testSuites:
+  [
+    checkedRefugeSuite:
+    {
+      function: |test::coralvineyard4::domain::Refuge.all()->graphFetchChecked(
+        #{
+          test::coralvineyard4::domain::Refuge{
+            refugeCode,
+            siteName,
+            massif,
+            altitudeMetres,
+            phone,
+            radioChannels,
+            capacity,
+            seasonLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::coralvineyard4::domain::Refuge{
+            refugeCode,
+            siteName,
+            massif,
+            altitudeMetres,
+            phone,
+            radioChannels,
+            capacity,
+            seasonLabel
+          }
+        }#
+      );
+      tests:
+      [
+        compliantAndViolatingRefuges:
+        {
+          doc: 'One refuge satisfies every site rule; the second has no name, no massif, an unsurveyed altitude and neither phone nor radio, so the checked fetch reports all four rule breaches beside the value it still produced.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::coralvineyard4::feed::RefugeFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"code":" rf-01 ","name":"Col Blanc Hut","massif":" north ridge ","altitude":2710.0,"phone":"+00 100 200","channels":["CH-7"],"beds":40,"opensMonth":6,"closesMonth":10},{"code":"rf-02","beds":12,"opensMonth":7,"closesMonth":8}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            checkedRefuges:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"code\\":\\" rf-01 \\",\\"name\\":\\"Col Blanc Hut\\",\\"massif\\":\\" north ridge \\",\\"altitude\\":2710.0,\\"phone\\":\\"+00 100 200\\",\\"channels\\":[\\"CH-7\\"],\\"beds\\":40,\\"opensMonth\\":6,\\"closesMonth\\":10}"},"value":{"altitude":2710.0,"beds":40,"channels":["CH-7"],"closesMonth":10,"code":" rf-01 ","massif":" north ridge ","name":"Col Blanc Hut","opensMonth":6,"phone":"+00 100 200"}},"value":{"refugeCode":"RF-01","siteName":"Col Blanc Hut","massif":"NORTH RIDGE","altitudeMetres":2710.0,"phone":"+00 100 200","radioChannels":["CH-7"],"capacity":40,"seasonLabel":"LONG-6-10"}},{"defects":[{"id":"altitudeSurveyed","externalId":null,"message":"Site altitude is still the unsurveyed placeholder","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"test::coralvineyard4::domain::MountainSite","path":[]},{"id":"reachableByPhoneOrRadio","externalId":null,"message":"Site needs a phone line or at least one radio channel","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"test::coralvineyard4::domain::MountainSite","path":[]},{"id":"siteNamed","externalId":null,"message":"Site must carry a published name","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"test::coralvineyard4::domain::MountainSite","path":[]},{"id":"massifDeclared","externalId":null,"message":"Site must declare the massif it belongs to","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"test::coralvineyard4::domain::MountainSite","path":[]}],"source":{"defects":[],"source":{"number":2,"record":"{\\"code\\":\\"rf-02\\",\\"beds\\":12,\\"opensMonth\\":7,\\"closesMonth\\":8}"},"value":{"altitude":null,"beds":12,"channels":[],"closesMonth":8,"code":"rf-02","massif":null,"name":null,"opensMonth":7,"phone":null}},"value":{"refugeCode":"RF-02","siteName":null,"massif":null,"altitudeMetres":0.0,"phone":null,"radioChannels":[],"capacity":12,"seasonLabel":"SHORT-7"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

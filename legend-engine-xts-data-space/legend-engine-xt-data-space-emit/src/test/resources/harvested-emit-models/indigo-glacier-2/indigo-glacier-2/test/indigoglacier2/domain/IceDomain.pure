@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class test::indigoglacier2::domain::GlacierSite
+{
+  siteCode: String[1];
+  siteName: String[0..1];
+  valleyName: String[0..1];
+  openedOn: StrictDate[0..1];
+}
+
+Class test::indigoglacier2::domain::FieldCrew
+{
+  crewCode: String[1];
+  crewName: String[0..1];
+  homeHut: String[0..1];
+  crewSize: Integer[0..1];
+}
+
+Class test::indigoglacier2::domain::StakePost
+{
+  stakeCode: String[1];
+  siteCode: String[1];
+  installedAt: DateTime[0..1];
+  postHeight: Float[0..1];
+}
+
+Class test::indigoglacier2::domain::StakeReading
+{
+  readingCode: String[1];
+  stakeCode: String[0..1];
+  readAt: DateTime[0..1];
+  exposedCm: Integer[0..1];
+  snowDensity: Float[0..1];
+}
+
+Class test::indigoglacier2::domain::SnowPit
+{
+  pitCode: String[1];
+  siteCode: String[0..1];
+  dugOn: StrictDate[0..1];
+  depthCm: Integer[0..1];
+  layerCount: Integer[0..1];
+}
+
+Class test::indigoglacier2::domain::MeltPond
+{
+  pondCode: String[1];
+  siteCode: String[0..1];
+  seenOn: StrictDate[0..1];
+  areaSqM: Float[0..1];
+}
+
+Class test::indigoglacier2::domain::IceCore
+{
+  coreCode: String[1];
+  siteCode: String[0..1];
+  drilledOn: StrictDate[0..1];
+  coreLengthM: Float[0..1];
+  bubbleRatio: Float[0..1];
+}
+
+Class test::indigoglacier2::domain::IsotopeSample
+{
+  sampleCode: String[1];
+  coreCode: String[1];
+  depthM: Float[0..1];
+  deltaValue: Float[0..1];
+}
+
+Class test::indigoglacier2::domain::ReadingHistory
+{
+  readingCode: String[1];
+  archivedAt: DateTime[1];
+  stakeCode: String[0..1];
+  exposedCm: Integer[0..1];
+}
+
+Class test::indigoglacier2::domain::CoreHistory
+{
+  coreCode: String[1];
+  archivedOn: StrictDate[1];
+  coreLengthM: Float[0..1];
+  shelfLabel: String[0..1];
+}

@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::jadeglacier::store::ConservatoryDatabase
+(
+  Schema conservatory
+  (
+    Table plant_accession
+    (
+      accession_code VARCHAR(16) PRIMARY KEY,
+      taxon_name VARCHAR(128),
+      glasshouse_code VARCHAR(16),
+      pot_size_cm INTEGER,
+      acquired_year INTEGER,
+      curator_note VARCHAR(128)
+    )
+
+    View glasshouse_census
+    (
+      ~groupBy (conservatory.plant_accession.glasshouse_code)
+      glasshouse_code: conservatory.plant_accession.glasshouse_code PRIMARY KEY,
+      accession_count: count(conservatory.plant_accession.accession_code),
+      largest_pot_cm: max(conservatory.plant_accession.pot_size_cm)
+    )
+  )
+
+  Join Accession_Census(conservatory.plant_accession.glasshouse_code = conservatory.glasshouse_census.glasshouse_code)
+)

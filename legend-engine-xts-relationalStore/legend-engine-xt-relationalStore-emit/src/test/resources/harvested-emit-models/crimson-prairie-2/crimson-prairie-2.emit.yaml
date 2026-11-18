@@ -1,0 +1,66 @@
+name: crimson-prairie-2
+title: "Crimson Prairie 2 - Bi-Temporal Extent Behind Conditional Transforms and Multi-Hop Join Paths"
+description: |
+  A range-management model whose single wide class is bound bi-temporally to a
+  milestoned table under an explicit two-column identity that pairs the in-date
+  with the entity key. Its transforms are conditional expressions over stored
+  columns, null tests with materialised sentinels, a rounded numeric arm and
+  marker codes reached over forced inner joins carrying literal conditions, while
+  ancestry columns walk one, two and three hops through a denormalised tree.
+  A point-in-time extract and a keyed multi-execution counterpart consume the
+  computed columns.
+modelSources:
+  model:
+    root: crimson-prairie-2
+    files:
+      - test/crimsonprairie2/connection/PrairieConnections.pure
+      - test/crimsonprairie2/domain/PrairieDomain.pure
+      - test/crimsonprairie2/mapping/PrairieEnumMapping.pure
+      - test/crimsonprairie2/mapping/PrairieMapping.pure
+      - test/crimsonprairie2/runtime/PrairieRuntimes.pure
+      - test/crimsonprairie2/service/BurnUnitAsOf.pure
+      - test/crimsonprairie2/service/BurnUnitByEnvironment.pure
+      - test/crimsonprairie2/store/PrairieRangeDatabase.pure
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - milestoning:bi-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-cross-table-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - bi-temporal
+  - conditional-transform
+  - cross-table-filter
+  - enumeration-mapping
+  - h2
+  - inner-join
+  - multi-execution
+  - multi-hop-join
+  - null-sentinel
+  - point-in-time
+  - prairie-range
+  - relational

@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import test::easterncavern::domain::*;
+
+Profile test::easterncavern::domain::CavernMeta
+{
+  stereotypes: [provisional, superseded];
+  tags: [steward, revision];
+}
+
+Enum {doc.doc = 'Cross-section shape recorded for a surveyed passage.'} test::easterncavern::domain::PassageShape
+{
+  {doc.doc = 'Rounded tube dissolved under full water pressure.'} PHREATIC_TUBE,
+  {doc.doc = 'Tall narrow channel cut by a free-flowing stream.'} VADOSE_CANYON,
+  {doc.doc = 'Narrow joint-guided fissure.'} FISSURE,
+  {doc.doc = 'Collapse-widened chamber with a rubble floor.'} BREAKDOWN_CHAMBER
+}
+
+Enum {doc.doc = 'Mineral deposit families catalogued inside the cavern system.'} test::easterncavern::domain::FormationKind
+{
+  {doc.doc = 'Deposit growing downward from the ceiling.'} STALACTITE,
+  {doc.doc = 'Deposit growing upward from the floor.'} STALAGMITE,
+  {doc.doc = 'Thin sheet deposit hanging from an inclined ceiling.'} DRAPERY,
+  {doc.doc = 'Radiating crystal cluster.'} HELICTITE
+}
+
+Enum {doc.doc = 'Precision grade attached to a survey leg.'} test::easterncavern::domain::SurveyGrade
+{
+  {doc.doc = 'Sketch from memory, no instruments.'} SKETCH,
+  {doc.doc = 'Compass and tape with estimated stations.'} COMPASS_TAPE,
+  {doc.doc = 'Instrument survey with fixed stations.'} INSTRUMENT
+}

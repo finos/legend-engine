@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::wistfullantern::store::LanternDB
+(
+  Schema beacon
+  (
+    Table shore_sector
+    (
+      sector_code VARCHAR(20) PRIMARY KEY,
+      coast_name VARCHAR(80) NOT NULL
+    )
+    Table rotating_optic
+    (
+      optic_code VARCHAR(20) PRIMARY KEY,
+      lamp_wattage INTEGER NOT NULL,
+      rotation_seconds INTEGER NOT NULL
+    )
+    Table tender_vessel
+    (
+      vessel_code VARCHAR(20) PRIMARY KEY,
+      home_port_name VARCHAR(80) NOT NULL
+    )
+    Table maintenance_visit
+    (
+      visit_code VARCHAR(20) PRIMARY KEY,
+      visit_date DATE NOT NULL,
+      work_summary VARCHAR(240),
+      station_code VARCHAR(20) NOT NULL,
+      vessel_code VARCHAR(20)
+    )
+    Table light_station
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      station_code VARCHAR(20) PRIMARY KEY,
+      station_name VARCHAR(80) NOT NULL,
+      focal_height_metres INTEGER NOT NULL,
+      character_code VARCHAR(20),
+      sector_code VARCHAR(20) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+  )
+
+  Join Station_Sector(beacon.light_station.sector_code = beacon.shore_sector.sector_code)
+  Join Visit_Tender(beacon.maintenance_visit.vessel_code = beacon.tender_vessel.vessel_code)
+)

@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenmeadow::mapping::MeadowMapping
+(
+  *test::goldenmeadow::domain::PollinatorPatch[patch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenmeadow::store::MeadowSurveyDb]meadow.pollinator_patch.patch_code
+    )
+    ~mainTable [test::goldenmeadow::store::MeadowSurveyDb]meadow.pollinator_patch
+    patchCode: [test::goldenmeadow::store::MeadowSurveyDb]meadow.pollinator_patch.patch_code,
+    patchName: [test::goldenmeadow::store::MeadowSurveyDb]meadow.pollinator_patch.patch_name,
+    floraCode: [test::goldenmeadow::store::MeadowSurveyDb]meadow.pollinator_patch.flora_code,
+    bloomIndex: [test::goldenmeadow::store::MeadowSurveyDb]meadow.pollinator_patch.bloom_index
+  }
+
+  *test::goldenmeadow::domain::StewardCrew[crew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenmeadow::store::MeadowSurveyDb]meadow.steward_crew.steward_code
+    )
+    ~mainTable [test::goldenmeadow::store::MeadowSurveyDb]meadow.steward_crew
+    stewardCode: [test::goldenmeadow::store::MeadowSurveyDb]meadow.steward_crew.steward_code,
+    crewName: [test::goldenmeadow::store::MeadowSurveyDb]meadow.steward_crew.crew_name,
+    depotCode: [test::goldenmeadow::store::MeadowSurveyDb]meadow.steward_crew.depot_code
+  }
+
+  test::goldenmeadow::domain::Patch_Crew: Relational
+  {
+    AssociationMapping
+    (
+      crew[patch, crew]: [test::goldenmeadow::store::MeadowSurveyDb]@Patch_Crew_J,
+      stewardedPatch[crew, patch]: [test::goldenmeadow::store::MeadowSurveyDb]@Patch_Crew_J
+    )
+  }
+)

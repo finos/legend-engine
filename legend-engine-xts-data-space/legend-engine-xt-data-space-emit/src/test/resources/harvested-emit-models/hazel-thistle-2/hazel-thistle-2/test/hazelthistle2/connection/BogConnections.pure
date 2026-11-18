@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection demo::hazelthistle2::connection::BogH2Connection
+{
+  store: demo::hazelthistle2::store::BogDB;
+  type: H2;
+  specification: LocalH2 { testDataSetupSqls: []; };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::hazelthistle2::connection::BogWarehouseConnection
+{
+  store: demo::hazelthistle2::store::BogDB;
+  type: Snowflake;
+  timezone: +0000;
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'PEATLAND_RESTORATION_DB';
+    account: 'peatland_restoration_account';
+    warehouse: 'PEATLAND_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'peatland_org';
+    role: 'PEATLAND_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'peatland_oauth_key';
+    scopeName: 'SESSION:ROLE:PEATLAND_READER';
+  };
+}

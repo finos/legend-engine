@@ -1,0 +1,264 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::noblequarry::live::mapping::QuarryLiveMapping
+(
+  include mapping test::noblequarry::shared::mapping::SiteRegistryMapping
+
+  *test::noblequarry::live::domain::BenchSurvey[liveSurvey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.survey_ref,
+      [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.in_z,
+      [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.bench_code,
+      [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.surveyor_code,
+      [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.surveyed_on,
+      [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.valid_from
+    )
+    ~mainTable [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey
+    surveyRef: [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.survey_ref,
+    benchCode: [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.bench_code,
+    surveyorCode: [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.surveyor_code,
+    faceHeightMetres: [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.face_height_m,
+    surveyedOn: [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.surveyed_on,
+    validFrom: [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.valid_from,
+    validTo: [test::noblequarry::live::store::QuarryLiveDB]quarry.bench_survey.valid_to
+  }
+
+  *test::noblequarry::live::domain::BlastRecord[liveBlast]: Relational
+  {
+    ~primaryKey
+    (
+      [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record.blast_ref,
+      [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record.in_z,
+      [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record.bench_code,
+      [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record.site_ref,
+      [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record.fired_on
+    )
+    ~mainTable [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record
+    blastRef: [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record.blast_ref,
+    benchCode: [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record.bench_code,
+    siteRef: [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record.site_ref,
+    firedOn: [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record.fired_on,
+    chargeKg: [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record.charge_kg,
+    holeCount: [test::noblequarry::live::store::QuarryLiveDB]quarry.blast_record.hole_count
+  }
+
+  test::noblequarry::live::domain::SurveyBlasts: Relational
+  {
+    AssociationMapping
+    (
+      blasts[liveSurvey, liveBlast]: [test::noblequarry::live::store::QuarryLiveDB]@LiveSurvey_Blast,
+      surveys[liveBlast, liveSurvey]: [test::noblequarry::live::store::QuarryLiveDB]@LiveSurvey_Blast
+    )
+  }
+
+  test::noblequarry::live::domain::SurveySites: Relational
+  {
+    AssociationMapping
+    (
+      sites[liveSurvey, quarrySite]: [test::noblequarry::live::store::QuarryLiveDB]@LiveSurvey_Scheme > @LiveScheme_Link > @LiveScheme_Site,
+      liveSurveys[quarrySite, liveSurvey]: [test::noblequarry::live::store::QuarryLiveDB]@LiveScheme_Site > @LiveScheme_Link > @LiveSurvey_Scheme
+    )
+  }
+
+  test::noblequarry::live::domain::BlastSites: Relational
+  {
+    AssociationMapping
+    (
+      sites[liveBlast, quarrySite]: [test::noblequarry::live::store::QuarryLiveDB]@LiveBlast_Scheme > @LiveScheme_Site,
+      liveBlasts[quarrySite, liveBlast]: [test::noblequarry::live::store::QuarryLiveDB]@LiveScheme_Site > @LiveBlast_Scheme
+    )
+  }
+
+  testSuites:
+  [
+    surveySiteChainSuite:
+    {
+      function: |test::noblequarry::live::domain::BenchSurvey.all(%latest)->project(
+  [
+    s|$s.surveyRef,
+    s|$s.faceHeightMetres,
+    s|$s.sites.siteName
+  ],
+  [
+    'Survey',
+    'Face Height',
+    'Site'
+  ]
+)->sort(
+  [
+    asc('Survey')
+  ]
+);
+      tests:
+      [
+        completeChainAndChainsBrokenAtEachHop:
+        {
+          doc: 'The three-hop cross-reference chain resolves a site only when the survey key, the linked registry key and the live batch all match; one chain has no registry key in its link group and one ends on a closed batch, and a superseded processing version of a survey never surfaces.';
+          data:
+          [
+            test::noblequarry::live::store::QuarryLiveDB:
+              Reference #{ test::noblequarry::data::LiveQuarryFixture }#
+          ];
+          asserts:
+          [
+            onlyTheCompleteChainReachesASite:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"SV-1","Face Height":12.5,"Site":"North Face Pit"},{"Survey":"SV-2","Face Height":9.0,"Site":null},{"Survey":"SV-3","Face Height":15.25,"Site":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    blastSiteAndSurveySuite:
+    {
+      function: |test::noblequarry::live::domain::BlastRecord.all(%latest)->project(
+  [
+    b|$b.blastRef,
+    b|$b.sites.siteName,
+    b|$b.surveys.surveyRef
+  ],
+  [
+    'Blast',
+    'Site',
+    'Survey'
+  ]
+)->sort(
+  [
+    asc('Blast')
+  ]
+);
+      tests:
+      [
+        twoHopSiteAndValidityWindowOverlap:
+        {
+          doc: 'Blasts reach their site over a two-hop chain and their survey over the validity-window join: a blast fired after its bench survey window closed has no survey, a blast whose registry key sits on a closed batch has no site, and a blast recording already superseded is not returned.';
+          data:
+          [
+            test::noblequarry::live::store::QuarryLiveDB:
+              Reference #{ test::noblequarry::data::LiveQuarryFixture }#
+          ];
+          asserts:
+          [
+            siteAndSurveyResolvedPerBlast:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Blast":"BL-1","Site":"North Face Pit","Survey":"SV-1"},{"Blast":"BL-2","Site":"Riverside Cut","Survey":null},{"Blast":"BL-3","Site":null,"Survey":"SV-3"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    siteToLiveSurveySuite:
+    {
+      function: |test::noblequarry::shared::domain::QuarrySite.all()->project(
+  [
+    q|$q.siteId,
+    q|$q.siteName,
+    q|$q.liveSurveys(%latest).surveyRef
+  ],
+  [
+    'Site Id',
+    'Site',
+    'Survey'
+  ]
+)->sort(
+  [
+    asc('Site Id')
+  ]
+);
+      tests:
+      [
+        reverseThreeHopChain:
+        {
+          doc: 'Walking the same chain backwards from the shared site registry reaches only the survey whose cross-reference chain is complete.';
+          data:
+          [
+            test::noblequarry::live::store::QuarryLiveDB:
+              Reference #{ test::noblequarry::data::LiveQuarryFixture }#
+          ];
+          asserts:
+          [
+            reverseChainFindsOneSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site Id":101,"Site":"North Face Pit","Survey":"SV-1"},{"Site Id":102,"Site":"Riverside Cut","Survey":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    siteToLiveBlastSuite:
+    {
+      function: |test::noblequarry::shared::domain::QuarrySite.all()->project(
+  [
+    q|$q.siteId,
+    q|$q.liveBlasts(%latest).blastRef
+  ],
+  [
+    'Site Id',
+    'Blast'
+  ]
+)->sort(
+  [
+    asc('Site Id')
+  ]
+);
+      tests:
+      [
+        reverseTwoHopChain:
+        {
+          doc: 'From each site back to its currently recorded blasts; the superseded blast recording on the second site is excluded at the latest processing date.';
+          data:
+          [
+            test::noblequarry::live::store::QuarryLiveDB:
+              Reference #{ test::noblequarry::data::LiveQuarryFixture }#
+          ];
+          asserts:
+          [
+            oneLiveBlastPerSite:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site Id":101,"Blast":"BL-1"},{"Site Id":102,"Blast":"BL-2"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

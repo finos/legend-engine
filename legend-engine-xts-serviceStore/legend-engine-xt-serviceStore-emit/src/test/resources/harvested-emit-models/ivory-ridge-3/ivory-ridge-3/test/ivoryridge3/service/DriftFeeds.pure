@@ -1,0 +1,257 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivoryridge3::service::DriftProfileFeed
+{
+  pattern: '/buoy-telemetry/v1/drift-profiles';
+  title: 'Buoy Telemetry - Published Drift Profiles';
+  owners:
+  [
+    'moored-array-platform',
+    'buoy-telemetry-eng'
+  ];
+  documentation: 'Publishes the drift profiles of the rolling telemetry window, with the delimited sheet rows chained through the fetch mapping before the profile transform runs, so the request constants come from the mapping rather than the caller.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::ivoryridge3::domain::BuoyDriftProfile.all()->graphFetch(
+      #{
+        test::ivoryridge3::domain::BuoyDriftProfile
+        {
+          buoyRef,
+          stationLabel,
+          keeperLabel,
+          metresPerHour,
+          driftBand
+        }
+      }#
+    )->serialize(
+      #{
+        test::ivoryridge3::domain::BuoyDriftProfile
+        {
+          buoyRef,
+          stationLabel,
+          keeperLabel,
+          metresPerHour,
+          driftBand
+        }
+      }#
+    );
+    mapping: test::ivoryridge3::mapping::DriftProfileMapping;
+    runtime: test::ivoryridge3::runtime::DriftPrimaryRuntime;
+  }
+  testSuites:
+  [
+    driftProfileFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          telemetryApiConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/telemetry/drift-sheet?dataset=drift-sheet&window=rolling';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/x.flatdata';
+                        data: 'buoyRef,stationCode,driftMetres,hoursAdrift,swellCentimetres,keeper\nBY-301,stn-alpha,48.0,6,120,north keeper\nBY-302,stn-bravo,220.0,8,340,west keeper\n';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        driftProfilesFromDelimitedPayload:
+        {
+          asserts:
+          [
+            driftProfileRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"buoyRef":"BY-301","stationLabel":"STN/STN-ALPHA","keeperLabel":"NORTH KEEPER","metresPerHour":8.0,"driftBand":"BAND-3-MODERATE"},{"buoyRef":"BY-302","stationLabel":"STN/STN-BRAVO","keeperLabel":"WEST KEEPER","metresPerHour":27.5,"driftBand":"BAND-5-HEAVY"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::ivoryridge3::service::DriftProfileStandbyFeed
+{
+  pattern: '/buoy-telemetry/v1/drift-profiles-standby';
+  title: 'Buoy Telemetry - Published Drift Profiles (Standby Array)';
+  owners:
+  [
+    'moored-array-platform',
+    'buoy-telemetry-eng'
+  ];
+  documentation: 'The same fetch tree and transform layer pointed at the standby telemetry array, so the published picture differs only in which endpoint of the store the drift sheet is read from.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::ivoryridge3::domain::BuoyDriftProfile.all()->graphFetch(
+      #{
+        test::ivoryridge3::domain::BuoyDriftProfile
+        {
+          buoyRef,
+          stationLabel,
+          keeperLabel,
+          metresPerHour,
+          driftBand
+        }
+      }#
+    )->serialize(
+      #{
+        test::ivoryridge3::domain::BuoyDriftProfile
+        {
+          buoyRef,
+          stationLabel,
+          keeperLabel,
+          metresPerHour,
+          driftBand
+        }
+      }#
+    );
+    mapping: test::ivoryridge3::mapping::DriftProfileMapping;
+    runtime: test::ivoryridge3::runtime::DriftStandbyRuntime;
+  }
+}
+
+Service test::ivoryridge3::service::DriftBandFeed
+{
+  pattern: '/buoy-telemetry/v1/drift-bands';
+  title: 'Buoy Telemetry - Drift Band Index';
+  owners:
+  [
+    'moored-array-platform',
+    'buoy-telemetry-eng'
+  ];
+  documentation: 'Narrow band index over the published profiles, serialising only the buoy reference and its swell band so a caller polling the band does not pull the keeper or the rate.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::ivoryridge3::domain::BuoyDriftProfile.all()->graphFetch(
+      #{
+        test::ivoryridge3::domain::BuoyDriftProfile
+        {
+          buoyRef,
+          driftBand
+        }
+      }#
+    )->serialize(
+      #{
+        test::ivoryridge3::domain::BuoyDriftProfile
+        {
+          buoyRef,
+          driftBand
+        }
+      }#
+    );
+    mapping: test::ivoryridge3::mapping::DriftProfileMapping;
+    runtime: test::ivoryridge3::runtime::DriftPrimaryRuntime;
+  }
+}
+
+Service test::ivoryridge3::service::DriftRateFeed
+{
+  pattern: '/buoy-telemetry/v1/drift-rates';
+  title: 'Buoy Telemetry - Drift Rate Board';
+  owners:
+  [
+    'moored-array-platform',
+    'buoy-telemetry-eng'
+  ];
+  documentation: 'Rate board over the published profiles, carrying the metres-adrift-per-hour rating beside the keeper label that owns the mooring.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::ivoryridge3::domain::BuoyDriftProfile.all()->graphFetch(
+      #{
+        test::ivoryridge3::domain::BuoyDriftProfile
+        {
+          buoyRef,
+          keeperLabel,
+          metresPerHour
+        }
+      }#
+    )->serialize(
+      #{
+        test::ivoryridge3::domain::BuoyDriftProfile
+        {
+          buoyRef,
+          keeperLabel,
+          metresPerHour
+        }
+      }#
+    );
+    mapping: test::ivoryridge3::mapping::DriftProfileMapping;
+    runtime: test::ivoryridge3::runtime::DriftPrimaryRuntime;
+  }
+}
+
+Service test::ivoryridge3::service::DriftStationFeed
+{
+  pattern: '/buoy-telemetry/v1/drift-stations';
+  title: 'Buoy Telemetry - Station Roll';
+  owners:
+  [
+    'moored-array-platform',
+    'buoy-telemetry-eng'
+  ];
+  documentation: 'Station roll off the mooring registry rather than the remote sheet, projecting the tended stations as a tabular board so the roll a caller pages through is answered by the registry database instead of the telemetry endpoint.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::ivoryridge3::domain::StationMooring.all()->filter(
+      m | $m.tended == true
+    )->project(
+      [
+        m | $m.stationCode,
+        m | $m.stationName,
+        m | $m.mooringDepthMetres
+      ],
+      [
+        'StationCode',
+        'StationName',
+        'MooringDepthMetres'
+      ]
+    )->sort(
+      [
+        asc('StationCode')
+      ]
+    );
+    mapping: test::ivoryridge3::mapping::StationMooringMapping;
+    runtime: test::ivoryridge3::runtime::StationRegistryRuntime;
+  }
+}

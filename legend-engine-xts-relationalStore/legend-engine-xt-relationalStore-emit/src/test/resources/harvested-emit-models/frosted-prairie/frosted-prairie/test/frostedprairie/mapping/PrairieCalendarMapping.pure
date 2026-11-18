@@ -1,0 +1,194 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedprairie::mapping::PrairieCalendarMapping
+(
+  test::frostedprairie::domain::BurnRegime: EnumerationMapping BurnRegimeMapping
+  {
+    PRESCRIBED: ['PB'],
+    PATCH: ['PT'],
+    NONE: ['NB']
+  }
+
+  test::frostedprairie::domain::BurnIntensity: EnumerationMapping BurnIntensityMapping
+  {
+    LOW: [1],
+    MODERATE: [2],
+    HIGH: [3]
+  }
+
+  test::frostedprairie::domain::RotationPhase: EnumerationMapping RotationPhaseMapping
+  {
+    REST: ['R'],
+    GRAZE: ['G'],
+    RECOVER: ['C']
+  }
+
+  *test::frostedprairie::domain::PrairieDay[day]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.day_id
+    )
+    ~mainTable [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day
+    dayId: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.day_id,
+    seasonYear: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.season_year,
+    weekOrdinal: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.week_ordinal,
+    monthOrdinal: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.month_ordinal,
+    quarterOrdinal: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.quarter_ordinal,
+    dayOfSeason: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.day_of_season,
+    calendarDate: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.calendar_date,
+    stageLabel: case(
+                  equal([test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.month_ordinal, 3),
+                  'GREEN UP',
+                  case(
+                    equal([test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.month_ordinal, 4),
+                    'EARLY BLOOM',
+                    case(
+                      equal([test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.month_ordinal, 5),
+                      'PEAK BLOOM',
+                      case(
+                        equal([test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.month_ordinal, 6),
+                        'LATE BLOOM',
+                        case(
+                          equal([test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.month_ordinal, 7),
+                          'SEED SET',
+                          case(
+                            equal([test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.month_ordinal, 8),
+                            'DORMANCY ONSET',
+                            case(
+                              equal([test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.month_ordinal, 9),
+                              'BURN WINDOW',
+                              case(
+                                equal([test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.month_ordinal, 10),
+                                'FROST HARDENING',
+                                sqlNull()
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                ),
+    grain
+    (
+      grainCode: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.grain_code
+    ),
+    season
+    (
+      seasonYear: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.season_year,
+      interval
+      (
+        startDate: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.season_window_start,
+        endDate: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.season_window_end
+      )
+    ),
+    burn
+    (
+      regime: EnumerationMapping BurnRegimeMapping: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.burn_regime_code,
+      intensity: EnumerationMapping BurnIntensityMapping: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.burn_intensity_code,
+      plannedDays: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.planned_burn_days,
+      interval
+      (
+        startDate: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.burn_window_start,
+        endDate: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.burn_window_end
+      ),
+      crew
+      (
+        crewCode: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.burn_crew_code,
+        crewName: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.burn_crew_name
+      )
+    ),
+    grazing
+    (
+      rotation: EnumerationMapping RotationPhaseMapping: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.rotation_code,
+      interval
+      (
+        startDate: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.graze_window_start,
+        endDate: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.graze_window_end
+      )
+    ),
+    hydrology
+    (
+      waterTableCm: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.water_table_cm,
+      note: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.hydrology_note
+    ),
+    pollinator
+    (
+      pollinatorCount: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.pollinator_count,
+      bloomIndex: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.bloom_index
+    ),
+    survey
+    (
+      note: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.survey_note,
+      interval
+      (
+        startDate: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.survey_window_start,
+        endDate: [test::frostedprairie::store::PrairieCalendarStore]phenology.prairie_day.survey_window_end
+      )
+    )
+  }
+
+  testSuites:
+  [
+    prairieCalendarSuite:
+    {
+      function: test::frostedprairie::domain::PrairieDay.all()->project(~[dayId: r|$r.dayId, stage: r|$r.stageLabel, stageTag: r|if($r.stageLabel->isEmpty(), | 'UNSTAGED', | $r.stageLabel->toOne()->substr(0, 4)), grainCode: r|$r.grain.grainCode, seasonYear: r|$r.season.seasonYear, seasonStart: r|$r.season.interval.startDate, regime: r|$r.burn.regime, intensity: r|$r.burn.intensity, plannedDays: r|$r.burn.plannedDays, crewName: r|$r.burn.crew.crewName, rotation: r|$r.grazing.rotation, waterTableCm: r|$r.hydrology.waterTableCm, pollinators: r|$r.pollinator.pollinatorCount, surveyNote: r|$r.survey.note, burnFactor: r|$r.burnFactor]);
+      tests:
+      [
+        calendarStagesAndWindows:
+        {
+          doc: 'Projects every calendar row of the mixed-grain relation through the alias-relative bindings and the two-level embedded window structures: the eight-arm conditional stage label hits one arm per row and falls through to nothing for the row outside the staged months, the two textual and one numeric enumerated translations resolve declared values and yield nothing for an undeclared one, and the optional fractional burn factor is absent where its numerator is.';
+          data:
+          [
+            test::frostedprairie::store::PrairieCalendarStore:
+              Relational
+              #{
+                phenology.prairie_day:
+                  'day_id,grain_code,season_year,week_ordinal,month_ordinal,quarter_ordinal,day_of_season,calendar_date,season_window_start,season_window_end,burn_regime_code,burn_intensity_code,planned_burn_days,burn_crew_code,burn_crew_name,rotation_code,water_table_cm,hydrology_note,pollinator_count,bloom_index,survey_note\n'+
+                  '1,DAY,2026,10,3,1,1,2026-03-05,2026-03-01,2026-11-30,PB,1,4,BC-1,ridge crew,R,42,shallow water,120,3.50,spring walkover\n'+
+                  '2,DAY,2026,14,4,2,2,2026-04-06,2026-03-01,2026-11-30,PT,2,6,BC-2,fen crew,G,38,steady water,240,5.25,bloom count\n'+
+                  '3,DAY,2026,18,5,2,3,2026-05-04,2026-03-01,2026-11-30,NB,3,9,BC-3,bog crew,C,30,drawdown,360,7.75,peak survey\n'+
+                  '4,DAY,2026,22,6,2,4,2026-06-08,2026-03-01,2026-11-30,XX,,8,BC-4,heath crew,R,25,,410,8.10,late bloom\n'+
+                  '5,WEEK,2026,26,7,3,5,2026-07-06,,,,9,,,,,,,,,sparse row\n'+
+                  '6,DAY,2026,31,8,3,6,2026-08-03,2026-03-01,2026-11-30,PB,2,12,BC-6,mire crew,G,18,dry spell,90,1.20,seed set walk\n'+
+                  '7,DAY,2026,35,9,3,7,2026-09-07,2026-03-01,2026-11-30,PT,1,14,BC-7,sedge crew,C,15,low water,60,0.80,burn prep\n'+
+                  '8,DAY,2026,40,10,4,8,2026-10-05,2026-03-01,2026-11-30,NB,3,16,BC-8,scrub crew,R,12,frost hazard,30,0.40,frost check\n'+
+                  '9,MONTH,2026,50,12,4,9,2026-12-07,2026-03-01,2026-11-30,PB,2,18,BC-9,winter crew,G,10,frozen,5,0.10,dormant check\n';
+              }#
+          ];
+          asserts:
+          [
+            nineCalendarRows:
+              Relation
+              #{
+                dayId,stage,stageTag,grainCode,seasonYear,seasonStart,regime,intensity,plannedDays,crewName,rotation,waterTableCm,pollinators,surveyNote,burnFactor
+                1,GREEN UP,GREE,DAY,2026,2026-03-01,PRESCRIBED,LOW,4,ridge crew,REST,42,120,spring walkover,4.0
+                2,EARLY BLOOM,EARL,DAY,2026,2026-03-01,PATCH,MODERATE,6,fen crew,GRAZE,38,240,bloom count,3.0
+                3,PEAK BLOOM,PEAK,DAY,2026,2026-03-01,NONE,HIGH,9,bog crew,RECOVER,30,360,peak survey,3.0
+                4,LATE BLOOM,LATE,DAY,2026,2026-03-01,null,null,8,heath crew,REST,25,410,late bloom,2.0
+                5,SEED SET,SEED,WEEK,2026,null,null,null,null,null,null,null,null,sparse row,null
+                6,DORMANCY ONSET,DORM,DAY,2026,2026-03-01,PRESCRIBED,MODERATE,12,mire crew,GRAZE,18,90,seed set walk,2.0
+                7,BURN WINDOW,BURN,DAY,2026,2026-03-01,PATCH,LOW,14,sedge crew,RECOVER,15,60,burn prep,2.0
+                8,FROST HARDENING,FROS,DAY,2026,2026-03-01,NONE,HIGH,16,scrub crew,REST,12,30,frost check,2.0
+                9,null,UNSTAGED,MONTH,2026,2026-03-01,PRESCRIBED,MODERATE,18,winter crew,GRAZE,10,5,dormant check,2.0;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

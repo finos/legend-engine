@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::sunlittundra4::mapping::ScanDigestM2M
+(
+  include mapping demo::sunlittundra4::mapping::ObservatoryEnumMappings
+
+  *demo::sunlittundra4::domain::ScanDigest: Pure
+  {
+    ~src demo::sunlittundra4::domain::ScanNote
+    digestKey: $src.noteCode + '/' + $src.domeText->toUpper(),
+    exposureLabel: if($src.exposureSecs >= 3600,
+                      | 'EPIC-' + $src.exposureSecs->toString(),
+                      | if($src.exposureSecs >= 600,
+                           | 'DEEP-' + $src.exposureSecs->toString(),
+                           | 'BRIEF-' + $src.exposureSecs->toString())),
+    band: EnumerationMapping BandMapping: [if($src.bandText->toUpper() == 'BLUE', |'B', |if($src.bandText->toUpper() == 'RED', |'R', |'V'))],
+    seeing: EnumerationMapping SeeingMapping: [if($src.seeingText->toUpper() == 'SHARP', |'S', |if($src.exposureSecs >= 3600, |'P', |'F'))]
+  }
+
+  testSuites:
+  [
+    noteDigestSuite:
+    {
+      function: |demo::sunlittundra4::domain::ScanDigest.all()->graphFetch(
+        #{
+          demo::sunlittundra4::domain::ScanDigest{
+            digestKey,
+            exposureLabel,
+            band,
+            seeing
+          }
+        }#
+      )->serialize(
+        #{
+          demo::sunlittundra4::domain::ScanDigest{
+            digestKey,
+            exposureLabel,
+            band,
+            seeing
+          }
+        }#
+      );
+      tests:
+      [
+        digestArmsAcrossThreeNotes:
+        {
+          doc: 'Three eyepiece notes drive every arm of the exposure-label cascade and both computed enumeration decodes, including the note whose seeing wording matches nothing and is graded from its exposure instead.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::sunlittundra4::domain::ScanNote:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"noteCode":"NT-01","domeText":"summit dome","bandText":"blue","seeingText":"sharp","exposureSecs":4800},{"noteCode":"NT-02","domeText":"saddle dome","bandText":"red","seeingText":"hazy","exposureSecs":900},{"noteCode":"NT-03","domeText":"lower dome","bandText":"visual","seeingText":"washed","exposureSecs":120}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            digests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"digestKey":"NT-01/SUMMIT DOME","exposureLabel":"EPIC-4800","band":"BLUE","seeing":"SHARP"},{"digestKey":"NT-02/SADDLE DOME","exposureLabel":"DEEP-900","band":"RED","seeing":"SOFT"},{"digestKey":"NT-03/LOWER DOME","exposureLabel":"BRIEF-120","band":"VISUAL","seeing":"SOFT"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

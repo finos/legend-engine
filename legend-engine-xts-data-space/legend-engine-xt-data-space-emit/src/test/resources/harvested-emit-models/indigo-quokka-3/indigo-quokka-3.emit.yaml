@@ -1,0 +1,56 @@
+name: indigo-quokka-3
+title: "Indigo Quokka — Observing-Network Sky Almanac Served Through Composite-Keyed Views and a Data Space"
+description: |
+  An amateur astronomy observing-network almanac. Nine flat classes hold
+  magnitude estimates and seasonal statistics for variable stars, comets,
+  asteroids, meteor showers and novae, most of their properties optional
+  numbers and dates. One database declares a single schema of raw tables and
+  one user view per table; every view declares a composite primary key and
+  every class mapping reads one view with a mirrored mapping key. Eleven
+  single-execution services owned by one deployment identifier share one
+  mapping and one engine runtime over a key-pair authenticated warehouse
+  connection: seven project a whole class, two filter on an observing-night
+  path parameter and two on a night together with an object code. A data
+  space with a diagram and email support pairs the mapping and runtime in a
+  single execution context and lists the four filtered services as its
+  executables.
+modelSources:
+  model:
+    root: indigo-quokka-3
+    files:
+      - test/indigoquokka3/connection/SkyAlmanacConnection.pure
+      - test/indigoquokka3/dataspace/SkyAlmanacDataSpace.pure
+      - test/indigoquokka3/diagram/SkyAlmanacDiagram.pure
+      - test/indigoquokka3/domain/SkyAlmanacDomain.pure
+      - test/indigoquokka3/mapping/SkyAlmanacMapping.pure
+      - test/indigoquokka3/runtime/SkyAlmanacRuntime.pure
+      - test/indigoquokka3/service/SkyAlmanacServices.pure
+      - test/indigoquokka3/store/SkyAlmanacStore.pure
+features:
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:service
+  - execution:service-ownership
+  - execution:service-path-parameter
+  - query:filter
+  - execution:service-parameter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-column-primary-key
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - astronomy
+  - composite-key
+  - data-space
+  - h2
+  - path-parameter
+  - relational
+  - service
+  - snowflake
+  - view

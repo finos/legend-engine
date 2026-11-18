@@ -1,0 +1,45 @@
+name: scarlet-glacier-2
+title: "Scarlet Glacier — Allotment Permit Register (contract-only domain of constrained classes, closed enumerations and four per-flow diagrams)"
+description: |
+  An allotment-garden permit register whose whole contract is its classes: there
+  is no mapping, store, service or runtime. Application envelopes for the
+  household, plot-record, co-tenancy and document-upload flows share a common
+  envelope supertype and sit alongside the gardeners, addresses, residency
+  evidence and related-person descriptors behind them and the documents attached
+  to them. Nearly every categorical value is closed by an enumeration, so an
+  unrecognised inbound value cannot be represented at all rather than being
+  carried as free text, and one small enumeration is exercised at both ends of
+  its value list. Fifteen classes each declare one shallow validation rule over
+  a property of the instance — regular-expression shapes over references and
+  file names plus a single numeric floor over a plot area — including one rule
+  written so that it is vacuous when the optional property it tests is absent,
+  so a violating envelope is rejected at construction rather than downstream.
+  Four diagrams partition the domain one view per flow: the gardener and address
+  classes recur across several canvases, the upload envelope appears on exactly
+  one, and the shed and noticeboard rows appear on none, with each canvas
+  drawing the complex properties that link its classes as property views.
+
+modelSources:
+  model:
+    root: scarlet-glacier-2
+    files:
+      - test/scarletglacier2/diagram/PermitDiagrams.pure
+      - test/scarletglacier2/domain/PermitDomain.pure
+      - test/scarletglacier2/domain/PermitEnums.pure
+
+features:
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:diagram
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - allotment
+  - constraints
+  - diagram
+  - domain-only
+  - enumeration
+  - property-view
+  - vacuous-constraint

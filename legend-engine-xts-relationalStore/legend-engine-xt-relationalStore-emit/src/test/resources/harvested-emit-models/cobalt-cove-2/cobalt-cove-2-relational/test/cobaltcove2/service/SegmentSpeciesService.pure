@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltcove2::service::SegmentSpeciesService
+{
+  pattern: '/cobaltcove/v1/segments/{businessDate}/{species}/{minCount}/{maxGrade}';
+  title: 'Trail Segments With Species Sighting';
+  owners:
+  [
+    'cove-monitoring',
+    'reserve-wardens'
+  ];
+  documentation: 'Returns the walkable trail segments of the requested reserves that carry a sighting of a species with at least the requested individual count as of the requested business date, combining a set-membership test, a grade bound and a compound existence test over a to-many navigation with the business-temporal rewrite.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], reserves: String[*], species: String[1], minCount: Integer[1], maxGrade: Integer[1]|test::cobaltcove2::domain::TrailSegment.all($businessDate)->filter(
+      s|(($s.reserveName->in($reserves)) && ($s.surfaceGrade <= $maxGrade)) && ($s.sightings->exists(g|($g.speciesName == $species) && ($g.countSeen >= $minCount)))
+    )->project(
+      [
+        s|$s.segmentCode,
+        s|$s.reserveName,
+        s|$s.surfaceGrade
+      ],
+      [
+        'SegmentCode',
+        'ReserveName',
+        'SurfaceGrade'
+      ]
+    )->sort(
+      [
+        asc('SegmentCode')
+      ]
+    )};
+    mapping: test::cobaltcove2::mapping::CoveMapping;
+    runtime: test::cobaltcove2::runtime::CoveRuntime;
+  }
+  testSuites:
+  [
+    segmentSpeciesSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveConnection:
+            Relational
+            #{
+              cove.trail_segment:
+                'segment_code,reserve_name,surface_grade,from_z,thru_z\n'+
+                'TS-01,Kelp Cove Reserve,3,2024-01-01,9999-12-31\n'+
+                'TS-02,Kelp Cove Reserve,5,2024-01-01,9999-12-31\n'+
+                'TS-03,Otter Point Reserve,2,2024-01-01,9999-12-31\n'+
+                'TS-04,Kelp Cove Reserve,4,2023-01-01,2023-12-31\n'+
+                'TS-06,Kelp Cove Reserve,4,2024-01-01,9999-12-31\n'+
+                'TS-07,Kelp Cove Reserve,9,2024-01-01,9999-12-31\n';
+              cove.sighting:
+                'sighting_code,segment_code,species_name,count_seen\n'+
+                'SG-01,TS-01,Pine Marten,2\n'+
+                'SG-02,TS-01,Coastal Otter,1\n'+
+                'SG-03,TS-02,Coastal Otter,4\n'+
+                'SG-04,TS-03,Pine Marten,1\n'+
+                'SG-05,TS-04,Pine Marten,3\n'+
+                'SG-06,TS-06,Pine Marten,1\n'+
+                'SG-07,TS-07,Pine Marten,5\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        kelpCoveMartens:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2024-06-01,
+            reserves = ['Kelp Cove Reserve'],
+            species = 'Pine Marten',
+            minCount = 2,
+            maxGrade = 5
+          ]
+          asserts:
+          [
+            oneSegment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SegmentCode":"TS-01","ReserveName":"Kelp Cove Reserve","SurfaceGrade":3}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietarboretum2::service::CurrentAccessionRegister
+{
+  pattern: '/quietarboretum2/v1/accessions/current';
+  title: 'Current Accession Register';
+  owners:
+  [
+    'collection-registrar'
+  ];
+  documentation: 'Projects the accession register at a fixed processing instant, orders it by accession code and truncates it to the leading row, so the plan-injected window predicate is applied before the projection and the row limit.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::quietarboretum2::domain::AccessionRecord.all(%2026-03-01)->project(
+      [
+        a|$a.accessionCode,
+        a|$a.taxonName,
+        a|$a.specimenCount,
+        a|$a.sourceRegister
+      ],
+      [
+        'AccessionCode',
+        'TaxonName',
+        'SpecimenCount',
+        'SourceRegister'
+      ]
+    )->sort(
+      [
+        asc('AccessionCode')
+      ]
+    )->take(1);
+    mapping: test::quietarboretum2::mapping::AccessionMapping;
+    runtime: test::quietarboretum2::runtime::AccessionH2Runtime;
+  }
+  testSuites:
+  [
+    currentRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              arbor.accession_record:
+                      'accession_code,taxon_name,bed_code,curator_name,specimen_count,height_cm,spread_cm,propagation_count,planted_on,verified_on,surveyed_at,updated_at,in_z,out_z\n'+
+                      'AC-01,quercus grove draft,BD-01,wren keeper,3,120,80,2,2024-04-01,2024-05-01,2024-05-01 09:15:00,2024-05-02 10:00:00,2026-01-01,2026-02-01\n'+
+                      'AC-01,quercus grove,BD-01,wren keeper,4,140,90,2,2024-04-01,2026-02-10,2026-02-10 08:00:00,2026-02-10 08:30:00,2026-02-01,9999-12-31\n'+
+                      'AC-02,acer terrace,BD-02,finch keeper,1,60,40,1,2025-03-15,2026-01-20,2026-01-20 07:45:00,2026-01-21 07:45:00,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        leadingCurrentRowOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            currentLeadingRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AccessionCode":"AC-01","TaxonName":"quercus grove","SpecimenCount":4,"SourceRegister":"ARBORETUM-CENTRAL"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::quietarboretum2::service::AccessionRegisterAsOf
+{
+  pattern: '/quietarboretum2/v1/accessions/as-of';
+  title: 'Accession Register As Of A Processing Instant';
+  owners:
+  [
+    'collection-registrar'
+  ];
+  documentation: 'Projects the accession register at a requested processing instant, so the window predicate the plan injects follows the supplied instant rather than a fixed one, then orders and truncates the surfaced rows.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::quietarboretum2::domain::AccessionRecord.all($asOf)->project(
+      [
+        a|$a.accessionCode,
+        a|$a.taxonName,
+        a|$a.curatorName,
+        a|$a.sourceRegister
+      ],
+      [
+        'AccessionCode',
+        'TaxonName',
+        'CuratorName',
+        'SourceRegister'
+      ]
+    )->sort(
+      [
+        asc('AccessionCode')
+      ]
+    )->take(2)};
+    mapping: test::quietarboretum2::mapping::AccessionMapping;
+    runtime: test::quietarboretum2::runtime::AccessionH2Runtime;
+  }
+  testSuites:
+  [
+    asOfRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              arbor.accession_record:
+                      'accession_code,taxon_name,bed_code,curator_name,specimen_count,height_cm,spread_cm,propagation_count,planted_on,verified_on,surveyed_at,updated_at,in_z,out_z\n'+
+                      'AC-01,quercus grove draft,BD-01,wren keeper,3,120,80,2,2024-04-01,2024-05-01,2024-05-01 09:15:00,2024-05-02 10:00:00,2026-01-01,2026-02-01\n'+
+                      'AC-01,quercus grove,BD-01,wren keeper,4,140,90,2,2024-04-01,2026-02-10,2026-02-10 08:00:00,2026-02-10 08:30:00,2026-02-01,9999-12-31\n'+
+                      'AC-02,acer terrace,BD-02,finch keeper,1,60,40,1,2025-03-15,2026-01-20,2026-01-20 07:45:00,2026-01-21 07:45:00,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentInstantSurfacesTheSupersedingRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-01
+          ]
+          asserts:
+          [
+            supersedingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AccessionCode":"AC-01","TaxonName":"quercus grove","CuratorName":"wren keeper","SourceRegister":"ARBORETUM-CENTRAL"},{"AccessionCode":"AC-02","TaxonName":"acer terrace","CuratorName":"finch keeper","SourceRegister":"ARBORETUM-CENTRAL"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierInstantSurfacesTheSupersededRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-01-15
+          ]
+          asserts:
+          [
+            supersededRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AccessionCode":"AC-01","TaxonName":"quercus grove draft","CuratorName":"wren keeper","SourceRegister":"ARBORETUM-CENTRAL"},{"AccessionCode":"AC-02","TaxonName":"acer terrace","CuratorName":"finch keeper","SourceRegister":"ARBORETUM-CENTRAL"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

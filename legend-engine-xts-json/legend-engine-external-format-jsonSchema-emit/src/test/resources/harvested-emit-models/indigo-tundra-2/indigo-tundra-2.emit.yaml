@@ -1,0 +1,46 @@
+name: indigo-tundra-2
+title: "Indigo Tundra 2 - store-less tundra survey reference domain with inherited reading types, derived code tokens and JSON bindings"
+description: |
+  A permafrost and vegetation survey reference domain that is entirely store-less: a site and plot
+  register carries derived properties that split a plot code around its separator, guarding on a
+  substring probe and selecting between two differently-offset substring expressions, while a third
+  derived property applies a fixed-offset substring with arithmetic on its end offset. A reading
+  supertype is specialised by five reading types whose inherited property contract has to resolve
+  through the hierarchy for the three JSON bindings that serialise them, six enumerations close the
+  legal value space of the register, a classification profile supplies the stereotypes and tagged
+  values applied across classes and properties, and five associations chain the site onto plots,
+  plots onto visits and observers, and plots onto terrain samples and their aliquots so multi-hop
+  traversal is available across the graph. A packaged JSON data element carries the plot-code rows
+  that hit each conditional arm of the derived properties plus the absent-label row.
+modelSources:
+  model:
+    root: indigo-tundra-2
+    files:
+      - test/indigotundra2/data/PlotCodeSamples.pure
+      - test/indigotundra2/domain/StationAssociations.pure
+      - test/indigotundra2/domain/StationDomain.pure
+      - test/indigotundra2/domain/SurveyRecords.pure
+      - test/indigotundra2/domain/SurveyVocabulary.pure
+      - test/indigotundra2/domain/TundraClassification.pure
+      - test/indigotundra2/external/ObservationBindings.pure
+features:
+  - execution:data-element
+  - execution:external-format-binding
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - grammar:enumeration
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association-chain
+  - class-inheritance
+  - data-element
+  - derived-property
+  - enumeration
+  - external-format-binding
+  - profile-stereotype
+  - store-less
+  - tundra-survey

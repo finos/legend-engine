@@ -1,0 +1,66 @@
+name: scarlet-cavern-3
+title: "Scarlet Cavern 3 — A Show-Cave Lantern-Walk Register Beside A Six-Armed Model-To-Model Digest"
+description: |
+  A show cave books lantern-lit guided walks through its chambers. The relational side holds
+  the chamber register and the booked walks, tied by an association that is mapped across a
+  named join, so a walk reaches the chamber it is routed through and an unrouted walk reaches
+  none. Shared functions band the party size, stamp the lantern label and substitute a grade
+  sentinel, and they are called from both the relational projection and the model-to-model
+  transform.
+
+  The model-to-model side takes the nested payload a partner ticketing feed hands over and
+  standardises it: the walk reference, a labelled guide, a six-armed party band with an
+  absent-size fallback, a chamber hint assembled from the routed chamber and its tier with
+  two independent absent-value fallbacks, and two enumerations resolved through code
+  mappings — one behind a substituted sentinel, one behind a defaulted walk state. A second
+  association binds the published digest to the digest of the route it followed.
+
+  Both mappings carry executed test suites: the relational suite asserts the association
+  across three booked walks, and the digest suite drives all six party arms, both chamber
+  fallbacks, the grade sentinel and the defaulted state over a seven-payload fixture.
+modelSources:
+  model:
+    root: scarlet-cavern-3
+    files:
+      - test/scarletcavern3/connection/CavernConnection.pure
+      - test/scarletcavern3/domain/CavernDomain.pure
+      - test/scarletcavern3/function/CavernFunctions.pure
+      - test/scarletcavern3/mapping/CavernRegisterMapping.pure
+      - test/scarletcavern3/mapping/WalkDigestM2M.pure
+      - test/scarletcavern3/runtime/CavernRuntime.pure
+      - test/scarletcavern3/store/CavernDb.pure
+features:
+  - execution:graph-fetch
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:association
+  - grammar:enumeration
+  - grammar:function
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-enum-of-expression
+  - mapping:m2m-nested-property
+  - mapping:m2m-transform
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - model
+  - relational
+complexity: intermediate
+tags:
+  - association
+  - cavern-register
+  - enumeration-mapping
+  - function
+  - graph-fetch
+  - h2
+  - m2m
+  - mapping-test

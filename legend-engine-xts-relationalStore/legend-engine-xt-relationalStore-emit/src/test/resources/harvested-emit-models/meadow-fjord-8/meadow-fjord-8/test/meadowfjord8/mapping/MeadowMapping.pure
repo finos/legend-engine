@@ -1,0 +1,117 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::meadowfjord8::mapping::MeadowMapping
+(
+  *test::meadowfjord8::domain::SurveyPlot[surveyPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowfjord8::store::MeadowDb]meadowland.survey_plot.plot_code
+    )
+    ~mainTable [test::meadowfjord8::store::MeadowDb]meadowland.survey_plot
+    plotCode: [test::meadowfjord8::store::MeadowDb]meadowland.survey_plot.plot_code,
+    plotName: [test::meadowfjord8::store::MeadowDb]meadowland.survey_plot.plot_name,
+    aspectCode: [test::meadowfjord8::store::MeadowDb]meadowland.survey_plot.aspect_code,
+    slopePercent: [test::meadowfjord8::store::MeadowDb]meadowland.survey_plot.slope_percent
+  }
+
+  *test::meadowfjord8::domain::BloomCount[bloomCount]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowfjord8::store::MeadowDb]meadowland.bloom_count.count_code
+    )
+    ~mainTable [test::meadowfjord8::store::MeadowDb]meadowland.bloom_count
+    countCode: [test::meadowfjord8::store::MeadowDb]meadowland.bloom_count.count_code,
+    plotCode: [test::meadowfjord8::store::MeadowDb]meadowland.bloom_count.plot_code,
+    speciesCode: [test::meadowfjord8::store::MeadowDb]meadowland.bloom_count.species_code,
+    flowerCount: [test::meadowfjord8::store::MeadowDb]meadowland.bloom_count.flower_count,
+    coverPercent: [test::meadowfjord8::store::MeadowDb]meadowland.bloom_count.cover_percent,
+    countedOn: [test::meadowfjord8::store::MeadowDb]meadowland.bloom_count.counted_on
+  }
+
+  *test::meadowfjord8::domain::MeadowVisit[meadowVisit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowfjord8::store::MeadowDb]meadowland.meadow_visit.visit_code
+    )
+    ~mainTable [test::meadowfjord8::store::MeadowDb]meadowland.meadow_visit
+    visitCode: [test::meadowfjord8::store::MeadowDb]meadowland.meadow_visit.visit_code,
+    plotCode: [test::meadowfjord8::store::MeadowDb]meadowland.meadow_visit.plot_code,
+    crewCode: [test::meadowfjord8::store::MeadowDb]meadowland.meadow_visit.crew_code,
+    visitedOn: [test::meadowfjord8::store::MeadowDb]meadowland.meadow_visit.visited_on,
+    hoursSpent: [test::meadowfjord8::store::MeadowDb]meadowland.meadow_visit.hours_spent
+  }
+
+  testSuites:
+  [
+    meadowMappingSuite:
+    {
+      function: |test::meadowfjord8::domain::SurveyPlot.all()->filter(
+        p|($p.slopePercent > 10.0) && ($p.aspectCode != 'AS-E')
+      )->project(
+        [
+          p|$p.plotCode,
+          p|$p.aspectCode,
+          p|$p.plotName->toUpper()
+        ],
+        [
+          'Plot Code',
+          'Aspect Code',
+          'Plot Name'
+        ]
+      )->sort(
+        [
+          asc('Plot Code')
+        ]
+      );
+      tests:
+      [
+        steepPlotsAwayFromTheEastAspect:
+        {
+          doc: 'Two tests sit under one filter: the plot must be steeper than the reporting floor and it must not face the east aspect, so a shallow plot and an east facing plot are both dropped before the names are folded to upper case.';
+          data:
+          [
+            test::meadowfjord8::store::MeadowDb:
+              Relational
+              #{
+                meadowland.survey_plot:
+                  'plot_code,plot_name,aspect_code,slope_percent\n'+
+                  'PL-01,Larch Bench,AS-N,12.5\n'+
+                  'PL-02,Scree Terrace,AS-E,18.0\n'+
+                  'PL-03,Spring Hollow,AS-S,7.5\n'+
+                  'PL-04,Ridge Shoulder,AS-W,22.0\n';
+              }#
+          ];
+          asserts:
+          [
+            twoPlotsSurviveBothTests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot Code":"PL-01","Aspect Code":"AS-N","Plot Name":"LARCH BENCH"},{"Plot Code":"PL-04","Aspect Code":"AS-W","Plot Name":"RIDGE SHOULDER"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

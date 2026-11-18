@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A rearing pond at the wetland conservation centre.'} test::tealhatchery2::domain::RearingPond
+{
+  pondCode: String[1];
+  pondName: String[1];
+  volumeLitres: Integer[1];
+  siteName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A batch of larvae stocked into a rearing pond, standing or archived.'} test::tealhatchery2::domain::LarvaBatch
+{
+  batchCode: String[1];
+  pondCode: String[1];
+  speciesName: String[1];
+  countStocked: Integer[1];
+  mortalityCount: Integer[1];
+  stockedOn: StrictDate[1];
+  survivalIndex()
+  {
+    (($this.countStocked - $this.mortalityCount) * 100.0) / (if($this.countStocked > 0, |$this.countStocked, |1) * 1.0)
+  }: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A feed delivery booked against a larva batch.'} test::tealhatchery2::domain::FeedLog
+{
+  logCode: String[1];
+  batchCode: String[1];
+  feedKilos: Float[1];
+  wastagePct: Float[1];
+  fedOn: StrictDate[1];
+  netFeedKilos()
+  {
+    (($this.feedKilos * (100.0 - $this.wastagePct)) / 100.0) - ($this.feedKilos / 1000.0)
+  }: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A water quality reading taken on a rearing pond.'} test::tealhatchery2::domain::WaterReading
+{
+  readingCode: String[1];
+  pondCode: String[1];
+  temperatureC: Float[1];
+  oxygenMgL: Float[1];
+  readOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The season yield already aggregated for a rearing pond.'} test::tealhatchery2::domain::PondYield
+{
+  pondCode: String[1];
+  releasedCount: Integer[1];
+  meanTemperatureC: Float[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A rearing pond holds the water readings taken on it.'} test::tealhatchery2::domain::Pond_Reading
+{
+  pond: test::tealhatchery2::domain::RearingPond[1];
+  readings: test::tealhatchery2::domain::WaterReading[*];
+}

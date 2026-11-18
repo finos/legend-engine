@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadeglacier::mapping::ConservatoryMapping
+(
+  *test::jadeglacier::domain::PlantAccession[accession]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadeglacier::store::ConservatoryDatabase]conservatory.plant_accession.accession_code
+    )
+    ~mainTable [test::jadeglacier::store::ConservatoryDatabase]conservatory.plant_accession
+    accessionCode: [test::jadeglacier::store::ConservatoryDatabase]conservatory.plant_accession.accession_code,
+    taxonName: toUpper([test::jadeglacier::store::ConservatoryDatabase]conservatory.plant_accession.taxon_name),
+    glasshouseCode: [test::jadeglacier::store::ConservatoryDatabase]conservatory.plant_accession.glasshouse_code,
+    potSizeCm: [test::jadeglacier::store::ConservatoryDatabase]conservatory.plant_accession.pot_size_cm,
+    acquiredYear: [test::jadeglacier::store::ConservatoryDatabase]conservatory.plant_accession.acquired_year,
+    curatorNote: case(
+                   isNotEmpty([test::jadeglacier::store::ConservatoryDatabase]conservatory.plant_accession.curator_note),
+                   toUpper(
+                     concat(
+                       'note ',
+                       substring([test::jadeglacier::store::ConservatoryDatabase]conservatory.plant_accession.curator_note, 1, 18)
+                     )
+                   ),
+                   'NO CURATOR NOTE'
+                 ),
+    census[census]: [test::jadeglacier::store::ConservatoryDatabase]@Accession_Census
+  }
+
+  *test::jadeglacier::domain::GlasshouseCensus[census]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadeglacier::store::ConservatoryDatabase]conservatory.glasshouse_census.glasshouse_code
+    )
+    ~mainTable [test::jadeglacier::store::ConservatoryDatabase]conservatory.glasshouse_census
+    glasshouseCode: [test::jadeglacier::store::ConservatoryDatabase]conservatory.glasshouse_census.glasshouse_code,
+    accessionCount: [test::jadeglacier::store::ConservatoryDatabase]conservatory.glasshouse_census.accession_count,
+    largestPotCm: [test::jadeglacier::store::ConservatoryDatabase]conservatory.glasshouse_census.largest_pot_cm
+  }
+
+  testSuites:
+  [
+    accessionMappingSuite:
+    {
+      function: |test::jadeglacier::domain::PlantAccession.all()->project(
+        [
+          a|$a.accessionCode,
+          a|$a.taxonName,
+          a|$a.curatorNote,
+          a|$a.census.accessionCount->toOne()
+        ],
+        [
+          'Accession',
+          'Taxon',
+          'Note',
+          'Housed'
+        ]
+      )->sort([asc('Accession')]);
+      tests:
+      [
+        accessionRoster:
+        {
+          doc: 'Projects the accession register through the graded taxon transform, both note arms and the census view reached over the accession-to-census join.';
+          data:
+          [
+            test::jadeglacier::store::ConservatoryDatabase:
+              Relational
+              #{
+                conservatory.plant_accession:
+                  'accession_code,taxon_name,glasshouse_code,pot_size_cm,acquired_year,curator_note\n'+
+                  'AC-101,jade vine,GH-1,24,2019,repotted spring\n'+
+                  'AC-102,tree fern,GH-1,40,2021,\n'+
+                  'AC-103,silver moss,GH-2,12,2023,shade bench\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"AC-101","Taxon":"JADE VINE","Note":"NOTE REPOTTED SPRING","Housed":2},{"Accession":"AC-102","Taxon":"TREE FERN","Note":"NO CURATOR NOTE","Housed":2},{"Accession":"AC-103","Taxon":"SILVER MOSS","Note":"NOTE SHADE BENCH","Housed":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletdelta2::mapping::AllotmentRegistryMapping
+(
+  *test::scarletdelta2::domain::AllotmentPlot[allotmentPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletdelta2::store::AllotmentRegistryDB]allotments.plot_holding.plot_code,
+      [test::scarletdelta2::store::AllotmentRegistryDB]allotments.plot_holding.season_year
+    )
+    ~mainTable [test::scarletdelta2::store::AllotmentRegistryDB]allotments.plot_holding
+    plotCode: [test::scarletdelta2::store::AllotmentRegistryDB]allotments.plot_holding.plot_code,
+    seasonYear: [test::scarletdelta2::store::AllotmentRegistryDB]allotments.plot_holding.season_year,
+    plotSizeSqm: [test::scarletdelta2::store::AllotmentRegistryDB]allotments.plot_holding.plot_size_sqm,
+    surveyedAt: [test::scarletdelta2::store::AllotmentRegistryDB]allotments.plot_holding.surveyed_at,
+    warden[plotWarden]: [test::scarletdelta2::store::AllotmentRegistryDB]@PlotHolding_WardenRoster
+  }
+
+  *test::scarletdelta2::domain::PlotWarden[plotWarden]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletdelta2::store::AllotmentRegistryDB]allotments.warden_roster.warden_code
+    )
+    ~mainTable [test::scarletdelta2::store::AllotmentRegistryDB]allotments.warden_roster
+    wardenCode: [test::scarletdelta2::store::AllotmentRegistryDB]allotments.warden_roster.warden_code,
+    wardenName: [test::scarletdelta2::store::AllotmentRegistryDB]allotments.warden_roster.warden_name,
+    districtName: [test::scarletdelta2::store::AllotmentRegistryDB]allotments.warden_roster.district_name
+  }
+
+  testSuites:
+  [
+    allotmentPlotSuite:
+    {
+      function: |test::scarletdelta2::domain::AllotmentPlot.all(%2026-05-10)->project(
+        [
+          p|$p.plotCode,
+          p|$p.seasonYear,
+          p|$p.plotSizeSqm,
+          p|$p.warden.wardenName,
+          p|$p.warden.districtName
+        ],
+        [
+          'Plot',
+          'Season',
+          'SizeSqm',
+          'Warden',
+          'District'
+        ]
+      )->sort([asc('Plot')]);
+      tests:
+      [
+        tenanciesActiveAtBusinessDate:
+        {
+          doc: 'Projects the plot tenancies whose business validity window contains the requested business date, resolving the warden columns through the roster join. The prior-season tenancy of the same plot code closed before that date and the next-season tenancy of the other plot opens after it, so both are milestoned out of range.';
+          data:
+          [
+            test::scarletdelta2::store::AllotmentRegistryDB:
+              Relational
+              #{
+                allotments.plot_holding:
+                  'plot_code,season_year,plot_size_sqm,surveyed_at,warden_code,tenancy_from,tenancy_thru\n'+
+                  'PLOT-A,2026,42.5,2026-03-04 09:15:00.000,W-1,2025-11-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  'PLOT-A,2025,42.5,2025-03-02 08:40:00.000,W-1,2024-11-01 00:00:00.000,2025-11-01 00:00:00.000\n'+
+                  'PLOT-B,2026,58.0,2026-03-06 10:05:00.000,W-2,2027-02-01 00:00:00.000,9999-12-31 00:00:00.000\n';
+                allotments.warden_roster:
+                  'warden_code,warden_name,district_name\n'+
+                  'W-1,Rowan Ashby,Northgate\n'+
+                  'W-2,Isla Brenner,Southfield\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"PLOT-A","Season":2026,"SizeSqm":42.5,"Warden":"Rowan Ashby","District":"Northgate"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,166 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantridge::service::HoldingLookupRidgeService
+{
+  pattern: '/catalogue/v1/ridge-holding/{branchCode}/{shelfMark}/{seasonLabel}';
+  title: 'Reading Room - Single Shelf Holding (Ridge Network)';
+  documentation: 'Single-execution counterpart of the region-keyed holding lookup, pinned to the ridge reading-room endpoint, carrying the executed graph-fetch serialisation suites over replayed remote catalogue responses.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['reading-room-catalogue', 'shelf-audit'] };
+  execution: Single
+  {
+    query: {branchCode: String[1], shelfMark: String[1], seasonLabel: String[1]|test::verdantridge::domain::HoldingRecord.all()->filter(
+      h|(($h.branchCode->toOne() == $branchCode) && ($h.shelfMark->toOne() == $shelfMark)) && ($h.seasonLabel->toOne() == $seasonLabel)
+    )->toOne()->graphFetch(
+      #{
+        test::verdantridge::domain::HoldingRecord
+        {
+          titleText,
+          mediaFormat,
+          copiesOnShelf,
+          conditionNote
+        }
+      }#
+    )->serialize(
+      #{
+        test::verdantridge::domain::HoldingRecord
+        {
+          titleText,
+          mediaFormat,
+          copiesOnShelf,
+          conditionNote
+        }
+      }#
+    )};
+    mapping: test::verdantridge::mapping::HoldingsMapping;
+    runtime: test::verdantridge::runtime::RidgeCatalogueRuntime;
+  }
+  testSuites:
+  [
+    ridgeHoldingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          ridgeCatalogueConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/catalogue/holdings/BR-RIDGE/RM-412-A/2026-SPRING';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"holdingId":"HD-3001","branchCode":"BR-RIDGE","shelfMark":"RM-412-A","seasonLabel":"2026-SPRING","titleText":"Field Atlas of Upland Grasses","mediaFormat":"reference","copiesOnShelf":9,"conditionNote":"spine repaired"}';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        ridgeShelfHolding:
+        {
+          parameters:
+          [
+            branchCode = 'BR-RIDGE',
+            shelfMark = 'RM-412-A',
+            seasonLabel = '2026-SPRING'
+          ]
+          asserts:
+          [
+            holdingDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"titleText":"Field Atlas of Upland Grasses","mediaFormat":"reference","copiesOnShelf":9,"conditionNote":"spine repaired"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    copseHoldingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          ridgeCatalogueConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/catalogue/holdings/BR-COPSE/RM-118-C/2026-SPRING';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"holdingId":"HD-3002","branchCode":"BR-COPSE","shelfMark":"RM-118-C","seasonLabel":"2026-SPRING","titleText":"Reading Room Rules","mediaFormat":"pamphlet","copiesOnShelf":0}';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        copseShelfHoldingWithAbsentNote:
+        {
+          parameters:
+          [
+            branchCode = 'BR-COPSE',
+            shelfMark = 'RM-118-C',
+            seasonLabel = '2026-SPRING'
+          ]
+          asserts:
+          [
+            absentNoteDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"titleText":"Reading Room Rules","mediaFormat":"pamphlet","copiesOnShelf":0,"conditionNote":null}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

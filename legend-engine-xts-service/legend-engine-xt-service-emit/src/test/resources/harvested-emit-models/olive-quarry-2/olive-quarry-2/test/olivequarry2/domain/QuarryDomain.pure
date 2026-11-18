@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::olivequarry2::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Commercial grade of a dressed stone block.'} test::olivequarry2::domain::StoneGrade
+{
+  FREESTONE,
+  RAGSTONE,
+  FLAGSTONE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Surface finish applied before dispatch.'} test::olivequarry2::domain::SurfaceFinish
+{
+  RUBBED,
+  TOOLED,
+  SAWN
+}
+
+Class {meta::pure::profiles::doc.doc = 'A published stone block with its grade, finish, size band, location and identifiers.'} test::olivequarry2::domain::StoneBlock
+{
+  dispatchRef: String[1];
+  blockLabel: String[1];
+  grade: StoneGrade[0..1];
+  finish: SurfaceFinish[0..1];
+  sizeBand: String[0..1];
+  location: BlockLocation[0..1];
+  identifiers: BlockIdentifier[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Where in the quarry a block was cut.'} test::olivequarry2::domain::BlockLocation
+{
+  quarryName: String[1];
+  benchLabel: String[1];
+  elevationBand: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One identifier a block is known by.'} test::olivequarry2::domain::BlockIdentifier
+{
+  scheme: String[1];
+  identifierValue: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A conservation review of a dispatched block.'} test::olivequarry2::domain::BlockReview
+{
+  dispatchRef: String[1];
+  grade: StoneGrade[0..1];
+  faceSummary: String[1];
+  notes: ReviewNote[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One topical note of a block review.'} test::olivequarry2::domain::ReviewNote
+{
+  topic: String[1];
+  detail: String[1];
+}

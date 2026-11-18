@@ -1,0 +1,27 @@
+name: copper-quokka
+title: "Copper Quokka - Seed Trove Curation Vocabulary"
+description: |
+  A store-less botanical seed-trove model for curated collections, with a three-level inheritance
+  hierarchy, closed vocabularies, profile metadata, and a diagram that lays out the collection.
+modelSources:
+  model:
+    root: copper-quokka
+    files:
+      - test/copperquokka/diagram/SeedTroveDiagram.pure
+      - test/copperquokka/domain/SeedTroveDomain.pure
+features:
+  - grammar:class-inheritance
+  - grammar:diagram
+  - grammar:enumeration
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - botanical-curation
+  - class-inheritance
+  - diagram
+  - enumeration
+  - profile
+  - seed-trove
+  - store-less

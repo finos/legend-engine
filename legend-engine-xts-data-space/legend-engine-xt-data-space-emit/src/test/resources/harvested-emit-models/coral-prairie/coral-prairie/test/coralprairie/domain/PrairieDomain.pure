@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::coralprairie::domain::*;
+
+Class test::coralprairie::domain::RestorationPlot
+{
+  plotCode: String[1];
+  plotName: String[1];
+  plotSlug: String[1];
+  hectares: Float[1];
+}
+
+Class test::coralprairie::domain::ManagementZone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+}
+
+Class test::coralprairie::domain::BurnUnit
+{
+  burnCode: String[1];
+  burnName: String[1];
+  rotationYears: Integer[1];
+}
+
+Class test::coralprairie::domain::SeedMix
+{
+  mixCode: String[1];
+  mixLabel: String[1];
+  speciesCount: Integer[1];
+}
+
+Class test::coralprairie::domain::SoilSeries
+{
+  soilCode: String[1];
+  soilLabel: String[1];
+}
+
+Class test::coralprairie::domain::FieldTechnician
+{
+  technicianCode: String[1];
+  technicianName: String[1];
+}
+
+Association test::coralprairie::domain::Plot_Zone
+{
+  zonePlots: RestorationPlot[*];
+  zone: ManagementZone[1];
+}
+
+Association test::coralprairie::domain::Plot_SeedMix
+{
+  mixPlots: RestorationPlot[*];
+  seedMix: SeedMix[1];
+}
+
+Association test::coralprairie::domain::Plot_Soil
+{
+  soilPlots: RestorationPlot[*];
+  soilSeries: SoilSeries[1];
+}
+
+Association test::coralprairie::domain::Plot_Technician
+{
+  technicianPlots: RestorationPlot[*];
+  technician: FieldTechnician[1];
+}
+
+Association test::coralprairie::domain::Zone_Burn
+{
+  burnZones: ManagementZone[*];
+  burnUnit: BurnUnit[1];
+}
+
+Association test::coralprairie::domain::Plot_Burn
+{
+  burnPlots: RestorationPlot[*];
+  plotBurnUnit: BurnUnit[1];
+}

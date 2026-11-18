@@ -1,0 +1,26 @@
+name: umber-beacon
+title: "Umber Beacon — Heritage Beacon Register Type System"
+description: |
+  A coastal heritage register of beacon towers expressed purely in the model
+  layer: a registered tower structure, a harbour beacon that extends it with the
+  channel it marks, a keeper watch log and a Fresnel lens assembly, all keyed to
+  five enumerations covering tower fabric, register lifecycle, watch period,
+  visibility band and lens order. The group carries no store, mapping or query,
+  so it exercises the class, inheritance and enumeration grammar alone.
+modelSources:
+  model:
+    root: umber-beacon
+    files:
+      - test/umberbeacon/domain/BeaconDomain.pure
+features:
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - enumeration
+  - heritage-register
+  - lighthouse-keeping
+  - type-system

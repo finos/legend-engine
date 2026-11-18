@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::goldenisle3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'Shared supertype of everything the observatory records: the record identifier, the night it belongs to and the operator who logged it.'} test::goldenisle3::domain::ObservatoryRecord
+{
+  recordId: String[1];
+  nightOfObservation: StrictDate[1];
+  loggedBy: String[1];
+  loggedNote: String[0..1];
+  site: SiteRef[1];
+  documented() {$this.loggedNote->isNotEmpty()}: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An observing programme approved for a semester: the intermediate supertype that fixes the telescope, the requested band and the review state shared by every scheduled activity underneath it.'} test::goldenisle3::domain::ObservingProgramme extends ObservatoryRecord
+{
+  programmeCode: String[1];
+  title: String[1];
+  status: ProposalStatus[1];
+  requestedBand: ObservingBand[1];
+  allocatedHours: Float[1];
+  telescope: TelescopeRef[1];
+  principalInvestigator: InvestigatorRef[1];
+  coInvestigators: InvestigatorRef[*];
+  accepted() {$this.status == ProposalStatus.ACCEPTED}: Boolean[1];
+  investigatorCount() {$this.coInvestigators->size() + 1}: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A block of telescope time belonging to a programme: the second level of the hierarchy, carrying the slot and the instrument the queue scheduler resolves against.'} test::goldenisle3::domain::ScheduledBlock extends ObservingProgramme
+{
+  blockSequence: Integer[1];
+  instrument: InstrumentRef[1];
+  slotStart: DateTime[1];
+  slotMinutes: Integer[1];
+  seeingGrade: WeatherGrade[1];
+  slotHours() {$this.slotMinutes->toFloat() / 60.0}: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A science block that points the telescope at a catalogued target through a named filter; the leaf type a queue night is actually built from.'} test::goldenisle3::domain::ScienceBlock extends ScheduledBlock
+{
+  target: TargetRef[1];
+  filter: FilterRef[1];
+  exposureSeconds: Integer[1];
+  ditherPattern: String[0..1];
+  repeatCount: Integer[1];
+  totalExposureSeconds() {$this.exposureSeconds * $this.repeatCount}: Integer[1];
+  exposureLabel() {$this.filter.filterCode + ' x ' + $this.repeatCount->toString()}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A calibration block that exposes the detector against a lamp or the twilight sky rather than a catalogued target; the second leaf of the same hierarchy.'} test::goldenisle3::domain::CalibrationBlock extends ScheduledBlock
+{
+  calibrationKind: String[1];
+  lampName: String[0..1];
+  exposureSeconds: Integer[1];
+  detectorTemperatureCelsius: Float[1];
+  onSky() {$this.lampName->isEmpty()}: Boolean[1];
+}

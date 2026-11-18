@@ -1,0 +1,36 @@
+name: dusky-lantern-2
+title: "Dusky Lantern 2 — cross-schema lantern night-walk register behind a two-date service"
+description: |
+  A parks lighting model whose night-walk visits live in one schema and whose
+  lanterns live in another, so every register row has to reach across the
+  schema boundary before the deep predicate and the projection run.
+modelSources:
+  model:
+    root: dusky-lantern-2
+    files:
+      - test/duskylantern2/connection/LampConnection.pure
+      - test/duskylantern2/domain/LampDomain.pure
+      - test/duskylantern2/mapping/LampMapping.pure
+      - test/duskylantern2/runtime/LampRuntime.pure
+      - test/duskylantern2/service/LampVisitRegisterService.pure
+      - test/duskylantern2/store/LampDb.pure
+features:
+  - execution:service
+  - execution:service-test
+  - query:filter
+  - query:project
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - cross-schema
+  - h2
+  - lamp-register
+  - service
+  - service-test
+  - tabular-data-set

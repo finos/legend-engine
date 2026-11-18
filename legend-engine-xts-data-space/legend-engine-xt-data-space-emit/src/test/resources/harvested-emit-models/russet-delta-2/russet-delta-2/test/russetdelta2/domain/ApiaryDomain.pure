@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A hive yard, the siting-level type the hives and forage patches of one district resolve back to.'} test::russetdelta2::domain::Yard
+{
+  yardCode: String[1];
+  yardName: String[1];
+  districtCode: String[0..1];
+  hiveSlots: Integer[0..1];
+  terrainCode: String[0..1];
+  yardLabel: String[0..1];
+}
+
+Class {doc.doc = 'A hive sited in a yard. The colony strength band is decoded from the frame count down to an explicit absent-reading sentinel, and the district is reached through a single inner hop onto the yard table.'} test::russetdelta2::domain::Hive
+{
+  hiveCode: String[1];
+  frameCount: Integer[0..1];
+  queenYear: Integer[0..1];
+  hiveStatus: String[0..1];
+  hiveLabel: String[0..1];
+  strengthBand: String[0..1];
+  yardDistrict: String[0..1];
+}
+
+Class {doc.doc = 'One dated inspection of a hive, carrying the brood-frame tally and the mite pressure composed arithmetically from the counts.'} test::russetdelta2::domain::Inspection
+{
+  inspectionCode: String[1];
+  inspectedOn: StrictDate[0..1];
+  broodFrames: Integer[0..1];
+  miteCount: Integer[0..1];
+  mitePressure: Integer[0..1];
+  inspectorNote: String[0..1];
+}
+
+Class {doc.doc = 'A forage patch worked from a yard.'} test::russetdelta2::domain::ForagePatch
+{
+  patchCode: String[1];
+  patchName: String[0..1];
+  bloomCode: String[0..1];
+  hectares: Integer[0..1];
+  patchTag: String[0..1];
+}
+
+Class {doc.doc = 'A lot of extracted honey, mapped over the second store, with a composed jar label and a moisture-adjusted weight.'} test::russetdelta2::domain::HoneyLot
+{
+  lotCode: String[1];
+  lotKind: String[0..1];
+  kilograms: Integer[0..1];
+  moisturePct: Integer[0..1];
+  jarCount: Integer[0..1];
+  jarLabel: String[0..1];
+  dryKilograms: Integer[0..1];
+}
+
+Class {doc.doc = 'One extraction run that spun the frames of a honey lot.'} test::russetdelta2::domain::ExtractionRun
+{
+  runCode: String[1];
+  runOn: StrictDate[0..1];
+  spunFrames: Integer[0..1];
+  operatorCode: String[0..1];
+  runTag: String[0..1];
+}

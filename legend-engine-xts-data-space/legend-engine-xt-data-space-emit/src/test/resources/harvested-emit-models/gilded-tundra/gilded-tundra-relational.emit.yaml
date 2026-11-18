@@ -1,0 +1,47 @@
+name: gilded-tundra-relational
+title: "Permafrost Observation Calendar — Wide Timestamp Dimension behind a Data Space"
+description: |
+  A single-schema store with one wide dimension table whose columns are almost
+  entirely mandatory timestamp boundaries describing nested year, season, quarter
+  and month windows at several historical offsets, plus one optional date, one
+  mandatory single-character flag and two integer lake-window columns the model
+  leaves unbound. One flat class projects twenty of those columns by direct read
+  through a store-qualified main-table alias, with the mandatory year window
+  boundary declared as the explicit single-column primary key, so row identity
+  comes from a temporal attribute rather than a surrogate. A warehouse-backed
+  connection with case-insensitive unquoted identifiers and token-exchange
+  authentication, an engine runtime binding it to the store under one connection
+  identifier, and a data space whose single default execution context pairs the
+  mapping with that runtime — the data space being the only executable entry
+  point, since the model declares no service.
+modelSources:
+  model:
+    root: gilded-tundra-relational
+    files:
+      - test/gildedtundra/connection/CalendarConnection.pure
+      - test/gildedtundra/dataspace/CalendarDataSpace.pure
+      - test/gildedtundra/domain/CalendarDomain.pure
+      - test/gildedtundra/mapping/CalendarMapping.pure
+      - test/gildedtundra/runtime/CalendarRuntime.pure
+      - test/gildedtundra/store/CalendarDatabase.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - data-space
+  - h2
+  - main-table-alias
+  - mapping-test
+  - relational
+  - temporal-primary-key
+  - wide-timestamp-dimension

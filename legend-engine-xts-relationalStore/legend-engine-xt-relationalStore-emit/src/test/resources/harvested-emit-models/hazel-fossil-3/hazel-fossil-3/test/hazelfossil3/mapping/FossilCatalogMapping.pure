@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelfossil3::mapping::FossilCatalogMapping
+(
+  include mapping test::hazelfossil3::mapping::FossilBaseMapping
+
+  *test::hazelfossil3::domain::DigNotice[allNotices]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(specimenNotice, lotNotice)
+  }
+
+  test::hazelfossil3::domain::DigNotice[specimenNotice]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelfossil3::store::FossilDigDb]dig.specimen.specimen_code
+    )
+    ~mainTable [test::hazelfossil3::store::FossilDigDb]dig.specimen
+    noticeCode: [test::hazelfossil3::store::FossilDigDb]dig.specimen.specimen_code,
+    noticeText: concat('SPECIMEN ', toUpper([test::hazelfossil3::store::FossilDigDb]dig.specimen.label_text)),
+    sourceLabel: 'SPECIMEN'
+  }
+
+  test::hazelfossil3::domain::DigNotice[lotNotice]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelfossil3::store::FossilDigDb]dig.fragment_lot.lot_code
+    )
+    ~mainTable [test::hazelfossil3::store::FossilDigDb]dig.fragment_lot
+    noticeCode: [test::hazelfossil3::store::FossilDigDb]dig.fragment_lot.lot_code,
+    noticeText: concat('LOT ', toUpper([test::hazelfossil3::store::FossilDigDb]dig.fragment_lot.lot_code)),
+    sourceLabel: 'LOT'
+  }
+
+  testSuites:
+  [
+    digNoticeSuite:
+    {
+      function: |test::hazelfossil3::domain::DigNotice.all()->project(~[noticeCode: n|$n.noticeCode, noticeText: n|$n.noticeText, sourceLabel: n|$n.sourceLabel])->sort([~noticeCode->ascending()]);
+      tests:
+      [
+        bothNoticeBranchesResolveThroughTheOperation:
+        {
+          doc: 'Routes the notice extent through the operation mapping so both the specimen-sourced and lot-sourced branches contribute rows, each stamped with its own literal source label.';
+          data:
+          [
+            test::hazelfossil3::store::FossilDigDb:
+              Relational
+              #{
+                dig.specimen:
+                  'specimen_code,specimen_id,bed_code,matrix_code,prep_code,condition_code,condition_note,logged_on,fragment_count,matrix_mass_g,label_text,sleeve_text,grade_flag,span_mm\n'+
+                  'HF-41,141,B-01,LS,raw,WH,sorted,2026-06-01,12,1500.0,label north,sleeve alpha,1,15\n'+
+                  'HF-42,142,B-01,SH,cleaned,PA,sorted,2026-06-02,20,2000.0,label south,sleeve beta,1,30\n';
+
+                dig.fragment_lot:
+                  'lot_code,specimen_code,fragment_count,cleaned_count,lot_mass_g\n'+
+                  'FL-41,HF-41,40,36,1200.0\n';
+              }#
+          ];
+          asserts:
+          [
+            unionedNotices:
+              Relation
+              #{
+                noticeCode,noticeText,sourceLabel
+                FL-41,LOT FL-41,LOT
+                HF-41,SPECIMEN LABEL NORTH,SPECIMEN
+                HF-42,SPECIMEN LABEL SOUTH,SPECIMEN;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

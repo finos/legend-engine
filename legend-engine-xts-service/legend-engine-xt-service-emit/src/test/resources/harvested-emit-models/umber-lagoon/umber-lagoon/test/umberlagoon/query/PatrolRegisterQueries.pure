@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+function {meta::pure::profiles::doc.doc = 'Tabular projection of the published patrol summaries: the sweep reference, the segment and warden labels and the divided rate, ordered by reference.'} test::umberlagoon::query::sweepRegisterTable(): meta::pure::tds::TabularDataSet[1]
+{
+  test::umberlagoon::domain::PatrolSummary.all()->project(
+    [
+      s|$s.sweepRef,
+      s|$s.segmentLabel,
+      s|$s.wardenLabel,
+      s|$s.sweepRate,
+      s|$s.sweepTally
+    ],
+    [
+      'Sweep',
+      'Segment',
+      'Warden',
+      'Rate',
+      'Tally'
+    ]
+  )->sort([asc('Sweep')])
+}
+
+function {meta::pure::profiles::doc.doc = 'Tabular projection of the kiosk cards narrowed to the caller-named surface notes, restricted to the reference and the arithmetic tally.'} test::umberlagoon::query::kioskCardTable(surfaceNotes: String[*]): meta::pure::tds::TabularDataSet[1]
+{
+  test::umberlagoon::domain::KioskCard.all()->filter(
+    c|$c.surfaceNote->in($surfaceNotes)
+  )->project(
+    [
+      c|$c.cardRef,
+      c|$c.headline,
+      c|$c.tallyValue,
+      c|$c.tallyRank
+    ],
+    [
+      'Card',
+      'Headline',
+      'Tally',
+      'Rank'
+    ]
+  )->restrict(['Card', 'Tally'])
+}

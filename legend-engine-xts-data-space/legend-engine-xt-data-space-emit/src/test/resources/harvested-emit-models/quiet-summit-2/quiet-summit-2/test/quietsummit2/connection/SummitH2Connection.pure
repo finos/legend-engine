@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::quietsummit2::connection::SummitH2Connection
+{
+  store: test::quietsummit2::store::SummitDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists alpine;',
+      'create schema alpine;',
+      'create table alpine.station (station_code varchar(20) primary key, station_name varchar(120) not null, elevation_metres integer not null, region varchar(40) not null);',
+      'create table alpine.sensor (sensor_code varchar(20) primary key, label varchar(120) not null, sensor_kind varchar(40) not null, calibrated_on date not null);',
+      'create table alpine.gust_reading (reading_code varchar(20) primary key, station_code varchar(20) not null, gust_speed float not null, observed_on date not null);',
+      'create table alpine.snow_sample (sample_code varchar(20) primary key, station_code varchar(20) not null, depth_centimetres integer not null, sampled_on date not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

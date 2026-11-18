@@ -1,0 +1,130 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Class <<temporal.processingtemporal>> {doc.doc = 'An hourly crest-buoy water-quality report. Each correction is a new processing version of the same report.'} test::emberreef5::domain::CrestBuoyHourly
+{
+  {doc.doc = 'Identifier of the report, stable across processing versions.'} reportCode: String[1];
+  {doc.doc = 'Identifier of the reporting buoy or survey site.'} buoyCode: String[1];
+  {doc.doc = 'Water temperature at the crest sensor in degrees Celsius.'} waterTempC: Float[0..1];
+  {doc.doc = 'Practical salinity at the crest sensor.'} salinityPsu: Float[0..1];
+  {doc.doc = 'Acidity reading of the surrounding water column.'} phLevel: Float[0..1];
+  {doc.doc = 'Optical turbidity of the water column.'} turbidityNtu: Float[0..1];
+  {doc.doc = 'Dissolved oxygen concentration in milligrams per litre.'} dissolvedOxygen: Float[0..1];
+  {doc.doc = 'Chlorophyll fluorescence in micrograms per litre.'} chlorophyllUg: Float[0..1];
+  {doc.doc = 'Photosynthetically active radiation at the canopy.'} parLight: Float[0..1];
+  {doc.doc = 'Mean current speed across the reading window.'} currentSpeed: Float[0..1];
+  {doc.doc = 'Significant wave height in metres.'} waveHeightM: Float[0..1];
+  {doc.doc = 'Instant the reading window closed.'} readAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'The revised-calibration variant of the hourly crest-buoy report, with the same shape as the primary variant.'} test::emberreef5::domain::CrestBuoyHourlyRevised
+{
+  {doc.doc = 'Identifier of the report, stable across processing versions.'} reportCode: String[1];
+  {doc.doc = 'Identifier of the reporting buoy or survey site.'} buoyCode: String[1];
+  {doc.doc = 'Water temperature at the crest sensor in degrees Celsius.'} waterTempC: Float[0..1];
+  {doc.doc = 'Practical salinity at the crest sensor.'} salinityPsu: Float[0..1];
+  {doc.doc = 'Acidity reading of the surrounding water column.'} phLevel: Float[0..1];
+  {doc.doc = 'Optical turbidity of the water column.'} turbidityNtu: Float[0..1];
+  {doc.doc = 'Dissolved oxygen concentration in milligrams per litre.'} dissolvedOxygen: Float[0..1];
+  {doc.doc = 'Chlorophyll fluorescence in micrograms per litre.'} chlorophyllUg: Float[0..1];
+  {doc.doc = 'Photosynthetically active radiation at the canopy.'} parLight: Float[0..1];
+  {doc.doc = 'Mean current speed across the reading window.'} currentSpeed: Float[0..1];
+  {doc.doc = 'Significant wave height in metres.'} waveHeightM: Float[0..1];
+  {doc.doc = 'Instant the reading window closed.'} readAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A daily lagoon-buoy summary of temperature, tide and nutrient readings.'} test::emberreef5::domain::LagoonBuoyDaily
+{
+  {doc.doc = 'Identifier of the report, stable across processing versions.'} reportCode: String[1];
+  {doc.doc = 'Identifier of the reporting buoy or survey site.'} buoyCode: String[1];
+  {doc.doc = 'Daily mean lagoon temperature in degrees Celsius.'} meanTempC: Float[0..1];
+  {doc.doc = 'Daily maximum lagoon temperature in degrees Celsius.'} maxTempC: Float[0..1];
+  {doc.doc = 'Daily minimum lagoon temperature in degrees Celsius.'} minTempC: Float[0..1];
+  {doc.doc = 'Daily tidal range at the lagoon mouth in metres.'} tidalRangeM: Float[0..1];
+  {doc.doc = 'Nitrate concentration in micromoles.'} nitrateUm: Float[0..1];
+  {doc.doc = 'Phosphate concentration in micromoles.'} phosphateUm: Float[0..1];
+  {doc.doc = 'Silicate concentration in micromoles.'} silicateUm: Float[0..1];
+  {doc.doc = 'Settled sediment load on the trap plate.'} sedimentLoad: Float[0..1];
+  {doc.doc = 'Instant the reading window closed.'} readAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'The revised-calibration variant of the daily lagoon-buoy summary.'} test::emberreef5::domain::LagoonBuoyDailyRevised
+{
+  {doc.doc = 'Identifier of the report, stable across processing versions.'} reportCode: String[1];
+  {doc.doc = 'Identifier of the reporting buoy or survey site.'} buoyCode: String[1];
+  {doc.doc = 'Daily mean lagoon temperature in degrees Celsius.'} meanTempC: Float[0..1];
+  {doc.doc = 'Daily maximum lagoon temperature in degrees Celsius.'} maxTempC: Float[0..1];
+  {doc.doc = 'Daily minimum lagoon temperature in degrees Celsius.'} minTempC: Float[0..1];
+  {doc.doc = 'Daily tidal range at the lagoon mouth in metres.'} tidalRangeM: Float[0..1];
+  {doc.doc = 'Nitrate concentration in micromoles.'} nitrateUm: Float[0..1];
+  {doc.doc = 'Phosphate concentration in micromoles.'} phosphateUm: Float[0..1];
+  {doc.doc = 'Silicate concentration in micromoles.'} silicateUm: Float[0..1];
+  {doc.doc = 'Settled sediment load on the trap plate.'} sedimentLoad: Float[0..1];
+  {doc.doc = 'Instant the reading window closed.'} readAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A diver transect survey of coral cover, bleaching and grazers.'} test::emberreef5::domain::PolypTransectSurvey
+{
+  {doc.doc = 'Identifier of the report, stable across processing versions.'} reportCode: String[1];
+  {doc.doc = 'Identifier of the reporting buoy or survey site.'} buoyCode: String[1];
+  {doc.doc = 'Live coral cover along the transect in percent.'} coverPct: Float[0..1];
+  {doc.doc = 'Bleached colony share along the transect in percent.'} bleachedPct: Float[0..1];
+  {doc.doc = 'Juvenile recruits per square metre.'} recruitDensity: Float[0..1];
+  {doc.doc = 'Macroalgae cover along the transect in percent.'} algaeCoverPct: Float[0..1];
+  {doc.doc = 'Chain-and-tape rugosity of the transect.'} rugosityIndex: Float[0..1];
+  {doc.doc = 'Grazing urchins per square metre.'} grazerDensity: Float[0..1];
+  {doc.doc = 'Estimated reef fish biomass per hundred square metres.'} fishBiomassKg: Float[0..1];
+  {doc.doc = 'Instant the reading window closed.'} readAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'The re-scored variant of the diver transect survey.'} test::emberreef5::domain::PolypTransectSurveyRevised
+{
+  {doc.doc = 'Identifier of the report, stable across processing versions.'} reportCode: String[1];
+  {doc.doc = 'Identifier of the reporting buoy or survey site.'} buoyCode: String[1];
+  {doc.doc = 'Live coral cover along the transect in percent.'} coverPct: Float[0..1];
+  {doc.doc = 'Bleached colony share along the transect in percent.'} bleachedPct: Float[0..1];
+  {doc.doc = 'Juvenile recruits per square metre.'} recruitDensity: Float[0..1];
+  {doc.doc = 'Macroalgae cover along the transect in percent.'} algaeCoverPct: Float[0..1];
+  {doc.doc = 'Chain-and-tape rugosity of the transect.'} rugosityIndex: Float[0..1];
+  {doc.doc = 'Grazing urchins per square metre.'} grazerDensity: Float[0..1];
+  {doc.doc = 'Estimated reef fish biomass per hundred square metres.'} fishBiomassKg: Float[0..1];
+  {doc.doc = 'Instant the reading window closed.'} readAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A satellite-derived thermal stress index for the reef pixel.'} test::emberreef5::domain::ThermalStressIndex
+{
+  {doc.doc = 'Identifier of the report, stable across processing versions.'} reportCode: String[1];
+  {doc.doc = 'Identifier of the reporting buoy or survey site.'} buoyCode: String[1];
+  {doc.doc = 'Accumulated thermal stress in degree heating weeks.'} degreeHeatingWeeks: Float[0..1];
+  {doc.doc = 'Positive anomaly above the climatological maximum.'} hotspotC: Float[0..1];
+  {doc.doc = 'Signed temperature anomaly against the baseline.'} anomalyC: Float[0..1];
+  {doc.doc = 'Continuous alert score derived from the hotspot.'} alertScore: Float[0..1];
+  {doc.doc = 'Cloud cover fraction over the pixel.'} cloudFraction: Float[0..1];
+  {doc.doc = 'Mean wind speed over the pixel in metres per second.'} windSpeedMs: Float[0..1];
+  {doc.doc = 'Instant the reading window closed.'} readAt: DateTime[0..1];
+}
+
+Profile test::emberreef5::profile::ReefVendorProfile
+{
+  stereotypes: [vendorSourced, openLicensed];
+  tags: [licenceStatus, provider];
+}
+
+Profile test::emberreef5::profile::ReefPrivacyProfile
+{
+  stereotypes: [publicObservation, restrictedObservation];
+}

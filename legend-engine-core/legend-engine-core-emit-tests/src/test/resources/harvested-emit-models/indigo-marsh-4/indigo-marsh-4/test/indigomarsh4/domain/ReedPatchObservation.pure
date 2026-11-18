@@ -1,0 +1,27 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::indigomarsh4::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A flat observation shape: one required identifier and a tail of optional scalars over text, decimal, date, date-time and boolean, so a null-bearing observation is still a valid instance.'} test::indigomarsh4::domain::ReedPatchObservation
+{
+  observationCode: String[1];
+  patchName: String[0..1];
+  stemDensity: Decimal[0..1];
+  observedOn: StrictDate[0..1];
+  recordedAt: DateTime[0..1];
+  waterlogged: Boolean[0..1];
+  patchLabel() {if($this.patchName->isEmpty(), | 'UNNAMED PATCH', | $this.patchName->toOne()->trim()->toUpper())}: String[1];
+}

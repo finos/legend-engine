@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryaviary::mapping::AviaryMapping
+(
+  *test::ivoryaviary::domain::RingRecord[ringRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryaviary::store::AviaryStore]aviary.ring_record.record_id
+    )
+    ~mainTable [test::ivoryaviary::store::AviaryStore]aviary.ring_record
+    ringCode: toUpper(trim([test::ivoryaviary::store::AviaryStore]aviary.ring_record.ring_code)),
+    speciesCode: [test::ivoryaviary::store::AviaryStore]aviary.ring_record.species_code,
+    speciesName: [test::ivoryaviary::store::AviaryStore]aviary.ring_record.species_name,
+    enclosureCode: [test::ivoryaviary::store::AviaryStore]aviary.ring_record.enclosure_code,
+    wingSpanMm: [test::ivoryaviary::store::AviaryStore]aviary.ring_record.wing_span_mm,
+    massG: [test::ivoryaviary::store::AviaryStore]aviary.ring_record.mass_g,
+    observerTag: toLower(substring(trim([test::ivoryaviary::store::AviaryStore]aviary.ring_record.observer_name), 0, 5)),
+    ageBand: case(
+               equal([test::ivoryaviary::store::AviaryStore]aviary.ring_record.age_class_code, 'J'),
+               'juvenile',
+               case(
+                 equal([test::ivoryaviary::store::AviaryStore]aviary.ring_record.age_class_code, 'A'),
+                 'adult',
+                 case(
+                   equal([test::ivoryaviary::store::AviaryStore]aviary.ring_record.age_class_code, 'F'),
+                   'first-year',
+                   sqlNull()
+                 )
+               )
+             ),
+    noteLabel: coalesce([test::ivoryaviary::store::AviaryStore]aviary.ring_record.note_text, 'no remark'),
+    ringWidth: length(trim([test::ivoryaviary::store::AviaryStore]aviary.ring_record.ring_code))
+  }
+)

@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::goldenotter5::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A propagation batch of plant cuttings raised on a nursery bench, with joined glasshouse labels and derived vigour measures.'} test::goldenotter5::domain::PropagationBatch
+[
+  positiveCuttings: $this.cuttingCount > 0,
+  rootedWithinCuttings: $this.rootedCount->isEmpty() || ($this.rootedCount->toOne() <= $this.cuttingCount),
+  vigourCodeHasWidth: $this.vigourCode->length() >= 3
+]
+{
+  batchId: Integer[1];
+  sownDate: StrictDate[1];
+  cuttingCount: Integer[1];
+  rootedCount: Integer[0..1];
+  vigourCode: String[1];
+  cultivarName: String[1];
+  mistingNote: String[0..1];
+  benchLabel: String[0..1];
+  houseName: String[0..1];
+  gradeLabel: String[0..1];
+  benchBatchCount: Integer[0..1];
+  vigourBand() {if($this.cuttingCount >= 120, |'DENSE', |if($this.cuttingCount >= 80, |'FULL', |if($this.cuttingCount >= 40, |'STANDARD', |'SPARSE')))}: String[1];
+  rootedShare() {if($this.rootedCount->isEmpty(), |0.0, |$this.rootedCount->toOne()->toFloat() / $this.cuttingCount->toFloat())}: Float[1];
+  sownInSeason(seasonYear: Integer[1]) {$this.sownDate->year() == $seasonYear}: Boolean[1];
+  labelledAs() {$this.vigourCode + '/' + $this.cultivarName}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A grouped bench-load view carrying batch counts and cutting totals for a glasshouse bench.'} test::goldenotter5::domain::BenchLoad
+[
+  batchCountNonNegative: $this.batchCount >= 0
+]
+{
+  benchId: Integer[1];
+  batchCount: Integer[1];
+  totalCuttings: Integer[0..1];
+  peakCuttings: Integer[0..1];
+  loadBand() {if($this.batchCount >= 5, |'BUSY', |if($this.batchCount >= 2, |'STEADY', |'QUIET'))}: String[1];
+}

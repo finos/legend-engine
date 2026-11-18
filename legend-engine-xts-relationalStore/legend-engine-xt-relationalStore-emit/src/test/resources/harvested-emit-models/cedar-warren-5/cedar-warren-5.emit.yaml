@@ -1,0 +1,42 @@
+name: cedar-warren-5
+title: Cedar Warren 5 Burrow Condition Grading
+description: >
+  A woodland burrow survey whose relational mapping resolves its condition grade through an
+  eight-arm nested conditional over the observation flags a surveyor ticked, falling through to an
+  explicit SQL null sentinel when no flag is set, and resolves a second, shallower note chain over
+  two of the same flags so the two chains disagree on most rows. A register scope is selected as a
+  row-independent literal beside the directly read columns. A model-to-model mapping then assembles
+  the published digest from the surveyed burrow rather than from the store, so the optional derived
+  grade is proven to travel through the second mapping unchanged. Both mappings carry their own
+  suite: the relational one drives one fixture burrow per arm plus the fall-through burrow, and the
+  digest one drives a graded and an ungraded source instance.
+modelSources:
+  model:
+    root: cedar-warren-5
+    files:
+      - test/cedarwarren5/domain/WarrenDomain.pure
+      - test/cedarwarren5/mapping/WarrenDigestMapping.pure
+      - test/cedarwarren5/mapping/WarrenSurveyMapping.pure
+      - test/cedarwarren5/store/WarrenDatabase.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-null-sentinel
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - burrow-survey
+  - conditional-transform
+  - duckdb
+  - literal-transform
+  - m2m-mapping
+  - mapping-test
+  - null-sentinel
+  - relational

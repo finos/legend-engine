@@ -1,0 +1,311 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedquarry2::mapping::FrostQuarryMapping
+(
+  test::frostedquarry2::domain::IceQuarry[iceQuarry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_quarry.quarry_id
+    )
+    ~mainTable [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_quarry
+    quarryId: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_quarry.quarry_id,
+    quarryName: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_quarry.quarry_name,
+    regionCode: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_quarry.region_code,
+    licenceStatus: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_quarry.licence_status
+  }
+
+  test::frostedquarry2::domain::ExtractionPanel[extractionPanel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedquarry2::store::FrostQuarryDB]frostquarry.extraction_panel.panel_id
+    )
+    ~mainTable [test::frostedquarry2::store::FrostQuarryDB]frostquarry.extraction_panel
+    panelId: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.extraction_panel.panel_id,
+    panelCode: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.extraction_panel.panel_code,
+    iceThicknessM: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.extraction_panel.ice_thickness_m
+  }
+
+  test::frostedquarry2::domain::HarvestCycle[harvestCycle]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedquarry2::store::FrostQuarryDB]frostquarry.harvest_cycle.cycle_id
+    )
+    ~mainTable [test::frostedquarry2::store::FrostQuarryDB]frostquarry.harvest_cycle
+    cycleId: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.harvest_cycle.cycle_id,
+    cycleCode: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.harvest_cycle.cycle_code,
+    startedOn: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.harvest_cycle.started_on,
+    crewSize: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.harvest_cycle.crew_size
+  }
+
+  test::frostedquarry2::domain::IceBlock[iceBlock]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_block.block_id
+    )
+    ~mainTable [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_block
+    blockId: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_block.block_id,
+    blockCode: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_block.block_code,
+    massKg: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_block.mass_kg,
+    meltLossRatio: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.ice_block.melt_loss_ratio
+  }
+
+  test::frostedquarry2::domain::ClarityGrade[clarityGrade]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedquarry2::store::FrostQuarryDB]frostquarry.clarity_grade.grade_id
+    )
+    ~mainTable [test::frostedquarry2::store::FrostQuarryDB]frostquarry.clarity_grade
+    gradeId: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.clarity_grade.grade_id,
+    gradeCode: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.clarity_grade.grade_code,
+    clarityScore: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.clarity_grade.clarity_score
+  }
+
+  test::frostedquarry2::domain::MeltAudit[meltAudit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedquarry2::store::FrostQuarryDB]frostquarry.melt_audit.audit_id
+    )
+    ~mainTable [test::frostedquarry2::store::FrostQuarryDB]frostquarry.melt_audit
+    auditId: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.melt_audit.audit_id,
+    auditCode: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.melt_audit.audit_code,
+    measuredLossRatio: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.melt_audit.measured_loss_ratio
+  }
+
+  test::frostedquarry2::domain::HaulSled[haulSled]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedquarry2::store::FrostQuarryDB]frostquarry.haul_sled.sled_id
+    )
+    ~mainTable [test::frostedquarry2::store::FrostQuarryDB]frostquarry.haul_sled
+    sledId: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.haul_sled.sled_id,
+    sledCode: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.haul_sled.sled_code,
+    capacityKg: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.haul_sled.capacity_kg
+  }
+
+  test::frostedquarry2::domain::TransferRun[transferRun]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedquarry2::store::FrostQuarryDB]frostquarry.transfer_run.run_id
+    )
+    ~mainTable [test::frostedquarry2::store::FrostQuarryDB]frostquarry.transfer_run
+    runId: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.transfer_run.run_id,
+    runCode: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.transfer_run.run_code,
+    runDate: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.transfer_run.run_date
+  }
+
+  test::frostedquarry2::domain::ColdStore[coldStore]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedquarry2::store::FrostQuarryDB]frostquarry.cold_store.store_id
+    )
+    ~mainTable [test::frostedquarry2::store::FrostQuarryDB]frostquarry.cold_store
+    storeId: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.cold_store.store_id,
+    storeCode: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.cold_store.store_code,
+    storeName: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.cold_store.store_name,
+    holdingTempC: [test::frostedquarry2::store::FrostQuarryDB]frostquarry.cold_store.holding_temp_c
+  }
+
+  test::frostedquarry2::domain::Quarry_Panel: Relational
+  {
+    AssociationMapping
+    (
+      panels[iceQuarry, extractionPanel]: [test::frostedquarry2::store::FrostQuarryDB]@Quarry_Panel,
+      quarry[extractionPanel, iceQuarry]: [test::frostedquarry2::store::FrostQuarryDB]@Quarry_Panel
+    )
+  }
+
+  test::frostedquarry2::domain::Panel_Cycle: Relational
+  {
+    AssociationMapping
+    (
+      cycles[extractionPanel, harvestCycle]: [test::frostedquarry2::store::FrostQuarryDB]@Panel_Cycle,
+      panel[harvestCycle, extractionPanel]: [test::frostedquarry2::store::FrostQuarryDB]@Panel_Cycle
+    )
+  }
+
+  test::frostedquarry2::domain::Cycle_Block: Relational
+  {
+    AssociationMapping
+    (
+      blocks[harvestCycle, iceBlock]: [test::frostedquarry2::store::FrostQuarryDB]@Cycle_Block,
+      cycle[iceBlock, harvestCycle]: [test::frostedquarry2::store::FrostQuarryDB]@Cycle_Block
+    )
+  }
+
+  test::frostedquarry2::domain::Block_Grade: Relational
+  {
+    AssociationMapping
+    (
+      grades[iceBlock, clarityGrade]: [test::frostedquarry2::store::FrostQuarryDB]@Block_Grade,
+      gradedBlock[clarityGrade, iceBlock]: [test::frostedquarry2::store::FrostQuarryDB]@Block_Grade
+    )
+  }
+
+  test::frostedquarry2::domain::Block_Audit: Relational
+  {
+    AssociationMapping
+    (
+      audits[iceBlock, meltAudit]: [test::frostedquarry2::store::FrostQuarryDB]@Block_Audit,
+      auditedBlock[meltAudit, iceBlock]: [test::frostedquarry2::store::FrostQuarryDB]@Block_Audit
+    )
+  }
+
+  test::frostedquarry2::domain::Sled_Run: Relational
+  {
+    AssociationMapping
+    (
+      runs[haulSled, transferRun]: [test::frostedquarry2::store::FrostQuarryDB]@Sled_Run,
+      sled[transferRun, haulSled]: [test::frostedquarry2::store::FrostQuarryDB]@Sled_Run
+    )
+  }
+
+  test::frostedquarry2::domain::Run_Store: Relational
+  {
+    AssociationMapping
+    (
+      coldStore[transferRun, coldStore]: [test::frostedquarry2::store::FrostQuarryDB]@Run_Store,
+      storedRuns[coldStore, transferRun]: [test::frostedquarry2::store::FrostQuarryDB]@Run_Store
+    )
+  }
+
+  testSuites:
+  [
+    blockLineageSuite:
+    {
+      function: |test::frostedquarry2::domain::IceBlock.all()->project(
+        [
+          r|$r.blockCode,
+          r|$r.cycle.cycleCode,
+          r|$r.cycle.panel.panelCode,
+          r|$r.cycle.panel.quarry.quarryName,
+          r|$r.grades.gradeCode
+        ],
+        [
+          'Block',
+          'Cycle',
+          'Panel',
+          'Quarry',
+          'Grade'
+        ]
+      )->sort([asc('Block'), asc('Grade')]);
+      tests:
+      [
+        theFourHopLineageResolvesThroughFourAssociationMappings:
+        {
+          data:
+          [
+            test::frostedquarry2::store::FrostQuarryDB:
+              Relational
+              #{
+                frostquarry.ice_quarry:
+                  'quarry_id,quarry_name,region_code,licence_status\n'+
+                  'QRY-01,North Firn Quarry,REG-N,ACTIVE\n';
+                frostquarry.extraction_panel:
+                  'panel_id,quarry_id,panel_code,ice_thickness_m\n'+
+                  'PNL-01,QRY-01,P-001,4.5\n';
+                frostquarry.harvest_cycle:
+                  'cycle_id,panel_id,cycle_code,started_on,crew_size\n'+
+                  'CYC-01,PNL-01,C-001,2026-01-05,6\n';
+                frostquarry.ice_block:
+                  'block_id,cycle_id,block_code,mass_kg,melt_loss_ratio\n'+
+                  'BLK-01,CYC-01,B-001,180,0.25\n'+
+                  'BLK-02,CYC-01,B-002,220,0.4\n';
+                frostquarry.clarity_grade:
+                  'grade_id,block_id,grade_code,clarity_score\n'+
+                  'GRD-01,BLK-01,CLEAR,91\n'+
+                  'GRD-02,BLK-01,BUBBLED,72\n';
+              }#
+          ];
+          asserts:
+          [
+            theBlockWithTwoGradesFansOutWhileTheUngradedBlockKeepsOneRowWithNoGrade:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"B-001","Cycle":"C-001","Panel":"P-001","Quarry":"North Firn Quarry","Grade":"BUBBLED"},{"Block":"B-001","Cycle":"C-001","Panel":"P-001","Quarry":"North Firn Quarry","Grade":"CLEAR"},{"Block":"B-002","Cycle":"C-001","Panel":"P-001","Quarry":"North Firn Quarry","Grade":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    transferChainSuite:
+    {
+      function: |test::frostedquarry2::domain::TransferRun.all()->project(
+        [
+          r|$r.runCode,
+          r|$r.sled.sledCode,
+          r|$r.coldStore.storeCode,
+          r|$r.coldStore.storeName
+        ],
+        [
+          'Run',
+          'Sled',
+          'Store',
+          'StoreName'
+        ]
+      )->sort([asc('Run')]);
+      tests:
+      [
+        bothEndsOfTheTransferChainResolveFromTheRunSide:
+        {
+          data:
+          [
+            test::frostedquarry2::store::FrostQuarryDB:
+              Relational
+              #{
+                frostquarry.haul_sled:
+                  'sled_id,sled_code,capacity_kg\n'+
+                  'SLD-01,S-001,900\n';
+                frostquarry.transfer_run:
+                  'run_id,sled_id,store_id,run_code,run_date\n'+
+                  'RUN-01,SLD-01,STR-01,R-001,2026-01-06\n'+
+                  'RUN-02,SLD-01,STR-09,R-002,2026-01-07\n';
+                frostquarry.cold_store:
+                  'store_id,store_code,store_name,holding_temp_c\n'+
+                  'STR-01,CS-001,Firn Vault,-18.5\n';
+              }#
+          ];
+          asserts:
+          [
+            theRunPointingAtAnAbsentColdStoreKeepsItsRowWithEmptyStoreColumns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Run":"R-001","Sled":"S-001","Store":"CS-001","StoreName":"Firn Vault"},{"Run":"R-002","Sled":"S-001","Store":null,"StoreName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::goldenotter2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A glasshouse the plant beds sit in, held in a second schema of the garden store.'} test::goldenotter2::domain::Glasshouse
+{
+  glasshouseCode: String[1];
+  glasshouseName: String[1];
+  zoneCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A watering rota run for one glasshouse.'} test::goldenotter2::domain::WateringRota
+{
+  rotaCode: String[1];
+  rotaLabel: String[1];
+  weekNumber: Integer[1];
+  glasshouse: Glasshouse[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A planting bed whose derived properties come from string-function transforms, a mapping literal, cross-schema table alias columns and an inner two-hop path onto the watering rota.'} test::goldenotter2::domain::PlantBed
+{
+  bedCode: String[1];
+  bedName: String[1];
+  soilCode: String[1];
+  registerCode: String[1];
+  bedLabel: String[0..1];
+  glasshouseName: String[0..1];
+  rotaLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One accessioned plant group potted up in a bed.'} test::goldenotter2::domain::PlantAccession
+{
+  accessionCode: String[1];
+  taxonName: String[1];
+  pottedCount: Integer[1];
+  labelText: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A garden volunteer, read from the volunteer store with the badge they hold reached through a join.'} test::goldenotter2::domain::Volunteer
+{
+  volunteerCode: String[1];
+  volunteerName: String[1];
+  rotaCode: String[1];
+  badgeLabel: String[0..1];
+}
+
+Association test::goldenotter2::domain::Bed_Accession
+{
+  bed: test::goldenotter2::domain::PlantBed[0..1];
+  accessions: test::goldenotter2::domain::PlantAccession[*];
+}

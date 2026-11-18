@@ -1,0 +1,163 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenreef5::mapping::NestingMapping
+(
+  include mapping test::goldenreef5::mapping::NestingBaseMapping
+
+  test::goldenreef5::domain::Team_Nests: Relational
+  {
+    AssociationMapping
+    (
+      nests[team, nest]: [test::goldenreef5::store::NestingCoastDB]@Nest_Team,
+      team[nest, team]: [test::goldenreef5::store::NestingCoastDB]@Nest_Team
+    )
+  }
+
+  testSuites:
+  [
+    nestRecordSuite:
+    {
+      function: |test::goldenreef5::domain::NestRecord.all()->project(
+  [
+    r|$r.nestRef,
+    r|$r.surveyProgram,
+    r|$r.clutchSize,
+    r|$r.hatchCount,
+    r|$r.stationName,
+    r|$r.team.teamName
+  ],
+  [
+    'Nest',
+    'Program',
+    'Clutch',
+    'Hatched',
+    'Station',
+    'Team'
+  ]
+)->sort(
+  [
+    asc('Nest')
+  ]
+);
+      tests:
+      [
+        everyRecordedClutch:
+        {
+          doc: 'Reads every recorded clutch with the literal survey programme, the absent hatch count of the predated clutch, the field station reached through the team-to-station join path and the team resolved through the association implementation.';
+          data:
+          [
+            test::goldenreef5::store::NestingCoastDB:
+              Relational
+              #{
+                patrol.nest_record:
+                  'nest_ref,site_code,team_code,laid_date,clutch_size,hatch_count,predation_code,sand_temp_c\n'+
+                  'NR-01,NS-01,PT-01,2026-06-10,110,96,,29.50\n'+
+                  'NR-02,NS-01,PT-01,2026-06-18,95,80,GHOST_CRAB,30.25\n'+
+                  'NR-03,NS-02,PT-02,2026-06-20,120,0,MONITOR_LIZARD,31.00\n'+
+                  'NR-04,NS-02,PT-02,2026-05-02,88,,FOX,28.75\n'+
+                  'NR-05,NS-01,PT-01,2026-06-25,70,64,GHOST_CRAB,29.00\n';
+                patrol.patrol_team:
+                  'team_code,team_name,station_code\n'+
+                  'PT-01,Dawn Patrol,FS-01\n'+
+                  'PT-02,Dusk Patrol,FS-02\n';
+                patrol.field_station:
+                  'station_code,station_name,coast_region\n'+
+                  'FS-01,North Ranger Station,NORTH COAST\n'+
+                  'FS-02,South Ranger Station,SOUTH COAST\n';
+              }#
+          ];
+          asserts:
+          [
+            fiveClutches:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Nest":"NR-01","Program":"NEST-WATCH","Clutch":110,"Hatched":96,"Station":"North Ranger Station","Team":"Dawn Patrol"},{"Nest":"NR-02","Program":"NEST-WATCH","Clutch":95,"Hatched":80,"Station":"North Ranger Station","Team":"Dawn Patrol"},{"Nest":"NR-03","Program":"NEST-WATCH","Clutch":120,"Hatched":0,"Station":"South Ranger Station","Team":"Dusk Patrol"},{"Nest":"NR-04","Program":"NEST-WATCH","Clutch":88,"Hatched":null,"Station":"South Ranger Station","Team":"Dusk Patrol"},{"Nest":"NR-05","Program":"NEST-WATCH","Clutch":70,"Hatched":64,"Station":"North Ranger Station","Team":"Dawn Patrol"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    nestSiteSuite:
+    {
+      function: |test::goldenreef5::domain::NestSite.all(%2035-01-01)->project(
+  [
+    s|$s.siteCode,
+    s|$s.siteName,
+    s|$s.beachName,
+    s|$s.coastRegion,
+    s|$s.regionStationName
+  ],
+  [
+    'Site',
+    'SiteName',
+    'Beach',
+    'Region',
+    'Station'
+  ]
+)->sort(
+  [
+    asc('Site')
+  ]
+);
+      tests:
+      [
+        sitesAtThePinnedInstant:
+        {
+          doc: 'Resolves the site versions whose processing window contains the pinned instant, so the closed-out version is dropped, and reaches the beach and the cross-schema field station through the one-hop and two-hop join paths.';
+          data:
+          [
+            test::goldenreef5::store::NestingCoastDB:
+              Relational
+              #{
+                coast.nest_site:
+                  'site_code,site_name,beach_code,sector_code,substrate_code,in_z,out_z\n'+
+                  'NS-01,Dune Ridge Site,BC-01,SEC-A,FINE_SAND,2026-01-01,9999-12-31\n'+
+                  'NS-02,Cove Head Site,BC-02,SEC-B,COARSE_SAND,2026-01-01,9999-12-31\n'+
+                  'NS-03,Retired Spit Site,BC-01,SEC-C,FINE_SAND,2026-01-01,2026-03-01\n'+
+                  'NS-04,Shell Bar Site,BC-01,SEC-D,SHELL_GRIT,2026-01-01,9999-12-31\n';
+                coast.beach:
+                  'beach_code,beach_name,coast_region\n'+
+                  'BC-01,Long Sand Beach,NORTH COAST\n'+
+                  'BC-02,Turtle Cove Beach,SOUTH COAST\n';
+                patrol.field_station:
+                  'station_code,station_name,coast_region\n'+
+                  'FS-01,North Ranger Station,NORTH COAST\n'+
+                  'FS-02,South Ranger Station,SOUTH COAST\n';
+              }#
+          ];
+          asserts:
+          [
+            threeLiveSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"NS-01","SiteName":"Dune Ridge Site","Beach":"Long Sand Beach","Region":"NORTH COAST","Station":"North Ranger Station"},{"Site":"NS-02","SiteName":"Cove Head Site","Beach":"Turtle Cove Beach","Region":"SOUTH COAST","Station":"South Ranger Station"},{"Site":"NS-04","SiteName":"Shell Bar Site","Beach":"Long Sand Beach","Region":"NORTH COAST","Station":"North Ranger Station"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

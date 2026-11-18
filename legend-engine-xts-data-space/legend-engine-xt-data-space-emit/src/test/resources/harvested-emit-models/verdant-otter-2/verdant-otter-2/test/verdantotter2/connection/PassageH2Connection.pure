@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection demo::verdantotter2::connection::PassageH2Connection
+{
+  store: demo::verdantotter2::store::PassageDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists navigation;',
+      'drop schema if exists waterway;',
+      'create schema navigation;',
+      'create schema waterway;',
+      'create table navigation.reach (reach_code varchar(24) not null, reach_name varchar(80) not null, region_name varchar(60) not null, summit_metres double);',
+      'create table waterway.lock_chamber (lock_id integer not null, lock_code varchar(24) not null, lock_name varchar(80) not null, reach_code varchar(24) not null, chamber_length_metres decimal(9,2), rise_metres double, commissioned_on date, surveyed_at timestamp, in_z date not null, out_z date not null);',
+      'create table waterway.vessel (vessel_id integer not null, vessel_code varchar(24) not null, vessel_name varchar(80) not null, reach_code varchar(24) not null, beam_metres double, registered_on date, in_z date not null, out_z date not null);',
+      'create table waterway.passage (passage_id integer not null, passage_code varchar(24) not null, lock_code varchar(24) not null, vessel_code varchar(24) not null, crew_size integer, dwell_minutes decimal(9,2), water_level_metres double, logged_on date, recorded_at timestamp, in_z date not null, out_z date not null);',
+      'create table waterway.keeper_shift (shift_id integer not null, keeper_name varchar(80) not null, reach_code varchar(24) not null, shift_label varchar(40) not null, hours_on_duty double, in_z date not null, out_z date not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

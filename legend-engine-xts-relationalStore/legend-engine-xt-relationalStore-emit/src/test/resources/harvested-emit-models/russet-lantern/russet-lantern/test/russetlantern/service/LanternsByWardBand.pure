@@ -1,0 +1,173 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::russetlantern::service::LanternsByWardBand
+{
+  pattern: '/lantern/v1/standing-lanterns/{wardBand}/{surveyDate}/{wardCodes}';
+  title: 'Lantern - Standing Lanterns As Of';
+  owners:
+  [
+    'heritage-lighting-register',
+    'lantern-maintenance'
+  ];
+  documentation: 'Returns the heritage street lanterns whose state is effective on the surveyed business date passed by the caller, keeping only the wards whose code occurs in the caller-supplied ward set and only the tall mantles or the gas lamps, then de-duplicating the projection. Multi-execution keyed by the ward band so the inner and outer registers answer the same projection from their own runtime.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {surveyDate: StrictDate[1], wardCodes: String[*]|test::russetlantern::domain::LanternState.all($surveyDate)->filter(
+      l|($l.wardCode->in($wardCodes)) && (($l.mantleHeightCm >= 260) || ($l.lampType->toLower() == 'gas'))
+    )->project(
+      [
+        l|$l.lanternCode,
+        l|$l.wardCode,
+        l|$l.lampType,
+        l|$l.mantleHeightCm
+      ],
+      [
+        'Lantern/Code',
+        'Lantern/Ward',
+        'Lantern/Lamp',
+        'Lantern/MantleHeightCm'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Lantern/Code')
+      ]
+    )};
+    key: 'wardBand';
+    executions['inner']:
+    {
+      mapping: test::russetlantern::mapping::LanternMapping;
+      runtime: test::russetlantern::runtime::InnerWardRuntime;
+    }
+    executions['outer']:
+    {
+      mapping: test::russetlantern::mapping::LanternMapping;
+      runtime: test::russetlantern::runtime::OuterWardRuntime;
+    }
+  }
+  testSuites:
+  [
+    wardBandSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          innerWard:
+            Relational
+            #{
+              lighting.lantern_state:
+                'lantern_id,lantern_code,ward_code,lamp_type,mantle_height_cm,from_z,thru_z\n'+
+                '1,LT-0001,WD-NORTH,GAS,240,2026-01-01,9999-12-31\n'+
+                '2,LT-0002,WD-HARBOUR,ELECTRIC,300,2026-01-01,9999-12-31\n'+
+                '3,LT-0003,WD-MOOR,GAS,280,2026-01-01,9999-12-31\n'+
+                '4,LT-0004,WD-NORTH,ELECTRIC,180,2026-01-01,9999-12-31\n'+
+                '5,LT-0005,WD-HARBOUR,GAS,250,2024-01-01,2025-06-30\n';
+            }#,
+          outerWard:
+            Relational
+            #{
+              lighting.lantern_state:
+                'lantern_id,lantern_code,ward_code,lamp_type,mantle_height_cm,from_z,thru_z\n'+
+                '1,LT-0101,WD-NORTH,GAS,265,2026-02-01,9999-12-31\n'+
+                '2,LT-0102,WD-NORTH,GAS,265,2020-01-01,2021-01-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        innerBandAsOfMay:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys:
+          [
+            'inner'
+          ];
+          parameters:
+          [
+            surveyDate = %2026-05-01,
+            wardCodes = ['WD-HARBOUR', 'WD-NORTH']
+          ]
+          asserts:
+          [
+            onlyInRangeNamedWardsSurvive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lantern/Code":"LT-0001","Lantern/Ward":"WD-NORTH","Lantern/Lamp":"GAS","Lantern/MantleHeightCm":240},{"Lantern/Code":"LT-0002","Lantern/Ward":"WD-HARBOUR","Lantern/Lamp":"ELECTRIC","Lantern/MantleHeightCm":300}]';
+                  }#;
+              }#
+          ]
+        },
+        outerBandAsOfMay:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys:
+          [
+            'outer'
+          ];
+          parameters:
+          [
+            surveyDate = %2026-05-01,
+            wardCodes = ['WD-NORTH']
+          ]
+          asserts:
+          [
+            theClosedStateIsNotStanding:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lantern/Code":"LT-0101","Lantern/Ward":"WD-NORTH","Lantern/Lamp":"GAS","Lantern/MantleHeightCm":265}]';
+                  }#;
+              }#
+          ]
+        },
+        innerBandWithNoWardsRequested:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys:
+          [
+            'inner'
+          ];
+          parameters:
+          [
+            surveyDate = %2026-05-01,
+            wardCodes = []
+          ]
+          asserts:
+          [
+            anEmptyWardSetSelectsNothing:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarhatchery::mapping::RegisterMapping
+(
+  *test::cedarhatchery::domain::RegisterRow[registerRow]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarhatchery::store::HatcheryRegisterDB]register.register_row.register_code
+    )
+    ~mainTable [test::cedarhatchery::store::HatcheryRegisterDB]register.register_row
+    registerCode: [test::cedarhatchery::store::HatcheryRegisterDB]register.register_row.register_code,
+    periodMonth: [test::cedarhatchery::store::HatcheryRegisterDB]register.register_row.period_month,
+    unitCode: [test::cedarhatchery::store::HatcheryRegisterDB]register.register_row.unit_code,
+    keeperName: [test::cedarhatchery::store::HatcheryRegisterDB]register.register_row.keeper_name,
+    stockCount: [test::cedarhatchery::store::HatcheryRegisterDB]register.register_row.stock_count,
+    releaseCount: [test::cedarhatchery::store::HatcheryRegisterDB]register.register_row.release_count,
+    lossCount: [test::cedarhatchery::store::HatcheryRegisterDB]register.register_row.loss_count
+  }
+)

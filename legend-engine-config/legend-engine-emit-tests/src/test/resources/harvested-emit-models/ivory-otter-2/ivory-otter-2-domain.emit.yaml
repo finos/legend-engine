@@ -1,0 +1,38 @@
+name: ivory-otter-2-domain
+title: "Tidepool Survey — Domain Classes, Enumerations, Quoted Identifiers and a Diagram"
+description: |
+  A store-less intertidal-ecology domain that exercises the pure grammar and
+  artifact-generation phases of EMIT. It defines four classes describing
+  tidepool monitoring sites, invertebrate taxa, individual survey observations
+  and the researchers who record them, three closed enumerations for tidal
+  band, seabed substrate and abundance rating, and a class diagram laying the
+  four classes out on a canvas. Several properties use quoted identifiers with
+  spaces to verify the quoted-name lexer path.
+
+modelSources:
+  model:
+    root: ivory-otter-2-domain
+    files:
+      - test/ivoryotter2/diagram/SurveyDomainDiagram.pure
+      - test/ivoryotter2/domain/AbundanceRating.pure
+      - test/ivoryotter2/domain/FieldResearcher.pure
+      - test/ivoryotter2/domain/InvertebrateSpecies.pure
+      - test/ivoryotter2/domain/SubstrateType.pure
+      - test/ivoryotter2/domain/SurveyObservation.pure
+      - test/ivoryotter2/domain/TidalZone.pure
+      - test/ivoryotter2/domain/TidepoolSite.pure
+
+features:
+  - grammar:diagram
+  - grammar:enumeration
+  - grammar:quoted-identifier
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - diagram
+  - domain
+  - enumeration
+  - intertidal
+  - quoted-identifier
+  - tidepool

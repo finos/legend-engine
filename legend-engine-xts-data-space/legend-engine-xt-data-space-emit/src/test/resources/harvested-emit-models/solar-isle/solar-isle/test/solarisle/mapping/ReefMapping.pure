@@ -1,0 +1,153 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solarisle::mapping::ReefMapping
+(
+  test::solarisle::domain::SurveyStation[station_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarisle::store::ReefDatabase]reef.survey_station.station_code
+    )
+    ~mainTable [test::solarisle::store::ReefDatabase]reef.survey_station
+    stationCode: [test::solarisle::store::ReefDatabase]reef.survey_station.station_code,
+    stationName: [test::solarisle::store::ReefDatabase]reef.survey_station.station_name,
+    zoneCode: [test::solarisle::store::ReefDatabase]reef.survey_station.zone_code,
+    depthMetres: [test::solarisle::store::ReefDatabase]reef.survey_station.depth_metres,
+    openForSurvey: [test::solarisle::store::ReefDatabase]reef.survey_station.open_for_survey,
+    zoneName: [test::solarisle::store::ReefDatabase]@Station_Zone | reef.reef_zone.zone_name,
+    protectionBand: [test::solarisle::store::ReefDatabase]@Station_Zone | reef.reef_zone.protection_band
+  }
+  test::solarisle::domain::TransectRun[run_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarisle::store::ReefDatabase]reef.transect_run.run_code
+    )
+    ~mainTable [test::solarisle::store::ReefDatabase]reef.transect_run
+    runCode: [test::solarisle::store::ReefDatabase]reef.transect_run.run_code,
+    stationCode: [test::solarisle::store::ReefDatabase]reef.transect_run.station_code,
+    runOn: [test::solarisle::store::ReefDatabase]reef.transect_run.run_on,
+    durationMinutes: [test::solarisle::store::ReefDatabase]reef.transect_run.duration_minutes,
+    diverCode: [test::solarisle::store::ReefDatabase]reef.transect_run.diver_code,
+    stationName: [test::solarisle::store::ReefDatabase]@Station_Run | reef.survey_station.station_name
+  }
+  test::solarisle::domain::SpeciesSighting[sighting_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarisle::store::ReefDatabase]reef.species_sighting.sighting_code
+    )
+    ~mainTable [test::solarisle::store::ReefDatabase]reef.species_sighting
+    sightingCode: [test::solarisle::store::ReefDatabase]reef.species_sighting.sighting_code,
+    runCode: [test::solarisle::store::ReefDatabase]reef.species_sighting.run_code,
+    speciesName: [test::solarisle::store::ReefDatabase]reef.species_sighting.species_name,
+    sightedOn: [test::solarisle::store::ReefDatabase]reef.species_sighting.sighted_on,
+    specimenCount: [test::solarisle::store::ReefDatabase]reef.species_sighting.specimen_count,
+    diverCode: [test::solarisle::store::ReefDatabase]reef.species_sighting.diver_code,
+    diverName: [test::solarisle::store::ReefDatabase]@Sighting_Diver | reef.diver_profile.diver_name
+  }
+  test::solarisle::domain::Diver[diver_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarisle::store::ReefDatabase]reef.diver_profile.diver_code
+    )
+    ~mainTable [test::solarisle::store::ReefDatabase]reef.diver_profile
+    diverCode: [test::solarisle::store::ReefDatabase]reef.diver_profile.diver_code,
+    diverName: [test::solarisle::store::ReefDatabase]reef.diver_profile.diver_name,
+    certificationBand: [test::solarisle::store::ReefDatabase]reef.diver_profile.certification_band,
+    firstStationName: [test::solarisle::store::ReefDatabase]@Sighting_Diver > @Run_Sighting > @Station_Run | reef.survey_station.station_name
+  }
+  test::solarisle::domain::ReefZone[zone_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarisle::store::ReefDatabase]reef.reef_zone.zone_code
+    )
+    ~mainTable [test::solarisle::store::ReefDatabase]reef.reef_zone
+    zoneCode: [test::solarisle::store::ReefDatabase]reef.reef_zone.zone_code,
+    zoneName: [test::solarisle::store::ReefDatabase]reef.reef_zone.zone_name,
+    protectionBand: [test::solarisle::store::ReefDatabase]reef.reef_zone.protection_band
+  }
+  test::solarisle::domain::SurveyStation_TransectRun: Relational
+  {
+    AssociationMapping
+    (
+      station[run_set, station_set]: [test::solarisle::store::ReefDatabase]@Station_Run,
+      runs[station_set, run_set]: [test::solarisle::store::ReefDatabase]@Station_Run
+    )
+  }
+  test::solarisle::domain::TransectRun_SpeciesSighting: Relational
+  {
+    AssociationMapping
+    (
+      run[sighting_set, run_set]: [test::solarisle::store::ReefDatabase]@Run_Sighting,
+      sightings[run_set, sighting_set]: [test::solarisle::store::ReefDatabase]@Run_Sighting
+    )
+  }
+  test::solarisle::domain::TransectRun_Diver: Relational
+  {
+    AssociationMapping
+    (
+      loggedRuns[diver_set, run_set]: [test::solarisle::store::ReefDatabase]@Run_Diver,
+      diver[run_set, diver_set]: [test::solarisle::store::ReefDatabase]@Run_Diver
+    )
+  }
+  testSuites:
+  [
+    reefMappingSuite:
+    {
+      function: |test::solarisle::domain::TransectRun.all()->filter(
+  r|$r.durationMinutes >= 40
+)->project(
+  [
+    col(r|$r.runCode, 'RunCode'),
+    col(r|$r.stationName, 'StationName')
+  ]
+)->sort([asc('RunCode')]);
+      tests:
+      [
+        deepTransectRows:
+        {
+          data:
+          [
+            test::solarisle::store::ReefDatabase:
+              Relational
+              #{
+                reef.survey_station:
+                  'station_code,station_name,zone_code,depth_metres,open_for_survey\nST-01,Blue Shelf,Z-1,12.5,true\n';
+                reef.transect_run:
+                  'run_code,station_code,run_on,duration_minutes,diver_code\nTR-01,ST-01,2026-06-01,55,DV-01\n';
+              }#
+          ];
+          asserts:
+          [
+            deepRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RunCode":"TR-01","StationName":"Blue Shelf"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

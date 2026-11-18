@@ -1,0 +1,313 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulorchard3::mapping::OrchardPrimaryMapping
+(
+  include mapping test::wistfulorchard3::mapping::OrchardEnumMapping
+  include mapping test::wistfulorchard3::mapping::OrchardRefMapping
+
+  *test::wistfulorchard3::domain::HarvestLot[harvestLot]: Relational
+  {
+    ~filter [test::wistfulorchard3::store::OrchardDB]PickedLotFilter
+    ~primaryKey
+    (
+      [test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.lot_code
+    )
+    ~mainTable [test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot
+    lotCode: [test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.lot_code,
+    lotKey: case(startsWith([test::wistfulorchard3::store::OrchardDB]@LotToBlock | harvest.orchard_block.canopy_style, 'ESP'), toUpper([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.lot_code), toLower([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.lot_code)),
+    ripenessBand: case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score, 8), 'BAND_1',
+      case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score, 7), 'BAND_2',
+      case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score, 6), 'BAND_3',
+      case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score, 5), 'BAND_4',
+      case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score, 4), 'BAND_5',
+      case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score, 3), 'BAND_6',
+      case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score, 2), 'BAND_7',
+      case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score, 1), 'BAND_8',
+      sqlNull())))))))),
+    ripeness: EnumerationMapping RipenessGradeMapping: concat(
+      case(isNull([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score), sqlNull(),
+      case(greaterThan([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score, 7), 'OVER',
+      case(greaterThan([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score, 4), 'READY',
+      case(greaterThan([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.ripeness_score, 2), 'FIRM', 'UNDER')))),
+      concat('/', toUpper([test::wistfulorchard3::store::OrchardDB]@LotToBlock | harvest.orchard_block.canopy_style))),
+    blemish: EnumerationMapping BlemishClassMapping: concat(
+      toUpper([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.blemish_code),
+      concat('/', case(equal([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.blemish_code, 'BRUISE'), 'MAJOR',
+        case(equal([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.blemish_code, 'CLEAN'), 'NONE', 'MINOR')))),
+    handling: EnumerationMapping HandlingClassMapping: concat(
+      case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.moisture_pct, 70), 'CHILL',
+      case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.moisture_pct, 45), 'VENTED', 'DRY')),
+      concat('/', case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.moisture_pct, 70), 'HIGH',
+        case(greaterThanEqual([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.moisture_pct, 45), 'MID', 'LOW')))),
+    blemishNote: case(equal([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.blemish_code, 'BRUISE'), 'BRUISE NOTED', sqlNull()),
+    wasInspected: case(isNull([test::wistfulorchard3::store::OrchardDB]@LotToInspector | harvest.inspector.inspector_label), 'false', 'true'),
+    crateIndex: times(case(isNull([test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.crate_count), 0, [test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.crate_count), 2),
+    blockLabel: [test::wistfulorchard3::store::OrchardDB]@LotToBlock | harvest.orchard_block.block_label,
+    groveLabel: [test::wistfulorchard3::store::OrchardDB]@LotToBlock > @BlockToGrove | harvest.grove.grove_label,
+    estateLabel: [test::wistfulorchard3::store::OrchardDB]@LotToBlock > @BlockToGrove > @GroveToEstate | harvest.estate.estate_label,
+    districtLabel: [test::wistfulorchard3::store::OrchardDB]@LotToBlock > @BlockToGrove > @GroveToEstate > @EstateToDistrict | harvest.district.district_label,
+    pickedOn: [test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.picked_on
+  }
+
+  test::wistfulorchard3::domain::BlockTally[blockTally]: AggregationAware
+  {
+    Views: [
+      (
+        ~modelOperation: {
+          ~canAggregate true,
+          ~groupByFunctions (
+            $this.blockCode,
+            $this.tallyDay
+          ),
+          ~aggregateValues (
+            ( ~mapFn: $this.crateCount , ~aggregateFn: $mapped->sum() )
+          )
+        },
+        ~aggregateMapping: Relational
+        {
+          ~primaryKey
+          (
+            [test::wistfulorchard3::store::OrchardDB]harvest.block_day_tally.tally_code
+          )
+          ~mainTable [test::wistfulorchard3::store::OrchardDB]harvest.block_day_tally
+          tallyCode: [test::wistfulorchard3::store::OrchardDB]harvest.block_day_tally.tally_code,
+          blockCode: [test::wistfulorchard3::store::OrchardDB]harvest.block_day_tally.block_code,
+          tallyDay: [test::wistfulorchard3::store::OrchardDB]harvest.block_day_tally.tally_day,
+          crateCount: [test::wistfulorchard3::store::OrchardDB]harvest.block_day_tally.crate_total
+        }
+      )
+    ],
+    ~mainMapping: Relational
+    {
+      ~primaryKey
+      (
+        [test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.lot_code
+      )
+      ~mainTable [test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot
+      tallyCode: [test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.lot_code,
+      blockCode: [test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.block_code,
+      tallyDay: [test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.picked_on,
+      crateCount: [test::wistfulorchard3::store::OrchardDB]harvest.harvest_lot.crate_count
+    }
+  }
+
+  test::wistfulorchard3::domain::LotInspection: Relational
+  {
+    AssociationMapping
+    (
+      inspectedLot[inspectorRef, harvestLot]: [test::wistfulorchard3::store::OrchardDB]@LotToInspector,
+      lotInspector[harvestLot, inspectorRef]: [test::wistfulorchard3::store::OrchardDB]@LotToInspector
+    )
+  }
+
+  test::wistfulorchard3::domain::InspectorStationing: Relational
+  {
+    AssociationMapping
+    (
+      stationedInspector[stationRef, inspectorRef]: [test::wistfulorchard3::store::OrchardDB]@InspectorToStation,
+      inspectorStation[inspectorRef, stationRef]: [test::wistfulorchard3::store::OrchardDB]@InspectorToStation
+    )
+  }
+
+  testSuites:
+  [
+    harvestLotSuite:
+    {
+      function: |test::wistfulorchard3::domain::HarvestLot.all()->project(
+        ~[
+          lotCode: x|$x.lotCode,
+          lotKey: x|$x.lotKey,
+          ripenessBand: x|$x.ripenessBand,
+          ripeness: x|$x.ripeness,
+          blemish: x|$x.blemish,
+          handling: x|$x.handling,
+          blemishNote: x|$x.blemishNote,
+          wasInspected: x|$x.wasInspected,
+          crateIndex: x|$x.crateIndex,
+          blockLabel: x|$x.blockLabel,
+          groveLabel: x|$x.groveLabel,
+          estateLabel: x|$x.estateLabel,
+          districtLabel: x|$x.districtLabel
+        ]
+      )->sort(~lotCode->ascending());
+      tests:
+      [
+        everyBandArmAndEveryJoinMiss:
+        {
+          doc: 'Each picking score lands in its own band arm and the unscored lot falls through the cascade to an explicit null; the lot whose block code matches nothing, the lot on a block with no grove, the lot in a grove with no estate and the lot with no inspector each lose the columns their join path cannot reach, the fully-chained lot reaches the district four hops out, the lot marked with an unlisted blemish code translates to no enumeration member, and the voided lot and the unpicked lot are filtered out before anything is read.';
+          data:
+          [
+            test::wistfulorchard3::store::OrchardDB:
+              Relational
+              #{
+                harvest.harvest_lot:
+                  'lot_code,block_code,inspector_code,picked_on,crate_count,ripeness_score,blemish_code,moisture_pct,status_code\n'+
+                  'HL-01,OB-2,IN-1,2026-05-01,4,8,BRUISE,72,PICKED\n'+
+                  'HL-02,OB-2,IN-1,2026-05-02,5,7,SPECK,60,PICKED\n'+
+                  'HL-03,OB-2,IN-1,2026-05-03,6,6,SCUFF,50,PICKED\n'+
+                  'HL-04,OB-2,IN-1,2026-05-04,7,5,CLEAN,44,PICKED\n'+
+                  'HL-05,OB-2,IN-1,2026-05-05,8,4,CLEAN,30,PICKED\n'+
+                  'HL-06,OB-2,IN-1,2026-05-06,,3,SPECK,46,PICKED\n'+
+                  'HL-07,OB-2,IN-1,2026-05-07,2,2,CLEAN,70,PICKED\n'+
+                  'HL-08,OB-2,IN-1,2026-05-08,3,1,SCUFF,45,PICKED\n'+
+                  'HL-09,OB-2,IN-1,2026-05-09,3,0,CLEAN,20,PICKED\n'+
+                  'HL-10,OB-9,IN-1,2026-05-10,3,5,CLEAN,40,PICKED\n'+
+                  'HL-11,OB-3,IN-1,2026-05-11,3,5,CLEAN,40,PICKED\n'+
+                  'HL-12,OB-4,IN-1,2026-05-12,3,5,CLEAN,40,PICKED\n'+
+                  'HL-13,OB-1,,2026-05-13,3,5,CLEAN,40,PICKED\n'+
+                  'HL-14,OB-2,IN-1,2026-05-14,3,6,CLEAN,40,PICKED\n'+
+                  'HL-15,OB-2,IN-1,2026-05-15,3,5,SUNSCALD,40,PICKED\n'+
+                  'HL-16,OB-2,IN-1,2026-05-16,3,5,CLEAN,40,VOID\n'+
+                  'HL-17,OB-2,IN-1,,3,5,CLEAN,40,PICKED\n';
+                harvest.orchard_block:
+                  'block_code,block_label,grove_code,parent_block_code,canopy_style,soil_code\n'+
+                  'OB-1,Cider Row,GR-1,,ESPALIER,SOIL-A\n'+
+                  'OB-2,Lantern Row,GR-1,OB-1,BUSH,SOIL-B\n'+
+                  'OB-3,Ridge Row,,OB-1,BUSH,SOIL-C\n'+
+                  'OB-4,Wall Row,GR-3,,ESPALIER,SOIL-D\n';
+                harvest.grove:
+                  'grove_code,grove_label,estate_code\n'+
+                  'GR-1,Old Grove,ES-1\n'+
+                  'GR-3,New Grove,\n';
+                harvest.estate:
+                  'estate_code,estate_label,district_code\n'+
+                  'ES-1,Hillside Estate,DS-1\n';
+                harvest.district:
+                  'district_code,district_label,warden_name\n'+
+                  'DS-1,Northern Downs,Ida Fernbank\n';
+                harvest.inspector:
+                  'inspector_code,inspector_label,station_code\n'+
+                  'IN-1,Ola Pinehurst,ST-1\n';
+                harvest.station:
+                  'station_code,station_label\n'+
+                  'ST-1,Bench One\n';
+              }#
+          ];
+          asserts:
+          [
+            lotRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"lotCode":"HL-01","lotKey":"hl-01","ripenessBand":"BAND_1","ripeness":"OVER_RIPE","blemish":"BRUISE","handling":"CHILL_PACK","blemishNote":"BRUISE NOTED","wasInspected":"true","crateIndex":8,"blockLabel":"Lantern Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"},{"lotCode":"HL-02","lotKey":"hl-02","ripenessBand":"BAND_2","ripeness":"READY","blemish":"SPECK","handling":"VENTED_PACK","blemishNote":null,"wasInspected":"true","crateIndex":10,"blockLabel":"Lantern Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"},{"lotCode":"HL-03","lotKey":"hl-03","ripenessBand":"BAND_3","ripeness":"READY","blemish":"SCUFF","handling":"VENTED_PACK","blemishNote":null,"wasInspected":"true","crateIndex":12,"blockLabel":"Lantern Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"},{"lotCode":"HL-04","lotKey":"hl-04","ripenessBand":"BAND_4","ripeness":"READY","blemish":"CLEAN","handling":"DRY_PACK","blemishNote":null,"wasInspected":"true","crateIndex":14,"blockLabel":"Lantern Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"},{"lotCode":"HL-05","lotKey":"hl-05","ripenessBand":"BAND_5","ripeness":"FIRM","blemish":"CLEAN","handling":"DRY_PACK","blemishNote":null,"wasInspected":"true","crateIndex":16,"blockLabel":"Lantern Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"},{"lotCode":"HL-06","lotKey":"hl-06","ripenessBand":"BAND_6","ripeness":"FIRM","blemish":"SPECK","handling":"VENTED_PACK","blemishNote":null,"wasInspected":"true","crateIndex":0,"blockLabel":"Lantern Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"},{"lotCode":"HL-07","lotKey":"hl-07","ripenessBand":"BAND_7","ripeness":"UNDER_RIPE","blemish":"CLEAN","handling":"CHILL_PACK","blemishNote":null,"wasInspected":"true","crateIndex":4,"blockLabel":"Lantern Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"},{"lotCode":"HL-08","lotKey":"hl-08","ripenessBand":"BAND_8","ripeness":"UNDER_RIPE","blemish":"SCUFF","handling":"VENTED_PACK","blemishNote":null,"wasInspected":"true","crateIndex":6,"blockLabel":"Lantern Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"},{"lotCode":"HL-09","lotKey":"hl-09","ripenessBand":null,"ripeness":"UNDER_RIPE","blemish":"CLEAN","handling":"DRY_PACK","blemishNote":null,"wasInspected":"true","crateIndex":6,"blockLabel":"Lantern Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"},{"lotCode":"HL-10","lotKey":"hl-10","ripenessBand":"BAND_4","ripeness":null,"blemish":"CLEAN","handling":"DRY_PACK","blemishNote":null,"wasInspected":"true","crateIndex":6,"blockLabel":null,"groveLabel":null,"estateLabel":null,"districtLabel":null},{"lotCode":"HL-11","lotKey":"hl-11","ripenessBand":"BAND_4","ripeness":"READY","blemish":"CLEAN","handling":"DRY_PACK","blemishNote":null,"wasInspected":"true","crateIndex":6,"blockLabel":"Ridge Row","groveLabel":null,"estateLabel":null,"districtLabel":null},{"lotCode":"HL-12","lotKey":"HL-12","ripenessBand":"BAND_4","ripeness":"READY","blemish":"CLEAN","handling":"DRY_PACK","blemishNote":null,"wasInspected":"true","crateIndex":6,"blockLabel":"Wall Row","groveLabel":"New Grove","estateLabel":null,"districtLabel":null},{"lotCode":"HL-13","lotKey":"HL-13","ripenessBand":"BAND_4","ripeness":"READY","blemish":"CLEAN","handling":"DRY_PACK","blemishNote":null,"wasInspected":"false","crateIndex":6,"blockLabel":"Cider Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"},{"lotCode":"HL-14","lotKey":"hl-14","ripenessBand":"BAND_3","ripeness":"READY","blemish":"CLEAN","handling":"DRY_PACK","blemishNote":null,"wasInspected":"true","crateIndex":6,"blockLabel":"Lantern Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"},{"lotCode":"HL-15","lotKey":"hl-15","ripenessBand":"BAND_4","ripeness":"READY","blemish":null,"handling":"DRY_PACK","blemishNote":null,"wasInspected":"true","crateIndex":6,"blockLabel":"Lantern Row","groveLabel":"Old Grove","estateLabel":"Hillside Estate","districtLabel":"Northern Downs"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    inspectorReachSuite:
+    {
+      function: |test::wistfulorchard3::domain::HarvestLot.all()->project(
+        ~[
+          lotCode: x|$x.lotCode,
+          inspectorLabel: x|$x.lotInspector.inspectorLabel,
+          stationLabel: x|$x.lotInspector.inspectorStation.stationLabel
+        ]
+      )->sort(~lotCode->ascending());
+      tests:
+      [
+        inspectorAndStationReach:
+        {
+          doc: 'Both association ends resolve over their joins so a lot reads back to the inspector who graded it and on to that inspector grading station, which is mapped only by the included reference mapping; the lot with no inspector and the inspector rostered to no station each lose the label their traversal cannot reach.';
+          data:
+          [
+            test::wistfulorchard3::store::OrchardDB:
+              Relational
+              #{
+                harvest.harvest_lot:
+                  'lot_code,block_code,inspector_code,picked_on,crate_count,ripeness_score,blemish_code,moisture_pct,status_code\n'+
+                  'HL-21,OB-2,IN-1,2026-06-01,4,6,CLEAN,40,PICKED\n'+
+                  'HL-22,OB-2,IN-2,2026-06-02,4,6,CLEAN,40,PICKED\n'+
+                  'HL-23,OB-2,,2026-06-03,4,6,CLEAN,40,PICKED\n';
+                harvest.orchard_block:
+                  'block_code,block_label,grove_code,parent_block_code,canopy_style,soil_code\n'+
+                  'OB-2,Lantern Row,GR-1,,BUSH,SOIL-B\n';
+                harvest.inspector:
+                  'inspector_code,inspector_label,station_code\n'+
+                  'IN-1,Ola Pinehurst,ST-1\n'+
+                  'IN-2,Rex Aldergate,ST-9\n';
+                harvest.station:
+                  'station_code,station_label\n'+
+                  'ST-1,Bench One\n';
+              }#
+          ];
+          asserts:
+          [
+            inspectorRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"lotCode":"HL-21","inspectorLabel":"Ola Pinehurst","stationLabel":"Bench One"},{"lotCode":"HL-22","inspectorLabel":"Rex Aldergate","stationLabel":null},{"lotCode":"HL-23","inspectorLabel":null,"stationLabel":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    blockTallySuite:
+    {
+      function: |test::wistfulorchard3::domain::BlockTally.all()->project(
+        ~[
+          blockCode: x|$x.blockCode,
+          crateCount: x|$x.crateCount
+        ]
+      )->groupBy(~[blockCode], ~[crateTotal: x|$x.crateCount: y|$y->sum()])->sort(~blockCode->ascending());
+      tests:
+      [
+        blockCrateTotals:
+        {
+          doc: 'The crate tally is grouped by block against a class that declares an aggregate-serving view over the day rollup alongside its per-lot detail set; the rollup carries a deliberately stale total for the first block, so the returned totals show the query was answered from the per-lot detail rather than from the rollup.';
+          data:
+          [
+            test::wistfulorchard3::store::OrchardDB:
+              Relational
+              #{
+                harvest.harvest_lot:
+                  'lot_code,block_code,inspector_code,picked_on,crate_count,ripeness_score,blemish_code,moisture_pct,status_code\n'+
+                  'HL-31,OB-1,IN-1,2026-07-01,4,6,CLEAN,40,PICKED\n'+
+                  'HL-32,OB-1,IN-1,2026-07-01,7,6,CLEAN,40,PICKED\n'+
+                  'HL-33,OB-2,IN-1,2026-07-02,5,6,CLEAN,40,PICKED\n';
+                harvest.block_day_tally:
+                  'tally_code,block_code,tally_day,crate_total\n'+
+                  'BT-01,OB-1,2026-07-01,10\n'+
+                  'BT-02,OB-2,2026-07-02,5\n';
+              }#
+          ];
+          asserts:
+          [
+            tallyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"blockCode":"OB-1","crateTotal":11},{"blockCode":"OB-2","crateTotal":5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

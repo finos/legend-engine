@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::embertundra4::mapping::HerbariumMapping
+(
+  *test::embertundra4::domain::Specimen[specimen]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embertundra4::store::HerbariumDB]herbarium.specimen.specimen_id
+    )
+    ~mainTable [test::embertundra4::store::HerbariumDB]herbarium.specimen
+    specimenCode: [test::embertundra4::store::HerbariumDB]herbarium.specimen.specimen_code,
+    taxonName: [test::embertundra4::store::HerbariumDB]herbarium.specimen.taxon_name,
+    familyCode: [test::embertundra4::store::HerbariumDB]herbarium.specimen.family_code,
+    sheetCount: [test::embertundra4::store::HerbariumDB]herbarium.specimen.sheet_count,
+    heightCm: [test::embertundra4::store::HerbariumDB]herbarium.specimen.height_cm,
+    collectedOn: [test::embertundra4::store::HerbariumDB]herbarium.specimen.collected_on,
+    conditionCode: [test::embertundra4::store::HerbariumDB]herbarium.specimen.condition_code,
+    sizeBand: case(greaterThanEqual([test::embertundra4::store::HerbariumDB]herbarium.specimen.height_cm, 70), 'GIANT',
+      case(greaterThanEqual([test::embertundra4::store::HerbariumDB]herbarium.specimen.height_cm, 60), 'HUGE',
+      case(greaterThanEqual([test::embertundra4::store::HerbariumDB]herbarium.specimen.height_cm, 50), 'LARGE',
+      case(greaterThanEqual([test::embertundra4::store::HerbariumDB]herbarium.specimen.height_cm, 45), 'BROAD',
+      case(greaterThanEqual([test::embertundra4::store::HerbariumDB]herbarium.specimen.height_cm, 40), 'MEDIUM',
+      case(greaterThanEqual([test::embertundra4::store::HerbariumDB]herbarium.specimen.height_cm, 35), 'MODEST',
+      case(greaterThanEqual([test::embertundra4::store::HerbariumDB]herbarium.specimen.height_cm, 30), 'SMALL',
+      case(greaterThanEqual([test::embertundra4::store::HerbariumDB]herbarium.specimen.height_cm, 25), 'TINY',
+      sqlNull()))))))))
+  }
+
+  *test::embertundra4::domain::Annotation[annotation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embertundra4::store::HerbariumDB]herbarium.annotation.note_id
+    )
+    ~mainTable [test::embertundra4::store::HerbariumDB]herbarium.annotation
+    noteCode: [test::embertundra4::store::HerbariumDB]herbarium.annotation.note_code,
+    authorName: [test::embertundra4::store::HerbariumDB]herbarium.annotation.author_name,
+    verdict: [test::embertundra4::store::HerbariumDB]herbarium.annotation.verdict,
+    notedOn: [test::embertundra4::store::HerbariumDB]herbarium.annotation.noted_on
+  }
+
+  *test::embertundra4::domain::Cabinet[cabinet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embertundra4::store::HerbariumDB]herbarium.cabinet.cabinet_id
+    )
+    ~mainTable [test::embertundra4::store::HerbariumDB]herbarium.cabinet
+    cabinetCode: [test::embertundra4::store::HerbariumDB]herbarium.cabinet.cabinet_code,
+    roomCode: [test::embertundra4::store::HerbariumDB]herbarium.cabinet.room_code,
+    shelfCount: [test::embertundra4::store::HerbariumDB]herbarium.cabinet.shelf_count
+  }
+
+  *test::embertundra4::domain::Curator[curator]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embertundra4::store::HerbariumDB]herbarium.curator.curator_id
+    )
+    ~mainTable [test::embertundra4::store::HerbariumDB]herbarium.curator
+    curatorCode: [test::embertundra4::store::HerbariumDB]herbarium.curator.curator_code,
+    curatorName: [test::embertundra4::store::HerbariumDB]herbarium.curator.curator_name,
+    activeFlag: [test::embertundra4::store::HerbariumDB]herbarium.curator.active_flag
+  }
+
+  test::embertundra4::domain::Specimen_Annotation: Relational
+  {
+    AssociationMapping
+    (
+      annotations[specimen, annotation]: [test::embertundra4::store::HerbariumDB]@SpecimenAnnotation,
+      specimen[annotation, specimen]: [test::embertundra4::store::HerbariumDB]@SpecimenAnnotation
+    )
+  }
+
+  test::embertundra4::domain::Specimen_Cabinet: Relational
+  {
+    AssociationMapping
+    (
+      cabinet[specimen, cabinet]: [test::embertundra4::store::HerbariumDB]@SpecimenCabinet,
+      specimens[cabinet, specimen]: [test::embertundra4::store::HerbariumDB]@SpecimenCabinet
+    )
+  }
+)

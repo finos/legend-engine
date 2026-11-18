@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::solarcove2::domain::*;
+import test::solarcove2::profile::*;
+
+Class <<temporal.processingtemporal, CivicMeta.governed>> {meta::pure::profiles::doc.doc = 'Shared supertype of every crossing observation recorded by the street inventory programme. The processing stereotype injects a processing-time dimension that every subtype inherits.', CivicMeta.steward = 'street-inventory-programme'} test::solarcove2::domain::common::CrossingReportEvent
+{
+  <<CivicMeta.identityKey>> {meta::pure::profiles::doc.doc = 'Stable code of the observation within the programme.'} reportCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Physical form of the crossing observed.'} crossingKind: CrossingKind[1];
+  {meta::pure::profiles::doc.doc = 'Date the observation was taken in the field.'} recordedOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = 'Code of the surveyor who took the observation, absent for desk-derived rows.'} surveyorCode: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Free-text engineering note attached during review.'} reviewNote: String[0..1];
+}
+
+Class <<temporal.processingtemporal, CivicMeta.governed>> {meta::pure::profiles::doc.doc = 'A crossing observation raised from a routine street walk rather than a scheduled survey.', CivicMeta.steward = 'street-inventory-programme'} test::solarcove2::domain::common::StreetWalkObservation extends test::solarcove2::domain::common::CrossingReportEvent
+{
+  {meta::pure::profiles::doc.doc = 'Ward the street walk covered.'} wardCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Non-temporal flag bundle attached to a crossing observation, holding the fault and access grades read off the signal head and kerb.'} test::solarcove2::domain::common::ObservationFlags
+{
+  {meta::pure::profiles::doc.doc = 'Fault class recorded against the signal head.'} fault: SignalFault[1];
+  {meta::pure::profiles::doc.doc = 'Usability of the dropped kerb approach.'} kerbAccess: KerbAccessGrade[1];
+  {meta::pure::profiles::doc.doc = 'Whether an audible aid was present and sounding.'} audibleAid: Boolean[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a crossing observation to the flag bundle read off the street furniture during the same visit.'} test::solarcove2::domain::common::CrossingReportEvent_ObservationFlags
+{
+  {meta::pure::profiles::doc.doc = 'Flag bundle for the visit; absent when the observation was derived at the desk.'} observedFlags: test::solarcove2::domain::common::ObservationFlags[0..1];
+  {meta::pure::profiles::doc.doc = 'Observation the flag bundle was read during.'} flaggedEvent: test::solarcove2::domain::common::CrossingReportEvent[1];
+}

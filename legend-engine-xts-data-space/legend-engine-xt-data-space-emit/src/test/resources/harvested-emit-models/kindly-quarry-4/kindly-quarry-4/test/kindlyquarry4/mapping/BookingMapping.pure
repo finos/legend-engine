@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlyquarry4::mapping::ObservatoryBookingMapping
+(
+  test::kindlyquarry4::domain::BookingTier: EnumerationMapping BookingTierMapping
+  {
+    STANDARD: ['STANDARD'],
+    EXTENDED: ['EXTENDED'],
+    TUITION: ['TUITION']
+  }
+
+  test::kindlyquarry4::domain::OpticGrade: EnumerationMapping OpticGradeMapping
+  {
+    REFRACTOR: ['REFRACTOR'],
+    REFLECTOR: ['REFLECTOR'],
+    CATADIOPTRIC: ['CATADIOPTRIC']
+  }
+
+  *test::kindlyquarry4::domain::TelescopeBooking[booking]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyquarry4::store::ObservatoryBookingDb]BOOKING.TELESCOPE_BOOKING.BOOKING_CODE
+    )
+    ~mainTable [test::kindlyquarry4::store::ObservatoryBookingDb]BOOKING.TELESCOPE_BOOKING
+    bookingCode: [test::kindlyquarry4::store::ObservatoryBookingDb]BOOKING.TELESCOPE_BOOKING.BOOKING_CODE,
+    branchCode: [test::kindlyquarry4::store::ObservatoryBookingDb]BOOKING.TELESCOPE_BOOKING.BRANCH_CODE,
+    instrumentCode: [test::kindlyquarry4::store::ObservatoryBookingDb]BOOKING.TELESCOPE_BOOKING.INSTRUMENT_CODE,
+    bookingTier: EnumerationMapping BookingTierMapping: [test::kindlyquarry4::store::ObservatoryBookingDb]BOOKING.TELESCOPE_BOOKING.BOOKING_TIER,
+    opticGrade: EnumerationMapping OpticGradeMapping: [test::kindlyquarry4::store::ObservatoryBookingDb]BOOKING.TELESCOPE_BOOKING.OPTIC_GRADE,
+    bookedOn: [test::kindlyquarry4::store::ObservatoryBookingDb]BOOKING.TELESCOPE_BOOKING.BOOKED_ON,
+    collectedAt: [test::kindlyquarry4::store::ObservatoryBookingDb]BOOKING.TELESCOPE_BOOKING.COLLECTED_AT,
+    nightsBooked: [test::kindlyquarry4::store::ObservatoryBookingDb]BOOKING.TELESCOPE_BOOKING.NIGHTS_BOOKED,
+    apertureMm: [test::kindlyquarry4::store::ObservatoryBookingDb]BOOKING.TELESCOPE_BOOKING.APERTURE_MM
+  }
+)

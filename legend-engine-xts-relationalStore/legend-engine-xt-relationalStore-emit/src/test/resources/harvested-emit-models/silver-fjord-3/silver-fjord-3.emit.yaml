@@ -1,0 +1,64 @@
+name: silver-fjord-3
+title: "Silver Fjord 3 — Tide Gauge Network Register With Bitemporal Stations, Buoy Unions And Windowed Store Filters"
+description: |
+  A coastal tide-gauge network spread over three row-store databases reached through static
+  datasources with delegated Kerberos. The gauge store keeps bitemporal stations, business-temporal
+  level readings and moored buoys; the archive store keeps processing-temporal retired stations and
+  archived and visiting buoys; the reference store keeps coastal regions. Tables carry wide composite
+  keys and temporal columns, and named store filters bound timestamps from below or to a window
+  relative to the current time. Class mappings translate status, quality and buoy codes through
+  enumeration mappings, child class mappings extend a parent and narrow it with a store filter, and
+  the archive store includes the gauge store so a union operation routes the buoy class to its
+  live, archived and visiting members across both store definitions.
+  Layered mappings include one another, an aggregating mapping exposes everything and an
+  include-only mapping re-exports it; five engine runtimes each bind one mapping and one connection.
+modelSources:
+  model:
+    root: silver-fjord-3
+    files:
+      - test/silverfjord3/connection/FjordConnections.pure
+      - test/silverfjord3/domain/FjordDomain.pure
+      - test/silverfjord3/mapping/ArchiveMapping.pure
+      - test/silverfjord3/mapping/BuoyUnionMapping.pure
+      - test/silverfjord3/mapping/FjordEnumMappings.pure
+      - test/silverfjord3/mapping/FjordNetworkMapping.pure
+      - test/silverfjord3/mapping/FjordRegisterMapping.pure
+      - test/silverfjord3/mapping/GaugeMapping.pure
+      - test/silverfjord3/mapping/RegionMapping.pure
+      - test/silverfjord3/runtime/FjordRuntimes.pure
+      - test/silverfjord3/store/ArchiveDb.pure
+      - test/silverfjord3/store/GaugeDb.pure
+      - test/silverfjord3/store/RegionDb.pure
+features:
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:store-union
+  - scaffolding:relational-mapping
+  - mapping:relational-class-mapping-extends
+  - store:relational-filter
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:router-union
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:processing-temporal
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-column-primary-key
+  - store:relational-store-include
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bitemporal
+  - delegated-kerberos
+  - duckdb
+  - enumeration-mapping
+  - mapping-include
+  - mapping-test
+  - operation-union
+  - relational
+  - store-filter
+  - tide-gauge

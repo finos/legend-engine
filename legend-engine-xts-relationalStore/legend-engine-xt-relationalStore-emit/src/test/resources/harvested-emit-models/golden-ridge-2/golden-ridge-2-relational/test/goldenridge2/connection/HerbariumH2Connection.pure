@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection demo::goldenridge2::connection::HerbariumH2Connection
+{
+  store: demo::goldenridge2::store::HerbariumDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists herbarium;',
+      'create schema herbarium;',
+      'drop schema if exists accession;',
+      'create schema accession;',
+      'create table herbarium.sheet_record (sheet_id varchar(24) primary key, voucher_code varchar(24) not null, taxon_code varchar(12) not null, collector_code varchar(12) not null, mount_count integer not null, vigour_score integer not null, handling_code char(1), valid_from date not null, valid_thru date);',
+      'create table herbarium.taxon_ref (taxon_code varchar(12) primary key, taxon_name varchar(80) not null);',
+      'create table accession.accession_lot (batch_id varchar(24) primary key, voucher_code varchar(24) not null, lot_count integer not null, batch_state char(1));'
+      ];
+  };
+  auth: DefaultH2;
+}

@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::kindlywharf::store::WharfDB
+(
+  Schema wharf
+  (
+    Table berth_call
+    (
+      call_ref VARCHAR(24) PRIMARY KEY,
+      berth_code VARCHAR(12) PRIMARY KEY,
+      call_date DATE PRIMARY KEY,
+      cut_code VARCHAR(8) PRIMARY KEY,
+      lane_code VARCHAR(8) PRIMARY KEY,
+      valid_from DATE PRIMARY KEY,
+      valid_thru DATE NOT NULL,
+      vessel_name VARCHAR(64) NOT NULL,
+      moor_kind VARCHAR(16) NOT NULL,
+      tonnage_t DECIMAL(18, 4) NOT NULL,
+      teu_count INTEGER NOT NULL,
+      pilot_name VARCHAR(64),
+      group_code VARCHAR(12),
+      note_text VARCHAR(96)
+    )
+
+    Table crane_shift
+    (
+      shift_ref VARCHAR(24) PRIMARY KEY,
+      crane_code VARCHAR(12) PRIMARY KEY,
+      shift_date DATE PRIMARY KEY,
+      cut_code VARCHAR(8) PRIMARY KEY,
+      valid_from DATE PRIMARY KEY,
+      valid_thru DATE NOT NULL,
+      operator_name VARCHAR(64) NOT NULL,
+      lift_count INTEGER NOT NULL,
+      moved_t DECIMAL(18, 4) NOT NULL,
+      idle_min INTEGER NOT NULL,
+      group_code VARCHAR(12),
+      remark_text VARCHAR(96)
+    )
+
+    Table gate_move
+    (
+      move_ref VARCHAR(24) PRIMARY KEY,
+      gate_code VARCHAR(12) NOT NULL,
+      move_date DATE,
+      haulier_name VARCHAR(64),
+      box_ref VARCHAR(24),
+      box_kind VARCHAR(16),
+      seal_ref VARCHAR(24),
+      lane_code VARCHAR(8),
+      inbound_flag VARCHAR(4),
+      gross_t DECIMAL(18, 4),
+      tare_t DECIMAL(18, 4),
+      dwell_hours INTEGER,
+      reefer_setpoint_c DECIMAL(9, 2),
+      inspect_code VARCHAR(8),
+      release_code VARCHAR(8),
+      depot_code VARCHAR(12),
+      driver_note VARCHAR(96),
+      queue_position INTEGER,
+      arrive_at TIMESTAMP,
+      depart_at TIMESTAMP
+    )
+
+    Table lot_tally
+    (
+      lot_ref VARCHAR(24) PRIMARY KEY,
+      lot_kind VARCHAR(16) NOT NULL,
+      tally_date DATE NOT NULL,
+      box_count INTEGER NOT NULL,
+      gross_t DECIMAL(18, 4) NOT NULL,
+      depot_code VARCHAR(12),
+      tally_note VARCHAR(96)
+    )
+  )
+)

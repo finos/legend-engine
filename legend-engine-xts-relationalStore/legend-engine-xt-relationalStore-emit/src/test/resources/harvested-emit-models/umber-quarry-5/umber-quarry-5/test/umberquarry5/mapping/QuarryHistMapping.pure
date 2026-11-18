@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberquarry5::mapping::QuarryHistMapping
+(
+  include test::umberquarry5::mapping::QuarryCoreMapping[test::umberquarry5::store::QuarryDb -> test::umberquarry5::store::QuarryHistDb]
+
+  test::umberquarry5::domain::BlockGrade: EnumerationMapping HistGradeCodes
+  {
+    PREMIUM: ['1'],
+    STANDARD: ['2'],
+    RUBBLE: ['3'],
+    BLANK_GRADE: ['BLANK'],
+    UNGRADED: ['NULL']
+  }
+
+  *test::umberquarry5::domain::BlockVersion[blockVersion]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberquarry5::store::QuarryHistDb]hist.block_version.version_id
+    )
+    ~mainTable [test::umberquarry5::store::QuarryHistDb]hist.block_version
+    blockRef: [test::umberquarry5::store::QuarryHistDb]hist.block_version.block_ref,
+    grade: EnumerationMapping HistGradeCodes: case(isNull([test::umberquarry5::store::QuarryHistDb]hist.block_version.grade_code), 'NULL', case(equal(trim([test::umberquarry5::store::QuarryHistDb]hist.block_version.grade_code), ''), 'BLANK', trim([test::umberquarry5::store::QuarryHistDb]hist.block_version.grade_code))),
+    dressingNote: trim([test::umberquarry5::store::QuarryHistDb]hist.block_version.dressing_note),
+    benchFace: [test::umberquarry5::store::QuarryHistDb]@Version_Bench | pit.bench.face_code
+  }
+
+  testSuites:
+  [
+    blockVersionSuite:
+    {
+      function: |test::umberquarry5::domain::BlockVersion.all(%2026-05-01)->project(
+        [
+        x|$x.blockRef,
+        x|$x.grade,
+        x|$x.dressingNote,
+        x|$x.benchFace
+        ],
+        ['Ref', 'Grade', 'Note', 'Face']
+      )->sort([asc('Ref')]);
+      tests:
+      [
+        versionsValidOnDate:
+        {
+          doc: 'Only the version whose business window covers the query date is returned: a closed earlier window and a window opening later are both out of range; grade digits map with blank and null sentinels and the bench face is reached over the substituted store.';
+          data:
+          [
+            test::umberquarry5::store::QuarryHistDb:
+              Relational
+              #{
+                pit.bench:
+                  'pit_code,bench_no,face_code,level_text\n'+
+                  'PT-1,1,OPEN,1\n'+
+                  'PT-1,2,SHUT,2\n'+
+                  'PT-2,1,OPEN,3\n'+
+                  'PT-2,2,SHUT,7\n';
+
+                hist.block_version:
+                  'version_id,block_ref,pit_code,bench_no,grade_code,dressing_note,valid_from,valid_thru\n'+
+                  '1,QB-01,PT-1,1,1, pitched face ,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '2,QB-02,PT-1,1,2,boasted,2025-01-01 00:00:00.000,2026-02-01 00:00:00.000\n'+
+                  '3,QB-02,PT-1,1, ,tooled,2026-02-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '4,QB-03,PT-1,2,3,rubbed,2026-06-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '5,QB-04,PT-2,1,,split,2026-03-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '6,QB-05,PT-9,9,3,sawn,2026-01-15 00:00:00.000,9999-12-31 00:00:00.000\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ref":"QB-01","Grade":"PREMIUM","Note":"pitched face","Face":"OPEN"},{"Ref":"QB-02","Grade":"BLANK_GRADE","Note":"tooled","Face":"OPEN"},{"Ref":"QB-04","Grade":"UNGRADED","Note":"split","Face":"OPEN"},{"Ref":"QB-05","Grade":"RUBBLE","Note":"sawn","Face":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    substitutedBlockSuite:
+    {
+      function: |test::umberquarry5::domain::Block.all()->project(
+        [
+        x|$x.blockRef,
+        x|$x.partsLabel,
+        x|$x.grade,
+        x|$x.pitName
+        ],
+        ['Ref', 'Parts', 'Grade', 'Pit']
+      )->sort([asc('Ref')]);
+      tests:
+      [
+        includedMappingOverHistoryStore:
+        {
+          doc: 'The current block mapping, included with its store substituted, reads the same tables through the history store.';
+          data:
+          [
+            test::umberquarry5::store::QuarryHistDb:
+              Relational
+              #{
+                pit.quarry_pit:
+                  'pit_code,pit_name,district_code\n'+
+                  'PT-1,Umber Hollow,D-1\n'+
+                  'PT-2,Ochre Ledge,D-9\n';
+
+                pit.bench:
+                  'pit_code,bench_no,face_code,level_text\n'+
+                  'PT-1,1,OPEN,1\n'+
+                  'PT-1,2,SHUT,2\n'+
+                  'PT-2,1,OPEN,3\n'+
+                  'PT-2,2,SHUT,7\n';
+
+                pit.block:
+                  'pit_code,bench_no,block_seq,block_ref,type_code,finish_code,grade_code,shape_code,saw_flag,part_count,part_1,part_2,part_3,part_4,part_5,part_6,part_7,part_8,state_code\n'+
+                  'PT-1,1,1,QB-01,GRN,POL,p,cube,Y,1,ash,,,,,,,,Q\n'+
+                  'PT-1,1,2,QB-02,LMS,, s ,  plate ,N,2,ash,birch,,,,,,,Q\n'+
+                  'PT-1,1,3,QB-03,MRB,HON,R,IRR,Y,3,ash,birch,cedar,,,,,,Q\n'+
+                  'PT-1,1,4,QB-10,GRN,POL,P,cube,Y,1,ash,,,,,,,,H\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ref":"QB-01","Parts":"ash","Grade":"PREMIUM","Pit":"Umber Hollow"},{"Ref":"QB-02","Parts":"ash-birch","Grade":"STANDARD","Pit":"Umber Hollow"},{"Ref":"QB-03","Parts":"ash-birch-cedar","Grade":"RUBBLE","Pit":"Umber Hollow"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,170 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealquokka::mapping::WildlifeMapping
+(
+  include mapping test::tealquokka::mapping::WildlifeEnumMappings
+
+  *test::tealquokka::domain::Sighting[sighting]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealquokka::store::WildlifeDB]field.sighting.sighting_id
+    )
+    ~mainTable [test::tealquokka::store::WildlifeDB]field.sighting
+    sightingId: [test::tealquokka::store::WildlifeDB]field.sighting.sighting_id,
+    observedOn: [test::tealquokka::store::WildlifeDB]field.sighting.observed_on,
+    conditionBand: case(
+                     lessThan([test::tealquokka::store::WildlifeDB]field.sighting.body_condition, 2),
+                     'BAND_1',
+                     case(
+                       lessThan([test::tealquokka::store::WildlifeDB]field.sighting.body_condition, 4),
+                       'BAND_2',
+                       case(
+                         lessThan([test::tealquokka::store::WildlifeDB]field.sighting.body_condition, 6),
+                         'BAND_3',
+                         case(
+                           lessThan([test::tealquokka::store::WildlifeDB]field.sighting.body_condition, 8),
+                           'BAND_4',
+                           case(
+                             lessThan([test::tealquokka::store::WildlifeDB]field.sighting.body_condition, 10),
+                             'BAND_5',
+                             case(
+                               lessThan([test::tealquokka::store::WildlifeDB]field.sighting.body_condition, 12),
+                               'BAND_6',
+                               case(
+                                 lessThan([test::tealquokka::store::WildlifeDB]field.sighting.body_condition, 14),
+                                 'BAND_7',
+                                 case(
+                                   lessThan([test::tealquokka::store::WildlifeDB]field.sighting.body_condition, 16),
+                                   'BAND_8',
+                                   sqlNull()
+                                 )
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   ),
+    noteLabel: concat(
+                 concat(
+                   toUpper(trim([test::tealquokka::store::WildlifeDB]field.sighting.observer_note)),
+                   '-'
+                 ),
+                 [test::tealquokka::store::WildlifeDB]field.sighting.sighting_id
+               ),
+    tagStatus: EnumerationMapping TagStatusMapping: case(
+                 equal([test::tealquokka::store::WildlifeDB]field.sighting.tag_state, 'a'),
+                 'A',
+                 trim([test::tealquokka::store::WildlifeDB]field.sighting.tag_state)
+               ),
+    habitat: EnumerationMapping HabitatMapping: case(
+               equal([test::tealquokka::store::WildlifeDB]field.sighting.habitat_code, 'h'),
+               'H',
+               toUpper(trim([test::tealquokka::store::WildlifeDB]field.sighting.habitat_code))
+             ),
+    method: EnumerationMapping MethodMapping: case(
+              equal([test::tealquokka::store::WildlifeDB]field.sighting.method_code, 't'),
+              'T',
+              toUpper(trim([test::tealquokka::store::WildlifeDB]field.sighting.method_code))
+            ),
+    nickname: [test::tealquokka::store::WildlifeDB]@Sighting_Animal | [test::tealquokka::store::WildlifeDB]field.animal.nickname,
+    commonName: [test::tealquokka::store::WildlifeDB]@Sighting_Animal > @Animal_Species | [test::tealquokka::store::WildlifeDB]field.species.common_name,
+    familyName: [test::tealquokka::store::WildlifeDB]@Sighting_Animal > @Animal_Species > @Species_Family | [test::tealquokka::store::WildlifeDB]field.taxon_family.family_name
+  }
+
+  testSuites:
+  [
+    sightingSuite:
+    {
+      function: |test::tealquokka::domain::Sighting.all()->project(
+        [
+          x|$x.sightingId,
+          x|$x.conditionBand,
+          x|$x.tagStatus,
+          x|$x.nickname,
+          x|$x.commonName,
+          x|$x.familyName,
+          x|$x.noteLabel
+        ],
+        [
+          'sightingId',
+          'conditionBand',
+          'tagStatus',
+          'nickname',
+          'commonName',
+          'familyName',
+          'noteLabel'
+        ]
+      )->sort([asc('sightingId')]);
+      tests:
+      [
+        everyBandArm:
+        {
+          doc: 'One survey row per condition band arm, the out-of-range row that falls through to the null sentinel, a row whose stored tag code is outside the enumeration mapping, and a row whose tag code is normalised by the conditional before the enumeration mapping resolves it. Every row resolves the three-hop animal to species to family path.';
+          data:
+          [
+            test::tealquokka::store::WildlifeDB:
+              Relational
+              #{
+                field.sighting:
+                  'sighting_id,animal_id,observed_on,body_condition,tag_state,habitat_code,method_code,observer_note\n'+
+                  'S01,A1,2025-03-01,1,A,H,T,heath\n'+
+                  'S02,A2,2025-03-02,3,R,W,C,heath\n'+
+                  'S03,A1,2025-03-03,5,L,D,S,heath\n'+
+                  'S04,A2,2025-03-04,7,A,H,T,heath\n'+
+                  'S05,A1,2025-03-05,9,R,W,C,heath\n'+
+                  'S06,A2,2025-03-06,11,L,D,S,heath\n'+
+                  'S07,A1,2025-03-07,13,A,H,T,heath\n'+
+                  'S08,A2,2025-03-08,15,R,W,C,heath\n'+
+                  'S09,A1,2025-03-09,20,L,D,S,heath\n'+
+                  'S10,A2,2025-03-10,2,X,H,T,heath\n'+
+                  'S11,A1,2025-03-11,2,a,H,T,heath\n';
+
+                field.animal:
+                  'animal_id,species_id,nickname\n'+
+                  'A1,SP1,Bramble\n'+
+                  'A2,SP2,Wattle\n';
+
+                field.species:
+                  'species_id,family_id,common_name\n'+
+                  'SP1,FM1,Quokka\n'+
+                  'SP2,FM2,Numbat\n';
+
+                field.taxon_family:
+                  'family_id,family_name\n'+
+                  'FM1,Macropod\n'+
+                  'FM2,Myrmecobiid\n';
+              }#
+          ];
+          asserts:
+          [
+            bandPerArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sightingId":"S01","conditionBand":"BAND_1","tagStatus":"ACTIVE","nickname":"Bramble","commonName":"Quokka","familyName":"Macropod","noteLabel":"HEATH-S01"},{"sightingId":"S02","conditionBand":"BAND_2","tagStatus":"RETIRED","nickname":"Wattle","commonName":"Numbat","familyName":"Myrmecobiid","noteLabel":"HEATH-S02"},{"sightingId":"S03","conditionBand":"BAND_3","tagStatus":"LOST","nickname":"Bramble","commonName":"Quokka","familyName":"Macropod","noteLabel":"HEATH-S03"},{"sightingId":"S04","conditionBand":"BAND_4","tagStatus":"ACTIVE","nickname":"Wattle","commonName":"Numbat","familyName":"Myrmecobiid","noteLabel":"HEATH-S04"},{"sightingId":"S05","conditionBand":"BAND_5","tagStatus":"RETIRED","nickname":"Bramble","commonName":"Quokka","familyName":"Macropod","noteLabel":"HEATH-S05"},{"sightingId":"S06","conditionBand":"BAND_6","tagStatus":"LOST","nickname":"Wattle","commonName":"Numbat","familyName":"Myrmecobiid","noteLabel":"HEATH-S06"},{"sightingId":"S07","conditionBand":"BAND_7","tagStatus":"ACTIVE","nickname":"Bramble","commonName":"Quokka","familyName":"Macropod","noteLabel":"HEATH-S07"},{"sightingId":"S08","conditionBand":"BAND_8","tagStatus":"RETIRED","nickname":"Wattle","commonName":"Numbat","familyName":"Myrmecobiid","noteLabel":"HEATH-S08"},{"sightingId":"S09","conditionBand":null,"tagStatus":"LOST","nickname":"Bramble","commonName":"Quokka","familyName":"Macropod","noteLabel":"HEATH-S09"},{"sightingId":"S10","conditionBand":"BAND_2","tagStatus":null,"nickname":"Wattle","commonName":"Numbat","familyName":"Myrmecobiid","noteLabel":"HEATH-S10"},{"sightingId":"S11","conditionBand":"BAND_2","tagStatus":"ACTIVE","nickname":"Bramble","commonName":"Quokka","familyName":"Macropod","noteLabel":"HEATH-S11"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

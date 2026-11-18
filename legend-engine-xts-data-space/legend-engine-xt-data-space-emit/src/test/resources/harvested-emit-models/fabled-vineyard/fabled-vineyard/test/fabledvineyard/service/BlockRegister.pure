@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::fabledvineyard::service::BlockRegister
+{
+  pattern: '/fabledvineyard/v1/block-register';
+  title: 'Fabled Vineyard - Block Register';
+  documentation: 'Flat register of the trellised vine blocks, projecting the block key, its name, the row spacing, the vine count and the planting date through the single-table alias of the block root.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'vineyard-estate-office'
+  ];
+  execution: Single
+  {
+    query: {|test::fabledvineyard::domain::VineBlock.all()->project(
+      [
+        b|$b.blockCode,
+        b|$b.blockName,
+        b|$b.rowSpacingM,
+        b|$b.vineCount,
+        b|$b.plantedOn
+      ],
+      [
+        'Block',
+        'Name',
+        'RowSpacing',
+        'Vines',
+        'Planted'
+      ]
+    )->sort(
+      [
+        asc('Block')
+      ]
+    )->limit(5);};
+    mapping: test::fabledvineyard::mapping::VineyardMapping;
+    runtime: test::fabledvineyard::runtime::VineyardWarehouseRuntime;
+  }
+  testSuites:
+  [
+    blockRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          warehouseConnection:
+            Relational
+            #{
+              vineyard.vine_block:
+                'block_code,block_name,row_spacing_m,vine_count,planted_on,last_walked_at\n'+
+                'VB-01,North Terrace,2.5,1200,2011-03-14,2024-05-06 07:08:00\n'+
+                'VB-02,South Terrace,2.5,980,2015-09-02,\n'+
+                'VB-03,,,,,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        nullBearingRegisterRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeRegisterRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"VB-01","Name":"North Terrace","RowSpacing":2.5,"Vines":1200,"Planted":"2011-03-14"},{"Block":"VB-02","Name":"South Terrace","RowSpacing":2.5,"Vines":980,"Planted":"2015-09-02"},{"Block":"VB-03","Name":null,"RowSpacing":null,"Vines":null,"Planted":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

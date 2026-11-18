@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::solarisle::domain::SurveyStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  zoneCode: String[1];
+  zoneName: String[0..1];
+  protectionBand: String[0..1];
+  depthMetres: Float[1];
+  openForSurvey: Boolean[1];
+  stationRuns(minimumDuration: Integer[1])
+  {
+    $this.runs->filter(r|$r.durationMinutes >= $minimumDuration)
+  }: test::solarisle::domain::TransectRun[*];
+}
+
+Class test::solarisle::domain::TransectRun
+{
+  runCode: String[1];
+  stationCode: String[1];
+  stationName: String[0..1];
+  runOn: StrictDate[1];
+  durationMinutes: Integer[1];
+  diverCode: String[1];
+  sightingsWithin(daysBack: Integer[1])
+  {
+    $this.sightings->filter(s|$s.sightedOn >= $this.runOn->adjust(-$daysBack, meta::pure::functions::date::DurationUnit.DAYS))
+  }: test::solarisle::domain::SpeciesSighting[*];
+}
+
+Class test::solarisle::domain::SpeciesSighting
+{
+  sightingCode: String[1];
+  runCode: String[1];
+  speciesName: String[1];
+  sightedOn: StrictDate[1];
+  specimenCount: Integer[1];
+  diverCode: String[1];
+  diverName: String[0..1];
+}
+
+Class test::solarisle::domain::Diver
+{
+  diverCode: String[1];
+  diverName: String[1];
+  certificationBand: String[1];
+  firstStationName: String[0..1];
+  certifiedSightings(band: String[1])
+  {
+    $this.loggedRuns.sightings->filter(s|$s.speciesName->toUpper() == $band->toUpper())
+  }: test::solarisle::domain::SpeciesSighting[*];
+}
+
+Class test::solarisle::domain::ReefZone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+  protectionBand: String[1];
+}
+
+Association test::solarisle::domain::SurveyStation_TransectRun
+{
+  station: test::solarisle::domain::SurveyStation[1];
+  runs: test::solarisle::domain::TransectRun[*];
+}
+
+Association test::solarisle::domain::TransectRun_SpeciesSighting
+{
+  run: test::solarisle::domain::TransectRun[1];
+  sightings: test::solarisle::domain::SpeciesSighting[*];
+}
+
+Association test::solarisle::domain::TransectRun_Diver
+{
+  loggedRuns: test::solarisle::domain::TransectRun[*];
+  diver: test::solarisle::domain::Diver[1];
+}

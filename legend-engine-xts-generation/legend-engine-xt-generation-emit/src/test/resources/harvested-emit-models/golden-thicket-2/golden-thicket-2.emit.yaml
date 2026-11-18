@@ -1,0 +1,40 @@
+name: golden-thicket-2
+title: "Wildlife Intake Request — Deep Optional Composition, Lifecycle Enumerations and a Generated Schema"
+description: |
+  A wildlife intake request modelled as a deep composition: one aggregate root of roughly thirty
+  properties nests ten further classes at mandatory-one, optional, one-or-more and zero-or-more
+  cardinalities, including a status block whose four members are optional enumeration-typed
+  lifecycle states, so an absent state and an unknown state are indistinguishable at the model
+  level. Nothing maps or stores the graph — its only consumers are a diagram that views every
+  class and a json-schema file generation scoped at the root alone, which pulls the whole nested
+  graph in transitively and turns the cardinalities and enumeration constants into required-field
+  and allowed-value declarations of an external contract. One generation specification sequences
+  that single generation.
+modelSources:
+  model:
+    root: golden-thicket-2
+    files:
+      - test/goldenthicket2/diagram/IntakeDiagram.pure
+      - test/goldenthicket2/domain/Enumerations.pure
+      - test/goldenthicket2/domain/IntakeParts.pure
+      - test/goldenthicket2/domain/IntakeStatus.pure
+      - test/goldenthicket2/domain/WildlifeIntakeRequest.pure
+      - test/goldenthicket2/generation/IntakeGenerationSpecification.pure
+      - test/goldenthicket2/generation/IntakeSchema.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:diagram
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - deep-composition
+  - diagram
+  - file-generation
+  - generation-specification
+  - json-schema
+  - lifecycle-enumeration
+  - optional-cardinality
+  - wildlife-intake

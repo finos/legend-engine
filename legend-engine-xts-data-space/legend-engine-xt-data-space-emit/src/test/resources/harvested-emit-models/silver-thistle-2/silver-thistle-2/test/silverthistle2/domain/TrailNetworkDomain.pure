@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::silverthistle2::domain::*;
+
+Enum test::silverthistle2::domain::TrailGrade
+{
+  EASY,
+  MODERATE,
+  STEEP,
+  EXPOSED_SCRAMBLE
+}
+
+Enum test::silverthistle2::domain::UpkeepClass
+{
+  ROUTINE,
+  PRIORITY,
+  DEFERRED
+}
+
+Enum test::silverthistle2::domain::PatrolKind
+{
+  FOOT,
+  SKI,
+  MOUNTED
+}
+
+Class test::silverthistle2::domain::TrailSegment
+{
+  segmentId: String[1];
+  label: String[1];
+  lengthMeters: Integer[1];
+  grade: TrailGrade[1];
+  regionName: String[0..1];
+}
+
+Class test::silverthistle2::domain::RangerStation
+{
+  stationId: String[1];
+  stationName: String[1];
+  upkeep: UpkeepClass[1];
+}
+
+Class test::silverthistle2::domain::TrailRegion
+{
+  regionCode: String[1];
+  regionName: String[1];
+}
+
+Class test::silverthistle2::domain::PatrolLog
+{
+  patrolId: String[1];
+  note: String[1];
+  patrolKind: PatrolKind[1];
+}
+
+Class test::silverthistle2::domain::SurveyMark
+{
+  markId: String[1];
+  markName: String[1];
+  grade: TrailGrade[1];
+}
+
+Class test::silverthistle2::domain::TrailheadKiosk
+{
+  kioskId: String[1];
+  kioskName: String[1];
+}
+
+Association test::silverthistle2::domain::SegmentStation
+{
+  station: RangerStation[1];
+  segment: TrailSegment[1];
+}
+
+Association test::silverthistle2::domain::StationRegion
+{
+  region: TrailRegion[1];
+  homeStation: RangerStation[1];
+}
+
+Association test::silverthistle2::domain::SegmentPatrol
+{
+  patrol: PatrolLog[1];
+  patrolledSegment: TrailSegment[1];
+}

@@ -1,0 +1,37 @@
+name: emerald-delta-5-herbarium
+title: "Emerald Delta 5 — Herbarium Sheet Register (business-temporal relation with a flat mirrored class)"
+description: |
+  A herbarium sheet register expressed as a single wide relation. One store holds one schema and one specimen
+  table whose columns are typed and key-marked, and that table declares business-date milestoning over a
+  validity pair with an explicit infinity date, so every generated select is implicitly filtered to a
+  determination window rather than reading raw rows. One flat business-temporal class of nine mandatory
+  properties — eight strings and one float — mirrors the table, and one relational mapping binds it with
+  direct-column transforms only, inheriting instance identity from the table's declared key. The mapping test
+  suite projects the register as of a determination date and adds a second scenario holding a superseded
+  determination whose business window closed before that date, so the milestoning-out-of-range row is
+  filtered out.
+
+modelSources:
+  model:
+    root: emerald-delta-5-herbarium
+    files:
+      - test/emeralddelta5/domain/SpecimenSheet.pure
+      - test/emeralddelta5/mapping/HerbariumMapping.pure
+      - test/emeralddelta5/store/HerbariumDb.pure
+
+features:
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - business-temporal
+  - h2
+  - herbarium
+  - milestoning
+  - relational
+  - specimen-register

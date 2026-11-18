@@ -1,0 +1,688 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedsummit3::service::SpringRosterByIdentifier
+{
+  pattern: '/gildedsummit3/v1/spring-roster/{gaugeRegion}/{processingDate}';
+  title: 'Gilded Summit - Spring Roster By Identifier';
+  ownership: UserList { users: ['gauge-steward-ana', 'gauge-steward-lio'] };
+  documentation: 'Lists the springs known to the gauge register at a processing date whose catchment, cairn or survey identifier equals the one supplied, each identifier arm also requiring the identifier to be present. Keyed by gauge region so the upland and lowland registers are reached through their own runtimes.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {processingDate: StrictDate[1], catchmentCode: String[0..1], cairnCode: String[0..1], surveyTag: String[0..1]|test::gildedsummit3::domain::SpringSource.all($processingDate)->filter(
+      s|or(and($s.identity.catchmentCode == $catchmentCode, not($s.identity.catchmentCode->isEmpty())), or(and($s.identity.cairnCode == $cairnCode, not($s.identity.cairnCode->isEmpty())), and($s.identity.surveyTag == $surveyTag, not($s.identity.surveyTag->isEmpty()))))
+    )->project(
+      [
+        s|$s.springName,
+        s|$s.sourceCode,
+        s|$s.identity.catchmentCode,
+        s|$s.identity.cairnCode,
+        s|$s.identity.surveyTag
+      ],
+      [
+        'Spring',
+        'Source',
+        'Catchment',
+        'Cairn',
+        'Survey'
+      ]
+    )->sort([asc('Source')])};
+    key: 'gaugeRegion';
+    executions['upland']:
+    {
+      mapping: test::gildedsummit3::mapping::SpringMapping;
+      runtime: test::gildedsummit3::runtime::UplandGaugeRuntime;
+    }
+    executions['lowland']:
+    {
+      mapping: test::gildedsummit3::mapping::SpringMapping;
+      runtime: test::gildedsummit3::runtime::LowlandGaugeRuntime;
+    }
+  }
+  testSuites:
+  [
+    springrosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gaugeRegister:
+            Reference
+            #{
+              test::gildedsummit3::data::SpringFixtureData
+            }#
+        ]
+      ]
+      tests:
+      [
+        catchmentArmSkipsLapsedAndLateVersions:
+        {
+          keys: ['upland'];
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            catchmentCode = 'CT-NORTH',
+            cairnCode = [],
+            surveyTag = []
+          ]
+          asserts:
+          [
+            onlyTheLiveNorthernSpring:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Spring":"Gilded Tarn Spring","Source":"SP-01","Catchment":"CT-NORTH","Cairn":"CN-11","Survey":"ST-A"}]';
+                  }#;
+              }#
+          ]
+        },
+        cairnArmAlone:
+        {
+          keys: ['lowland'];
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            catchmentCode = [],
+            cairnCode = 'CN-33',
+            surveyTag = []
+          ]
+          asserts:
+          [
+            theColNotchSpring:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Spring":"Col Notch Spring","Source":"SP-03","Catchment":null,"Cairn":"CN-33","Survey":null}]';
+                  }#;
+              }#
+          ]
+        },
+        surveyArmAlone:
+        {
+          keys: ['upland'];
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            catchmentCode = [],
+            cairnCode = [],
+            surveyTag = 'ST-B'
+          ]
+          asserts:
+          [
+            theScreeFanSpring:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Spring":"Scree Fan Spring","Source":"SP-02","Catchment":"CT-SOUTH","Cairn":null,"Survey":"ST-B"}]';
+                  }#;
+              }#
+          ]
+        },
+        noIdentifierSupplied:
+        {
+          keys: ['lowland'];
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            catchmentCode = [],
+            cairnCode = [],
+            surveyTag = []
+          ]
+          asserts:
+          [
+            nothingMatches:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        },
+        earlierInstantSeesEarlierName:
+        {
+          keys: ['upland'];
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-06-01,
+            catchmentCode = 'CT-NORTH',
+            cairnCode = [],
+            surveyTag = []
+          ]
+          asserts:
+          [
+            theEarlierSeepName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Spring":"Gilded Tarn Seep","Source":"SP-01","Catchment":"CT-NORTH","Cairn":"CN-11","Survey":"ST-A"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::gildedsummit3::service::SpringGaugingByIdentifier
+{
+  pattern: '/gildedsummit3/v1/spring-gauging/{gaugeRegion}/{processingDate}';
+  title: 'Gilded Summit - Spring Gauging Window By Identifier';
+  ownership: UserList { users: ['gauge-steward-ana', 'gauge-steward-lio'] };
+  documentation: 'Projects the aspect, elevation and gauging window reached through the trait record of each identified spring at a processing date, so a spring without a window keeps its row with empty window columns.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {processingDate: StrictDate[1], catchmentCode: String[0..1], cairnCode: String[0..1], surveyTag: String[0..1]|test::gildedsummit3::domain::SpringSource.all($processingDate)->filter(
+      s|or(and($s.identity.catchmentCode == $catchmentCode, not($s.identity.catchmentCode->isEmpty())), or(and($s.identity.cairnCode == $cairnCode, not($s.identity.cairnCode->isEmpty())), and($s.identity.surveyTag == $surveyTag, not($s.identity.surveyTag->isEmpty()))))
+    )->project(
+      [
+        s|$s.sourceCode,
+        s|$s.traits.aspect,
+        s|$s.traits.elevationM,
+        s|$s.traits.gaugingWindow.windowCode,
+        s|$s.traits.gaugingWindow.openedOn
+      ],
+      [
+        'Source',
+        'Aspect',
+        'Elevation',
+        'Window',
+        'Opened'
+      ]
+    )->sort([asc('Source')])->take(10)};
+    key: 'gaugeRegion';
+    executions['upland']:
+    {
+      mapping: test::gildedsummit3::mapping::SpringMapping;
+      runtime: test::gildedsummit3::runtime::UplandGaugeRuntime;
+    }
+    executions['lowland']:
+    {
+      mapping: test::gildedsummit3::mapping::SpringMapping;
+      runtime: test::gildedsummit3::runtime::LowlandGaugeRuntime;
+    }
+  }
+  testSuites:
+  [
+    springgaugingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gaugeRegister:
+            Reference
+            #{
+              test::gildedsummit3::data::SpringFixtureData
+            }#
+        ]
+      ]
+      tests:
+      [
+        surveyArmReachesTheWindow:
+        {
+          keys: ['upland'];
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            catchmentCode = [],
+            cairnCode = [],
+            surveyTag = 'ST-A'
+          ]
+          asserts:
+          [
+            tarnWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Source":"SP-01","Aspect":"N","Elevation":2410,"Window":"W-1","Opened":"2026-04-01"}]';
+                  }#;
+              }#
+          ]
+        },
+        cairnArmWithoutWindow:
+        {
+          keys: ['lowland'];
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            catchmentCode = [],
+            cairnCode = 'CN-33',
+            surveyTag = []
+          ]
+          asserts:
+          [
+            windowlessCol:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Source":"SP-03","Aspect":"E","Elevation":2650,"Window":null,"Opened":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::gildedsummit3::service::SpringClosureByIdentifier
+{
+  pattern: '/gildedsummit3/v1/spring-closure/{gaugeRegion}/{processingDate}';
+  title: 'Gilded Summit - Seasonal Closure Reasons By Identifier';
+  ownership: UserList { users: ['closure-warden-mae'] };
+  documentation: 'Walks from each identified spring through its seasonal closures and their notices to the closure reason, four hops from the root, keeping springs that have no closure as a row of empty closure columns.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {processingDate: StrictDate[1], catchmentCode: String[0..1], cairnCode: String[0..1], surveyTag: String[0..1]|test::gildedsummit3::domain::SpringSource.all($processingDate)->filter(
+      s|or(and($s.identity.catchmentCode == $catchmentCode, not($s.identity.catchmentCode->isEmpty())), or(and($s.identity.cairnCode == $cairnCode, not($s.identity.cairnCode->isEmpty())), and($s.identity.surveyTag == $surveyTag, not($s.identity.surveyTag->isEmpty()))))
+    )->project(
+      [
+        s|$s.sourceCode,
+        s|$s.closures.closureCode,
+        s|$s.closures.notice.noticeCode,
+        s|$s.closures.notice.reason.reasonText,
+        s|$s.closures.notice.reason.hazardLevel
+      ],
+      [
+        'Source',
+        'Closure',
+        'Notice',
+        'Reason',
+        'Hazard'
+      ]
+    )->distinct()->sort([asc('Source'), asc('Closure')])};
+    key: 'gaugeRegion';
+    executions['upland']:
+    {
+      mapping: test::gildedsummit3::mapping::SpringMapping;
+      runtime: test::gildedsummit3::runtime::UplandGaugeRuntime;
+    }
+    executions['lowland']:
+    {
+      mapping: test::gildedsummit3::mapping::SpringMapping;
+      runtime: test::gildedsummit3::runtime::LowlandGaugeRuntime;
+    }
+  }
+  testSuites:
+  [
+    springclosureSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gaugeRegister:
+            Reference
+            #{
+              test::gildedsummit3::data::SpringFixtureData
+            }#
+        ]
+      ]
+      tests:
+      [
+        catchmentArmReachesTheReason:
+        {
+          keys: ['upland'];
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            catchmentCode = 'CT-NORTH',
+            cairnCode = [],
+            surveyTag = []
+          ]
+          asserts:
+          [
+            avalancheClosure:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Source":"SP-01","Closure":"CL-1","Notice":"NT-1","Reason":"Avalanche runout","Hazard":3}]';
+                  }#;
+              }#
+          ]
+        },
+        noticeWithoutReason:
+        {
+          keys: ['lowland'];
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            catchmentCode = [],
+            cairnCode = 'CN-33',
+            surveyTag = []
+          ]
+          asserts:
+          [
+            unexplainedNotice:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Source":"SP-03","Closure":"CL-2","Notice":"NT-2","Reason":null,"Hazard":null}]';
+                  }#;
+              }#
+          ]
+        },
+        springWithoutClosure:
+        {
+          keys: ['upland'];
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            catchmentCode = [],
+            cairnCode = [],
+            surveyTag = 'ST-B'
+          ]
+          asserts:
+          [
+            noClosureRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Source":"SP-02","Closure":null,"Notice":null,"Reason":null,"Hazard":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::gildedsummit3::service::SpringDossierByIdentifier
+{
+  pattern: '/gildedsummit3/v1/spring-dossier/{gaugeRegion}/{processingDate}';
+  title: 'Gilded Summit - Checked Spring Dossier By Identifier';
+  ownership: UserList { users: ['gauge-steward-ana', 'closure-warden-mae'] };
+  documentation: 'Fetches the identified springs at a processing date as a checked graph that spans the identifier record, the trait record with its gauging window and flow-rate changes, and the closure schedule down to its reason, so every nested hop is read at the same processing date.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {processingDate: StrictDate[1], catchmentCode: String[0..1], cairnCode: String[0..1], surveyTag: String[0..1]|test::gildedsummit3::domain::SpringSource.all($processingDate)->filter(
+      s|or(and($s.identity.catchmentCode == $catchmentCode, not($s.identity.catchmentCode->isEmpty())), or(and($s.identity.cairnCode == $cairnCode, not($s.identity.cairnCode->isEmpty())), and($s.identity.surveyTag == $surveyTag, not($s.identity.surveyTag->isEmpty()))))
+    )->graphFetchChecked(
+      #{
+        test::gildedsummit3::domain::SpringSource
+        {
+          identity
+          {
+            catchmentCode,
+            cairnCode,
+            surveyTag
+          },
+          traits
+          {
+            aspect,
+            elevationM,
+            gaugingWindow
+            {
+              windowCode,
+              openedOn,
+              closedOn
+            },
+            flowChanges
+            {
+              changeCode,
+              changedOn,
+              litresPerMinute
+            }
+          },
+          closures
+          {
+            notice
+            {
+              reason
+              {
+                reasonCode,
+                reasonText,
+                hazardLevel
+              }
+            }
+          },
+          springName
+        }
+      }#
+    )->serialize(
+      #{
+        test::gildedsummit3::domain::SpringSource
+        {
+          identity
+          {
+            catchmentCode,
+            cairnCode,
+            surveyTag
+          },
+          traits
+          {
+            aspect,
+            elevationM,
+            gaugingWindow
+            {
+              windowCode,
+              openedOn,
+              closedOn
+            },
+            flowChanges
+            {
+              changeCode,
+              changedOn,
+              litresPerMinute
+            }
+          },
+          closures
+          {
+            notice
+            {
+              reason
+              {
+                reasonCode,
+                reasonText,
+                hazardLevel
+              }
+            }
+          },
+          springName
+        }
+      }#
+    )};
+    key: 'gaugeRegion';
+    executions['upland']:
+    {
+      mapping: test::gildedsummit3::mapping::SpringMapping;
+      runtime: test::gildedsummit3::runtime::UplandGaugeRuntime;
+    }
+    executions['lowland']:
+    {
+      mapping: test::gildedsummit3::mapping::SpringMapping;
+      runtime: test::gildedsummit3::runtime::LowlandGaugeRuntime;
+    }
+  }
+  testSuites:
+  [
+    springdossierSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gaugeRegister:
+            Reference
+            #{
+              test::gildedsummit3::data::SpringFixtureData
+            }#
+        ]
+      ]
+      tests:
+      [
+        surveyArmDossier:
+        {
+          keys: ['upland'];
+          serializationFormat: PURE;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            catchmentCode = [],
+            cairnCode = [],
+            surveyTag = 'ST-B'
+          ]
+          asserts:
+          [
+            screeFanDossier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"defects":[],"value":{"identity":{"catchmentCode":"CT-SOUTH","cairnCode":null,"surveyTag":"ST-B"},"traits":{"aspect":"S","elevationM":1980,"gaugingWindow":{"windowCode":"W-2","openedOn":"2026-05-15","closedOn":null},"flowChanges":[{"changeCode":"FC-3","changedOn":"2026-05-20","litresPerMinute":6.25}]},"closures":[],"springName":"Scree Fan Spring"}}';
+                  }#;
+              }#
+          ]
+        },
+        cairnArmDossier:
+        {
+          keys: ['lowland'];
+          serializationFormat: PURE;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            catchmentCode = [],
+            cairnCode = 'CN-33',
+            surveyTag = []
+          ]
+          asserts:
+          [
+            colNotchDossier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"defects":[],"value":{"identity":{"catchmentCode":null,"cairnCode":"CN-33","surveyTag":null},"traits":{"aspect":"E","elevationM":2650,"gaugingWindow":null,"flowChanges":[]},"closures":[{"notice":{"reason":null}}],"springName":"Col Notch Spring"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::gildedsummit3::service::SpringNameHistory
+{
+  pattern: '/gildedsummit3/v1/spring-name-history';
+  title: 'Gilded Summit - Spring Name History';
+  ownership: UserList { users: ['gauge-steward-ana'] };
+  documentation: 'Reads every processing version of the gauge register for one spring and projects the name each version carried, so a renamed spring returns one row per version.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::gildedsummit3::domain::SpringSource.allVersions()->filter(
+      s|$s.sourceCode == 'SP-01'
+    )->project(
+      [
+        s|$s.springName
+      ],
+      [
+        'Spring Name'
+      ]
+    );
+    mapping: test::gildedsummit3::mapping::SpringMapping;
+    runtime: test::gildedsummit3::runtime::UplandGaugeRuntime;
+  }
+  testSuites:
+  [
+    springNameHistorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gaugeRegister:
+            Reference
+            #{
+              test::gildedsummit3::data::SpringFixtureData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyVersionOfTheTarnSpring:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            bothNames:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Spring Name":"Gilded Tarn Seep"},{"Spring Name":"Gilded Tarn Spring"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

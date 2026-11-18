@@ -1,0 +1,324 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::russetgecko2::domain::*;
+import demo::russetgecko2::profile::*;
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'The habitat stratum a reptile observation is filed against; the closed set the observation hierarchy is fanned out over.'} demo::russetgecko2::domain::HabitatStratum
+{
+  {doc.doc = 'Foliage above head height.'} CANOPY,
+  {doc.doc = 'Fallen leaves and loose debris on the forest floor.'} LEAF_LITTER,
+  {doc.doc = 'Fissures in exposed rock.'} ROCK_CREVICE,
+  {doc.doc = 'Loose wind-blown sand.'} SAND_DUNE,
+  {doc.doc = 'Tidal mangrove roots.'} MANGROVE,
+  {doc.doc = 'Open grassland kept short by grazing.'} GRASSLAND,
+  {doc.doc = 'The lit zone at the mouth of a cave.'} CAVE_MOUTH,
+  {doc.doc = 'The vegetated margin of a watercourse.'} RIVERBANK,
+  {doc.doc = 'Low woody scrub.'} SCRUB
+}
+
+Enum {doc.doc = 'Whether an enclosure edge occurs naturally or was put there by the reserve.'} demo::russetgecko2::domain::BarrierKind
+{
+  {doc.doc = 'A ridge, watercourse or cliff already on the ground.'} NATURAL,
+  {doc.doc = 'Fencing or netting erected by the reserve.'} ERECTED
+}
+
+Enum {doc.doc = 'What a survey permit entitles its holder to do with a live animal.'} demo::russetgecko2::domain::PermitAction
+{
+  {doc.doc = 'Record the animal without contact.'} OBSERVE,
+  {doc.doc = 'Take the animal in hand for measurement.'} HANDLE,
+  {doc.doc = 'Fit or read a marker.'} TAG,
+  {doc.doc = 'Move the animal to another stratum.'} RELOCATE
+}
+
+Enum {doc.doc = 'How a permit holder came to hold a reach over a stratum.'} demo::russetgecko2::domain::ReachBasis
+{
+  {doc.doc = 'Granted directly on the permit.'} DIRECT,
+  {doc.doc = 'Carried down from the parent stratum.'} INHERITED,
+  {doc.doc = 'Passed on by another holder for one season.'} DELEGATED
+}
+
+Class <<typemodifiers.abstract, temporal.businesstemporal, Register.coreObservation>> {doc.doc = 'Anything the reserve holds on its reptile observation register over a stretch of calendar time. Abstract and business-temporal, so every stratum-specific observation inherits the one timeline the register is published against.', Register.custodian = 'reserve-survey-office', Register.retention = 'ten-seasons'} demo::russetgecko2::domain::StratumObservation
+{
+  {doc.doc = 'Register identifier of the observation.'} observationCode: String[1];
+  {doc.doc = 'Transect the observation was walked on.'} transectCode: String[1];
+  {doc.doc = 'Stratum the observation is filed against.'} stratum: HabitatStratum[1];
+  {doc.doc = 'Animals counted on the walk.'} animalsCounted: Integer[1];
+  {doc.doc = 'Air temperature in degrees celsius at the time of the walk.'} airTemperatureC: Integer[1];
+  {doc.doc = 'Whether the walk was made after dark.'} afterDark: Boolean[1];
+  {doc.doc = 'Free note the walker left on the card.'} walkerNote: String[0..1];
+  {doc.doc = 'Metres of transect actually walked.'} metresWalked: Integer[1];
+}
+
+Class <<temporal.businesstemporal, Register.coreObservation>> {doc.doc = 'Observations filed against foliage above head height; a stratum sibling that adds nothing of its own to the abstract register row.'} demo::russetgecko2::domain::CanopyObservation extends StratumObservation
+{
+}
+
+Class <<temporal.businesstemporal, Register.coreObservation>> {doc.doc = 'Observations filed against the fallen leaf layer; a stratum sibling that adds nothing of its own.'} demo::russetgecko2::domain::LeafLitterObservation extends StratumObservation
+{
+}
+
+Class <<temporal.businesstemporal, Register.coreObservation>> {doc.doc = 'Observations filed against rock fissures; a stratum sibling that adds nothing of its own.'} demo::russetgecko2::domain::CreviceObservation extends StratumObservation
+{
+}
+
+Class <<temporal.businesstemporal, Register.coreObservation>> {doc.doc = 'Observations filed against loose sand; a stratum sibling that adds nothing of its own.'} demo::russetgecko2::domain::DuneObservation extends StratumObservation
+{
+}
+
+Class <<temporal.businesstemporal, Register.coreObservation>> {doc.doc = 'Observations filed against tidal mangrove roots; a stratum sibling that adds nothing of its own.'} demo::russetgecko2::domain::MangroveObservation extends StratumObservation
+{
+}
+
+Class <<temporal.businesstemporal, Register.coreObservation>> {doc.doc = 'Observations filed against grazed grassland; a stratum sibling that adds nothing of its own.'} demo::russetgecko2::domain::GrasslandObservation extends StratumObservation
+{
+}
+
+Class <<temporal.businesstemporal, Register.coreObservation>> {doc.doc = 'Observations filed against the lit zone of a cave mouth; a stratum sibling that adds nothing of its own.'} demo::russetgecko2::domain::CaveMouthObservation extends StratumObservation
+{
+}
+
+Class <<temporal.businesstemporal, Register.coreObservation>> {doc.doc = 'Observations filed against low woody scrub; a stratum sibling that adds nothing of its own.'} demo::russetgecko2::domain::ScrubObservation extends StratumObservation
+{
+}
+
+Class <<typemodifiers.abstract, temporal.businesstemporal, Register.ancillaryObservation>> {doc.doc = 'Anything that limits how far an animal can move off a transect, held on the register timeline.'} demo::russetgecko2::domain::MovementLimit
+{
+  {doc.doc = 'Register identifier of the limit.'} limitCode: String[1];
+  {doc.doc = 'Kind of edge the limit is.'} kind: BarrierKind[1];
+}
+
+Class <<typemodifiers.abstract, temporal.businesstemporal, Register.ancillaryObservation>> {doc.doc = 'Anything the reserve signs on the ground so a walker can find it again.'} demo::russetgecko2::domain::SignedFeature
+{
+  {doc.doc = 'Text carried on the sign.'} signText: String[1];
+  {doc.doc = 'Grid reference the sign stands at.'} gridReference: String[1];
+}
+
+Class <<temporal.businesstemporal, Register.ancillaryObservation>> {doc.doc = 'A stretch of enclosure edge: the first of the two barrier kinds, refining the movement limit hierarchy.'} demo::russetgecko2::domain::EdgeBarrier extends MovementLimit
+{
+  {doc.doc = 'Length of the stretch in metres.'} lengthM: Integer[1];
+  {doc.doc = 'Height of the stretch in centimetres.'} heightCm: Integer[1];
+}
+
+Class <<temporal.businesstemporal, Register.ancillaryObservation>> {doc.doc = 'A signed crossing point through an enclosure edge: the second barrier kind, refining the signed-feature hierarchy instead.'} demo::russetgecko2::domain::GateMarker extends SignedFeature
+{
+  {doc.doc = 'Whether the crossing is kept latched out of season.'} latchedOutOfSeason: Boolean[1];
+}
+
+Class <<temporal.businesstemporal, Register.derivedReach>> {doc.doc = 'A survey permit issued to a field observer for one season.'} demo::russetgecko2::domain::SurveyPermit
+{
+  {doc.doc = 'Register identifier of the permit.'} permitCode: String[1];
+  {doc.doc = 'Season the permit was issued for.'} seasonLabel: String[1];
+}
+
+Class <<temporal.businesstemporal, Register.derivedReach>> {doc.doc = 'A reach a permit carries over one stratum: a concrete refinement of the permit that adds seven properties of its own rather than restating the permit.'} demo::russetgecko2::domain::PermitReach extends SurveyPermit
+{
+  {doc.doc = 'Stratum the reach applies to.'} reachStratum: HabitatStratum[1];
+  {doc.doc = 'What the holder may do in that stratum.'} action: PermitAction[1];
+  {doc.doc = 'How the holder came to hold the reach.'} basis: ReachBasis[1];
+  {doc.doc = 'Whether an escort must accompany the holder.'} escortRequired: Boolean[1];
+  {doc.doc = 'Animals the reach may be exercised on per walk.'} animalCeiling: Integer[1];
+  {doc.doc = 'Office reference of the endorsement that opened the reach.'} endorsementRef: String[1];
+  <<Publication.hidden>> {doc.doc = 'Office note kept off the published permit card.', Publication.caption = 'office note', Publication.audience = 'survey-office'} officeNote: String[0..1];
+}
+
+Class <<temporal.businesstemporal, Register.ancillaryObservation>> {doc.doc = 'A named stretch of ground the reserve walks its transects over.'} demo::russetgecko2::domain::ReserveTract
+{
+  {doc.doc = 'Register identifier of the tract.'} tractCode: String[1];
+  {doc.doc = 'Name the tract is signed with.'} tractName: String[1];
+}
+
+Class <<temporal.businesstemporal, Register.ancillaryObservation>> {doc.doc = 'A tract that carries further tracts beneath it, re-declaring its own type at unbounded cardinality so the grouping nests to any depth.'} demo::russetgecko2::domain::TractGroup extends ReserveTract
+{
+  {doc.doc = 'Tracts carried beneath this grouping.'} nestedTracts: ReserveTract[*];
+}
+
+Class <<temporal.businesstemporal, Register.ancillaryObservation>> {doc.doc = 'The flattened hierarchy node an observation is rolled up to: one node per stratum, reached from every stratum sibling.'} demo::russetgecko2::domain::StratumNode
+{
+  {doc.doc = 'Register identifier of the node.'} nodeCode: String[1];
+  {doc.doc = 'Stratum the node stands for.'} nodeStratum: HabitatStratum[1];
+  {doc.doc = 'Depth the node sits at in the flattened hierarchy.'} depth: Integer[1];
+}
+
+Class <<temporal.businesstemporal, Register.derivedReach>> {doc.doc = 'The per-stratum roll-up the reserve publishes each season; exactly one row answers each observation.'} demo::russetgecko2::domain::StratumAnalytics
+{
+  {doc.doc = 'Register identifier of the roll-up row.'} analyticsCode: String[1];
+  {doc.doc = 'Animals counted across the stratum this season.'} seasonTotal: Integer[1];
+  {doc.doc = 'Walks the total was drawn from.'} walkCount: Integer[1];
+}
+
+Class <<typemodifiers.abstract, temporal.bitemporal>> {doc.doc = 'Anything the reserve asserts about a colony, carrying both the calendar window the assertion is true over and the processing window it was held under, so a correction of a past season leaves two rows distinguishable only by processing window.'} demo::russetgecko2::domain::ColonyAssertion
+{
+  {doc.doc = 'Register identifier of the colony.'} colonyCode: String[1];
+  {doc.doc = 'Survey campaign the assertion was made in.'} campaignLabel: String[1];
+}
+
+Class <<temporal.bitemporal, Register.coreObservation>> {doc.doc = 'A counted colony census, bi-temporal like its abstract parent so a revised count is visible only under the later processing window.'} demo::russetgecko2::domain::ColonyCensus extends ColonyAssertion
+{
+  {doc.doc = 'Animals counted in the colony.'} headCount: Integer[1];
+  {doc.doc = 'Stratum the colony was counted in.'} colonyStratum: HabitatStratum[1];
+  {doc.doc = 'Whether the count was taken from a marked sample.'} fromMarkedSample: Boolean[1];
+}
+
+Class <<temporal.businesstemporal, Register.ancillaryObservation>> {doc.doc = 'A person the reserve can hold answerable for a walk.'} demo::russetgecko2::domain::FieldObserver
+{
+  {doc.doc = 'Roster identifier of the observer.'} observerCode: String[1];
+  {doc.doc = 'Name the observer is rostered under.'} displayName: String[1];
+}
+
+Class <<temporal.businesstemporal, Register.ancillaryObservation>> {doc.doc = 'A standing an observer holds on the survey roster.'} demo::russetgecko2::domain::ObserverRole
+{
+  {doc.doc = 'Roster identifier of the standing.'} roleCode: String[1];
+  {doc.doc = 'Name the standing is published under.'} roleName: String[1];
+}
+
+Class <<temporal.businesstemporal, Register.ancillaryObservation>> {doc.doc = 'The task a roster standing is answerable for, kept apart from the standing so one task can be reached from several standings and back.'} demo::russetgecko2::domain::FunctionalRole
+{
+  {doc.doc = 'Register identifier of the task.'} functionCode: String[1];
+  {doc.doc = 'What the task covers.'} functionName: String[1];
+}
+
+Association <<Publication.headline>> {doc.doc = 'Canopy observations rolled up to their flattened stratum node.'} demo::russetgecko2::domain::Canopy_Node
+{
+  {doc.doc = 'The canopy observations rolled into the node.'} canopyObservations: CanopyObservation[1..*];
+  {doc.doc = 'The nodes the observations roll into.'} nodes: StratumNode[*];
+}
+
+Association {doc.doc = 'Canopy observations answered by exactly one published roll-up row.'} demo::russetgecko2::domain::Canopy_Analytics
+{
+  {doc.doc = 'The canopy observations the roll-up answers.'} canopyObservations: CanopyObservation[1..*];
+  {doc.doc = 'The roll-up row answering the observations.'} analytics: StratumAnalytics[1];
+}
+
+Association {doc.doc = 'Leaf-litter observations rolled up to their flattened stratum node.'} demo::russetgecko2::domain::LeafLitter_Node
+{
+  {doc.doc = 'The leaf-litter observations rolled into the node.'} leafLitterObservations: LeafLitterObservation[1..*];
+  {doc.doc = 'The nodes the observations roll into.'} nodes: StratumNode[*];
+}
+
+Association {doc.doc = 'Leaf-litter observations answered by exactly one published roll-up row.'} demo::russetgecko2::domain::LeafLitter_Analytics
+{
+  {doc.doc = 'The leaf-litter observations the roll-up answers.'} leafLitterObservations: LeafLitterObservation[1..*];
+  {doc.doc = 'The roll-up row answering the observations.'} analytics: StratumAnalytics[1];
+}
+
+Association {doc.doc = 'Crevice observations rolled up to their flattened stratum node.'} demo::russetgecko2::domain::Crevice_Node
+{
+  {doc.doc = 'The crevice observations rolled into the node.'} creviceObservations: CreviceObservation[1..*];
+  {doc.doc = 'The nodes the observations roll into.'} nodes: StratumNode[*];
+}
+
+Association {doc.doc = 'Crevice observations answered by exactly one published roll-up row.'} demo::russetgecko2::domain::Crevice_Analytics
+{
+  {doc.doc = 'The crevice observations the roll-up answers.'} creviceObservations: CreviceObservation[1..*];
+  {doc.doc = 'The roll-up row answering the observations.'} analytics: StratumAnalytics[1];
+}
+
+Association {doc.doc = 'Dune observations rolled up to their flattened stratum node.'} demo::russetgecko2::domain::Dune_Node
+{
+  {doc.doc = 'The dune observations rolled into the node.'} duneObservations: DuneObservation[1..*];
+  {doc.doc = 'The nodes the observations roll into.'} nodes: StratumNode[*];
+}
+
+Association {doc.doc = 'Dune observations answered by exactly one published roll-up row.'} demo::russetgecko2::domain::Dune_Analytics
+{
+  {doc.doc = 'The dune observations the roll-up answers.'} duneObservations: DuneObservation[1..*];
+  {doc.doc = 'The roll-up row answering the observations.'} analytics: StratumAnalytics[1];
+}
+
+Association {doc.doc = 'Mangrove observations rolled up to their flattened stratum node.'} demo::russetgecko2::domain::Mangrove_Node
+{
+  {doc.doc = 'The mangrove observations rolled into the node.'} mangroveObservations: MangroveObservation[1..*];
+  {doc.doc = 'The nodes the observations roll into.'} nodes: StratumNode[*];
+}
+
+Association {doc.doc = 'Mangrove observations answered by exactly one published roll-up row.'} demo::russetgecko2::domain::Mangrove_Analytics
+{
+  {doc.doc = 'The mangrove observations the roll-up answers.'} mangroveObservations: MangroveObservation[1..*];
+  {doc.doc = 'The roll-up row answering the observations.'} analytics: StratumAnalytics[1];
+}
+
+Association {doc.doc = 'Grassland observations rolled up to their flattened stratum node.'} demo::russetgecko2::domain::Grassland_Node
+{
+  {doc.doc = 'The grassland observations rolled into the node.'} grasslandObservations: GrasslandObservation[1..*];
+  {doc.doc = 'The nodes the observations roll into.'} nodes: StratumNode[*];
+}
+
+Association {doc.doc = 'Grassland observations answered by exactly one published roll-up row.'} demo::russetgecko2::domain::Grassland_Analytics
+{
+  {doc.doc = 'The grassland observations the roll-up answers.'} grasslandObservations: GrasslandObservation[1..*];
+  {doc.doc = 'The roll-up row answering the observations.'} analytics: StratumAnalytics[1];
+}
+
+Association {doc.doc = 'Cave-mouth observations rolled up to their flattened stratum node.'} demo::russetgecko2::domain::CaveMouth_Node
+{
+  {doc.doc = 'The cave-mouth observations rolled into the node.'} caveMouthObservations: CaveMouthObservation[1..*];
+  {doc.doc = 'The nodes the observations roll into.'} nodes: StratumNode[*];
+}
+
+Association {doc.doc = 'Cave-mouth observations answered by exactly one published roll-up row.'} demo::russetgecko2::domain::CaveMouth_Analytics
+{
+  {doc.doc = 'The cave-mouth observations the roll-up answers.'} caveMouthObservations: CaveMouthObservation[1..*];
+  {doc.doc = 'The roll-up row answering the observations.'} analytics: StratumAnalytics[1];
+}
+
+Association {doc.doc = 'Scrub observations rolled up to their flattened stratum node.'} demo::russetgecko2::domain::Scrub_Node
+{
+  {doc.doc = 'The scrub observations rolled into the node.'} scrubObservations: ScrubObservation[1..*];
+  {doc.doc = 'The nodes the observations roll into.'} nodes: StratumNode[*];
+}
+
+Association {doc.doc = 'Scrub observations answered by exactly one published roll-up row.'} demo::russetgecko2::domain::Scrub_Analytics
+{
+  {doc.doc = 'The scrub observations the roll-up answers.'} scrubObservations: ScrubObservation[1..*];
+  {doc.doc = 'The roll-up row answering the observations.'} analytics: StratumAnalytics[1];
+}
+
+Association {doc.doc = 'The tasks a roster standing is answerable for, both ends open so a standing can cover several tasks and a task be covered by several standings.'} demo::russetgecko2::domain::Role_Function
+{
+  {doc.doc = 'The standings covering the task.'} roles: ObserverRole[*];
+  {doc.doc = 'The tasks the standing covers.'} functions: FunctionalRole[*];
+}
+
+Association demo::russetgecko2::domain::Observer_Role
+{
+  observers: FieldObserver[*];
+  heldRoles: ObserverRole[*];
+}
+
+Association {doc.doc = 'The colony censuses walked out of a tract: the traversal that bridges the two-instant colony extent and the one-instant tract extent.'} demo::russetgecko2::domain::Tract_Census
+{
+  {doc.doc = 'The tract the colony was counted on.'} tract: ReserveTract[0..1];
+  {doc.doc = 'The censuses counted on the tract.'} censuses: ColonyCensus[*];
+}
+
+Association {doc.doc = 'The enclosure edges bounding a tract, and the gate markers signed on them.'} demo::russetgecko2::domain::Tract_Barrier
+{
+  {doc.doc = 'The tracts the edge bounds.'} boundedTracts: ReserveTract[*];
+  {doc.doc = 'The edges bounding the tract.'} edges: EdgeBarrier[*];
+}
+
+Association {doc.doc = 'The signed crossing points on an enclosure edge.'} demo::russetgecko2::domain::Barrier_Gate
+{
+  {doc.doc = 'The edge the crossing is cut through.'} edge: EdgeBarrier[0..1];
+  {doc.doc = 'The crossings cut through the edge.'} gates: GateMarker[*];
+}
+
+Association {doc.doc = 'The reaches a permit carries over the strata an observer may work in.'} demo::russetgecko2::domain::Observer_Reach
+{
+  {doc.doc = 'The observers holding the reach.'} holders: FieldObserver[*];
+  {doc.doc = 'The reaches the observer holds.'} reaches: PermitReach[*];
+}

@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::silverreef2::domain::CoralHealth
+{
+  THRIVING,
+  STABLE,
+  STRESSED,
+  BLEACHED
+}
+
+Enum test::silverreef2::domain::TideState
+{
+  SLACK,
+  FLOOD,
+  EBB,
+  SPRING
+}
+
+Class test::silverreef2::domain::ReefSurvey
+{
+  surveyNo: String[1];
+  siteCode: String[1];
+  surveyDate: StrictDate[1];
+  health: test::silverreef2::domain::CoralHealth[0..1];
+  tide: test::silverreef2::domain::TideState[0..1];
+  observerName: String[0..1];
+  transectM: Decimal[0..1];
+  coralCoverPct: Decimal[0..1];
+  rubblePct: Decimal[0..1];
+  waterTempC: Decimal[0..1];
+  visibilityM: Integer[0..1];
+  speciesCount: Integer[0..1];
+  bleachIndex: Integer[0..1];
+  lagoonName: String[0..1];
+  surveyLabel: String[1];
+  coverBand: String[1];
+  healthLabel: String[0..1];
+  zoneLabel: String[0..1];
+  depthProfile: test::silverreef2::domain::SurveyDepth[0..1];
+  gearRecord: test::silverreef2::domain::SurveyGear[0..1];
+}
+
+Class test::silverreef2::domain::SurveyDepth
+{
+  surveyNo: String[1];
+  minDepthM: Decimal[1];
+  maxDepthM: Decimal[1];
+  profileNote: String[0..1];
+}
+
+Class test::silverreef2::domain::SurveyGear
+{
+  surveyNo: String[1];
+  gearKind: String[1];
+  gearSerial: String[0..1];
+  calibratedFlag: String[0..1];
+}
+
+Class test::silverreef2::domain::CodeEntry
+{
+  categoryCode: String[1];
+  codeValue: String[1];
+  codeLabel: String[1];
+}

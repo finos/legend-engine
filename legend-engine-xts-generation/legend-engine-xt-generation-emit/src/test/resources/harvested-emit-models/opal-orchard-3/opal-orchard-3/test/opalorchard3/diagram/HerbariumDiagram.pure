@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::opalorchard3::diagram::HerbariumDiagram
+{
+  classView specimenView
+  {
+    class: test::opalorchard3::domain::Specimen;
+    position: (420.0,120.0);
+    rectangle: (300.0,180.0);
+  }
+  classView fernView
+  {
+    class: test::opalorchard3::domain::FernSpecimen;
+    position: (120.0,420.0);
+    rectangle: (300.0,160.0);
+  }
+  classView orchidView
+  {
+    class: test::opalorchard3::domain::OrchidSpecimen;
+    position: (720.0,420.0);
+    rectangle: (300.0,160.0);
+  }
+  generalizationView
+  {
+    source: fernView;
+    target: specimenView;
+    points: [(270.0,420.0),(520.0,300.0)];
+  }
+  generalizationView
+  {
+    source: orchidView;
+    target: specimenView;
+    points: [(870.0,420.0),(620.0,300.0)];
+  }
+}

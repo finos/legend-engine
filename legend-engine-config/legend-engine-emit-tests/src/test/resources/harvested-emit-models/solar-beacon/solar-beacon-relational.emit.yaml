@@ -1,0 +1,68 @@
+name: solar-beacon-relational
+title: "Solar Beacon — Data Space over Multi-Execution, Operation-Union & Bi-Temporal Relational Model"
+description: |
+  A non-financial solar-monitoring model presented as a governed data space.
+  A base `Observatory` class is extended by `SolarStation`, which is assembled
+  by an `Operation` union over two regional station tables. A `Region` class
+  carries a panel count derived from an inline `View` reached across a named
+  inner `Join`. A business-temporal `Reading` class is served as-of a business
+  date by a single-execution `Service` carrying an executed test suite, while a
+  multi-execution `Service` routes the station projection per grid key to
+  east/west runtimes. A JSON `Binding`/`SchemaSet` binds the `Region` class to
+  an external format, and a `DataSpace` packages the model with an execution
+  context and an executable as a discoverable entrypoint. All connections use a
+  Snowflake OAuth `RelationalDatabaseConnection` over the `SolarDB` store.
+
+modelSources:
+  model:
+    root: solar-beacon-relational
+    files:
+      - test/solarbeacon/binding/RegionBinding.pure
+      - test/solarbeacon/binding/RegionSchemas.pure
+      - test/solarbeacon/connection/SolarConnection.pure
+      - test/solarbeacon/dataspace/SolarBeaconDataSpace.pure
+      - test/solarbeacon/domain/Observatory.pure
+      - test/solarbeacon/domain/Reading.pure
+      - test/solarbeacon/domain/Region.pure
+      - test/solarbeacon/domain/SolarStation.pure
+      - test/solarbeacon/mapping/ReadingMapping.pure
+      - test/solarbeacon/mapping/RegionMapping.pure
+      - test/solarbeacon/mapping/StationMapping.pure
+      - test/solarbeacon/runtime/SolarRuntime.pure
+      - test/solarbeacon/runtime/StationEastRuntime.pure
+      - test/solarbeacon/runtime/StationWestRuntime.pure
+      - test/solarbeacon/service/ReadingsAsOf.pure
+      - test/solarbeacon/service/StationsByGrid.pure
+      - test/solarbeacon/store/SolarDB.pure
+
+features:
+  - execution:data-space
+  - execution:external-format-binding
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - mapping:operation-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inline-view
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - data-space
+  - external-format-binding
+  - h2
+  - inline-view
+  - inner-join
+  - multi-execution-service
+  - operation-mapping
+  - snowflake

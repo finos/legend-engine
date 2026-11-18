@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::westernridge2::domain::*;
+
+Class {doc.doc = 'A lookout post on the ridge, holding the reference the fire-watch rota keys on.'} test::westernridge2::domain::LookoutPost
+{
+  postCode: String[1];
+  postName: String[1];
+  ridgeSection: String[1];
+  elevationMetres: Integer[1];
+}
+
+Class {doc.doc = 'A lookout post that is crewed, refining the post with the crew arrangements only a staffed post has.'} test::westernridge2::domain::StaffedLookoutPost extends LookoutPost
+{
+  bunkCount: Integer[1];
+  radioChannel: String[1];
+  reliefPostCode: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A watch rotation as the fire-watch office held it in business time, so a reissued rotation supersedes its earlier record while the period it was issued for stays put.'} test::westernridge2::domain::WatchRotation
+{
+  rotationCode: String[1];
+  postCode: String[1];
+  crewInitials: String[1];
+  dayWatchHours: Float[1];
+  nightWatchHours: Float[0..1];
+}
+
+Class {doc.doc = 'A sighting written up at a lookout post, kept outside the milestoned rota so the association end stays plain.'} test::westernridge2::domain::SightingLog
+{
+  logCode: String[1];
+  sightedOn: StrictDate[1];
+  bearingDegrees: Integer[1];
+  smokeGrade: String[0..1];
+  observerNote: String[0..1];
+}

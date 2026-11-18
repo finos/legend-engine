@@ -1,0 +1,50 @@
+name: gilded-cove-3
+title: "Gilded Cove 3 — a point-in-time kelp plot register published as a milestoned service"
+description: |
+  A kelp-forest survey model over one relational store whose plot table is business-milestoned,
+  so a restated survey record carries its own business window. One relational mapping binds the
+  plot and the bed it sits in, composes the plot label from the canopy class and the bed code,
+  defaults the frond count when the divers recorded none and resolves the bed name over a single
+  join hop. A single-execution service takes the requested business date and a canopy-class set,
+  resolves the plot set at that date, keeps the requested classes with a surveyed-on guard, and
+  projects the register sorted by plot code. Its service test asserts that of four fixture plots
+  only the live, requested-class, counted plot is published: the plot whose business window
+  closed years before the requested date, the plot in another canopy class and the uncounted
+  plot are all left out.
+modelSources:
+  model:
+    root: gilded-cove-3
+    files:
+      - test/gildedcove3/connection/CoveKelpConnections.pure
+      - test/gildedcove3/domain/CoveKelpDomain.pure
+      - test/gildedcove3/mapping/CoveKelpMapping.pure
+      - test/gildedcove3/runtime/CoveKelpRuntimes.pure
+      - test/gildedcove3/service/KelpPlotRegister.pure
+      - test/gildedcove3/store/CoveKelpDb.pure
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - h2
+  - kelp-survey
+  - point-in-time
+  - service-test
+  - tabular-data-set

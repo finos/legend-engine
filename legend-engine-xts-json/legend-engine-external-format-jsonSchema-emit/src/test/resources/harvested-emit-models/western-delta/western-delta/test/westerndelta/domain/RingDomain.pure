@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::westerndelta::domain::*;
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'One ringing exception record raised against a delta ringing session.'} test::westerndelta::domain::RingRecord
+{
+  ringSerial: String[1];
+  controlId: Integer[1];
+  reasonCode: String[1];
+  subReasonCode: String[0..1];
+  createdAt: DateTime[1];
+  dueAt: DateTime[1];
+  completedAt: DateTime[0..1];
+  primaryLink: SightingLink[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'The ringer who raised a record, effective over business time.'} test::westerndelta::domain::DeltaObserver
+{
+  observerName: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A ringing station inside a habitat zone.'} test::westerndelta::domain::Station
+{
+  stationName: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A habitat zone of the delta reserve.'} test::westerndelta::domain::HabitatZone
+{
+  zoneName: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A reserve region grouping habitat zones.'} test::westerndelta::domain::DeltaRegion
+{
+  regionName: String[1];
+}
+
+Association test::westerndelta::domain::Record_Observer
+{
+  records: RingRecord[*];
+  observer: DeltaObserver[0..1];
+}
+
+Association test::westerndelta::domain::Observer_Station
+{
+  observers: DeltaObserver[*];
+  station: Station[0..1];
+}
+
+Association test::westerndelta::domain::Station_Zone
+{
+  stations: Station[*];
+  zone: HabitatZone[0..1];
+}
+
+Association test::westerndelta::domain::Zone_Region
+{
+  zones: HabitatZone[*];
+  region: DeltaRegion[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A link from a record to the sighting that produced it.'} test::westerndelta::domain::SightingLink
+{
+  linkKind: String[1];
+  linkRef: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A sighting link that also carries the marking reference of a ringed bird.'} test::westerndelta::domain::MarkedSightingLink extends SightingLink
+{
+  markedRef: String[0..1];
+}

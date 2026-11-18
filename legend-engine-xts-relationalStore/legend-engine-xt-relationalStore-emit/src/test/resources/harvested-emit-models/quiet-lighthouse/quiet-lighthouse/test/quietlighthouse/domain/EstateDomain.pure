@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A lighthouse station on the coast, identified by the station code the estate office uses.'} test::quietlighthouse::domain::Station
+{
+  stationCode: String[1];
+  stationName: String[1];
+  firstLit: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The lamp currently fitted in a station tower.'} test::quietlighthouse::domain::Lamp
+{
+  lampCode: String[1];
+  lampType: String[1];
+  wattage: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The optic assembly the lamp shines through.'} test::quietlighthouse::domain::Lens
+{
+  lensCode: String[1];
+  lensOrder: String[1];
+  focalLengthMm: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A fog signal installed beside a station.'} test::quietlighthouse::domain::Foghorn
+{
+  hornCode: String[1];
+  blastSeconds: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A keeper cottage held on the station site, now let to the coast trust.'} test::quietlighthouse::domain::Cottage
+{
+  cottageCode: String[1];
+  cottageName: String[1];
+  bedrooms: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The landing jetty a station is relieved from.'} test::quietlighthouse::domain::Jetty
+{
+  jettyCode: String[1];
+  jettyName: String[1];
+  lengthM: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A painting cycle scheduled for a station tower.'} test::quietlighthouse::domain::PaintCycle
+{
+  cycleCode: String[1];
+  cycleYear: Integer[1];
+  coats: Integer[1];
+}

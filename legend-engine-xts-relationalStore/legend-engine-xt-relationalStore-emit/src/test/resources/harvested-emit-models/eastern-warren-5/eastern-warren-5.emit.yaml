@@ -1,0 +1,67 @@
+name: eastern-warren-5
+title: "Eastern Warren 5 — Keyed Multi-Execution Gauge Services Over A Derived Flow-Band Cascade"
+description: |
+  A catchment hydrometry model whose weight sits in the execution layer rather than the
+  schema. Nothing about a reading's standing is stored: its flow band is decided by an
+  eight-arm cascade over the recorded stage and, in the last arm, the recorded rainfall,
+  falling through to a null sentinel when the channel is both low and dry, while the
+  advisory note branches on the review state and the turbidity before falling through to a
+  second null sentinel. A governance profile annotates the reading, zone and station
+  classes with stereotypes and tagged values. One multi-execution service serves a single
+  windowed roll-up body under two keyed environments that differ only in the runtime and
+  connection they bind, so the routing rather than the query is what varies; two
+  single-execution services project the whole derived register and total rainfall inside a
+  window derived from the anchor date by date arithmetic before ordering and capping the
+  result. Every service carries its own fixtures and assertions, and the register suite
+  covers each arm of both cascades including both null fall-throughs.
+modelSources:
+  model:
+    root: eastern-warren-5
+    files:
+      - test/easternwarren5/connection/GaugeConnections.pure
+      - test/easternwarren5/domain/GaugeDomain.pure
+      - test/easternwarren5/mapping/GaugeMapping.pure
+      - test/easternwarren5/runtime/GaugeRuntimes.pure
+      - test/easternwarren5/service/FlowBandRollup.pure
+      - test/easternwarren5/service/GaugeReadingRegister.pure
+      - test/easternwarren5/service/WindowedRainfallSummary.pure
+      - test/easternwarren5/store/GaugeDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:profile
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - catchment-hydrometry
+  - conditional-cascade
+  - date-arithmetic
+  - group-by
+  - h2
+  - keyed-execution
+  - multi-execution-service
+  - null-sentinel
+  - profile
+  - service-test

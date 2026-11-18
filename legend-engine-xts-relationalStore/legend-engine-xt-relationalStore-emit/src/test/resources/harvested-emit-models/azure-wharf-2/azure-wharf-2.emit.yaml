@@ -1,0 +1,48 @@
+name: azure-wharf-2
+title: "Azure Wharf 2 — dockside mooring inspections defaulted and banded across a five-table wharf store"
+description: |
+  A wharf mooring-inspection model over one relational store of five tables: the inspections
+  themselves plus the berths they were written at, the quay each berth sits on, the vessel
+  alongside and the watch crew on duty. One relational mapping binds all five classes and
+  resolves the surrounding names through a one-hop inner join onto the berth, a two-hop inner
+  join onto its quay and two further single-hop joins onto the vessel and the crew. The
+  inspection notes are free text, so the hull note is banded down a four-deep conditional that
+  upper-cases and trims before comparing and emits a typed null only when nothing was written
+  at all, the deck note is defaulted when blank and otherwise split into a clear and an
+  obstructed arm, the lamp note is defaulted when blank and otherwise passed through
+  upper-cased, and the crate count is defaulted when absent. A mapping test suite projects the
+  inspections and asserts all four hull bands, the null hull fallback, both deck arms, the
+  blank-note defaults and the defaulted crate count from seven fixture rows.
+modelSources:
+  model:
+    root: azure-wharf-2
+    files:
+      - test/azurewharf2/domain/WharfDomain.pure
+      - test/azurewharf2/mapping/WharfMooringMapping.pure
+      - test/azurewharf2/store/WharfDb.pure
+features:
+  - execution:mapping-test
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - blank-text-defaulting
+  - conditional-banding
+  - h2
+  - inner-join
+  - mapping-test
+  - relational-mapping
+  - wharf-inspections

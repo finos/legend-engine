@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedthistle3::service::SegmentInspectionService
+{
+  pattern: '/frostedthistle3/segmentInspection/{crewCode}/{inspectedFrom}';
+  title: 'Footpath Network - Recently Inspected Segments Of One Keeping Crew';
+  owners:
+  [
+    'footpath-keeping-desk',
+    'trail-register-eng'
+  ];
+  documentation: 'Keeps the numbered footpath segments of one keeping crew that sit on a named long path, carry a recognised segment code and were last walked inside the inspection window opened before the supplied date, then projects the segment beside its surface, waymark label and gradient.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {crewCode: String[1], inspectedFrom: StrictDate[1]|test::frostedthistle3::domain::TrailSegment.all()->filter(
+      s|($s.segmentCode->startsWith('TS-')) && ((($s.crewCode == $crewCode) && ($s.pathCode->in(['NORTH RIDGE', 'LAKESIDE', 'MOORLAND']))) && ($s.lastInspectedOn >= test::frostedthistle3::function::inspectionHorizon($inspectedFrom)))
+    )->project(
+      [
+        s|$s.segmentCode,
+        s|$s.pathCode,
+        s|$s.surface,
+        s|$s.waymarkLabel,
+        s|$s.gradientPct,
+        s|$s.logSource
+      ],
+      [
+        'Segment',
+        'Path',
+        'Surface',
+        'Waymark',
+        'Gradient',
+        'Log'
+      ]
+    )->distinct()->sort([asc('Segment')])};
+    mapping: test::frostedthistle3::mapping::TrailNetworkMapping;
+    runtime: test::frostedthistle3::runtime::TrailNetworkRuntime;
+  }
+  testSuites:
+  [
+    segmentInspectionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailH2Connection:
+            Relational
+            #{
+              trail.trail_segment:
+                'segment_code,path_code,crew_code,surface_code,gradient_pct,span_metres,last_inspected_on,waymark_label,ridge_flag,ridge_exposure\n'+
+                'TS-01,NORTH RIDGE,CR-1,GRAVEL,8,420,2026-04-18,cairn north,Y,3\n'+
+                'TS-02,LAKESIDE,CR-1,BOARDWALK,3,260,2026-05-06,plank walk,N,\n'+
+                'TS-03,MOORLAND,CR-2,STONE,14,510,2026-04-25,slab moor,Y,5\n'+
+                'TS-04,NORTH RIDGE,CR-1,CINDER,6,180,2026-04-09,cinder spur,N,\n'+
+                'TS-05,LAKESIDE,CR-1,GRAVEL,4,150,2026-01-12,post ridge,N,\n'+
+                'TS-06,FELL TOP,CR-1,TIMBER,11,300,2026-04-20,post fell,Y,7\n'+
+                'XX-07,LAKESIDE,CR-1,GRAVEL,5,140,2026-04-22,odd marker,N,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        segmentsWalkedInsideTheWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            crewCode = 'CR-1',
+            inspectedFrom = %2026-05-01
+          ]
+          asserts:
+          [
+            otherCrewsUnnamedPathsStaleWalksAndOddCodesAreLeftOut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment":"TS-01","Path":"NORTH RIDGE","Surface":"GRAVEL","Waymark":"WM-CAIR","Gradient":8,"Log":"TRAIL LOG"}, {"Segment":"TS-02","Path":"LAKESIDE","Surface":"BOARDWALK","Waymark":"WM-PLAN","Gradient":3,"Log":"TRAIL LOG"}, {"Segment":"TS-04","Path":"NORTH RIDGE","Surface":null,"Waymark":"WM-CIND","Gradient":6,"Log":"TRAIL LOG"}]';
+                  }#;
+              }#
+          ]
+        },
+        windowOpenedAfterEveryWalk:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            crewCode = 'CR-1',
+            inspectedFrom = %2027-06-01
+          ]
+          asserts:
+          [
+            noSegmentCountsAsRecentlyWalked:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

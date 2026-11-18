@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::silverwillow::store::SeedVaultDatabase
+(
+  Schema SEEDVAULT
+  (
+    Table VAULT
+    (
+      VAULT_ID INTEGER PRIMARY KEY,
+      VAULT_NAME VARCHAR(120) NOT NULL,
+      CLIMATE_ZONE VARCHAR(20) NOT NULL,
+      STORE_TIER VARCHAR(20)
+    )
+    Table CURATOR
+    (
+      CURATOR_ID INTEGER PRIMARY KEY,
+      CURATOR_NAME VARCHAR(120) NOT NULL,
+      GRADE_CODE VARCHAR(10)
+    )
+    Table TRIAL
+    (
+      TRIAL_ID INTEGER PRIMARY KEY,
+      VAULT_ID INTEGER NOT NULL,
+      CURATOR_ID INTEGER NOT NULL,
+      SEASON_LABEL VARCHAR(20) NOT NULL,
+      MOISTURE_CODE VARCHAR(10)
+    )
+    Table LOT
+    (
+      LOT_ID INTEGER PRIMARY KEY,
+      TRIAL_ID INTEGER NOT NULL,
+      TAXON_CODE VARCHAR(30) NOT NULL,
+      VIGOUR_CODE VARCHAR(10),
+      GERMINATION_TEXT VARCHAR(20)
+    )
+
+    View VAULT_ZONE_VW
+    (
+      vaultId: SEEDVAULT.VAULT.VAULT_ID PRIMARY KEY,
+      vaultName: SEEDVAULT.VAULT.VAULT_NAME,
+      climateZone: SEEDVAULT.VAULT.CLIMATE_ZONE,
+      storeTier: SEEDVAULT.VAULT.STORE_TIER
+    )
+  )
+
+  Join Lot_Trial(SEEDVAULT.LOT.TRIAL_ID = SEEDVAULT.TRIAL.TRIAL_ID)
+  Join Trial_VaultZone(SEEDVAULT.TRIAL.VAULT_ID = SEEDVAULT.VAULT_ZONE_VW.vaultId)
+  Join Trial_Curator(SEEDVAULT.TRIAL.CURATOR_ID = SEEDVAULT.CURATOR.CURATOR_ID)
+  Join VaultZone_Vault(SEEDVAULT.VAULT_ZONE_VW.vaultId = SEEDVAULT.VAULT.VAULT_ID)
+)

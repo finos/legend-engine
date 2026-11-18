@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A collar fix recorded for a caribou, carrying the identity, location, signal, habitat and deployment fields from the northern telemetry register. Textual operational fields expose derived reporting labels so raw collar feeds remain useful even when a value is not yet classified.'} test::easterntundra2::domain::CaribouFix
+{
+  collarCode: String[1];
+  animalCode: String[1];
+  herdCode: String[1];
+  fixDate: StrictDate[1];
+  latitude: Float[1];
+  longitude: Float[1];
+  altitudeMetres: Float[1];
+  collarStatus: String[1];
+  signalCode: String[1];
+  habitatCode: String[1];
+  movementCode: String[1];
+  distanceKm: Float[1];
+  temperatureC: Float[1];
+  snowDepthCm: Float[1];
+  vegetationCode: String[1];
+  observerNote: String[0..1];
+  deploymentYearText: String[1];
+  captureYearText: String[1];
+  surveyYearText: String[1];
+  ageYearsText: String[1];
+  distanceBandText: String[1];
+  batteryText: String[1];
+  trackingCode: String[1];
+  gpsQuality: String[1];
+  satelliteCount: Integer[1];
+  transmissionSeq: Integer[1];
+  routeCode: String[1];
+  sexCode: String[1];
+  ageClass: String[1];
+  bodyMassKg: Float[1];
+  antlerStage: String[1];
+  deploymentYearLabel() {if($this.deploymentYearText != 'UNKNOWN', |$this.deploymentYearText->parseInteger()->toString(), |'UNRECORDED')}: String[1];
+  captureYearLabel() {if($this.captureYearText != 'UNKNOWN', |$this.captureYearText->parseInteger()->toString(), |'UNRECORDED')}: String[1];
+  surveyYearLabel() {if($this.surveyYearText != 'UNKNOWN', |$this.surveyYearText->parseInteger()->toString(), |'UNRECORDED')}: String[1];
+  ageYearsLabel() {if($this.ageYearsText != 'UNKNOWN', |$this.ageYearsText->parseInteger()->toString(), |'UNRECORDED')}: String[1];
+  batteryReading() { if($this.batteryText->isEmpty() || $this.batteryText == 'NA', |0.0, |$this.batteryText->parseFloat()->round(1))}: Float[1];
+  reportingDistance() {$this.distanceKm + 1.5}: Float[1];
+  movementBand() { if($this.movementCode == 'REST', |'RESTING', |if($this.movementCode == 'GRAZE', |'GRAZING', |if($this.movementCode == 'TRAVEL', |'TRAVELLING', |if($this.movementCode == 'CROSS', |'CROSSING', |if($this.movementCode == 'CALVE', |'CALVING', |if($this.movementCode == 'MIGRATE', |'MIGRATING', |if($this.movementCode == 'RETURN', |'RETURNING', |if($this.movementCode == 'WINTER', |'WINTERING', |[]))))))))}: String[0..1];
+}

@@ -1,0 +1,218 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::azurelighthouse4::service::RepairRank
+{
+  pattern: '/azurelighthouse4/v1/repair-rank/{excludedWard}';
+  title: 'Azure Lighthouse 4 - Ward Repair Rank Board';
+  ownership: DID { identifier: 'skatepark-rank' };
+  documentation: 'Ranks the walked inspection visits inside each ward from the heaviest repair load down, over the register that already dropped the excluded ward, the withdrawn grade and the visits whose every finding was cleared. The rank is a windowed column added after the register is projected, so ties inside a ward share a rank.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {excludedWard: String[1]|test::azurelighthouse4::function::repairRank($excludedWard)};
+    mapping: test::azurelighthouse4::mapping::SkateparkMapping;
+    runtime: test::azurelighthouse4::runtime::RepairRankRuntime;
+  }
+  testSuites:
+  [
+    repairRankSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skateparkRank:
+            Relational
+            #{
+              skatepark.inspection_visit:
+                'visit_code,park_code,ward_name,route_kind,visit_grade,ramp_count,repair_points,walked_on\n'+
+                'VS-01,PK-HARBOUR,NORTHGATE,WALK,WALKED,7,31,2026-04-02\n'+
+                'VS-02,PK-QUARRY,NORTHGATE,WALK,WALKED,4,14,2026-04-03\n'+
+                'VS-03,PK-LEDGE,SOUTHGATE,DRONE,WALKED,9,45,2026-04-04\n'+
+                'VS-04,PK-BOWL,NORTHGATE,WALK,VOID,5,22,2026-04-05\n'+
+                'VS-05,PK-VERGE,WESTGATE,WALK,WALKED,3,6,2026-04-06\n';
+              skatepark.visit_finding:
+                'finding_code,visit_code,finding_grade,crack_metres\n'+
+                'FD-01,VS-01,OPEN,3.5\n'+
+                'FD-02,VS-02,OPEN,1.25\n'+
+                'FD-03,VS-03,OPEN,8.0\n'+
+                'FD-04,VS-04,OPEN,2.0\n'+
+                'FD-05,VS-05,CLEARED,0.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rankWithinWardOverTheOpenRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            excludedWard = 'WESTGATE'
+          ]
+          asserts:
+          [
+            twoWardsRanked:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"VS-01","Park":"PK-HARBOUR","Ward":"NORTHGATE","Route":"WALK","Band":"HEAVY-REPAIR","RepairPoints":31,"WalkedOn":"2026-04-02","WardRank":1},{"Visit":"VS-02","Park":"PK-QUARRY","Ward":"NORTHGATE","Route":"WALK","Band":"FOCUSED-REPAIR","RepairPoints":14,"WalkedOn":"2026-04-03","WardRank":2},{"Visit":"VS-03","Park":"PK-LEDGE","Ward":"SOUTHGATE","Route":"DRONE","Band":"REBUILD","RepairPoints":45,"WalkedOn":"2026-04-04","WardRank":1}]';
+                  }#;
+              }#
+          ]
+        },
+        excludingTheHeavyWardLeavesTheOtherRanks:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            excludedWard = 'NORTHGATE'
+          ]
+          asserts:
+          [
+            oneWardRanked:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"VS-03","Park":"PK-LEDGE","Ward":"SOUTHGATE","Route":"DRONE","Band":"REBUILD","RepairPoints":45,"WalkedOn":"2026-04-04","WardRank":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurelighthouse4::service::WardRegister
+{
+  pattern: '/azurelighthouse4/v1/ward-register/{excludedWard}';
+  title: 'Azure Lighthouse 4 - Open Ward Inspection Register';
+  ownership: UserList { users: ['skatepark-register', 'upkeep-crew'] };
+  documentation: 'Publishes the walked inspection visits that still carry an open finding, dropping the excluded ward and the withdrawn grade, and reports each visit under a band the query derives from the grade, the ramp count and the repair points.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {excludedWard: String[1]|test::azurelighthouse4::function::wardRegister($excludedWard)};
+    mapping: test::azurelighthouse4::mapping::SkateparkMapping;
+    runtime: test::azurelighthouse4::runtime::WardRegisterRuntime;
+  }
+  testSuites:
+  [
+    wardRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skateparkWard:
+            Relational
+            #{
+              skatepark.inspection_visit:
+                'visit_code,park_code,ward_name,route_kind,visit_grade,ramp_count,repair_points,walked_on\n'+
+                'VS-01,PK-HARBOUR,NORTHGATE,WALK,WALKED,7,31,2026-04-02\n'+
+                'VS-02,PK-QUARRY,EASTGATE,WALK,WALKED,8,3,2026-04-03\n'+
+                'VS-03,PK-LEDGE,EASTGATE,DRONE,WALKED,2,0,2026-04-04\n';
+              skatepark.visit_finding:
+                'finding_code,visit_code,finding_grade,crack_metres\n'+
+                'FD-01,VS-01,OPEN,3.5\n'+
+                'FD-02,VS-02,OPEN,0.5\n'+
+                'FD-03,VS-03,CLEARED,0.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        clearedOnlyVisitsAreDropped:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            excludedWard = 'SOUTHGATE'
+          ]
+          asserts:
+          [
+            twoOpenVisitsWithDerivedBands:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"VS-01","Park":"PK-HARBOUR","Ward":"NORTHGATE","Route":"WALK","Band":"HEAVY-REPAIR","RepairPoints":31,"WalkedOn":"2026-04-02"},{"Visit":"VS-02","Park":"PK-QUARRY","Ward":"EASTGATE","Route":"WALK","Band":"SWEEP-ONLY","RepairPoints":3,"WalkedOn":"2026-04-03"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurelighthouse4::service::RouteRegister
+{
+  pattern: '/azurelighthouse4/v1/route-register/{excludedWard}';
+  title: 'Azure Lighthouse 4 - Ward Route And Band Register';
+  ownership: DID { identifier: 'skatepark-routes' };
+  documentation: 'Narrows the open ward register to the ward, the route kind and the derived band and removes the repeats, so the published relation carries one row per distinct combination rather than one row per visit.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {excludedWard: String[1]|test::azurelighthouse4::function::routeRegister($excludedWard)};
+    mapping: test::azurelighthouse4::mapping::SkateparkMapping;
+    runtime: test::azurelighthouse4::runtime::RouteRegisterRuntime;
+  }
+}
+
+###Service
+Service test::azurelighthouse4::service::FindingRegister
+{
+  pattern: '/azurelighthouse4/v1/finding-register/{metresFloor}';
+  title: 'Azure Lighthouse 4 - Open Crack Finding Register';
+  ownership: UserList { users: ['skatepark-findings'] };
+  documentation: 'Publishes the findings still open whose measured crack length clears the caller-supplied floor, so the finding-level read is the detail counterpart of the visit register.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {metresFloor: Float[1]|test::azurelighthouse4::function::findingRegister($metresFloor)};
+    mapping: test::azurelighthouse4::mapping::SkateparkMapping;
+    runtime: test::azurelighthouse4::runtime::FindingRegisterRuntime;
+  }
+}
+
+###Service
+Service test::azurelighthouse4::service::BacklogBoard
+{
+  pattern: '/azurelighthouse4/v1/backlog-board/{minimumPoints}';
+  title: 'Azure Lighthouse 4 - Heaviest Repair Backlog Board';
+  ownership: DID { identifier: 'skatepark-backlog' };
+  documentation: 'Publishes the visits whose repair load clears the caller-supplied floor, ordered from the heaviest down and bounded to the leading rows, so the board is a bounded ordered read rather than the whole register.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minimumPoints: Integer[1]|test::azurelighthouse4::function::backlogBoard($minimumPoints)};
+    mapping: test::azurelighthouse4::mapping::SkateparkMapping;
+    runtime: test::azurelighthouse4::runtime::BacklogBoardRuntime;
+  }
+}

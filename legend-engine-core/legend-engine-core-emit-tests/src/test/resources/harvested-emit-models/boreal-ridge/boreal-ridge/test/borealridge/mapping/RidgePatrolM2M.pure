@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealridge::mapping::RidgePatrolM2M
+(
+  test::borealridge::domain::SurfaceType: EnumerationMapping SurfaceCodeMapping
+  {
+    TURF: ['TURF'],
+    SCREE: ['SCREE'],
+    SLAB: ['SLAB'],
+    SNOWFIELD: ['SNOWFIELD']
+  }
+
+  test::borealridge::domain::RouteGrade: EnumerationMapping RouteGradeMapping
+  {
+    WALK: ['WALK'],
+    SCRAMBLE: ['SCRAMBLE'],
+    ALPINE: ['ALPINE'],
+    UNGRADED: ['UNGRADED']
+  }
+
+  *test::borealridge::payload::PatrolDigest[patrolDigestSet]: Pure
+  {
+    ~src test::borealridge::payload::PatrolPayload
+    sectionCode: $src.sectionCode,
+    stewardLabel: 'WRD/' + $src.record.stewardCode->toUpper()->trim(),
+    markerBand: if($src.record.markersMissing->isEmpty(),
+                   | 'BAND-NONE',
+                   | if($src.record.markersMissing->toOne() >= 8,
+                        | 'BAND-CRITICAL',
+                        | if($src.record.markersMissing->toOne() >= 3,
+                             | 'BAND-WATCH',
+                             | 'BAND-CLEAR'))),
+    registrationState: if(($src.patrolledOn < %2026-05-01) || ($src.patrolledOn > %2026-10-31),
+                          | 'OUTSIDE_REGISTERED_WINDOW',
+                          | 'WITHIN_REGISTERED_WINDOW'),
+    effectiveOn: if($src.record.plannedOn->isNotEmpty(),
+                    | $src.record.plannedOn->toOne(),
+                    | $src.patrolledOn),
+    surface: EnumerationMapping SurfaceCodeMapping: [if($src.record.surfaceCode->isEmpty(), | 'SCREE', | $src.record.surfaceCode->toOne()->toUpper()->trim())]->toOne(),
+    grade: EnumerationMapping RouteGradeMapping: [if($src.record.gradeCode->isEmpty(), | 'UNGRADED', | $src.record.gradeCode->toOne()->toUpper()->trim())]->toOne()
+  }
+
+  testSuites:
+  [
+    patrolDigestSuite:
+    {
+      function: |test::borealridge::payload::PatrolDigest.all()->graphFetch(
+        #{
+          test::borealridge::payload::PatrolDigest
+          {
+            sectionCode,
+            markerBand,
+            stewardLabel,
+            registrationState,
+            effectiveOn,
+            surface,
+            grade
+          }
+        }#
+      )->serialize(
+        #{
+          test::borealridge::payload::PatrolDigest
+          {
+            sectionCode,
+            markerBand,
+            stewardLabel,
+            registrationState,
+            effectiveOn,
+            surface,
+            grade
+          }
+        }#
+      );
+      tests:
+      [
+        everyMarkerArmAndRegistrationEdge:
+        {
+          doc: 'Walks both marker-band arms above the clear threshold, the clear arm below them and the absent-count fallback, resolves both enumeration sentinels substituted ahead of their lookups, takes the planned-date arm and the patrolled-date arm of the effective-date derivation, and places a patrol on either side of the registered season window so an out-of-range record is observable.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::borealridge::payload::PatrolPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sectionCode":"BR-0001","patrolledOn":"2026-06-10","record":{"surfaceCode":"scree","gradeCode":"scramble","markersMissing":9,"stewardCode":"st-1","plannedOn":"2026-06-08"}},{"sectionCode":"BR-0002","patrolledOn":"2026-07-02","record":{"surfaceCode":"turf","gradeCode":"walk","markersMissing":4,"stewardCode":"st-2"}},{"sectionCode":"BR-0003","patrolledOn":"2026-08-15","record":{"surfaceCode":"slab","gradeCode":"alpine","markersMissing":1,"stewardCode":"st-3","plannedOn":"2026-08-14"}},{"sectionCode":"BR-0004","patrolledOn":"2026-09-01","record":{"stewardCode":"st-4"}},{"sectionCode":"BR-0005","patrolledOn":"2026-04-20","record":{"surfaceCode":"snowfield","gradeCode":"alpine","markersMissing":9,"stewardCode":"st-5"}},{"sectionCode":"BR-0006","patrolledOn":"2026-11-05","record":{"surfaceCode":"turf","gradeCode":"walk","markersMissing":4,"stewardCode":"st-6"}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            sixBandedPatrols:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sectionCode":"BR-0001","markerBand":"BAND-CRITICAL","stewardLabel":"WRD/ST-1","registrationState":"WITHIN_REGISTERED_WINDOW","effectiveOn":"2026-06-08","surface":"SCREE","grade":"SCRAMBLE"},{"sectionCode":"BR-0002","markerBand":"BAND-WATCH","stewardLabel":"WRD/ST-2","registrationState":"WITHIN_REGISTERED_WINDOW","effectiveOn":"2026-07-02","surface":"TURF","grade":"WALK"},{"sectionCode":"BR-0003","markerBand":"BAND-CLEAR","stewardLabel":"WRD/ST-3","registrationState":"WITHIN_REGISTERED_WINDOW","effectiveOn":"2026-08-14","surface":"SLAB","grade":"ALPINE"},{"sectionCode":"BR-0004","markerBand":"BAND-NONE","stewardLabel":"WRD/ST-4","registrationState":"WITHIN_REGISTERED_WINDOW","effectiveOn":"2026-09-01","surface":"SCREE","grade":"UNGRADED"},{"sectionCode":"BR-0005","markerBand":"BAND-CRITICAL","stewardLabel":"WRD/ST-5","registrationState":"OUTSIDE_REGISTERED_WINDOW","effectiveOn":"2026-04-20","surface":"SNOWFIELD","grade":"ALPINE"},{"sectionCode":"BR-0006","markerBand":"BAND-WATCH","stewardLabel":"WRD/ST-6","registrationState":"OUTSIDE_REGISTERED_WINDOW","effectiveOn":"2026-11-05","surface":"TURF","grade":"WALK"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

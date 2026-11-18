@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedvineyard6::service::TrailheadDirectory
+{
+  pattern: '/gildedvineyard6/v1/trailheads';
+  title: 'Trailhead Directory';
+  owners:
+  [
+    'ridge-survey',
+    'trail-maintenance'
+  ];
+  documentation: 'Returns the trailhead register as a labelled tabular projection over the trailhead table, carrying the identifier, the code, the name and the recorded gate elevation.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::gildedvineyard6::domain::Trailhead.all()->project(
+      [
+        t|$t.id,
+        t|$t.code,
+        t|$t.name,
+        t|$t.elevationMetres
+      ],
+      [
+        'TrailheadId',
+        'Trailhead',
+        'TrailheadName',
+        'ElevationMetres'
+      ]
+    )->sort([asc('Trailhead')]);
+    mapping: test::gildedvineyard6::mapping::TrailMapping;
+    runtime: test::gildedvineyard6::runtime::TrailRuntime;
+  }
+  testSuites:
+  [
+    trailheadSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailWarehouseConnection:
+            Relational
+            #{
+              trails.trailhead:
+                'trailhead_id,trailhead_code,trailhead_name,region_code,elevation_m\n'+
+                '1,TH-01,Larch Gate,RG-N,880\n'+
+                '2,TH-02,Fern Gate,RG-S,640\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        allTrailheadsProjected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            bothTrailheads:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TrailheadId":1,"Trailhead":"TH-01","TrailheadName":"Larch Gate","ElevationMetres":880},{"TrailheadId":2,"Trailhead":"TH-02","TrailheadName":"Fern Gate","ElevationMetres":640}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

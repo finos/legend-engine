@@ -1,0 +1,373 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emberglacier::mapping::SkywatchMapping
+(
+  *test::emberglacier::domain::Observatory[obs]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberglacier::store::SkywatchDb]skywatch.observatory.observatory_id
+    )
+    ~mainTable [test::emberglacier::store::SkywatchDb]skywatch.observatory
+    observatoryCode: [test::emberglacier::store::SkywatchDb]skywatch.observatory.observatory_code,
+    observatoryName: [test::emberglacier::store::SkywatchDb]skywatch.observatory.observatory_name,
+    elevationM: [test::emberglacier::store::SkywatchDb]skywatch.observatory.elevation_m,
+    openedOn: [test::emberglacier::store::SkywatchDb]skywatch.observatory.opened_on,
+    publicNights: [test::emberglacier::store::SkywatchDb]skywatch.observatory.public_nights
+  }
+
+  *test::emberglacier::domain::Dome[dome]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberglacier::store::SkywatchDb]skywatch.dome.dome_id
+    )
+    ~mainTable [test::emberglacier::store::SkywatchDb]skywatch.dome
+    domeCode: [test::emberglacier::store::SkywatchDb]skywatch.dome.dome_code,
+    apertureM: [test::emberglacier::store::SkywatchDb]skywatch.dome.aperture_m,
+    shutterKind: [test::emberglacier::store::SkywatchDb]skywatch.dome.shutter_kind
+  }
+
+  *test::emberglacier::domain::Telescope[tel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberglacier::store::SkywatchDb]skywatch.telescope.telescope_id
+    )
+    ~mainTable [test::emberglacier::store::SkywatchDb]skywatch.telescope
+    telescopeCode: [test::emberglacier::store::SkywatchDb]skywatch.telescope.telescope_code,
+    mirrorCm: [test::emberglacier::store::SkywatchDb]skywatch.telescope.mirror_cm,
+    mountKind: [test::emberglacier::store::SkywatchDb]skywatch.telescope.mount_kind
+  }
+
+  *test::emberglacier::domain::Instrument[ins]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberglacier::store::SkywatchDb]skywatch.instrument.instrument_id
+    )
+    ~mainTable [test::emberglacier::store::SkywatchDb]skywatch.instrument
+    instrumentCode: [test::emberglacier::store::SkywatchDb]skywatch.instrument.instrument_code,
+    bandName: [test::emberglacier::store::SkywatchDb]skywatch.instrument.band_name,
+    pixelScale: [test::emberglacier::store::SkywatchDb]skywatch.instrument.pixel_scale
+  }
+
+  *test::emberglacier::domain::Observer[ovr]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberglacier::store::SkywatchDb]skywatch.observer.observer_id
+    )
+    ~mainTable [test::emberglacier::store::SkywatchDb]skywatch.observer
+    observerCode: [test::emberglacier::store::SkywatchDb]skywatch.observer.observer_code,
+    observerName: [test::emberglacier::store::SkywatchDb]skywatch.observer.observer_name,
+    cohortCode: [test::emberglacier::store::SkywatchDb]skywatch.observer.cohort_code
+  }
+
+  *test::emberglacier::domain::SkyTarget[tgt]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberglacier::store::SkywatchDb]skywatch.sky_target.target_id
+    )
+    ~mainTable [test::emberglacier::store::SkywatchDb]skywatch.sky_target
+    targetCode: [test::emberglacier::store::SkywatchDb]skywatch.sky_target.target_code,
+    targetName: [test::emberglacier::store::SkywatchDb]skywatch.sky_target.target_name,
+    catalogCode: [test::emberglacier::store::SkywatchDb]skywatch.sky_target.catalog_code,
+    magnitude: [test::emberglacier::store::SkywatchDb]skywatch.sky_target.magnitude
+  }
+
+  *test::emberglacier::domain::ObservingSession[ses]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberglacier::store::SkywatchDb]skywatch.observing_session.session_id
+    )
+    ~mainTable [test::emberglacier::store::SkywatchDb]skywatch.observing_session
+    sessionCode: [test::emberglacier::store::SkywatchDb]skywatch.observing_session.session_code,
+    startedAt: [test::emberglacier::store::SkywatchDb]skywatch.observing_session.started_at,
+    exposureS: [test::emberglacier::store::SkywatchDb]skywatch.observing_session.exposure_s,
+    framesKept: [test::emberglacier::store::SkywatchDb]skywatch.observing_session.frames_kept,
+    sessionState: [test::emberglacier::store::SkywatchDb]skywatch.observing_session.session_state,
+    loggedOn: [test::emberglacier::store::SkywatchDb]skywatch.observing_session.logged_on
+  }
+
+  *test::emberglacier::domain::SeeingReading[rdg]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberglacier::store::SkywatchDb]skywatch.seeing_reading.reading_id
+    )
+    ~mainTable [test::emberglacier::store::SkywatchDb]skywatch.seeing_reading
+    readingCode: [test::emberglacier::store::SkywatchDb]skywatch.seeing_reading.reading_code,
+    siteCode: [test::emberglacier::store::SkywatchDb]skywatch.seeing_reading.site_code,
+    seeingArcsec: [test::emberglacier::store::SkywatchDb]skywatch.seeing_reading.seeing_arcsec,
+    cloudCover: [test::emberglacier::store::SkywatchDb]skywatch.seeing_reading.cloud_cover,
+    recordedAt: [test::emberglacier::store::SkywatchDb]skywatch.seeing_reading.recorded_at
+  }
+
+  test::emberglacier::domain::Observatory_Dome: Relational
+  {
+    AssociationMapping
+    (
+      domes[obs, dome]: [test::emberglacier::store::SkywatchDb]@Dome_Observatory,
+      observatory[dome, obs]: [test::emberglacier::store::SkywatchDb]@Dome_Observatory
+    )
+  }
+
+  test::emberglacier::domain::Dome_Telescope: Relational
+  {
+    AssociationMapping
+    (
+      telescopes[dome, tel]: [test::emberglacier::store::SkywatchDb]@Telescope_Dome,
+      dome[tel, dome]: [test::emberglacier::store::SkywatchDb]@Telescope_Dome
+    )
+  }
+
+  test::emberglacier::domain::Telescope_Instrument: Relational
+  {
+    AssociationMapping
+    (
+      instruments[tel, ins]: [test::emberglacier::store::SkywatchDb]@Instrument_Telescope,
+      telescope[ins, tel]: [test::emberglacier::store::SkywatchDb]@Instrument_Telescope
+    )
+  }
+
+  test::emberglacier::domain::Telescope_Session: Relational
+  {
+    AssociationMapping
+    (
+      telescopeSessions[tel, ses]: [test::emberglacier::store::SkywatchDb]@Session_Telescope,
+      bookedTelescope[ses, tel]: [test::emberglacier::store::SkywatchDb]@Session_Telescope
+    )
+  }
+
+  test::emberglacier::domain::Observer_Session: Relational
+  {
+    AssociationMapping
+    (
+      observerSessions[ovr, ses]: [test::emberglacier::store::SkywatchDb]@Session_Observer,
+      observer[ses, ovr]: [test::emberglacier::store::SkywatchDb]@Session_Observer
+    )
+  }
+
+  test::emberglacier::domain::Target_Session: Relational
+  {
+    AssociationMapping
+    (
+      targetSessions[tgt, ses]: [test::emberglacier::store::SkywatchDb]@Session_Target,
+      target[ses, tgt]: [test::emberglacier::store::SkywatchDb]@Session_Target
+    )
+  }
+
+  test::emberglacier::domain::Instrument_Session: Relational
+  {
+    AssociationMapping
+    (
+      instrumentSessions[ins, ses]: [test::emberglacier::store::SkywatchDb]@Session_Instrument,
+      instrument[ses, ins]: [test::emberglacier::store::SkywatchDb]@Session_Instrument
+    )
+  }
+
+  test::emberglacier::domain::Session_Reading: Relational
+  {
+    AssociationMapping
+    (
+      readings[ses, rdg]: [test::emberglacier::store::SkywatchDb]@Reading_Session,
+      session[rdg, ses]: [test::emberglacier::store::SkywatchDb]@Reading_Session
+    )
+  }
+
+  testSuites:
+  [
+    siteFlagSuite:
+    {
+      function: |test::emberglacier::domain::Observatory.all()->project(
+  [
+    o|$o.observatoryCode,
+    o|$o.observatoryName,
+    o|$o.elevationM,
+    o|$o.openedOn,
+    o|$o.publicNights
+  ],
+  [
+    'Observatory',
+    'Name',
+    'Elevation',
+    'OpenedOn',
+    'PublicNights'
+  ]
+)->sort(
+  [
+    asc('Observatory')
+  ]
+);
+      tests:
+      [
+        everyColumnTypeOfTheSiteTable:
+        {
+          doc: 'The site class mapping binds a string, an integer, a date and a boolean column off its own main table, so one projection proves every column type it declares.';
+          data:
+          [
+            test::emberglacier::store::SkywatchDb:
+              Relational
+              #{
+                skywatch.observatory:
+                  'observatory_id,observatory_code,observatory_name,elevation_m,opened_on,public_nights\n'+
+                  '1,OB-01,Ridge Crest Observatory,1820,2001-04-12,true\n'+
+                  '2,OB-02,Lake Bluff Observatory,640,1994-09-30,false\n';
+              }#
+          ];
+          asserts:
+          [
+            bothSitesWithTheirFlag:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observatory":"OB-01","Name":"Ridge Crest Observatory","Elevation":1820,"OpenedOn":"2001-04-12","PublicNights":true},{"Observatory":"OB-02","Name":"Lake Bluff Observatory","Elevation":640,"OpenedOn":"1994-09-30","PublicNights":false}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    associationTraversalSuite:
+    {
+      function: |test::emberglacier::domain::Telescope.all()->project(
+  [
+    t|$t.telescopeCode,
+    t|$t.dome.domeCode,
+    t|$t.dome.observatory.observatoryCode
+  ],
+  [
+    'Telescope',
+    'Dome',
+    'Observatory'
+  ]
+)->sort(
+  [
+    asc('Telescope')
+  ]
+);
+      tests:
+      [
+        twoAssociationsResolvedThroughNamedJoins:
+        {
+          doc: 'The enclosure and site ends are reached through their association mappings, so the traversal becomes two named joins and a telescope pointing at an enclosure that is not there still reports itself, with both traversed columns empty.';
+          data:
+          [
+            test::emberglacier::store::SkywatchDb:
+              Relational
+              #{
+                skywatch.observatory:
+                  'observatory_id,observatory_code,observatory_name,elevation_m,opened_on,public_nights\n'+
+                  '1,OB-01,Ridge Crest Observatory,1820,2001-04-12,true\n';
+                skywatch.dome:
+                  'dome_id,dome_code,observatory_id,aperture_m,shutter_kind\n'+
+                  '1,DM-01,1,6.5,CLAMSHELL\n';
+                skywatch.telescope:
+                  'telescope_id,telescope_code,dome_id,mirror_cm,mount_kind\n'+
+                  '1,TS-01,1,90,EQUATORIAL\n'+
+                  '2,TS-09,9,55,ALTAZ\n';
+              }#
+          ];
+          asserts:
+          [
+            theResolvedTelescopeAndTheDanglingOne:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Telescope":"TS-01","Dome":"DM-01","Observatory":"OB-01"},{"Telescope":"TS-09","Dome":null,"Observatory":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sessionAttributionSuite:
+    {
+      function: |test::emberglacier::domain::ObservingSession.all()->project(
+  [
+    s|$s.sessionCode,
+    s|$s.observer.observerCode,
+    s|$s.target.targetCode,
+    s|$s.instrument.instrumentCode,
+    s|$s.exposureS
+  ],
+  [
+    'Session',
+    'Observer',
+    'Target',
+    'Instrument',
+    'ExposureS'
+  ]
+)->sort(
+  [
+    asc('Session')
+  ]
+);
+      tests:
+      [
+        everyAttributionEndOfARun:
+        {
+          doc: 'A run reaches its observer, its target and its detector through three separate association mappings, and each end resolves on its own, so a run booked against an observer who is not on file still reports the two ends that do resolve.';
+          data:
+          [
+            test::emberglacier::store::SkywatchDb:
+              Relational
+              #{
+                skywatch.telescope:
+                  'telescope_id,telescope_code,dome_id,mirror_cm,mount_kind\n'+
+                  '1,TS-01,1,90,EQUATORIAL\n';
+                skywatch.instrument:
+                  'instrument_id,instrument_code,telescope_id,band_name,pixel_scale\n'+
+                  '1,IS-01,1,BROADBAND,0.32\n';
+                skywatch.observer:
+                  'observer_id,observer_code,observer_name,cohort_code\n'+
+                  '1,OV-01,Aster Vale,COHORT-N1\n';
+                skywatch.sky_target:
+                  'target_id,target_code,target_name,catalog_code,magnitude\n'+
+                  '1,TG-01,Kite Nebula,NGC,8.4\n';
+                skywatch.observing_session:
+                  'session_id,session_code,telescope_id,observer_id,target_id,instrument_id,started_at,exposure_s,frames_kept,session_state,logged_on\n'+
+                  '1,SS-01,1,1,1,1,2026-05-04 21:30:00,120,48,COMPLETE,2026-05-05\n'+
+                  '2,SS-99,1,9,1,1,2026-05-06 21:30:00,150,50,COMPLETE,2026-05-07\n';
+              }#
+          ];
+          asserts:
+          [
+            theFullyAttributedRunAndThePartlyAttributedOne:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Session":"SS-01","Observer":"OV-01","Target":"TG-01","Instrument":"IS-01","ExposureS":120},{"Session":"SS-99","Observer":null,"Target":"TG-01","Instrument":"IS-01","ExposureS":150}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

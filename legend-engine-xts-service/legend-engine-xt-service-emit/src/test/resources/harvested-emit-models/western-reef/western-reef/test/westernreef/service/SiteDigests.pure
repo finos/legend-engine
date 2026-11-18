@@ -1,0 +1,105 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernreef::service::SiteDigests
+{
+  pattern: '/westernreef/v1/site/digests';
+  title: 'Western Reef - Site Digests';
+  owners:
+  [
+    'reef-monitoring'
+  ];
+  documentation: 'Accepts an inbound reef site record as a JSON document and returns its flattened digest as a nested document, over an inline runtime that embeds a document-parsing model-store connection bound to the site record class.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::westernreef::domain::SiteDigest.all()->graphFetch(
+      #{
+        test::westernreef::domain::SiteDigest{
+          siteCode,
+          regionCode,
+          basinLabel
+        }
+      }#
+    )->serialize(
+      #{
+        test::westernreef::domain::SiteDigest{
+          siteCode,
+          regionCode,
+          basinLabel
+        }
+      }#
+    );
+    mapping: test::westernreef::mapping::SiteDigestMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::westernreef::mapping::SiteDigestMapping
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          siteFeedConnection:
+          #{
+            JsonModelConnection
+            {
+              class: test::westernreef::source::SiteFeed;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    siteDigestsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          siteFeedConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"code":"ST-D","region":{"code":"RG-04","basin":"arafura sea"}}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        digestedSiteGraph:
+        {
+          asserts:
+          [
+            servedSiteDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{\n  "builder" : {\n    "_type" : "json"\n  },\n  "values" : {\n    "siteCode" : "ST-D",\n    "regionCode" : "RG-04",\n    "basinLabel" : "ARAFURA SEA"\n  }\n}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

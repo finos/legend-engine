@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::ambervineyard2::diagram::PaleoDiagram
+{
+  classView digRecordView
+  {
+    class: test::ambervineyard2::domain::DigRecord;
+    position: (400.0,60.0);
+    rectangle: (200.0,50.0);
+  }
+  classView fossilView
+  {
+    class: test::ambervineyard2::domain::Fossil;
+    position: (360.0,200.0);
+    rectangle: (240.0,150.0);
+  }
+  classView digSiteView
+  {
+    class: test::ambervineyard2::domain::DigSite;
+    position: (720.0,200.0);
+    rectangle: (200.0,70.0);
+  }
+  classView excavatorView
+  {
+    class: test::ambervineyard2::domain::Excavator;
+    position: (720.0,380.0);
+    rectangle: (200.0,70.0);
+  }
+  generalizationView
+  {
+    source: fossilView;
+    target: digRecordView;
+    points: [(480.0,275.0),(500.0,85.0)];
+  }
+  propertyView
+  {
+    property: test::ambervineyard2::domain::Fossil_DigSite.digSite;
+    source: fossilView;
+    target: digSiteView;
+    points: [(600.0,275.0),(820.0,235.0)];
+  }
+  propertyView
+  {
+    property: test::ambervineyard2::domain::DigSite_Excavator.excavator;
+    source: digSiteView;
+    target: excavatorView;
+    points: [(820.0,270.0),(820.0,415.0)];
+  }
+}

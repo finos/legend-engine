@@ -1,0 +1,72 @@
+name: cedar-hatchery-2
+title: "Cedar Hatchery Record — Processing-Temporal Lots And Inspections Behind One Data Space"
+description: |
+  A fish-hatchery record split across two relational stores, each holding one
+  processing-temporal relation beside its plain lookup relations and joined to
+  them by inner joins. Every class mapping anchors its main table, declares a
+  single-column identity and reaches lookup columns through join-qualified
+  column bindings, while five associations are given relational implementations
+  so model-level navigation between the milestoned relation and its lookups
+  executes as a store join. Three Snowflake OAuth connections and three engine
+  runtimes serve the two mappings on separate tiers, five single-execution
+  services project the two milestoned boards at a supplied processing instant
+  and the three lookup extents, and one data space catalogues both execution
+  contexts with two featured executables and an email support contact.
+modelSources:
+  model:
+    root: cedar-hatchery-2
+    files:
+      - test/cedarhatchery2/connection/HatcheryConnections.pure
+      - test/cedarhatchery2/dataspace/HatcheryDataSpace.pure
+      - test/cedarhatchery2/domain/HatcheryDomain.pure
+      - test/cedarhatchery2/mapping/HatcheryCoreMapping.pure
+      - test/cedarhatchery2/mapping/HatcheryHealthMapping.pure
+      - test/cedarhatchery2/profile/HatcheryProfile.pure
+      - test/cedarhatchery2/runtime/HatcheryRuntimes.pure
+      - test/cedarhatchery2/service/GradeScaleRoster.pure
+      - test/cedarhatchery2/service/HealthBoardAsOf.pure
+      - test/cedarhatchery2/service/LotBoardAsOf.pure
+      - test/cedarhatchery2/service/RacewayRoster.pure
+      - test/cedarhatchery2/service/SpeciesFamilyRoster.pure
+      - test/cedarhatchery2/store/HatcheryCoreDb.pure
+      - test/cedarhatchery2/store/HatcheryHealthDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-ownership
+  - execution:service-test
+  - grammar:association
+  - grammar:profile
+  - grammar:tagged-value
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - data-space
+  - fish-hatchery
+  - h2
+  - join-reached-column
+  - multi-store
+  - point-in-time
+  - processing-temporal
+  - profile-tagged-values
+  - relational
+  - snowflake

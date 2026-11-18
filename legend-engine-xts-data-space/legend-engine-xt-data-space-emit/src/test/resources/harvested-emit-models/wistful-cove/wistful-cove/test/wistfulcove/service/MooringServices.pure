@@ -1,0 +1,514 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::wistfulcove::service::MooringSurveyAsOf
+{
+  pattern: '/wistfulcove/v1/mooringSurvey/{asOf}';
+  title: 'Wistful Cove - Mooring Survey As Of';
+  ownership: UserList { users: ['cove-mooring-survey', 'shore-patrol-office'] };
+  documentation: 'Enters the milestoned mooring accessor with the requested instant and projects the derived surface of the including mapping - the conditional berth zone, the arithmetic deck area and the two-hop shore-zone lookup - beside the direct column reads.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::wistfulcove::domain::MooringRecord.all($asOf)->project(
+      [
+        m|$m.mooringCode,
+        m|$m.gradeCode,
+        m|$m.berthZone,
+        m|$m.deckAreaM2,
+        m|$m.lineCount,
+        m|$m.shoreZoneName
+      ],
+      [
+        'Mooring Code',
+        'Grade Code',
+        'Berth Zone',
+        'Deck Area M2',
+        'Line Count',
+        'Shore Zone'
+      ]
+    )->sort(
+      [
+        asc('Mooring Code')
+      ]
+    )};
+    mapping: test::wistfulcove::mapping::CoveSurveyMapping;
+    runtime: test::wistfulcove::runtime::CoveSurveyRuntime;
+  }
+  testSuites:
+  [
+    mooringSurveyAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveH2:
+            Relational
+            #{
+      cove.mooring_record:
+        'record_id,mooring_code,cove_code,grade_code,hull_length_m,beam_width_m,line_count,surveyed_on,in_z,out_z\n'+
+        '1,M-01,C-1,G1,10.0,3.0,4,2026-01-05,2026-01-01,9999-12-31\n'+
+        '2,M-02,C-1,G2,12.5,3.5,3,2026-01-06,2026-01-01,9999-12-31\n'+
+        '3,M-03,C-1,G3,8.0,2.5,2,2026-01-07,2026-01-01,9999-12-31\n'+
+        '4,M-04,C-2,G4,15.0,4.0,5,2026-01-08,2026-01-01,9999-12-31\n'+
+        '5,M-05,C-2,G5,9.5,3.0,1,2026-01-09,2026-01-01,9999-12-31\n'+
+        '6,M-06,C-2,G6,11.0,3.5,2,2026-01-10,2026-01-01,9999-12-31\n'+
+        '7,M-07,C-3,G7,14.0,4.5,6,2026-01-11,2026-01-01,9999-12-31\n'+
+        '8,M-08,C-3,G8,13.0,4.0,3,2026-01-12,2026-01-01,9999-12-31\n'+
+        '9,M-09,C-3,G8,7.0,2.0,1,2026-01-13,2026-01-01,9999-12-31\n'+
+        '10,M-10,C-1,GX,6.0,2.0,2,2026-01-14,2026-01-01,9999-12-31\n'+
+        '11,M-11,C-1,G1,5.0,2.0,2,2026-01-15,2026-01-01,2026-02-01\n';
+
+      cove.cove_site:
+        'site_id,cove_code,cove_name,shore_code,in_z,out_z\n'+
+        '1,C-1,Kittiwake Cove,S-N,2026-01-01,9999-12-31\n'+
+        '2,C-2,Fulmar Cove,S-N,2026-01-01,9999-12-31\n'+
+        '3,C-3,Petrel Cove,S-S,2026-01-01,9999-12-31\n';
+
+      cove.shore_zone:
+        'zone_id,shore_code,zone_name,in_z,out_z\n'+
+        '1,S-N,North Shore,2026-01-01,9999-12-31\n'+
+        '2,S-S,South Shore,2026-01-01,9999-12-31\n';
+
+      archive.survey_note:
+        'note_id,mooring_code,cove_code,note_text,in_z,out_z\n'+
+        '1,M-01,C-1,Fenders replaced,2026-01-01,9999-12-31\n'+
+        '2,M-04,C-2,Chain re-shackled,2026-01-01,9999-12-31\n'+
+        '3,M-07,C-3,Line re-spliced,2026-01-01,9999-12-31\n'+
+        '4,M-01,C-1,Superseded inspection remark,2026-01-01,2026-02-01\n';
+
+      archive.tender_run:
+        'run_id,mooring_code,cove_code,tender_code,trip_count,in_z,out_z\n'+
+        '1,M-01,C-1,T-1,4,2026-01-01,9999-12-31\n'+
+        '2,M-01,C-1,T-2,2,2026-01-01,9999-12-31\n'+
+        '3,M-04,C-2,T-3,1,2026-01-01,9999-12-31\n'+
+        '4,M-07,C-3,T-4,5,2026-01-01,9999-12-31\n'+
+        '5,M-04,C-2,T-9,7,2026-01-01,2026-02-01\n';
+            }#,
+          referenceH2:
+            Relational
+            #{
+      reference.grade_band:
+        'band_id,grade_code,band_name,in_z,out_z\n'+
+        '1,G1,Sheltered Inner Berth,2026-01-01,9999-12-31\n'+
+        '2,G2,Sheltered Outer Berth,2026-01-01,9999-12-31\n'+
+        '3,G3,Exposed Inner Berth,2026-01-01,9999-12-31\n'+
+        '4,G8,Deep Water Berth,2026-01-01,9999-12-31\n'+
+        '5,G9,Withdrawn Berth Class,2026-01-01,2026-02-01\n';
+            }#,
+          patrolH2:
+            Relational
+            #{
+      patrol.patrol_log:
+        'log_id,shore_code,patrol_code,sweep_count,in_z,out_z\n'+
+        '1,S-N,P-1,3,2026-01-01,9999-12-31\n'+
+        '2,S-S,P-2,5,2026-01-01,9999-12-31\n'+
+        '3,S-N,P-9,1,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyArmThroughTheService:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-01
+          ]
+          asserts:
+          [
+            surveyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Mooring Code":"M-01","Grade Code":"G1","Berth Zone":"ZONE_A","Deck Area M2":30.0,"Line Count":4,"Shore Zone":"North Shore"},{"Mooring Code":"M-02","Grade Code":"G2","Berth Zone":"ZONE_B","Deck Area M2":43.75,"Line Count":3,"Shore Zone":"North Shore"},{"Mooring Code":"M-03","Grade Code":"G3","Berth Zone":"ZONE_C","Deck Area M2":20.0,"Line Count":2,"Shore Zone":"North Shore"},{"Mooring Code":"M-04","Grade Code":"G4","Berth Zone":"ZONE_D","Deck Area M2":60.0,"Line Count":5,"Shore Zone":"North Shore"},{"Mooring Code":"M-05","Grade Code":"G5","Berth Zone":"ZONE_E","Deck Area M2":28.5,"Line Count":1,"Shore Zone":"North Shore"},{"Mooring Code":"M-06","Grade Code":"G6","Berth Zone":"ZONE_F","Deck Area M2":38.5,"Line Count":2,"Shore Zone":"North Shore"},{"Mooring Code":"M-07","Grade Code":"G7","Berth Zone":"ZONE_G","Deck Area M2":63.0,"Line Count":6,"Shore Zone":"South Shore"},{"Mooring Code":"M-08","Grade Code":"G8","Berth Zone":"ZONE_H","Deck Area M2":52.0,"Line Count":3,"Shore Zone":"South Shore"},{"Mooring Code":"M-09","Grade Code":"G8","Berth Zone":null,"Deck Area M2":14.0,"Line Count":1,"Shore Zone":"South Shore"},{"Mooring Code":"M-10","Grade Code":"GX","Berth Zone":null,"Deck Area M2":12.0,"Line Count":2,"Shore Zone":"North Shore"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::wistfulcove::service::MooringByGradeAsOf
+{
+  pattern: '/wistfulcove/v1/mooringByGrade/{asOf}';
+  title: 'Wistful Cove - Moorings By Grade As Of';
+  ownership: UserList { users: ['cove-mooring-survey', 'shore-patrol-office'] };
+  documentation: 'Combines a membership test of the grade code against a caller-supplied literal set with a line-count floor, so the in-list and the comparison compose with the temporal window predicate in one generated statement.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], grades: String[*], minLines: Integer[1]|test::wistfulcove::domain::MooringRecord.all($asOf)->filter(
+      m|$m.gradeCode->in($grades) && ($m.lineCount >= $minLines)
+    )->project(
+      [
+        m|$m.mooringCode,
+        m|$m.gradeCode,
+        m|$m.lineCount,
+        m|$m.berthZone
+      ],
+      [
+        'Mooring Code',
+        'Grade Code',
+        'Line Count',
+        'Berth Zone'
+      ]
+    )->sort(
+      [
+        asc('Mooring Code')
+      ]
+    )};
+    mapping: test::wistfulcove::mapping::CoveSurveyMapping;
+    runtime: test::wistfulcove::runtime::CoveSurveyRuntime;
+  }
+  testSuites:
+  [
+    mooringByGradeAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveH2:
+            Relational
+            #{
+      cove.mooring_record:
+        'record_id,mooring_code,cove_code,grade_code,hull_length_m,beam_width_m,line_count,surveyed_on,in_z,out_z\n'+
+        '1,M-01,C-1,G1,10.0,3.0,4,2026-01-05,2026-01-01,9999-12-31\n'+
+        '2,M-02,C-1,G2,12.5,3.5,3,2026-01-06,2026-01-01,9999-12-31\n'+
+        '3,M-03,C-1,G3,8.0,2.5,2,2026-01-07,2026-01-01,9999-12-31\n'+
+        '4,M-04,C-2,G4,15.0,4.0,5,2026-01-08,2026-01-01,9999-12-31\n'+
+        '5,M-05,C-2,G5,9.5,3.0,1,2026-01-09,2026-01-01,9999-12-31\n'+
+        '6,M-06,C-2,G6,11.0,3.5,2,2026-01-10,2026-01-01,9999-12-31\n'+
+        '7,M-07,C-3,G7,14.0,4.5,6,2026-01-11,2026-01-01,9999-12-31\n'+
+        '8,M-08,C-3,G8,13.0,4.0,3,2026-01-12,2026-01-01,9999-12-31\n'+
+        '9,M-09,C-3,G8,7.0,2.0,1,2026-01-13,2026-01-01,9999-12-31\n'+
+        '10,M-10,C-1,GX,6.0,2.0,2,2026-01-14,2026-01-01,9999-12-31\n'+
+        '11,M-11,C-1,G1,5.0,2.0,2,2026-01-15,2026-01-01,2026-02-01\n';
+
+      cove.cove_site:
+        'site_id,cove_code,cove_name,shore_code,in_z,out_z\n'+
+        '1,C-1,Kittiwake Cove,S-N,2026-01-01,9999-12-31\n'+
+        '2,C-2,Fulmar Cove,S-N,2026-01-01,9999-12-31\n'+
+        '3,C-3,Petrel Cove,S-S,2026-01-01,9999-12-31\n';
+
+      cove.shore_zone:
+        'zone_id,shore_code,zone_name,in_z,out_z\n'+
+        '1,S-N,North Shore,2026-01-01,9999-12-31\n'+
+        '2,S-S,South Shore,2026-01-01,9999-12-31\n';
+
+      archive.survey_note:
+        'note_id,mooring_code,cove_code,note_text,in_z,out_z\n'+
+        '1,M-01,C-1,Fenders replaced,2026-01-01,9999-12-31\n'+
+        '2,M-04,C-2,Chain re-shackled,2026-01-01,9999-12-31\n'+
+        '3,M-07,C-3,Line re-spliced,2026-01-01,9999-12-31\n'+
+        '4,M-01,C-1,Superseded inspection remark,2026-01-01,2026-02-01\n';
+
+      archive.tender_run:
+        'run_id,mooring_code,cove_code,tender_code,trip_count,in_z,out_z\n'+
+        '1,M-01,C-1,T-1,4,2026-01-01,9999-12-31\n'+
+        '2,M-01,C-1,T-2,2,2026-01-01,9999-12-31\n'+
+        '3,M-04,C-2,T-3,1,2026-01-01,9999-12-31\n'+
+        '4,M-07,C-3,T-4,5,2026-01-01,9999-12-31\n'+
+        '5,M-04,C-2,T-9,7,2026-01-01,2026-02-01\n';
+            }#,
+          referenceH2:
+            Relational
+            #{
+      reference.grade_band:
+        'band_id,grade_code,band_name,in_z,out_z\n'+
+        '1,G1,Sheltered Inner Berth,2026-01-01,9999-12-31\n'+
+        '2,G2,Sheltered Outer Berth,2026-01-01,9999-12-31\n'+
+        '3,G3,Exposed Inner Berth,2026-01-01,9999-12-31\n'+
+        '4,G8,Deep Water Berth,2026-01-01,9999-12-31\n'+
+        '5,G9,Withdrawn Berth Class,2026-01-01,2026-02-01\n';
+            }#,
+          patrolH2:
+            Relational
+            #{
+      patrol.patrol_log:
+        'log_id,shore_code,patrol_code,sweep_count,in_z,out_z\n'+
+        '1,S-N,P-1,3,2026-01-01,9999-12-31\n'+
+        '2,S-S,P-2,5,2026-01-01,9999-12-31\n'+
+        '3,S-N,P-9,1,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        membersAndFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-01,
+            grades = ['G1', 'G8'],
+            minLines = 2
+          ]
+          asserts:
+          [
+            gradedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Mooring Code":"M-01","Grade Code":"G1","Line Count":4,"Berth Zone":"ZONE_A"},{"Mooring Code":"M-08","Grade Code":"G8","Line Count":3,"Berth Zone":"ZONE_H"}]';
+                  }#;
+              }#
+          ]
+        },
+        nonMemberGradeOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-01,
+            grades = ['GX'],
+            minLines = 1
+          ]
+          asserts:
+          [
+            fallbackRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Mooring Code":"M-10","Grade Code":"GX","Line Count":2,"Berth Zone":null}]';
+                  }#;
+              }#
+          ]
+        },
+        emptyGradeSet:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-01,
+            grades = [],
+            minLines = 1
+          ]
+          asserts:
+          [
+            noRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::wistfulcove::service::MooringsWithTenderAsOf
+{
+  pattern: '/wistfulcove/v1/mooringsWithTender/{asOf}';
+  title: 'Wistful Cove - Moorings With A Busy Tender As Of';
+  ownership: UserList { users: ['cove-mooring-survey', 'shore-patrol-office'] };
+  documentation: 'Quantifies existentially over the tender-run collection reached through the association, so a mooring survives only if some run visible at the requested instant meets the trip floor - a correlated read layered over the temporal rewrite.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], minTrips: Integer[1]|test::wistfulcove::domain::MooringRecord.all($asOf)->filter(
+      m|$m.tenderRuns->exists(t|$t.tripCount >= $minTrips)
+    )->project(
+      [
+        m|$m.mooringCode,
+        m|$m.berthZone,
+        m|$m.shoreZoneName
+      ],
+      [
+        'Mooring Code',
+        'Berth Zone',
+        'Shore Zone'
+      ]
+    )->sort(
+      [
+        asc('Mooring Code')
+      ]
+    )};
+    mapping: test::wistfulcove::mapping::CoveSurveyMapping;
+    runtime: test::wistfulcove::runtime::CoveSurveyRuntime;
+  }
+  testSuites:
+  [
+    mooringsWithTenderAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveH2:
+            Relational
+            #{
+      cove.mooring_record:
+        'record_id,mooring_code,cove_code,grade_code,hull_length_m,beam_width_m,line_count,surveyed_on,in_z,out_z\n'+
+        '1,M-01,C-1,G1,10.0,3.0,4,2026-01-05,2026-01-01,9999-12-31\n'+
+        '2,M-02,C-1,G2,12.5,3.5,3,2026-01-06,2026-01-01,9999-12-31\n'+
+        '3,M-03,C-1,G3,8.0,2.5,2,2026-01-07,2026-01-01,9999-12-31\n'+
+        '4,M-04,C-2,G4,15.0,4.0,5,2026-01-08,2026-01-01,9999-12-31\n'+
+        '5,M-05,C-2,G5,9.5,3.0,1,2026-01-09,2026-01-01,9999-12-31\n'+
+        '6,M-06,C-2,G6,11.0,3.5,2,2026-01-10,2026-01-01,9999-12-31\n'+
+        '7,M-07,C-3,G7,14.0,4.5,6,2026-01-11,2026-01-01,9999-12-31\n'+
+        '8,M-08,C-3,G8,13.0,4.0,3,2026-01-12,2026-01-01,9999-12-31\n'+
+        '9,M-09,C-3,G8,7.0,2.0,1,2026-01-13,2026-01-01,9999-12-31\n'+
+        '10,M-10,C-1,GX,6.0,2.0,2,2026-01-14,2026-01-01,9999-12-31\n'+
+        '11,M-11,C-1,G1,5.0,2.0,2,2026-01-15,2026-01-01,2026-02-01\n';
+
+      cove.cove_site:
+        'site_id,cove_code,cove_name,shore_code,in_z,out_z\n'+
+        '1,C-1,Kittiwake Cove,S-N,2026-01-01,9999-12-31\n'+
+        '2,C-2,Fulmar Cove,S-N,2026-01-01,9999-12-31\n'+
+        '3,C-3,Petrel Cove,S-S,2026-01-01,9999-12-31\n';
+
+      cove.shore_zone:
+        'zone_id,shore_code,zone_name,in_z,out_z\n'+
+        '1,S-N,North Shore,2026-01-01,9999-12-31\n'+
+        '2,S-S,South Shore,2026-01-01,9999-12-31\n';
+
+      archive.survey_note:
+        'note_id,mooring_code,cove_code,note_text,in_z,out_z\n'+
+        '1,M-01,C-1,Fenders replaced,2026-01-01,9999-12-31\n'+
+        '2,M-04,C-2,Chain re-shackled,2026-01-01,9999-12-31\n'+
+        '3,M-07,C-3,Line re-spliced,2026-01-01,9999-12-31\n'+
+        '4,M-01,C-1,Superseded inspection remark,2026-01-01,2026-02-01\n';
+
+      archive.tender_run:
+        'run_id,mooring_code,cove_code,tender_code,trip_count,in_z,out_z\n'+
+        '1,M-01,C-1,T-1,4,2026-01-01,9999-12-31\n'+
+        '2,M-01,C-1,T-2,2,2026-01-01,9999-12-31\n'+
+        '3,M-04,C-2,T-3,1,2026-01-01,9999-12-31\n'+
+        '4,M-07,C-3,T-4,5,2026-01-01,9999-12-31\n'+
+        '5,M-04,C-2,T-9,7,2026-01-01,2026-02-01\n';
+            }#,
+          referenceH2:
+            Relational
+            #{
+      reference.grade_band:
+        'band_id,grade_code,band_name,in_z,out_z\n'+
+        '1,G1,Sheltered Inner Berth,2026-01-01,9999-12-31\n'+
+        '2,G2,Sheltered Outer Berth,2026-01-01,9999-12-31\n'+
+        '3,G3,Exposed Inner Berth,2026-01-01,9999-12-31\n'+
+        '4,G8,Deep Water Berth,2026-01-01,9999-12-31\n'+
+        '5,G9,Withdrawn Berth Class,2026-01-01,2026-02-01\n';
+            }#,
+          patrolH2:
+            Relational
+            #{
+      patrol.patrol_log:
+        'log_id,shore_code,patrol_code,sweep_count,in_z,out_z\n'+
+        '1,S-N,P-1,3,2026-01-01,9999-12-31\n'+
+        '2,S-S,P-2,5,2026-01-01,9999-12-31\n'+
+        '3,S-N,P-9,1,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        busyTenderOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-01,
+            minTrips = 3
+          ]
+          asserts:
+          [
+            busyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Mooring Code":"M-01","Berth Zone":"ZONE_A","Shore Zone":"North Shore"},{"Mooring Code":"M-07","Berth Zone":"ZONE_G","Shore Zone":"South Shore"}]';
+                  }#;
+              }#
+          ]
+        },
+        closedRunNoLongerQualifies:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-01,
+            minTrips = 5
+          ]
+          asserts:
+          [
+            onlyPetrelRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Mooring Code":"M-07","Berth Zone":"ZONE_G","Shore Zone":"South Shore"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::wistfulcove::service::MooringSurveyWarehouseAsOf
+{
+  pattern: '/wistfulcove/v1/warehouse/mooringSurvey/{asOf}';
+  title: 'Wistful Cove - Mooring Survey As Of Through The Warehouse';
+  ownership: UserList { users: ['cove-mooring-survey', 'shore-patrol-office'] };
+  documentation: 'The same derived mooring surface compiled against the cloud-warehouse runtime, so the conditional and arithmetic transforms and the temporal predicate are emitted in the warehouse dialect.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::wistfulcove::domain::MooringRecord.all($asOf)->project(
+      [
+        m|$m.mooringCode,
+        m|$m.berthZone,
+        m|$m.deckAreaM2
+      ],
+      [
+        'Mooring Code',
+        'Berth Zone',
+        'Deck Area M2'
+      ]
+    )->sort(
+      [
+        asc('Mooring Code')
+      ]
+    )};
+    mapping: test::wistfulcove::mapping::CoveSurveyMapping;
+    runtime: test::wistfulcove::runtime::CoveWarehouseRuntime;
+  }
+}

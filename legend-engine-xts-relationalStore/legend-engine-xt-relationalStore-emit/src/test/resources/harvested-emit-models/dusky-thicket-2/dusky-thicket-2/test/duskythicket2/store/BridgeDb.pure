@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskythicket2::store::BridgeDb
+(
+  Schema crossing
+  (
+    Table bridge_inspection
+    (
+      milestoning
+      (
+        business(BUS_FROM = bus_from_z, BUS_THRU = bus_thru_z)
+      )
+
+      inspection_code VARCHAR(20) PRIMARY KEY,
+      structure_code VARCHAR(20) NOT NULL,
+      district_code VARCHAR(20) NOT NULL,
+      inspection_kind VARCHAR(20) NOT NULL,
+      inspected_on DATE NOT NULL,
+      span_metres FLOAT NOT NULL,
+      deck_score INTEGER NOT NULL,
+      rail_score INTEGER NOT NULL,
+      rust_pct INTEGER NOT NULL,
+      clearance_cm INTEGER NOT NULL,
+      footfall_per_day INTEGER NOT NULL,
+      inspector_note VARCHAR(200),
+      bus_from_z DATE PRIMARY KEY,
+      bus_thru_z DATE NOT NULL
+    )
+  )
+)

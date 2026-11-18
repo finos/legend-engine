@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cobaltcove2::mapping::CoveMapping
+(
+  *test::cobaltcove2::domain::TrailSegment[segment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltcove2::store::CoveDB]cove.trail_segment.segment_code
+    )
+    ~mainTable [test::cobaltcove2::store::CoveDB]cove.trail_segment
+    segmentCode: [test::cobaltcove2::store::CoveDB]cove.trail_segment.segment_code,
+    reserveName: [test::cobaltcove2::store::CoveDB]cove.trail_segment.reserve_name,
+    surfaceGrade: [test::cobaltcove2::store::CoveDB]cove.trail_segment.surface_grade,
+    sightings[sighting]: [test::cobaltcove2::store::CoveDB]@Segment_Sighting
+  }
+
+  *test::cobaltcove2::domain::CameraStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltcove2::store::CoveDB]cove.camera_station.station_code
+    )
+    ~mainTable [test::cobaltcove2::store::CoveDB]cove.camera_station
+    stationCode: [test::cobaltcove2::store::CoveDB]cove.camera_station.station_code,
+    segmentCode: [test::cobaltcove2::store::CoveDB]cove.camera_station.segment_code,
+    batteryPercent: [test::cobaltcove2::store::CoveDB]cove.camera_station.battery_percent
+  }
+
+  *test::cobaltcove2::domain::Sighting[sighting]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltcove2::store::CoveDB]cove.sighting.sighting_code
+    )
+    ~mainTable [test::cobaltcove2::store::CoveDB]cove.sighting
+    sightingCode: [test::cobaltcove2::store::CoveDB]cove.sighting.sighting_code,
+    speciesName: [test::cobaltcove2::store::CoveDB]cove.sighting.species_name,
+    countSeen: [test::cobaltcove2::store::CoveDB]cove.sighting.count_seen
+  }
+)

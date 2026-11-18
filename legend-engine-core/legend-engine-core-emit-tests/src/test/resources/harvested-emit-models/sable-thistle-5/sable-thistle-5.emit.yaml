@@ -1,0 +1,38 @@
+name: sable-thistle-5
+title: "Sable Thistle 5 - Pipe instrument restoration workshop domain model"
+description: >
+  A store-less domain model for a workshop that restores pipe instruments. Two
+  abstract roots carry the shared record code and part material; pipes, ranks and
+  wind chests specialise them three levels deep and compose one another through
+  class-typed, at-least-one collections, while consoles and instruments add
+  unbounded label lists. The wind supply and the wind chest subclass each declare a strict positive
+  constraint on a measured quantity, four documented enumerations type the
+  properties, and two bi-temporal classes record restoration stages and voicing
+  adjustments beneath a non-temporal ancestor. A JSON fixture holds current,
+  restated and out-of-range restoration stage rows.
+modelSources:
+  model:
+    root: sable-thistle-5
+    files:
+      - test/sablethistle5/data/RestorationStepData.pure
+      - test/sablethistle5/domain/OrganWorkshopModel.pure
+      - test/sablethistle5/domain/OrganWorkshopVocabulary.pure
+features:
+  - grammar:abstract-class
+  - grammar:class-inheritance
+  - grammar:collection-multiplicity-bound
+  - grammar:complex-typed-property
+  - grammar:constraint
+  - grammar:tagged-value
+  - grammar:enumeration
+  - milestoning:bi-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - bi-temporal
+  - class-inheritance
+  - constraint
+  - enumeration
+  - instrument-restoration
+  - store-less

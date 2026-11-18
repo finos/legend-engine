@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data demo::embercanyon3::data::VaultTestData
+{
+  Relational
+  #{
+    registry.seed_accession:
+      'accession_id,accession_code,taxon_name,vault_code,collected_on,seed_count,viability_rate,collector_name,region_name,habitat_code\n'+
+      '1,AC-01,Silene emberii,V-01,2025-09-01,20,0.8,Mira Vale,North Slope,DRY-01\n'+
+      '2,AC-02,Salvia cineria,V-01,2025-09-02,30,0.9,Oren Pike,Stone Basin,DRY-02';
+    registry.accession_archive:
+      'archive_id,accession_code,taxon_name,vault_code,collected_on,seed_count,viability_rate,collector_name,region_name,habitat_code\n'+
+      '11,AC-11,Artemisia glow,V-02,2024-08-03,15,0.7,Lea Moss,Red Shelf,COOL-01';
+    trials.germination_trial:
+      'trial_id,trial_code,accession_code,emerged_count,tray_label\n'+
+      '101,TR-01,AC-01,16,ALPHA\n'+
+      '102,TR-02,AC-02,27,BETA';
+  }#
+}

@@ -1,0 +1,384 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarwillow5::mapping::LibraryMapping
+(
+  *test::lunarwillow5::domain::CatalogueRecord[catalogueRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.catalogue_code
+    )
+    ~mainTable [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record
+    catalogueCode: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.catalogue_code,
+    title: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.title,
+    subtitle: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.subtitle,
+    authorName: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.author_name,
+    imprintName: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.imprint_name,
+    editionLabel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.edition_label,
+    languageCode: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.language_code,
+    shelfMark: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.shelf_mark,
+    collectionName: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.collection_name,
+    branchName: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.branch_name,
+    sectionName: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.section_name,
+    genreLabel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.genre_label,
+    formatLabel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.format_label,
+    bindingLabel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.binding_label,
+    summaryText: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.summary_text,
+    subjectHeading: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.subject_heading,
+    seriesLabel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.series_label,
+    contributorName: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.contributor_name,
+    illustratorName: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.illustrator_name,
+    translatorName: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.translator_name,
+    publicationPlace: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.publication_place,
+    publisherCode: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.publisher_code,
+    circulationStatus: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.circulation_status,
+    availabilityLabel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.availability_label,
+    audienceLabel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.audience_label,
+    readingLevel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.reading_level,
+    conditionLabel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.condition_label,
+    acquisitionSource: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.acquisition_source,
+    callNumber: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.call_number,
+    barcodeValue: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.barcode_value,
+    recordStatus: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.record_status,
+    coverColor: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.cover_color,
+    spineColor: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.spine_color,
+    cataloguerNote: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.cataloguer_note,
+    displayNote: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.display_note,
+    searchKeywords: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.search_keywords,
+    alternateTitle: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.alternate_title,
+    originalLanguage: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.original_language,
+    countryOfOrigin: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.country_of_origin,
+    donorName: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.donor_name,
+    accessionNote: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.accession_note,
+    reviewLabel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.review_label,
+    routeLabel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.route_label,
+    storageZone: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.storage_zone,
+    handlingNote: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.handling_note,
+    replacementCode: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.replacement_code,
+    recordGroup: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.record_group,
+    classificationNote: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.classification_note,
+    pageCount: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.page_count,
+    copyCount: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.copy_count,
+    borrowingPeriodDays: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.borrowing_period_days,
+    branchNumber: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.branch_number,
+    shelfLevel: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.shelf_level,
+    volumeNumber: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.volume_number,
+    printRun: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.print_run,
+    heightCm: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.height_cm,
+    widthCm: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.width_cm,
+    weightKg: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.weight_kg,
+    readingScore: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.reading_score,
+    conditionScore: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.condition_score,
+    publishedAt: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.published_at,
+    acquiredAt: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.acquired_at,
+    lastReviewedAt: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.last_reviewed_at,
+    withdrawnAt: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_record.withdrawn_at
+  }
+
+  *test::lunarwillow5::domain::CatalogueNote[catalogueNote]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarwillow5::store::LibraryDatabase]library.catalogue_note.note_code
+    )
+    ~mainTable [test::lunarwillow5::store::LibraryDatabase]library.catalogue_note
+    noteCode: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_note.note_code,
+    catalogueCode: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_note.catalogue_code,
+    noteText: [test::lunarwillow5::store::LibraryDatabase]library.catalogue_note.note_text
+  }
+
+  *test::lunarwillow5::domain::CirculationEvent[circulationEvent]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarwillow5::store::LibraryDatabase]library.circulation_event.event_code
+    )
+    ~mainTable [test::lunarwillow5::store::LibraryDatabase]library.circulation_event
+    eventCode: [test::lunarwillow5::store::LibraryDatabase]library.circulation_event.event_code,
+    catalogueCode: [test::lunarwillow5::store::LibraryDatabase]library.circulation_event.catalogue_code,
+    eventType: [test::lunarwillow5::store::LibraryDatabase]library.circulation_event.event_type,
+    eventAt: [test::lunarwillow5::store::LibraryDatabase]library.circulation_event.event_at
+  }
+
+  testSuites:
+  [
+    catalogueRecordSuite:
+    {
+      doc: 'Projects every scalar property of the wide catalogue record through its aliased primary table.';
+      function: |test::lunarwillow5::domain::CatalogueRecord.all()->project(
+        [
+          c|$c.catalogueCode,
+          c|$c.title,
+          c|$c.subtitle,
+          c|$c.authorName,
+          c|$c.imprintName,
+          c|$c.editionLabel,
+          c|$c.languageCode,
+          c|$c.shelfMark,
+          c|$c.collectionName,
+          c|$c.branchName,
+          c|$c.sectionName,
+          c|$c.genreLabel,
+          c|$c.formatLabel,
+          c|$c.bindingLabel,
+          c|$c.summaryText,
+          c|$c.subjectHeading,
+          c|$c.seriesLabel,
+          c|$c.contributorName,
+          c|$c.illustratorName,
+          c|$c.translatorName,
+          c|$c.publicationPlace,
+          c|$c.publisherCode,
+          c|$c.circulationStatus,
+          c|$c.availabilityLabel,
+          c|$c.audienceLabel,
+          c|$c.readingLevel,
+          c|$c.conditionLabel,
+          c|$c.acquisitionSource,
+          c|$c.callNumber,
+          c|$c.barcodeValue,
+          c|$c.recordStatus,
+          c|$c.coverColor,
+          c|$c.spineColor,
+          c|$c.cataloguerNote,
+          c|$c.displayNote,
+          c|$c.searchKeywords,
+          c|$c.alternateTitle,
+          c|$c.originalLanguage,
+          c|$c.countryOfOrigin,
+          c|$c.donorName,
+          c|$c.accessionNote,
+          c|$c.reviewLabel,
+          c|$c.routeLabel,
+          c|$c.storageZone,
+          c|$c.handlingNote,
+          c|$c.replacementCode,
+          c|$c.recordGroup,
+          c|$c.classificationNote,
+          c|$c.pageCount,
+          c|$c.copyCount,
+          c|$c.borrowingPeriodDays,
+          c|$c.branchNumber,
+          c|$c.shelfLevel,
+          c|$c.volumeNumber,
+          c|$c.printRun,
+          c|$c.heightCm,
+          c|$c.widthCm,
+          c|$c.weightKg,
+          c|$c.readingScore,
+          c|$c.conditionScore,
+          c|$c.publishedAt,
+          c|$c.acquiredAt,
+          c|$c.lastReviewedAt,
+          c|$c.withdrawnAt
+        ],
+        [
+          'Catalogue Code',
+          'Title',
+          'Subtitle',
+          'Author Name',
+          'Imprint Name',
+          'Edition Label',
+          'Language Code',
+          'Shelf Mark',
+          'Collection Name',
+          'Branch Name',
+          'Section Name',
+          'Genre Label',
+          'Format Label',
+          'Binding Label',
+          'Summary Text',
+          'Subject Heading',
+          'Series Label',
+          'Contributor Name',
+          'Illustrator Name',
+          'Translator Name',
+          'Publication Place',
+          'Publisher Code',
+          'Circulation Status',
+          'Availability Label',
+          'Audience Label',
+          'Reading Level',
+          'Condition Label',
+          'Acquisition Source',
+          'Call Number',
+          'Barcode Value',
+          'Record Status',
+          'Cover Color',
+          'Spine Color',
+          'Cataloguer Note',
+          'Display Note',
+          'Search Keywords',
+          'Alternate Title',
+          'Original Language',
+          'Country Of Origin',
+          'Donor Name',
+          'Accession Note',
+          'Review Label',
+          'Route Label',
+          'Storage Zone',
+          'Handling Note',
+          'Replacement Code',
+          'Record Group',
+          'Classification Note',
+          'Page Count',
+          'Copy Count',
+          'Borrowing Period Days',
+          'Branch Number',
+          'Shelf Level',
+          'Volume Number',
+          'Print Run',
+          'Height Cm',
+          'Width Cm',
+          'Weight Kg',
+          'Reading Score',
+          'Condition Score',
+          'Published At',
+          'Acquired At',
+          'Last Reviewed At',
+          'Withdrawn At'
+        ]
+      )->sort([asc('Catalogue Code')]);
+      tests:
+      [
+        everyCatalogueColumn:
+        {
+          data:
+          [
+            test::lunarwillow5::store::LibraryDatabase:
+              Relational
+              #{
+                library.catalogue_record:
+                  'catalogue_code,title,subtitle,author_name,imprint_name,edition_label,language_code,shelf_mark,collection_name,branch_name,section_name,genre_label,format_label,binding_label,summary_text,subject_heading,series_label,contributor_name,illustrator_name,translator_name,publication_place,publisher_code,circulation_status,availability_label,audience_label,reading_level,condition_label,acquisition_source,call_number,barcode_value,record_status,cover_color,spine_color,cataloguer_note,display_note,search_keywords,alternate_title,original_language,country_of_origin,donor_name,accession_note,review_label,route_label,storage_zone,handling_note,replacement_code,record_group,classification_note,page_count,copy_count,borrowing_period_days,branch_number,shelf_level,volume_number,print_run,height_cm,width_cm,weight_kg,reading_score,condition_score,published_at,acquired_at,last_reviewed_at,withdrawn_at\n'+
+                  'CR-001,The Willow Atlas,Field Edition,Rowan Bell,North Star Press,Second Edition,en,QA-17,Public Stacks,Willow Branch,Reference,botany,hardcover,cloth,Illustrated guide to river trees,Willow ecology,Field Guides,June Mercer,Elin Park,Uncredited,Hearthside,NSP,AVAILABLE,On Shelf,Adult,Intermediate,Excellent,Gift,REF 582.1 BELL,BC-001,ACTIVE,green,blue,Checked against source copy,Featured on the spring shelf,willow river trees,The Atlas of Willows,en,Canada,Friends of the Library,Donated in spring,Featured,Route A,Zone 3,Handle gently,REP-001,Natural History,Verified by curator,312,4,21,3,2,1,5000,24.5,16.2,0.85,4.7,4.9,2025-03-10 09:30:00,2025-04-01 14:00:00,2026-01-08 10:15:00,2099-12-31 00:00:00\n';
+                library.catalogue_note:
+                  'note_code,catalogue_code,note_text\n'+
+                  'N-001,CR-001,Gift plate retained inside front cover\n';
+                library.circulation_event:
+                  'event_code,catalogue_code,event_type,event_at\n'+
+                  'E-001,CR-001,CATALOGUED,2025-03-11 11:45:00\n';
+              }#
+          ];
+          asserts:
+          [
+            fullCatalogueProjection:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Catalogue Code":"CR-001","Title":"The Willow Atlas","Subtitle":"Field Edition","Author Name":"Rowan Bell","Imprint Name":"North Star Press","Edition Label":"Second Edition","Language Code":"en","Shelf Mark":"QA-17","Collection Name":"Public Stacks","Branch Name":"Willow Branch","Section Name":"Reference","Genre Label":"botany","Format Label":"hardcover","Binding Label":"cloth","Summary Text":"Illustrated guide to river trees","Subject Heading":"Willow ecology","Series Label":"Field Guides","Contributor Name":"June Mercer","Illustrator Name":"Elin Park","Translator Name":"Uncredited","Publication Place":"Hearthside","Publisher Code":"NSP","Circulation Status":"AVAILABLE","Availability Label":"On Shelf","Audience Label":"Adult","Reading Level":"Intermediate","Condition Label":"Excellent","Acquisition Source":"Gift","Call Number":"REF 582.1 BELL","Barcode Value":"BC-001","Record Status":"ACTIVE","Cover Color":"green","Spine Color":"blue","Cataloguer Note":"Checked against source copy","Display Note":"Featured on the spring shelf","Search Keywords":"willow river trees","Alternate Title":"The Atlas of Willows","Original Language":"en","Country Of Origin":"Canada","Donor Name":"Friends of the Library","Accession Note":"Donated in spring","Review Label":"Featured","Route Label":"Route A","Storage Zone":"Zone 3","Handling Note":"Handle gently","Replacement Code":"REP-001","Record Group":"Natural History","Classification Note":"Verified by curator","Page Count":312,"Copy Count":4,"Borrowing Period Days":21,"Branch Number":3,"Shelf Level":2,"Volume Number":1,"Print Run":5000,"Height Cm":24.5,"Width Cm":16.2,"Weight Kg":0.85,"Reading Score":4.7,"Condition Score":4.9,"Published At":"2025-03-10T09:30:00.000000000+0000","Acquired At":"2025-04-01T14:00:00.000000000+0000","Last Reviewed At":"2026-01-08T10:15:00.000000000+0000","Withdrawn At":"2099-12-31T00:00:00.000000000+0000"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    catalogueNoteSuite:
+    {
+      doc: 'Projects one note row from the first supporting catalogue relation.';
+      function: |test::lunarwillow5::domain::CatalogueNote.all()->project(
+        [
+          n|$n.noteCode,
+          n|$n.catalogueCode,
+          n|$n.noteText
+        ],
+        [
+          'Note Code',
+          'Catalogue Code',
+          'Note Text'
+        ]
+      );
+      tests:
+      [
+        oneCatalogueNote:
+        {
+          data:
+          [
+            test::lunarwillow5::store::LibraryDatabase:
+              Relational
+              #{
+                library.catalogue_note:
+                  'note_code,catalogue_code,note_text\n'+
+                  'N-001,CR-001,Gift plate retained inside front cover\n';
+              }#
+          ];
+          asserts:
+          [
+            noteProjection:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Note Code":"N-001","Catalogue Code":"CR-001","Note Text":"Gift plate retained inside front cover"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    circulationEventSuite:
+    {
+      doc: 'Projects one circulation event row from the second supporting catalogue relation.';
+      function: |test::lunarwillow5::domain::CirculationEvent.all()->project(
+        [
+          e|$e.eventCode,
+          e|$e.catalogueCode,
+          e|$e.eventType,
+          e|$e.eventAt
+        ],
+        [
+          'Event Code',
+          'Catalogue Code',
+          'Event Type',
+          'Event At'
+        ]
+      );
+      tests:
+      [
+        oneCirculationEvent:
+        {
+          data:
+          [
+            test::lunarwillow5::store::LibraryDatabase:
+              Relational
+              #{
+                library.circulation_event:
+                  'event_code,catalogue_code,event_type,event_at\n'+
+                  'E-001,CR-001,CATALOGUED,2025-03-11 11:45:00\n';
+              }#
+          ];
+          asserts:
+          [
+            eventProjection:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Event Code":"E-001","Catalogue Code":"CR-001","Event Type":"CATALOGUED","Event At":"2025-03-11T11:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

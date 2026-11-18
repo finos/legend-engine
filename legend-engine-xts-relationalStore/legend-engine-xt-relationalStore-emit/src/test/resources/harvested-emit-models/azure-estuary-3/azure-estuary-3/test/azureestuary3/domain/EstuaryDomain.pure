@@ -1,0 +1,168 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::azureestuary3::domain::*;
+import meta::pure::functions::date::*;
+
+Enum test::azureestuary3::domain::TideStage
+{
+  Ebb,
+  Flood,
+  Slack,
+  Spring,
+  Neap
+}
+
+Enum test::azureestuary3::domain::ShelterClass
+{
+  Exposed,
+  Partial,
+  Sheltered,
+  Unclassed
+}
+
+Enum test::azureestuary3::domain::ObserverGrade
+{
+  Lead,
+  Senior,
+  Volunteer,
+  Trainee
+}
+
+Class test::azureestuary3::domain::SurveyFeature
+{
+  featureCode: String[1];
+  featureName: String[1];
+  reviewNote: String[0..1];
+}
+
+Class test::azureestuary3::domain::RoostSector extends SurveyFeature
+{
+  shelter: ShelterClass[1];
+  capacityBirds: Integer[1];
+  mudflatHectares: Integer[1];
+  headroomBirds: Integer[1];
+  statusCode: String[1];
+  zoneLabel: String[0..1];
+  location: SectorLocation[1];
+  spacious() {$this.capacityBirds >= 500}: Boolean[1];
+}
+
+Class test::azureestuary3::domain::SectorLocation
+{
+  gridReference: String[1];
+  approachLabel: String[1];
+}
+
+Class test::azureestuary3::domain::TidalZone extends SurveyFeature
+{
+  exposureLabel: String[1];
+  peakCapacity: Integer[0..1];
+  sectorsOverCapacity(floor: Integer[1])
+  {
+    $this.zoneSectors->filter(s|$s.capacityBirds > $floor)
+  }: RoostSector[*];
+  firstShelteredSectorCode()
+  {
+    $this.zoneSectors->filter(s|$s.shelter == ShelterClass.Sheltered)->map(s|$s.featureCode)->first()
+  }: String[0..1];
+  hasSectorNamed(code: String[1])
+  {
+    $this.zoneSectors->filter(s|$s.featureCode == $code)->isNotEmpty()
+  }: Boolean[1];
+}
+
+Class test::azureestuary3::domain::ReserveArea extends SurveyFeature
+{
+  wardenLabel: String[1];
+}
+
+Class test::azureestuary3::domain::SurveyDistrict
+{
+  districtCode: String[1];
+  districtName: String[1];
+}
+
+Class test::azureestuary3::domain::CoastRegion
+{
+  regionCode: String[1];
+  regionName: String[1];
+  coastSideLabel: String[1];
+}
+
+Class test::azureestuary3::domain::ObserverTeam
+{
+  observerCode: String[1];
+  observerName: String[1];
+  grade: ObserverGrade[1];
+  ringSchemeLabel: String[1];
+  lastVisitAt: DateTime[0..1];
+  visitFreshness(graceDays: Integer[1])
+  {
+    if(($this.lastVisitAt->isEmpty()) || (now()->dateDiff($this.lastVisitAt->toOne(), DurationUnit.DAYS) >= $graceDays),
+       |'OUTSIDE VISIT WINDOW',
+       |$this.lastVisitAt->toOne()->toString())
+  }: String[1];
+}
+
+Class <<temporal.bitemporal>> test::azureestuary3::domain::RoostCount
+{
+  countId: Integer[1];
+  tide: TideStage[1];
+  birdTally: Integer[1];
+  waderTally: Integer[1];
+  noteText: String[1];
+  countedOn: StrictDate[1];
+  conditionBand: String[0..1];
+  effortScore: Integer[1];
+  regionName: String[0..1];
+  zonePeakCapacity: Integer[0..1];
+}
+
+Association test::azureestuary3::domain::Sector_Counts
+{
+  sectorCounts: RoostCount[*];
+  countedSector: RoostSector[0..1];
+}
+
+Association test::azureestuary3::domain::Zone_Sectors
+{
+  zoneSectors: RoostSector[*];
+  zone: TidalZone[0..1];
+}
+
+Association test::azureestuary3::domain::Reserve_Zones
+{
+  reserveZones: TidalZone[*];
+  reserve: ReserveArea[0..1];
+}
+
+Association test::azureestuary3::domain::District_Reserves
+{
+  districtReserves: ReserveArea[*];
+  district: SurveyDistrict[0..1];
+}
+
+Association test::azureestuary3::domain::Region_Districts
+{
+  regionDistricts: SurveyDistrict[*];
+  region: CoastRegion[0..1];
+}
+
+Association test::azureestuary3::domain::Observer_Counts
+{
+  observedCounts: RoostCount[*];
+  observer: ObserverTeam[0..1];
+}

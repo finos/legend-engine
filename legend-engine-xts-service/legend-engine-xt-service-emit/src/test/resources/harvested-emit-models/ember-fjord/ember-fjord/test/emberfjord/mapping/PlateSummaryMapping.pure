@@ -1,0 +1,249 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emberfjord::mapping::PlateSummaryMapping
+(
+  *test::emberfjord::domain::PlateSummary[plateSummary]: Pure
+  {
+    ~src test::emberfjord::source::SurveyRunFeed
+    runCode: $src.runCode,
+    plateCode: $src.station.plate.plateCode,
+    stationLabel: if($src.station.plate.plateCode->isEmpty(),
+                     | 'UNPLATED',
+                     | $src.station.plate.plateCode->toOne()),
+    leadSighting: if($src.station.plate.sightings->filter(s|$s.category->isNotEmpty() && ($s.category->toOne() == 'VARIABLE'))->isEmpty(),
+                     | '',
+                     | $src.station.plate.sightings->filter(s|$s.category->isNotEmpty() && ($s.category->toOne() == 'VARIABLE'))->at(0).sightingCode),
+    faintestMagnitudeMilli: if($src.station.plate.sightings->filter(s|$s.category->isNotEmpty() && ($s.category->toOne() == 'VARIABLE'))->isEmpty(),
+                               | -1,
+                               | $src.station.plate.sightings->filter(s|$s.category->isNotEmpty() && ($s.category->toOne() == 'VARIABLE'))->first()->toOne().magnitudeMilli->toOne()),
+    sightingCount: if($src.station.plate.sightings->isEmpty(),
+                      | 0,
+                      | $src.station.plate.sightings->size())
+  }
+
+  testSuites:
+  [
+    plateSummarySuite:
+    {
+      function: |test::emberfjord::domain::PlateSummary.all()->graphFetch(
+        #{
+          test::emberfjord::domain::PlateSummary{
+            runCode,
+            plateCode,
+            stationLabel,
+            leadSighting,
+            faintestMagnitudeMilli,
+            sightingCount
+          }
+        }#
+      )->serialize(
+        #{
+          test::emberfjord::domain::PlateSummary{
+            runCode,
+            plateCode,
+            stationLabel,
+            leadSighting,
+            faintestMagnitudeMilli,
+            sightingCount
+          }
+        }#
+      );
+      tests:
+      [
+        emptySightingCollection:
+        {
+          doc: 'A plate exposed with no sightings at all takes both typed defaults and a zero count.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::emberfjord::source::SurveyRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-01","station":{"stationName":"Ridge Dome","plate":{"plateCode":"PL-01","sightings":[]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            emptySightingCollectionAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-01","plateCode":"PL-01","stationLabel":"PL-01","leadSighting":"","faintestMagnitudeMilli":-1,"sightingCount":0}';
+                  }#;
+              }#
+          ];
+        },
+        singleNonMatchingSighting:
+        {
+          doc: 'A single sighting whose variability class is not the one selected leaves the defaults in place.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::emberfjord::source::SurveyRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-02","station":{"stationName":"Ridge Dome","plate":{"plateCode":"PL-02","sightings":[{"sightingCode":"SG-20","category":"STEADY","magnitudeMilli":8400}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            singleNonMatchingSightingAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-02","plateCode":"PL-02","stationLabel":"PL-02","leadSighting":"","faintestMagnitudeMilli":-1,"sightingCount":1}';
+                  }#;
+              }#
+          ];
+        },
+        severalNonMatchingSightings:
+        {
+          doc: 'Several sightings of other variability classes still leave the defaults in place while the count grows.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::emberfjord::source::SurveyRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-03","station":{"stationName":"Saddle Dome","plate":{"plateCode":"PL-03","sightings":[{"sightingCode":"SG-30","category":"STEADY","magnitudeMilli":7100},{"sightingCode":"SG-31","category":"EXTENDED","magnitudeMilli":9300},{"sightingCode":"SG-32","category":"STEADY","magnitudeMilli":6600}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            severalNonMatchingSightingsAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-03","plateCode":"PL-03","stationLabel":"PL-03","leadSighting":"","faintestMagnitudeMilli":-1,"sightingCount":3}';
+                  }#;
+              }#
+          ];
+        },
+        singleMatchingSighting:
+        {
+          doc: 'A single sighting of the selected variability class is surfaced with its own magnitude.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::emberfjord::source::SurveyRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-04","station":{"stationName":"Saddle Dome","plate":{"plateCode":"PL-04","sightings":[{"sightingCode":"SG-40","category":"VARIABLE","magnitudeMilli":10250}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            singleMatchingSightingAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-04","plateCode":"PL-04","stationLabel":"PL-04","leadSighting":"SG-40","faintestMagnitudeMilli":10250,"sightingCount":1}';
+                  }#;
+              }#
+          ];
+        },
+        severalWithOneMatchingSighting:
+        {
+          doc: 'Among several sightings only the one of the selected variability class is surfaced, and the count still covers them all.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::emberfjord::source::SurveyRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-05","station":{"stationName":"Cairn Dome","plate":{"plateCode":"PL-05","sightings":[{"sightingCode":"SG-50","category":"STEADY","magnitudeMilli":5400},{"sightingCode":"SG-51","category":"VARIABLE","magnitudeMilli":11800},{"sightingCode":"SG-52","category":"EXTENDED","magnitudeMilli":4900}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            severalWithOneMatchingSightingAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-05","plateCode":"PL-05","stationLabel":"PL-05","leadSighting":"SG-51","faintestMagnitudeMilli":11800,"sightingCount":3}';
+                  }#;
+              }#
+          ];
+        },
+        absentDiscriminatorAndPlateCode:
+        {
+          doc: 'Sightings whose variability class is absent never match, and an absent plate identifier falls back to the unplated label while the optional summary property stays null.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::emberfjord::source::SurveyRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-06","station":{"stationName":"Cairn Dome","plate":{"sightings":[{"sightingCode":"SG-60","magnitudeMilli":3300},{"sightingCode":"SG-61","magnitudeMilli":2100}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            absentDiscriminatorAndPlateCodeAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-06","plateCode":null,"stationLabel":"UNPLATED","leadSighting":"","faintestMagnitudeMilli":-1,"sightingCount":2}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

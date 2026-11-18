@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::emberglacier::dataspace::SkywatchDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'nightLog';
+      description: 'Night-log context - the whole observing record bound to the network warehouse the sites publish to.';
+      mapping: test::emberglacier::mapping::SkywatchMapping;
+      defaultRuntime: test::emberglacier::runtime::SkywatchRuntime;
+    }
+  ];
+  defaultExecutionContext: 'nightLog';
+  title: 'Ember Glacier Skywatch Network';
+  description: 'Curated entry point over the observing network: the sites and their enclosures, the telescopes and detectors housed in them, the observers who take slots, the targets they point at, the runs themselves and the sky notes taken while a run was open. Every traversal between two of these is an association resolved through a named store join, so a consumer reads the record as a connected model rather than as eight unrelated tables.';
+  elements:
+  [
+    test::emberglacier::domain::Observatory,
+    test::emberglacier::domain::Dome,
+    test::emberglacier::domain::Telescope,
+    test::emberglacier::domain::Instrument,
+    test::emberglacier::domain::Observer,
+    test::emberglacier::domain::SkyTarget,
+    test::emberglacier::domain::ObservingSession,
+    test::emberglacier::domain::SeeingReading
+  ];
+  supportInfo: Email
+  {
+    address: 'skywatch-night-desk@example.invalid';
+  };
+}

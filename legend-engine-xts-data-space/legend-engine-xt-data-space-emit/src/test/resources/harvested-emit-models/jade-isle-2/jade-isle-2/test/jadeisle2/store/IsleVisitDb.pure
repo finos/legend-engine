@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::jadeisle2::store::IsleVisitDb
+(
+  Schema patrol
+  (
+    Table trail_patrol
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      patrol_code VARCHAR(12) PRIMARY KEY,
+      segment_code VARCHAR(12),
+      warden_name VARCHAR(80),
+      patrol_grade VARCHAR(20),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+    Table warden_shift
+    (
+      shift_code VARCHAR(12) PRIMARY KEY,
+      patrol_code VARCHAR(12),
+      shift_name VARCHAR(80),
+      crew_size INTEGER
+    )
+  )
+
+  Schema roster
+  (
+    Table shift_note
+    (
+      shift_code VARCHAR(12) PRIMARY KEY,
+      note_text VARCHAR(160)
+    )
+  )
+
+  Join Patrol_Shift_J(patrol.trail_patrol.patrol_code = patrol.warden_shift.patrol_code)
+  Join Shift_Note_J(patrol.warden_shift.shift_code = roster.shift_note.shift_code)
+)

@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealcove2::mapping::CompostArchiveMapping
+(
+  *test::borealcove2::domain::Site[archiveSite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealcove2::store::CompostArchiveDB]compostarch.retired_site.site_code
+    )
+    ~mainTable [test::borealcove2::store::CompostArchiveDB]compostarch.retired_site
+    siteCode: [test::borealcove2::store::CompostArchiveDB]compostarch.retired_site.site_code,
+    siteName: rtrim([test::borealcove2::store::CompostArchiveDB]compostarch.retired_site.site_name),
+    siteKind: toLower(trim([test::borealcove2::store::CompostArchiveDB]compostarch.retired_site.site_kind)),
+    statusLabel: 'RETIRED SITE',
+    binCount: [test::borealcove2::store::CompostArchiveDB]compostarch.retired_site.bin_count,
+    noteText: case(
+                isNotEmpty([test::borealcove2::store::CompostArchiveDB]compostarch.retired_site.note_text),
+                trim([test::borealcove2::store::CompostArchiveDB]compostarch.retired_site.note_text),
+                'NO ARCHIVED NOTE'
+              )
+  }
+
+  *test::borealcove2::domain::Haul[archiveHaul]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul.haul_id
+    )
+    ~mainTable [test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul
+    haulId: [test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul.haul_id,
+    haulDate: [test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul.haul_date,
+    grossKg: [test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul.gross_kg,
+    tareKg: [test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul.tare_kg,
+    netKg: minus(
+             [test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul.gross_kg,
+             [test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul.tare_kg
+           ),
+    netTonnes: round(
+                 divide(
+                   minus(
+                     [test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul.gross_kg,
+                     [test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul.tare_kg
+                   ),
+                   1000
+                 ),
+                 3
+               ),
+    loadBand: 'archived-load',
+    gradeLabel: concat(
+                  concat(
+                    'ARC/',
+                    toUpper(trim([test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul.grade_code))
+                  ),
+                  [test::borealcove2::store::CompostArchiveDB]compostarch.retired_haul.route_code
+                )
+  }
+
+  testSuites:
+  [
+    archivedSiteSuite:
+    {
+      function: |test::borealcove2::domain::Site.all()->project(
+        [
+          s|$s.siteCode,
+          s|$s.siteName,
+          s|$s.siteKind,
+          s|$s.statusLabel,
+          s|$s.noteText
+        ],
+        [
+          'Site/Code',
+          'Site/Name',
+          'Site/Kind',
+          'Site/Status',
+          'Site/Note'
+        ]
+      )->sort([asc('Site/Code')]);
+      tests:
+      [
+        archivedSitesCarryTheLiteralStatus:
+        {
+          doc: 'The archive alias reads a differently named table in its own schema and observes the literal status every archived row shares, with the note default standing in for an empty archived note.';
+          data:
+          [
+            test::borealcove2::store::CompostArchiveDB:
+              Relational
+              #{
+                compostarch.retired_site:
+                  'site_code,site_name,ward_code,site_kind,status_code,bin_count,note_text\n'+
+                  'ST-91,Old Kiln Yard  ,W-1, WINDROW BAY ,A,3,  lifted 2025  \n'+
+                  'ST-92,Fern Hollow,W-2,STATIC PILE,B,5,\n';
+              }#
+          ];
+          asserts:
+          [
+            archivedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site/Code":"ST-91","Site/Name":"Old Kiln Yard","Site/Kind":"windrow bay","Site/Status":"RETIRED SITE","Site/Note":"lifted 2025"},{"Site/Code":"ST-92","Site/Name":"Fern Hollow","Site/Kind":"static pile","Site/Status":"RETIRED SITE","Site/Note":"NO ARCHIVED NOTE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

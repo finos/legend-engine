@@ -1,0 +1,93 @@
+name: ember-glacier
+title: "Ember Glacier — Eight Associated Classes Over One Eight-Table Store, Laid Out As A Diagram And Published Through A Governed Data Space With Sixteen Plan-Bearing Services"
+description: |
+  A network of public observatories and the nightly record it keeps. Eight classes — the sites,
+  the enclosures standing at them, the telescopes housed in those enclosures, the detectors
+  mounted on the telescopes, the observers who take slots, the targets they point at, the runs
+  themselves and the sky notes taken while a run was open — sit over one schema of eight tables
+  spanning string, integer, floating-point, boolean, date and timestamp columns. Every traversal
+  between two classes is an association implemented by an association mapping that routes both
+  ends through a named equality join, so reaching a telescope's site is two inner joins in the
+  generated sql rather than an in-memory link, and a run reaches its observer, its target and its
+  detector through three separate associations that each resolve on their own. Each class mapping names its own main table, declares an explicit primary key over it
+  and alias-qualifies every column it binds. A diagram lays the eight classes and their eight
+  association ends out as a compiled view of the model, and a data space publishes all eight as
+  one consumer-facing execution context with a support address, resolving to the single mapping
+  and the single Snowflake-backed runtime behind it. Sixteen services carry the query surface:
+  a de-duplicated, bounded register whose predicate conjoins four conditions — two of them
+  reached across joins, one case-folded — before a negated membership test narrows it again; two
+  rollups that carry the same predicate into grouped sub-selects; a board that groups frames and
+  exposure per telescope and extends the group with the frames-per-second it actually returned; a
+  site register that compares a boolean column against a literal; three registers that walk one,
+  two and three association hops; and registers that test presence of an optional cohort, membership
+  over a case-exact catalogue set, a floating-point brightness bound and a parameterised exposure
+  floor. Both the mapping and every service are covered by test suites over inline relational
+  fixtures, including rows whose association ends deliberately fail to resolve and predicates that
+  admit nothing at all.
+modelSources:
+  model:
+    root: ember-glacier
+    files:
+      - test/emberglacier/connection/SkywatchConnection.pure
+      - test/emberglacier/dataspace/SkywatchDataSpace.pure
+      - test/emberglacier/diagram/SkywatchDiagram.pure
+      - test/emberglacier/domain/SkywatchDomain.pure
+      - test/emberglacier/mapping/SkywatchMapping.pure
+      - test/emberglacier/runtime/SkywatchRuntime.pure
+      - test/emberglacier/service/CatalogBandRollupService.pure
+      - test/emberglacier/service/DomeRegisterService.pure
+      - test/emberglacier/service/FaintTargetRegisterService.pure
+      - test/emberglacier/service/FrameYieldBoardService.pure
+      - test/emberglacier/service/FrameYieldRollupService.pure
+      - test/emberglacier/service/InstrumentRegisterService.pure
+      - test/emberglacier/service/LongExposureRegisterService.pure
+      - test/emberglacier/service/ObserverRosterService.pure
+      - test/emberglacier/service/PublicNightSiteService.pure
+      - test/emberglacier/service/SeeingRegisterService.pure
+      - test/emberglacier/service/SessionCatalogRegisterService.pure
+      - test/emberglacier/service/SessionStateRollupService.pure
+      - test/emberglacier/service/SessionsByObserverService.pure
+      - test/emberglacier/service/SiteSeeingRollupService.pure
+      - test/emberglacier/service/TargetCatalogRegisterService.pure
+      - test/emberglacier/service/TelescopeRegisterService.pure
+      - test/emberglacier/store/SkywatchDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:diagram
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - execution:test-suite
+  - query:collection-op
+  - query:distinct
+  - query:filter
+  - query:group-by
+  - query:membership-test
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+complexity: advanced
+tags:
+  - association
+  - data-space
+  - diagram
+  - group-by
+  - h2
+  - inner-join
+  - multi-table
+  - observatory
+  - relational
+  - service
+  - snowflake
+  - tds
+stores:
+  - relational

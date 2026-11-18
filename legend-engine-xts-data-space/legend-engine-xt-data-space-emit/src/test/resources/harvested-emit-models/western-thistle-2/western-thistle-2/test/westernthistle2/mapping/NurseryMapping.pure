@@ -1,0 +1,139 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernthistle2::mapping::NurseryMapping
+(
+  *test::westernthistle2::domain::PropagationHouse[propagationHouse]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthistle2::store::NurseryDb]nursery.propagation_house.house_code
+    )
+    ~mainTable [test::westernthistle2::store::NurseryDb]nursery.propagation_house
+    houseCode: [test::westernthistle2::store::NurseryDb]nursery.propagation_house.house_code,
+    houseName: [test::westernthistle2::store::NurseryDb]nursery.propagation_house.house_name,
+    glazingType: [test::westernthistle2::store::NurseryDb]nursery.propagation_house.glazing_type,
+    benchAreaSqm: [test::westernthistle2::store::NurseryDb]nursery.propagation_house.bench_area_sqm,
+    heated: [test::westernthistle2::store::NurseryDb]nursery.propagation_house.heated_flag
+  }
+
+  *test::westernthistle2::domain::Cultivar[cultivar]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthistle2::store::NurseryDb]nursery.cultivar.cultivar_code
+    )
+    ~mainTable [test::westernthistle2::store::NurseryDb]nursery.cultivar
+    cultivarCode: [test::westernthistle2::store::NurseryDb]nursery.cultivar.cultivar_code,
+    cultivarName: [test::westernthistle2::store::NurseryDb]nursery.cultivar.cultivar_name,
+    familyName: [test::westernthistle2::store::NurseryDb]nursery.cultivar.family_name,
+    daysToGerminate: [test::westernthistle2::store::NurseryDb]nursery.cultivar.days_to_germinate,
+    seedWeightMg: [test::westernthistle2::store::NurseryDb]nursery.cultivar.seed_weight_mg
+  }
+
+  *test::westernthistle2::domain::SeedLot[seedLot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthistle2::store::NurseryDb]nursery.seed_lot.lot_code,
+      [test::westernthistle2::store::NurseryDb]nursery.seed_lot.sown_on
+    )
+    ~mainTable [test::westernthistle2::store::NurseryDb]nursery.seed_lot
+    lotCode: [test::westernthistle2::store::NurseryDb]nursery.seed_lot.lot_code,
+    sownOn: [test::westernthistle2::store::NurseryDb]nursery.seed_lot.sown_on,
+    seedCount: [test::westernthistle2::store::NurseryDb]nursery.seed_lot.seed_count,
+    germinationRate: [test::westernthistle2::store::NurseryDb]nursery.seed_lot.germination_rate,
+    treated: [test::westernthistle2::store::NurseryDb]nursery.seed_lot.treated_flag,
+    house[propagationHouse]: [test::westernthistle2::store::NurseryDb]@SeedLot_House,
+    cultivar[cultivar]: [test::westernthistle2::store::NurseryDb]@SeedLot_Cultivar
+  }
+
+  *test::westernthistle2::domain::BenchReading[benchReading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthistle2::store::NurseryDb]nursery.bench_reading.house_code,
+      [test::westernthistle2::store::NurseryDb]nursery.bench_reading.reading_at
+    )
+    ~mainTable [test::westernthistle2::store::NurseryDb]nursery.bench_reading
+    houseCode: [test::westernthistle2::store::NurseryDb]nursery.bench_reading.house_code,
+    readingAt: [test::westernthistle2::store::NurseryDb]nursery.bench_reading.reading_at,
+    airTempC: [test::westernthistle2::store::NurseryDb]nursery.bench_reading.air_temp_c,
+    humidityPct: [test::westernthistle2::store::NurseryDb]nursery.bench_reading.humidity_pct,
+    house[propagationHouse]: [test::westernthistle2::store::NurseryDb]@Reading_House
+  }
+
+  testSuites:
+  [
+    benchReadingAliasSuite:
+    {
+      function: |test::westernthistle2::domain::BenchReading.all()->project(
+        [
+          r|$r.house.houseName,
+          r|$r.house.glazingType,
+          r|$r.airTempC,
+          r|$r.humidityPct
+        ],
+        [
+          'House',
+          'Glazing',
+          'AirTemp',
+          'Humidity'
+        ]
+      )->sort(
+        [
+          asc('AirTemp')
+        ]
+      );
+      tests:
+      [
+        readingsQualifyBothMainTableAliases:
+        {
+          doc: 'Reads the reading class off its own main table and the house class off a second main table through the declared join, so both table aliases and both composite key clauses appear in one generated statement.';
+          data:
+          [
+            test::westernthistle2::store::NurseryDb:
+              Relational
+              #{
+                nursery.propagation_house:
+                  'house_code,house_name,glazing_type,bench_area_sqm,heated_flag\n'+
+                  'PH-1,Ridge Glasshouse,double-glazed,120.5,true\n'+
+                  'PH-2,Vale Polytunnel,poly-film,84.0,false\n'+
+                  'PH-3,Orchard Frame House,single-glazed,45.25,true\n';
+                nursery.bench_reading:
+                  'house_code,reading_at,air_temp_c,humidity_pct\n'+
+                  'PH-1,2026-02-03 06:00:00,14.5,70.0\n'+
+                  'PH-1,2026-02-03 18:00:00,21.0,55.5\n'+
+                  'PH-2,2026-02-12 06:00:00,9.5,82.0\n';
+              }#
+          ];
+          asserts:
+          [
+            everyReadingResolvesItsHouse:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"House":"Vale Polytunnel","Glazing":"poly-film","AirTemp":9.5,"Humidity":82.0},{"House":"Ridge Glasshouse","Glazing":"double-glazed","AirTemp":14.5,"Humidity":70.0},{"House":"Ridge Glasshouse","Glazing":"double-glazed","AirTemp":21.0,"Humidity":55.5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

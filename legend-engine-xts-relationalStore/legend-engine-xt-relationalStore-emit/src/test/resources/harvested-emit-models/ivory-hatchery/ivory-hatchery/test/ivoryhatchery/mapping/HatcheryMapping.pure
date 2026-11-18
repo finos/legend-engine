@@ -1,0 +1,175 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryhatchery::mapping::HatcheryMapping
+(
+  *test::ivoryhatchery::domain::EggLot[eggLot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.lot_id
+    )
+    ~mainTable [test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot
+    lotCode: concat('EGG-', toString([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.lot_id)),
+    lotName: toUpper([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.lot_name),
+    trayCount: [test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.tray_count,
+    eggCount: [test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.egg_count,
+    eggsPerTray: divide(
+                   [test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.egg_count,
+                   [test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.tray_count
+                 ),
+    growthBand: case(
+                  equal([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.band_code, 'A'),
+                  'alder',
+                  case(
+                    equal([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.band_code, 'B'),
+                    'bramble',
+                    case(
+                      equal([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.band_code, 'C'),
+                      'cattail',
+                      case(
+                        equal([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.band_code, 'D'),
+                        'duckweed',
+                        case(
+                          equal([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.band_code, 'E'),
+                          'elodea',
+                          case(
+                            equal([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.band_code, 'F'),
+                            'fenwort',
+                            case(
+                              equal([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.band_code, 'G'),
+                              'grassmat',
+                              case(
+                                equal([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.band_code, 'H'),
+                                'hornwort',
+                                sqlNull()
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                ),
+    noteLabel: coalesce([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.note_text, 'unlabelled'),
+    rosterTag: toLower(trim([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.lot_name)),
+    codeStem: toUpper(substring([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.lot_name, 1, 3)),
+    nameSize: length([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.lot_name),
+    bandListed: in(
+                  [test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.band_code,
+                  ['A', 'B', 'C']
+                ),
+    vigour: EnumerationMapping ClutchVigourMapping: concat(
+                                                      case(
+                                                        equal([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.vigour_code, 'FRAIL'),
+                                                        'WEAK',
+                                                        [test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.vigour_code
+                                                      ),
+                                                      concat('/', toUpper([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.ration_code))
+                                                    ),
+    ration: EnumerationMapping RationClassMapping: toUpper([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.ration_code),
+    fitBand: EnumerationMapping SizeBandMapping: concat(
+                                                   toUpper(trim([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.size_code)),
+                                                   '/TRAY'
+                                                 ),
+    gradeLabel: [test::ivoryhatchery::store::HatcheryStore]@Lot_Grade | [test::ivoryhatchery::store::HatcheryStore]reg.clutch_grade.grade_label,
+    cabinetName: [test::ivoryhatchery::store::HatcheryStore]@Lot_Grade > @Grade_Cabinet | [test::ivoryhatchery::store::HatcheryStore]reg.setter_cabinet.cabinet_name,
+    barnName: [test::ivoryhatchery::store::HatcheryStore]@Lot_Grade > @Grade_Cabinet > @Cabinet_Barn | [test::ivoryhatchery::store::HatcheryStore]reg.brooder_barn.barn_name,
+    regionName: [test::ivoryhatchery::store::HatcheryStore]@Lot_Grade > @Grade_Cabinet > @Cabinet_Barn > @Barn_Region | [test::ivoryhatchery::store::HatcheryStore]reg.grow_region.region_name,
+    stamp
+    (
+      stampLabel: concat([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.lot_name, '-tray'),
+      stampCabinet: [test::ivoryhatchery::store::HatcheryStore]@Lot_Grade > @Grade_Cabinet | [test::ivoryhatchery::store::HatcheryStore]reg.setter_cabinet.cabinet_name
+    ),
+    tally() Inline[lotTally]
+  }
+
+  test::ivoryhatchery::domain::LotTally[lotTally]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.lot_id
+    )
+    ~mainTable [test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot
+    tallyBand: coalesce([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.band_code, 'none'),
+    tallyLabel: concat('trays:', toString([test::ivoryhatchery::store::HatcheryStore]hatch.egg_lot.tray_count))
+  }
+
+  test::ivoryhatchery::domain::ClutchVigour: EnumerationMapping ClutchVigourMapping
+  {
+    STRONG: ['STRONG/STARTER', 'STRONG/GROWER'],
+    STEADY: ['STEADY/STARTER', 'STEADY/GROWER'],
+    WEAK: ['WEAK/STARTER', 'WEAK/GROWER']
+  }
+
+  test::ivoryhatchery::domain::RationClass: EnumerationMapping RationClassMapping
+  {
+    STARTER: ['STARTER'],
+    GROWER: ['GROWER']
+  }
+
+  test::ivoryhatchery::domain::SizeBand: EnumerationMapping SizeBandMapping
+  {
+    BANTAM: ['BANTAM/TRAY'],
+    STANDARD: ['STANDARD/TRAY'],
+    JUMBO: ['JUMBO/TRAY']
+  }
+
+  testSuites:
+  [
+    eggLotRegisterSuite:
+    {
+      function: test::ivoryhatchery::domain::EggLot.all()->project(~[Lot: x|$x.lotCode, Name: x|$x.lotName, Band: x|$x.bandLabel(), Note: x|$x.noteLabel, Stem: x|$x.codeStem, Vigour: x|$x.vigour, Ration: x|$x.ration, Fit: x|$x.fitBand, Grade: x|$x.gradeText(), Cabinet: x|$x.cabinetText(), Barn: x|$x.barnText(), Region: x|$x.regionText(), Stamp: x|$x.stamp.stampLabel, Tally: x|$x.tally.tallyLabel]);
+      tests:
+      [
+        everyBandArmAndEveryReachedHop:
+        {
+          doc: 'One fixture row per conditional arm, a row that falls through to the null band, a row per broken hop of the four-hop reach, and a row whose vigour source value is not decoded by the enumeration mapping.';
+          data:
+          [
+            test::ivoryhatchery::store::HatcheryStore:
+              Reference
+              #{
+                test::ivoryhatchery::data::HatcheryTestData
+              }#
+          ];
+          asserts:
+          [
+            fifteenRegisterRows:
+              Relation
+              #{
+                Lot,Name,Band,Note,Stem,Vigour,Ration,Fit,Grade,Cabinet,Barn,Region,Stamp,Tally
+                EGG-1,ALDER LOT,alder,ridge check,ALD,STRONG,STARTER,BANTAM,Prime clutch,North cabinet,Willow barn,Cedar reach region,alder lot-tray,trays:4
+                EGG-2,BRAMBLE LOT,bramble,shelf check,BRA,STEADY,GROWER,STANDARD,Prime clutch,North cabinet,Willow barn,Cedar reach region,bramble lot-tray,trays:2
+                EGG-3,CATTAIL LOT,cattail,unlabelled,CAT,WEAK,STARTER,JUMBO,Prime clutch,North cabinet,Willow barn,Cedar reach region,cattail lot-tray,trays:4
+                EGG-4,DUCKWEED LOT,duckweed,pier check,DUC,STRONG,GROWER,BANTAM,Prime clutch,North cabinet,Willow barn,Cedar reach region,duckweed lot-tray,trays:4
+                EGG-5,ELODEA LOT,elodea,arch check,ELO,STEADY,STARTER,STANDARD,Prime clutch,North cabinet,Willow barn,Cedar reach region,elodea lot-tray,trays:2
+                EGG-6,FENWORT LOT,fenwort,unlabelled,FEN,WEAK,GROWER,JUMBO,Prime clutch,North cabinet,Willow barn,Cedar reach region,fenwort lot-tray,trays:4
+                EGG-7,GRASSMAT LOT,grassmat,notch check,GRA,WEAK,STARTER,BANTAM,Prime clutch,North cabinet,Willow barn,Cedar reach region,grassmat lot-tray,trays:4
+                EGG-8,HORNWORT LOT,hornwort,gully check,HOR,STRONG,GROWER,STANDARD,Prime clutch,North cabinet,Willow barn,Cedar reach region,hornwort lot-tray,trays:4
+                EGG-9,QUIET LOT,unbanded,unlabelled,QUI,STEADY,STARTER,JUMBO,Prime clutch,North cabinet,Willow barn,Cedar reach region,quiet lot-tray,trays:2
+                EGG-14,BRISK LOT,elodea,brisk check,BRI,null,STARTER,STANDARD,Prime clutch,North cabinet,Willow barn,Cedar reach region,brisk lot-tray,trays:4
+                EGG-15,TIDY LOT,fenwort,unlabelled,TID,STEADY,GROWER,STANDARD,Prime clutch,North cabinet,Willow barn,Cedar reach region,tidy lot-tray,trays:2
+                EGG-13,COBBLE LOT,duckweed,cobble check,COB,STRONG,GROWER,BANTAM,Fourth clutch,West cabinet,Sedge barn,no region,cobble lot-tray,trays:5
+                EGG-12,BIRCHBARK LOT,cattail,birch check,BIR,WEAK,STARTER,JUMBO,Third clutch,South cabinet,no barn,no region,birchbark lot-tray,trays:3
+                EGG-11,MYSTERY LOT,bramble,mystery check,MYS,STEADY,GROWER,STANDARD,Spare clutch,no cabinet,no barn,no region,mystery lot-tray,trays:4
+                EGG-10,BOULDER LOT,alder,field check,BOU,STRONG,STARTER,BANTAM,no grade,no cabinet,no barn,no region,boulder lot-tray,trays:4;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,242 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::russetdelta2::mapping::ApiaryMapping
+(
+  *test::russetdelta2::domain::Yard[yard]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetdelta2::store::ApiaryDb]apiary.apiary_yard.yard_code
+    )
+    ~mainTable [test::russetdelta2::store::ApiaryDb]apiary.apiary_yard
+    yardCode: [test::russetdelta2::store::ApiaryDb]apiary.apiary_yard.yard_code,
+    yardName: [test::russetdelta2::store::ApiaryDb]apiary.apiary_yard.yard_name,
+    districtCode: [test::russetdelta2::store::ApiaryDb]apiary.apiary_yard.district_code,
+    hiveSlots: [test::russetdelta2::store::ApiaryDb]apiary.apiary_yard.hive_slots,
+    terrainCode: [test::russetdelta2::store::ApiaryDb]apiary.apiary_yard.terrain_code,
+    yardLabel: concat(
+                 toUpper(trim([test::russetdelta2::store::ApiaryDb]apiary.apiary_yard.yard_name)),
+                 concat('/', [test::russetdelta2::store::ApiaryDb]apiary.apiary_yard.district_code)
+               )
+  }
+
+  *test::russetdelta2::domain::Hive[hive]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetdelta2::store::ApiaryDb]apiary.hive.hive_code
+    )
+    ~mainTable [test::russetdelta2::store::ApiaryDb]apiary.hive
+    hiveCode: [test::russetdelta2::store::ApiaryDb]apiary.hive.hive_code,
+    frameCount: [test::russetdelta2::store::ApiaryDb]apiary.hive.frame_count,
+    queenYear: [test::russetdelta2::store::ApiaryDb]apiary.hive.queen_year,
+    hiveStatus: [test::russetdelta2::store::ApiaryDb]apiary.hive.hive_status,
+    hiveLabel: concat(
+                 toUpper(trim([test::russetdelta2::store::ApiaryDb]apiary.hive.hive_code)),
+                 concat('@', [test::russetdelta2::store::ApiaryDb]apiary.hive.yard_code)
+               ),
+    strengthBand: case(
+                    isNull([test::russetdelta2::store::ApiaryDb]apiary.hive.frame_count),
+                    sqlNull(),
+                    case(
+                      greaterThanEqual([test::russetdelta2::store::ApiaryDb]apiary.hive.frame_count, 20),
+                      'STRONG',
+                      case(
+                        greaterThanEqual([test::russetdelta2::store::ApiaryDb]apiary.hive.frame_count, 12),
+                        'BUILDING',
+                        case(
+                          greaterThan([test::russetdelta2::store::ApiaryDb]apiary.hive.frame_count, 0),
+                          'WEAK',
+                          'EMPTY'
+                        )
+                      )
+                    )
+                  ),
+    yardDistrict: [test::russetdelta2::store::ApiaryDb]@Hive_Yard | [test::russetdelta2::store::ApiaryDb]apiary.apiary_yard.district_code
+  }
+
+  *test::russetdelta2::domain::Inspection[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetdelta2::store::ApiaryDb]apiary.inspection.inspection_code
+    )
+    ~mainTable [test::russetdelta2::store::ApiaryDb]apiary.inspection
+    inspectionCode: [test::russetdelta2::store::ApiaryDb]apiary.inspection.inspection_code,
+    inspectedOn: [test::russetdelta2::store::ApiaryDb]apiary.inspection.inspected_on,
+    broodFrames: [test::russetdelta2::store::ApiaryDb]apiary.inspection.brood_frames,
+    miteCount: [test::russetdelta2::store::ApiaryDb]apiary.inspection.mite_count,
+    inspectorNote: [test::russetdelta2::store::ApiaryDb]apiary.inspection.inspector_note,
+    mitePressure: divide(
+                    times([test::russetdelta2::store::ApiaryDb]apiary.inspection.mite_count, 100),
+                    coalesce([test::russetdelta2::store::ApiaryDb]apiary.inspection.brood_frames, 1)
+                  )
+  }
+
+  *test::russetdelta2::domain::ForagePatch[patch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetdelta2::store::ApiaryDb]apiary.forage_patch.patch_code
+    )
+    ~mainTable [test::russetdelta2::store::ApiaryDb]apiary.forage_patch
+    patchCode: [test::russetdelta2::store::ApiaryDb]apiary.forage_patch.patch_code,
+    patchName: [test::russetdelta2::store::ApiaryDb]apiary.forage_patch.patch_name,
+    bloomCode: [test::russetdelta2::store::ApiaryDb]apiary.forage_patch.bloom_code,
+    hectares: [test::russetdelta2::store::ApiaryDb]apiary.forage_patch.hectares,
+    patchTag: concat('FP/', coalesce([test::russetdelta2::store::ApiaryDb]apiary.forage_patch.bloom_code, 'NA'))
+  }
+
+  test::russetdelta2::domain::Yard_Hives: Relational
+  {
+    AssociationMapping
+    (
+      hiveYard[hive, yard]: [test::russetdelta2::store::ApiaryDb]@Hive_Yard,
+      hives[yard, hive]: [test::russetdelta2::store::ApiaryDb]@Hive_Yard
+    )
+  }
+
+  test::russetdelta2::domain::Hive_Inspections: Relational
+  {
+    AssociationMapping
+    (
+      inspectedHive[inspection, hive]: [test::russetdelta2::store::ApiaryDb]@Inspection_Hive,
+      inspections[hive, inspection]: [test::russetdelta2::store::ApiaryDb]@Inspection_Hive
+    )
+  }
+
+  test::russetdelta2::domain::Yard_Patches: Relational
+  {
+    AssociationMapping
+    (
+      patchYard[patch, yard]: [test::russetdelta2::store::ApiaryDb]@Patch_Yard,
+      patches[yard, patch]: [test::russetdelta2::store::ApiaryDb]@Patch_Yard
+    )
+  }
+
+  testSuites:
+  [
+    hiveDerivationSuite:
+    {
+      function: |test::russetdelta2::domain::Hive.all()->project(
+  [
+    x|$x.hiveCode,
+    x|$x.hiveLabel,
+    x|$x.strengthBand,
+    x|$x.yardDistrict
+  ],
+  [
+    'HiveCode',
+    'HiveLabel',
+    'StrengthBand',
+    'District'
+  ]
+)->sort(
+  [
+    asc('HiveCode')
+  ]
+);
+      tests:
+      [
+        derivedHiveRows:
+        {
+          doc: 'Projects the composed hive label, every arm of the colony strength decode including the absent-reading null sentinel, and the district reached through the single inner hop onto the yard table.';
+          data:
+          [
+            test::russetdelta2::store::ApiaryDb:
+              Relational
+              #{
+                apiary.apiary_yard:
+                  'yard_code,yard_name,district_code,hive_slots,terrain_code\n'+
+                  'YD-1,Willow Bank,D-NORTH,12,LEVEL\n'+
+                  'YD-2,Clover Rise,D-SOUTH,8,SLOPED\n';
+
+                apiary.hive:
+                  'hive_code,yard_code,frame_count,queen_year,hive_status\n'+
+                  'HV-01,YD-1,24,2025,A\n'+
+                  'HV-02,YD-1,14,2024,A\n'+
+                  'HV-03,YD-2,5,2023,A\n'+
+                  'HV-04,YD-2,,2022,N\n';
+              }#
+          ];
+          asserts:
+          [
+            fourDerivedHives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HiveCode":"HV-01","HiveLabel":"HV-01@YD-1","StrengthBand":"STRONG","District":"D-NORTH"},{"HiveCode":"HV-02","HiveLabel":"HV-02@YD-1","StrengthBand":"BUILDING","District":"D-NORTH"},{"HiveCode":"HV-03","HiveLabel":"HV-03@YD-2","StrengthBand":"WEAK","District":"D-SOUTH"},{"HiveCode":"HV-04","HiveLabel":"HV-04@YD-2","StrengthBand":null,"District":"D-SOUTH"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    inspectionPressureSuite:
+    {
+      function: |test::russetdelta2::domain::Inspection.all()->project(
+  [
+    x|$x.inspectionCode,
+    x|$x.mitePressure,
+    x|$x.inspectorNote
+  ],
+  [
+    'InspectionCode',
+    'MitePressure',
+    'Note'
+  ]
+)->sort(
+  [
+    asc('InspectionCode')
+  ]
+);
+      tests:
+      [
+        pressureFromCounts:
+        {
+          doc: 'Projects the mite pressure composed arithmetically from the counts, including the guarded divisor arm used when no brood frames were recorded.';
+          data:
+          [
+            test::russetdelta2::store::ApiaryDb:
+              Relational
+              #{
+                apiary.inspection:
+                  'inspection_code,hive_code,inspected_on,brood_frames,mite_count,inspector_note\n'+
+                  'IN-01,HV-01,2026-05-01,10,30,Calm colony\n'+
+                  'IN-02,HV-02,2026-05-02,,7,No brood found\n';
+              }#
+          ];
+          asserts:
+          [
+            pressureRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"InspectionCode":"IN-01","MitePressure":300,"Note":"Calm colony"},{"InspectionCode":"IN-02","MitePressure":700,"Note":"No brood found"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

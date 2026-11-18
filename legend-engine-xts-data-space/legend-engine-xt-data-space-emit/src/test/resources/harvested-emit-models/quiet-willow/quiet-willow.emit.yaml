@@ -1,0 +1,57 @@
+name: quiet-willow
+title: "Quiet Willow — Cross-Schema Station Network, Two-Hop Join Navigation & Data Spaces"
+description: |
+  A non-financial field weather-network model whose station and sensor registers
+  live in one schema and whose daily readings live in another. Every relational
+  class mapping pins a primary key and a main-table alias; the reading set
+  reaches its sensor kind over one inner join and its station name and elevation
+  over a two-hop join path that crosses the schema boundary. A profile attaches
+  classification stereotypes and tagged values to the mapped classes, mapping
+  test suites pin the navigated rows for supplied store data - including an
+  unmatched sensor on the first hop and a filtered temperature bound - and two
+  data spaces publish the network and telemetry execution contexts over the same
+  mapping and H2 runtime.
+
+modelSources:
+  model:
+    root: quiet-willow
+    files:
+      - test/quietwillow/connection/StationConnection.pure
+      - test/quietwillow/dataspace/NetworkDataSpace.pure
+      - test/quietwillow/dataspace/TelemetryDataSpace.pure
+      - test/quietwillow/domain/StationDomain.pure
+      - test/quietwillow/mapping/StationMapping.pure
+      - test/quietwillow/profile/StationProfile.pure
+      - test/quietwillow/runtime/StationRuntime.pure
+      - test/quietwillow/store/StationDB.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - cross-schema
+  - data-space
+  - h2
+  - inner-join
+  - main-table-alias
+  - mapping-test
+  - multi-hop-join
+  - multi-table
+  - primary-key
+  - profile
+  - runtime

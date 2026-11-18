@@ -1,0 +1,186 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sablebeacon2::mapping::BeaconMapping
+(
+  include test::sablebeacon2::mapping::BeaconTranslationMapping
+
+  *test::sablebeacon2::domain::StreetTree[streetTree]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_id
+    )
+    ~mainTable [test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree
+    recordCode: concat('TREE-', toString([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_id)),
+    treeCode: concat('T', toString([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_id)),
+    treeName: toUpper(trim([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_name)),
+    treeAbbrev: toLower(substring(trim([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_name), 0, 4)),
+    trunkCm: [test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.trunk_cm,
+    crownSpreadM: [test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.crown_spread_m,
+    nameLength: length(trim([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_name)),
+    canopyBand: case(
+                  equal([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.band_code, 'A'),
+                  'broad',
+                  case(
+                    equal([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.band_code, 'B'),
+                    'columnar',
+                    case(
+                      equal([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.band_code, 'C'),
+                      'compact',
+                      case(
+                        equal([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.band_code, 'D'),
+                        'weeping',
+                        sqlNull()
+                      )
+                    )
+                  )
+                ),
+    plaqueLabel: coalesce([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.plaque_text, 'unplaqued'),
+    tallyNote: concat('trunk:', toString([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.trunk_cm)),
+    health: EnumerationMapping CanopyHealthMapping: toUpper([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.health_code),
+    surface: EnumerationMapping FallbackSurfaceMapping: toUpper([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.surface_code),
+    stewardPost: [test::sablebeacon2::store::BeaconInventoryStore]@Tree_Species > @Species_Genus > @Genus_Steward | [test::sablebeacon2::store::BeaconInventoryStore]reference.genus_steward.post_name,
+    genusName: [test::sablebeacon2::store::BeaconInventoryStore]@Tree_Species > @Species_Genus | [test::sablebeacon2::store::BeaconInventoryStore]reference.tree_genus.genus_name
+  }
+
+  *test::sablebeacon2::domain::VeteranTree[veteranTree]: Relational
+  {
+    ~filter [test::sablebeacon2::store::BeaconInventoryStore]HeritageTreeFilter
+    ~primaryKey
+    (
+      [test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_id
+    )
+    ~mainTable [test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree
+    recordCode: concat('VETERAN-', toString([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_id)),
+    treeCode: concat('V', toString([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_id)),
+    treeName: toUpper(trim([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_name)),
+    treeAbbrev: toLower(substring(trim([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_name), 0, 4)),
+    trunkCm: [test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.trunk_cm,
+    crownSpreadM: [test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.crown_spread_m,
+    nameLength: length(trim([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_name)),
+    plaqueLabel: coalesce([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.plaque_text, 'unplaqued'),
+    tallyNote: concat('veteran-trunk:', toString([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.trunk_cm)),
+    heritageLabel: concat('heritage-', toLower(trim([test::sablebeacon2::store::BeaconInventoryStore]inventory.street_tree.tree_name)))
+  }
+
+  *test::sablebeacon2::domain::PlantingSite[plantingSite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablebeacon2::store::BeaconInventoryStore]inventory.planting_site.site_code
+    )
+    ~mainTable [test::sablebeacon2::store::BeaconInventoryStore]inventory.planting_site
+    recordCode: concat('SITE-', [test::sablebeacon2::store::BeaconInventoryStore]inventory.planting_site.site_code),
+    siteCode: [test::sablebeacon2::store::BeaconInventoryStore]inventory.planting_site.site_code,
+    siteName: [test::sablebeacon2::store::BeaconInventoryStore]inventory.planting_site.site_name,
+    surfaceType: [test::sablebeacon2::store::BeaconInventoryStore]inventory.planting_site.surface_type,
+    treeCount: [test::sablebeacon2::store::BeaconInventoryStore]@Site_Tally | [test::sablebeacon2::store::BeaconInventoryStore]inventory.site_tally_view.tree_count,
+    maxTrunkCm: [test::sablebeacon2::store::BeaconInventoryStore]@Site_Tally | [test::sablebeacon2::store::BeaconInventoryStore]inventory.site_tally_view.max_trunk_cm
+  }
+
+  *test::sablebeacon2::domain::WardCrew[wardCrew]: Pure
+  {
+    ~src test::sablebeacon2::domain::RawCrew
+    crewCode: $src.crewCode,
+    crewName: if($src.crewName->length() > 0,
+                 | $src.crewName->toUpper(),
+                 | 'UNNAMED CREW'),
+    siteCode: $src.siteCode
+  }
+
+  test::sablebeacon2::domain::SiteTrees: Relational
+  {
+    AssociationMapping
+    (
+      trees[plantingSite, streetTree]: [test::sablebeacon2::store::BeaconInventoryStore]@Tree_Site,
+      site[streetTree, plantingSite]: [test::sablebeacon2::store::BeaconInventoryStore]@Tree_Site
+    )
+  }
+
+  test::sablebeacon2::domain::SiteCrew: XStore
+  {
+    crew[plantingSite, wardCrew]: $this.siteCode == $that.siteCode,
+    postedSite[wardCrew, plantingSite]: $this.siteCode == $that.siteCode
+  }
+
+  test::sablebeacon2::domain::CanopyHealth: EnumerationMapping CanopyHealthMapping
+  {
+    VIGOROUS: ['VIGOROUS'],
+    STABLE: ['STABLE'],
+    STRESSED: ['STRESSED'],
+    DECLINING: ['DECLINING']
+  }
+
+  testSuites:
+  [
+    treeProjectionSuite:
+    {
+      function: |test::sablebeacon2::domain::StreetTree.all()->project(~[RecordCode: x|$x.recordCode, TreeName: x|$x.treeName, TreeAbbrev: x|$x.treeAbbrev, NameLength: x|$x.nameLength, CanopyBand: x|$x.canopyBand, PlaqueLabel: x|$x.plaqueLabel, TallyNote: x|$x.tallyNote, Health: x|$x.health, Surface: x|$x.surface, GenusName: x|$x.genusName, StewardPost: x|$x.stewardPost])->sort(~RecordCode->ascending());
+      tests:
+      [
+        multiHopRows:
+        {
+          doc: 'Projects the inventory through the three-hop species-genus-steward chain and the two-hop genus chain, distinguishing the named canopy bands from the unbanded fallback and the plaqued rows from the unplaqued one.';
+          data:
+          [
+            test::sablebeacon2::store::BeaconInventoryStore:
+              Relational
+              #{
+                reference.genus_steward:
+                  'steward_name,post_name\n'+
+                  'north steward,Northern depot\n'+
+                  'south steward,Southern depot\n';
+
+                reference.tree_genus:
+                  'genus_code,genus_name,steward_name\n'+
+                  'G1,Tilia,north steward\n'+
+                  'G2,Platanus,south steward\n';
+
+                reference.tree_species:
+                  'species_code,species_name,genus_code\n'+
+                  'S1,Small-leaved lime,G1\n'+
+                  'S2,London plane,G2\n';
+
+                inventory.planting_site:
+                  'site_code,site_name,surface_type,ward_code\n'+
+                  'P1,Kiln Row,GRASS VERGE,W1\n'+
+                  'P2,Market Walk,PAVED PLAZA,W2\n';
+
+                inventory.street_tree:
+                  'tree_id,tree_name,trunk_cm,crown_spread_m,band_code,health_code,surface_code,species_code,site_code,plaque_text,heritage_flag\n'+
+                  '1,kiln row lime,64,7.5,A,vigorous,grass verge,S1,P1,planted 1974,Y\n'+
+                  '2,market walk plane,88,11.0,B,stable,paved plaza,S2,P2,,N\n'+
+                  '3,quarry lane rowan,21,3.0,Z,stressed,kerb strip,S1,P1,young stock,N\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"TREE-1","TreeName":"KILN ROW LIME","TreeAbbrev":"kil","NameLength":13,"CanopyBand":"broad","PlaqueLabel":"planted 1974","TallyNote":"trunk:64","Health":"VIGOROUS","Surface":"VERGE","GenusName":"Tilia","StewardPost":"Northern depot"},{"RecordCode":"TREE-2","TreeName":"MARKET WALK PLANE","TreeAbbrev":"mar","NameLength":17,"CanopyBand":"columnar","PlaqueLabel":"unplaqued","TallyNote":"trunk:88","Health":"STABLE","Surface":"PLAZA","GenusName":"Platanus","StewardPost":"Southern depot"},{"RecordCode":"TREE-3","TreeName":"QUARRY LANE ROWAN","TreeAbbrev":"qua","NameLength":17,"CanopyBand":null,"PlaqueLabel":"young stock","TallyNote":"trunk:21","Health":"STRESSED","Surface":"VERGE","GenusName":"Tilia","StewardPost":"Northern depot"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

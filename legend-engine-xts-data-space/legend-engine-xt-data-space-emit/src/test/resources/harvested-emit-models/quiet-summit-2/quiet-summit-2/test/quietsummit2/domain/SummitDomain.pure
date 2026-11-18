@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Profile test::quietsummit2::domain::SummitGovernance
+{
+  stereotypes: [published, provisional];
+  tags: [steward, refreshCadence];
+}
+
+Class <<test::quietsummit2::domain::SummitGovernance.published>> {test::quietsummit2::domain::SummitGovernance.steward = 'alpine-observation-network', meta::pure::profiles::doc.doc = 'A staffed high-altitude weather post in the ridge observation network.'} test::quietsummit2::domain::Station
+{
+  stationCode: String[1];
+  name: String[1];
+  elevationMetres: Integer[1];
+  region: String[1];
+}
+
+Class <<test::quietsummit2::domain::SummitGovernance.provisional>> {meta::pure::profiles::doc.doc = 'An instrument installed at a weather post, with its last calibration date.'} test::quietsummit2::domain::Sensor
+{
+  sensorCode: String[1];
+  label: String[1];
+  sensorKind: String[1];
+  calibratedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A peak wind gust recorded by the anemometer of a weather post.'} test::quietsummit2::domain::GustReading
+{
+  readingCode: String[1];
+  stationCode: String[1];
+  gustSpeed: Float[1];
+  observedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A manual snow-depth sample taken at a weather post.'} test::quietsummit2::domain::SnowSample
+{
+  sampleCode: String[1];
+  stationCode: String[1];
+  depthCentimetres: Integer[1];
+  sampledOn: StrictDate[1];
+}

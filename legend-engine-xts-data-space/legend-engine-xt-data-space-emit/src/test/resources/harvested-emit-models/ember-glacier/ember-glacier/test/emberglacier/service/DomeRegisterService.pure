@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberglacier::service::DomeRegisterService
+{
+  pattern: '/emberglacier/v1/dome-register';
+  title: 'Ember Glacier - Dome Register';
+  ownership: UserList { users: ['skywatch-estate-desk'] };
+  documentation: 'Every enclosure with the opening it presents and the shutter it was built with, reaching the site it stands at through the association rather than through a query-side join.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::emberglacier::domain::Dome.all()->project(
+      [
+        d|$d.domeCode,
+        d|$d.shutterKind,
+        d|$d.apertureM,
+        d|$d.observatory.observatoryCode
+      ],
+      [
+        'Dome',
+        'Shutter',
+        'Aperture',
+        'Observatory'
+      ]
+    )->sort([asc('Dome')]);
+    mapping: test::emberglacier::mapping::SkywatchMapping;
+    runtime: test::emberglacier::runtime::SkywatchRuntime;
+  }
+  testSuites:
+  [
+    domeRegisterServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skywatchConnection:
+            Relational
+            #{
+              skywatch.observatory:
+                'observatory_id,observatory_code,observatory_name,elevation_m,opened_on,public_nights\n'+
+                '1,OB-01,Ridge Crest Observatory,1820,2001-04-12,true\n'+
+                '2,OB-02,Lake Bluff Observatory,640,1994-09-30,false\n'+
+                '3,OB-03,Pine Flat Observatory,310,2015-06-01,true\n';
+              skywatch.dome:
+                'dome_id,dome_code,observatory_id,aperture_m,shutter_kind\n'+
+                '1,DM-01,1,6.5,CLAMSHELL\n'+
+                '2,DM-02,1,4.0,UPDOWN\n'+
+                '3,DM-03,2,3.2,ROLLOFF\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyEnclosureWithItsSite:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeEnclosures:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Dome":"DM-01","Shutter":"CLAMSHELL","Aperture":6.5,"Observatory":"OB-01"},{"Dome":"DM-02","Shutter":"UPDOWN","Aperture":4.0,"Observatory":"OB-01"},{"Dome":"DM-03","Shutter":"ROLLOFF","Aperture":3.2,"Observatory":"OB-02"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

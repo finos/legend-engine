@@ -1,0 +1,137 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::scarletwillow3::store::ReserveWarehouseDB
+(
+  Schema reserve_core
+  (
+    Table reserve_site
+    (
+      site_id VARCHAR(24) PRIMARY KEY,
+      site_name VARCHAR(120) NOT NULL,
+      region_code VARCHAR(24) NOT NULL,
+      status_code VARCHAR(16) NOT NULL,
+      deactivated_on DATE
+    )
+
+    Table region
+    (
+      region_code VARCHAR(24) PRIMARY KEY,
+      region_name VARCHAR(120) NOT NULL,
+      warden_code VARCHAR(24) NOT NULL
+    )
+
+    Table warden
+    (
+      warden_code VARCHAR(24) PRIMARY KEY,
+      warden_name VARCHAR(120) NOT NULL,
+      contact_kind VARCHAR(24) NOT NULL
+    )
+
+    Table site_link
+    (
+      child_site_id VARCHAR(24) PRIMARY KEY,
+      parent_site_id VARCHAR(24) PRIMARY KEY
+    )
+
+    Table habitat_patch
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      patch_id VARCHAR(24) PRIMARY KEY,
+      patch_code VARCHAR(24) NOT NULL,
+      site_id VARCHAR(24) NOT NULL,
+      habitat_code VARCHAR(24) NOT NULL,
+      scrub_code VARCHAR(24),
+      area_hectares FLOAT NOT NULL,
+      wetness_pct INTEGER NOT NULL,
+      peat_depth_cm INTEGER,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+
+    View site_yield_view
+    (
+      ~groupBy
+      (
+        reserve_core.habitat_patch.site_id
+      )
+      site_id: reserve_core.habitat_patch.site_id PRIMARY KEY,
+      patch_count: count(reserve_core.habitat_patch.patch_id),
+      total_area_hectares: sum(reserve_core.habitat_patch.area_hectares)
+    )
+  )
+
+  Schema survey_core
+  (
+    Table survey_visit
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      visit_id VARCHAR(24) PRIMARY KEY,
+      visit_code VARCHAR(24) NOT NULL,
+      patch_id VARCHAR(24) NOT NULL,
+      observer_id VARCHAR(24) NOT NULL,
+      visit_code_kind VARCHAR(24) NOT NULL,
+      species_count INTEGER NOT NULL,
+      remark_text VARCHAR(120),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+
+    Table observer
+    (
+      observer_id VARCHAR(24) PRIMARY KEY,
+      observer_name VARCHAR(120) NOT NULL,
+      role_code VARCHAR(24) NOT NULL,
+      team_code VARCHAR(24) NOT NULL
+    )
+
+    Table observer_team
+    (
+      team_code VARCHAR(24) PRIMARY KEY,
+      team_name VARCHAR(120) NOT NULL,
+      region_code VARCHAR(24) NOT NULL
+    )
+
+    Table patch_attribute
+    (
+      patch_id VARCHAR(24) PRIMARY KEY,
+      attribute_id INTEGER PRIMARY KEY,
+      attribute_value VARCHAR(120)
+    )
+  )
+
+  Filter ActiveSiteFilter(reserve_core.reserve_site.status_code = 'ACTIVE' and reserve_core.reserve_site.deactivated_on is null)
+  Filter NonSelfLinkFilter(reserve_core.site_link.child_site_id != reserve_core.site_link.parent_site_id)
+  Filter PeatPatchFilter(reserve_core.habitat_patch.peat_depth_cm is not null)
+  Filter WetPatchFilter(reserve_core.habitat_patch.wetness_pct > 5)
+
+  Join Patch_Site(reserve_core.habitat_patch.site_id = reserve_core.reserve_site.site_id)
+  Join Site_Region(reserve_core.reserve_site.region_code = reserve_core.region.region_code)
+  Join Region_Warden(reserve_core.region.warden_code = reserve_core.warden.warden_code)
+  Join Site_Yield(reserve_core.reserve_site.site_id = reserve_core.site_yield_view.site_id)
+  Join Patch_Drainage(reserve_core.habitat_patch.patch_id = survey_core.patch_attribute.patch_id and survey_core.patch_attribute.attribute_id = 7)
+  Join Visit_Patch(survey_core.survey_visit.patch_id = reserve_core.habitat_patch.patch_id)
+  Join Visit_Observer(survey_core.survey_visit.observer_id = survey_core.observer.observer_id)
+  Join Observer_Team(trim(survey_core.observer.team_code) = trim(survey_core.observer_team.team_code))
+  Join Site_Child(reserve_core.reserve_site.site_id = reserve_core.site_link.child_site_id)
+)

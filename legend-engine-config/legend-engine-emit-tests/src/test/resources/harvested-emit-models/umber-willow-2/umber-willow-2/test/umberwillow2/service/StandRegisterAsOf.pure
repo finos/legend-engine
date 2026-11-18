@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::umberwillow2::service::StandRegisterAsOf
+{
+  pattern: '/willow/v1/stands/{businessDate}';
+  title: 'Umber Willow - Floodplain Stand Register As Of';
+  owners:
+  [
+    'riparian-restoration-office',
+    'willow-nursery-eng'
+  ];
+  documentation: 'Point-in-time graph fetch over the business-temporal willow stand register: the effective-date argument prunes stands whose business window has closed, and the surviving rows are narrowed by canopy height, reach-zone prefix and clone-name text predicates before serialisation.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], minCanopyHeightM: Float[1]|test::umberwillow2::domain::WillowStand.all($businessDate)->filter(s|($s.canopyHeightM >= $minCanopyHeightM) && (($s.reachZone->toUpper()->startsWith('FLOOD')) && (($s.cloneName->isNotEmpty()) && ($s.cloneName->toLower()->contains('salix')))))->graphFetch(
+      #{
+        test::umberwillow2::domain::WillowStand{
+          standCode,
+          cloneName,
+          canopyHeightM,
+          reachZone
+        }
+      }#
+    )->serialize(
+      #{
+        test::umberwillow2::domain::WillowStand{
+          standCode,
+          cloneName,
+          canopyHeightM,
+          reachZone
+        }
+      }#
+    )};
+    mapping: test::umberwillow2::mapping::WillowMapping;
+    runtime: test::umberwillow2::runtime::WillowH2Runtime;
+  }
+  testSuites:
+  [
+    standRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          willowH2Connection:
+            Relational
+            #{
+              riparian.stand:
+                'stand_id,stand_code,clone_name,canopy_height_m,reach_zone,from_z,thru_z\n'+
+                '1,WS-01,Salix alba Alpha,4.75,FLOODWAY,2026-01-01,9999-12-31\n'+
+                '2,WS-02,Salix viminalis Beta,1.20,TERRACE,2026-01-01,9999-12-31\n'+
+                '3,WS-03,Salix purpurea Gamma,5.40,FLOODPLAIN,2024-01-01,2024-06-30\n';
+              riparian.reading:
+                'reading_id,reading_ref,soil_moisture_pct,in_z,out_z\n'+
+                '20,RD-01,38.5,2026-01-01,9999-12-31\n'+
+                '21,RD-02,44.0,2025-01-01,2025-09-30\n';
+              riparian.scheme:
+                'scheme_id,scheme_name,steward\n'+
+                '5,Floodplain Willow Scheme,riparian-restoration-office\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        closedBusinessWindowStandIsExcluded:
+        {
+          parameters:
+          [
+            businessDate = %2026-06-01,
+            minCanopyHeightM = 2.0
+          ]
+          asserts:
+          [
+            onlyOpenFloodwayStandSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"standCode":"WS-01","cloneName":"Salix alba Alpha","canopyHeightM":4.75,"reachZone":"FLOODWAY"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::kindlycanyon::store::CanyonTrailDB
+(
+  Schema trail
+  (
+    Table patrol_log
+    (
+      log_id VARCHAR(16) PRIMARY KEY,
+      post_id VARCHAR(16),
+      logged_on DATE NOT NULL,
+      closed_on DATE,
+      walk_minutes INTEGER NOT NULL,
+      condition_code VARCHAR(12) NOT NULL,
+      hazard_note VARCHAR(120)
+    )
+    Table patrol_post
+    (
+      post_id VARCHAR(16) PRIMARY KEY,
+      post_name VARCHAR(80) NOT NULL,
+      post_kind VARCHAR(8) NOT NULL,
+      segment_code VARCHAR(12),
+      warden_code VARCHAR(16),
+      ridge_height_m INTEGER,
+      floor_depth_m INTEGER,
+      vehicle_plate VARCHAR(16)
+    )
+    Table trail_segment
+    (
+      segment_code VARCHAR(12) PRIMARY KEY,
+      segment_name VARCHAR(80) NOT NULL,
+      length_m INTEGER NOT NULL
+    )
+  )
+
+  Schema roster
+  (
+    Table warden_view
+    (
+      warden_code VARCHAR(16) PRIMARY KEY,
+      warden_name VARCHAR(80) NOT NULL,
+      rota_band VARCHAR(12) NOT NULL
+    )
+  )
+
+  Filter RidgePosts(trail.patrol_post.post_kind = 'RIDGE')
+  Filter FloorPosts(trail.patrol_post.post_kind = 'FLOOR')
+  Filter MobilePosts(trail.patrol_post.post_kind = 'MOBILE')
+
+  Join Log_Post(trail.patrol_log.post_id = trail.patrol_post.post_id)
+
+  Join Post_Segment(trail.patrol_post.segment_code = trail.trail_segment.segment_code)
+
+  Join Post_Warden(trail.patrol_post.warden_code = roster.warden_view.warden_code)
+)

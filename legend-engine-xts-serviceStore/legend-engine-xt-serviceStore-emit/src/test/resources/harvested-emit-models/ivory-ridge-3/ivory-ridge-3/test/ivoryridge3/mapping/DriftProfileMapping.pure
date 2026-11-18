@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryridge3::mapping::DriftProfileMapping
+(
+  *test::ivoryridge3::domain::BuoyDriftProfile[driftProfileSet]: Pure
+  {
+    ~src test::ivoryridge3::api::DriftSheetRow
+    buoyRef: $src.buoyRef,
+    stationLabel: 'STN/' + $src.stationCode->toUpper()->trim(),
+    keeperLabel: $src.keeper->toUpper(),
+    metresPerHour: round($src.driftMetres / $src.hoursAdrift, 2),
+    driftBand: if($src.swellCentimetres < 20,
+                  | 'BAND-1-CALM',
+                  | if($src.swellCentimetres < 60,
+                       | 'BAND-2-SLIGHT',
+                       | if($src.swellCentimetres < 150,
+                            | 'BAND-3-MODERATE',
+                            | if($src.swellCentimetres < 300,
+                                 | 'BAND-4-ROUGH',
+                                 | 'BAND-5-HEAVY'))))
+  }
+
+  testSuites:
+  [
+    driftProfileTransformSuite:
+    {
+      function: |test::ivoryridge3::domain::BuoyDriftProfile.all()->graphFetch(
+  #{
+    test::ivoryridge3::domain::BuoyDriftProfile
+    {
+      buoyRef,
+      stationLabel,
+      keeperLabel,
+      metresPerHour,
+      driftBand
+    }
+  }#
+)->serialize(
+  #{
+    test::ivoryridge3::domain::BuoyDriftProfile
+    {
+      buoyRef,
+      stationLabel,
+      keeperLabel,
+      metresPerHour,
+      driftBand
+    }
+  }#
+);
+      tests:
+      [
+        driftRowsBandedAndRated:
+        {
+          doc: 'Three delimited drift rows are reshaped into published profiles, folding the station prefix out of the upper-cased station code, upper-casing the keeper label, rating the metres adrift per hour at the published precision, and landing on the calm, slight and rough arms of the swell band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivoryridge3::api::DriftSheetRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"buoyRef":"BY-401","stationCode":"stn-cove","driftMetres":12.0,"hoursAdrift":4,"swellCentimetres":15,"keeper":"dune keeper"},{"buoyRef":"BY-402","stationCode":"stn-dell","driftMetres":90.0,"hoursAdrift":5,"swellCentimetres":55,"keeper":"ridge keeper"},{"buoyRef":"BY-403","stationCode":"stn-echo","driftMetres":150.0,"hoursAdrift":4,"swellCentimetres":260,"keeper":"stack keeper"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            driftProfileRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"buoyRef":"BY-401","stationLabel":"STN/STN-COVE","keeperLabel":"DUNE KEEPER","metresPerHour":3.0,"driftBand":"BAND-1-CALM"},{"buoyRef":"BY-402","stationLabel":"STN/STN-DELL","keeperLabel":"RIDGE KEEPER","metresPerHour":18.0,"driftBand":"BAND-2-SLIGHT"},{"buoyRef":"BY-403","stationLabel":"STN/STN-ECHO","keeperLabel":"STACK KEEPER","metresPerHour":37.5,"driftBand":"BAND-4-ROUGH"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

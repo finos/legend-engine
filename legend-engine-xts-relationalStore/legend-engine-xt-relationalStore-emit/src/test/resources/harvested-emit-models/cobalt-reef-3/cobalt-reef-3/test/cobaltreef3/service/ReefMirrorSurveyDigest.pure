@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltreef3::service::ReefMirrorSurveyDigest
+{
+  pattern: '/cobaltreef/v1/mirror-sites/{asOf}';
+  title: 'Cobalt Reef - Mirror Register Surveyed Sites As Of A Processing Date';
+  documentation: 'The same survey digest bound to the mirror reef register and its own runtime: sites that are not closed and whose anchored probe is not retired at the processing date, projected with probe, region, dive and crew, de-duplicated and sorted by site and dive.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::cobaltreef3::domain::ReefSite.all($asOf)->filter(
+      s|and(!($s.zoneStatus == test::cobaltreef3::domain::ZoneStatus.CLOSED), !($s.probe($asOf).health == test::cobaltreef3::domain::ProbeHealth.RETIRED))
+    )->project(
+      [
+        s|$s.siteCode,
+        s|$s.siteName,
+        s|$s.depthMetres,
+        s|$s.probe($asOf).probeCode,
+        s|$s.probe($asOf).region($asOf).regionName,
+        s|$s.dives($asOf).diveLabel,
+        s|$s.dives($asOf).crew($asOf).crewName
+      ],
+      [
+        'Site',
+        'Site Name',
+        'Depth',
+        'Probe',
+        'Region',
+        'Dive',
+        'Crew'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Site'),
+        asc('Dive')
+      ]
+    )};
+    mapping: test::cobaltreef3::mapping::ReefMirrorMapping;
+    runtime: test::cobaltreef3::runtime::ReefMirrorRuntime;
+  }
+  testSuites:
+  [
+    reefMirrorSurveyDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          mirrorConnection:
+            Relational
+            #{
+              reef_mirror.reef_site:
+                'site_code,in_z,out_z,site_name,status_code,depth_m,probe_code\n'+
+                'M1,2025-01-01,9999-12-31,Turtle Ledge,OPN,15,Q1\n'+
+                'M2,2025-01-01,9999-12-31,Urchin Flat,RST,6,Q2\n'+
+                'M3,2025-01-01,9999-12-31,Wreck Point,OPN,22,Q2\n';
+              reef_mirror.monitor_probe:
+                'probe_code,in_z,out_z,health_code,region_code\n'+
+                'Q1,2025-01-01,9999-12-31,FLT,R7\n'+
+                'Q2,2024-01-01,2025-02-01,ACT,R7\n'+
+                'Q2,2025-02-01,9999-12-31,RET,R7\n';
+              reef_mirror.reef_region:
+                'region_code,in_z,out_z,region_name\n'+
+                'R7,2025-01-01,9999-12-31,Eastern Shoals\n';
+              reef_mirror.survey_dive:
+                'dive_code,in_z,out_z,site_code,dive_label,crew_code\n'+
+                'E1,2025-01-01,9999-12-31,M1,Turtle census,C9\n'+
+                'E2,2025-01-01,9999-12-31,M1,Turtle census,C9\n'+
+                'E3,2025-01-01,9999-12-31,M3,Hull survey,C9\n';
+              reef_mirror.dive_crew:
+                'crew_code,in_z,out_z,crew_name\n'+
+                'C9,2025-01-01,9999-12-31,Manta Team\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        mirrorSitesWithLiveProbes:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-01
+          ]
+          asserts:
+          [
+            mirrorSurveyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"M1","Site Name":"Turtle Ledge","Depth":15,"Probe":"Q1","Region":"Eastern Shoals","Dive":"Turtle census","Crew":"Manta Team"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

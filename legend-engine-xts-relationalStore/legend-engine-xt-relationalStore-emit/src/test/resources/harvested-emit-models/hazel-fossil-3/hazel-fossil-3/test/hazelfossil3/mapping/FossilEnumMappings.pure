@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelfossil3::mapping::FossilEnumMappings
+(
+  test::hazelfossil3::domain::MatrixKind: EnumerationMapping MatrixSource
+  {
+    LIMESTONE: ['LS', 'LS/LIMESTONE'],
+    SHALE: ['SH', 'SH/SHALE'],
+    SANDSTONE: ['SS', 'SS/SANDSTONE']
+  }
+
+  test::hazelfossil3::domain::PrepStage: EnumerationMapping PrepSource
+  {
+    RAW: ['RAW', 'RW/RAW'],
+    CLEANED: ['CLEANED', 'CL/CLEANED'],
+    MOUNTED: ['MOUNTED', 'MT/MOUNTED']
+  }
+
+  test::hazelfossil3::domain::ConditionGrade: EnumerationMapping ConditionSource
+  {
+    WHOLE: ['WH', 'WH/WHOLE'],
+    PARTIAL: ['PA', 'PA/PARTIAL'],
+    CRUSHED: ['CR', 'CR/CRUSHED']
+  }
+
+  test::hazelfossil3::domain::HandlingTier: EnumerationMapping TierSource
+  {
+    LIGHT: ['LT', 'LT/LIGHT'],
+    STANDARD: ['ST', 'ST/STANDARD'],
+    HEAVY: ['HV', 'HV/HEAVY']
+  }
+)

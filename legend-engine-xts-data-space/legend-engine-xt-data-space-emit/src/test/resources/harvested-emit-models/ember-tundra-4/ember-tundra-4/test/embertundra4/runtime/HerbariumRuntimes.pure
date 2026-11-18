@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Runtime
+Runtime test::embertundra4::runtime::HerbariumServicesRuntime
+{
+  mappings:
+  [
+    test::embertundra4::mapping::HerbariumMapping
+  ];
+  connections:
+  [
+    test::embertundra4::store::HerbariumDB:
+    [
+      herbariumServices: test::embertundra4::connection::HerbariumServicesConnection
+    ]
+  ];
+}
+
+Runtime test::embertundra4::runtime::HerbariumConformanceRuntime
+{
+  mappings:
+  [
+    test::embertundra4::mapping::HerbariumMapping
+  ];
+  connections:
+  [
+    test::embertundra4::store::HerbariumDB:
+    [
+      herbariumConformance: test::embertundra4::connection::HerbariumConformanceConnection
+    ]
+  ];
+}
+
+Runtime test::embertundra4::runtime::HerbariumArchiveRuntime
+{
+  mappings:
+  [
+    test::embertundra4::mapping::HerbariumMapping
+  ];
+  connections:
+  [
+    test::embertundra4::store::HerbariumDB:
+    [
+      herbariumArchive: test::embertundra4::connection::HerbariumArchiveConnection
+    ]
+  ];
+}

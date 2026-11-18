@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldmarsh2::mapping::MarshMapping
+(
+  test::emeraldmarsh2::domain::ReedStand: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldmarsh2::store::MarshMonitorDB]marshmonitor.reed_stand.stand_id
+    )
+    ~mainTable [test::emeraldmarsh2::store::MarshMonitorDB]marshmonitor.reed_stand
+    standId: [test::emeraldmarsh2::store::MarshMonitorDB]marshmonitor.reed_stand.stand_id,
+    standCode: [test::emeraldmarsh2::store::MarshMonitorDB]marshmonitor.reed_stand.stand_code,
+    sectorCode: [test::emeraldmarsh2::store::MarshMonitorDB]marshmonitor.reed_stand.sector_code,
+    reedHeightCm: [test::emeraldmarsh2::store::MarshMonitorDB]marshmonitor.reed_stand.reed_height_cm,
+    coverPct: [test::emeraldmarsh2::store::MarshMonitorDB]marshmonitor.reed_stand.cover_pct,
+    recordedOn: [test::emeraldmarsh2::store::MarshMonitorDB]marshmonitor.reed_stand.recorded_on
+  }
+)

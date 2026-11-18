@@ -1,0 +1,188 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silvercove2::mapping::ArchiveMapping
+(
+  include mapping test::silvercove2::mapping::ArchiveBaseMapping
+
+  *test::silvercove2::domain::Matrix[matrix]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvercove2::store::TypeArchiveDB]archive.matrix_plate.matrix_id
+    )
+    ~mainTable [test::silvercove2::store::TypeArchiveDB]archive.matrix_plate
+    matrixCode: [test::silvercove2::store::TypeArchiveDB]archive.matrix_plate.matrix_code,
+    pointSize: [test::silvercove2::store::TypeArchiveDB]archive.matrix_plate.point_size,
+    widthUnits: [test::silvercove2::store::TypeArchiveDB]archive.matrix_plate.width_units,
+    alloyName: [test::silvercove2::store::TypeArchiveDB]@Matrix_Alloy | archive.alloy_ref.alloy_name,
+    caseName: [test::silvercove2::store::TypeArchiveDB]@Matrix_Case | archive.storage_case.case_name,
+    caseCityName: [test::silvercove2::store::TypeArchiveDB]@Matrix_Case > @Case_City | archive.foundry_city.city_name,
+    sizeSignature: concat(
+                     toString(
+                       plus(
+                         times([test::silvercove2::store::TypeArchiveDB]archive.matrix_plate.point_size, 2),
+                         [test::silvercove2::store::TypeArchiveDB]archive.matrix_plate.width_units
+                       )
+                     ),
+                     concat('-', toString([test::silvercove2::store::TypeArchiveDB]archive.matrix_plate.point_size))
+                   )
+  }
+
+  test::silvercove2::domain::TypeFace_Matrix: Relational
+  {
+    AssociationMapping
+    (
+      faceMatrices[face, matrix]: [test::silvercove2::store::TypeArchiveDB]@Matrix_Face,
+      matrixFace[matrix, face]: [test::silvercove2::store::TypeArchiveDB]@Matrix_Face
+    )
+  }
+
+  test::silvercove2::domain::Matrix_Specimen: Relational
+  {
+    AssociationMapping
+    (
+      matrixSpecimens[matrix, specimen]: [test::silvercove2::store::TypeArchiveDB]@Specimen_Matrix,
+      specimenMatrix[specimen, matrix]: [test::silvercove2::store::TypeArchiveDB]@Specimen_Matrix
+    )
+  }
+
+  test::silvercove2::domain::TypeFace_Specimen: Relational
+  {
+    AssociationMapping
+    (
+      faceSpecimens[face, specimen]: [test::silvercove2::store::TypeArchiveDB]@Specimen_Face,
+      specimenFace[specimen, face]: [test::silvercove2::store::TypeArchiveDB]@Specimen_Face
+    )
+  }
+
+  testSuites:
+  [
+    specimenTraversalSuite:
+    {
+      function: test::silvercove2::domain::Specimen.all()->project(~[specimenCode: s|$s.specimenCode, sheetTitle: s|$s.sheetTitle, faceName: s|$s.specimenFace.faceName, faceCityName: s|$s.specimenFace.foundryCityName, matrixCode: s|$s.specimenMatrix.matrixCode, sizeSignature: s|$s.specimenMatrix.sizeSignature, caseCityName: s|$s.specimenMatrix.caseCityName]);
+      tests:
+      [
+        specimenReachesFaceAndMatrix:
+        {
+          doc: 'Walks both associations declared on the specimen sheet — one to the typeface mapped in the included mapping and one to the matrix mapped here — and then continues through the matrix onto its second-hop storage city, so the composed mapping, the two association implementations and the two-hop label are proven at once; the trial pull whose matrix code has no counterpart keeps its own columns and reports the matrix side as null while the arithmetic signature collapses to its bare separator.';
+          data:
+          [
+            test::silvercove2::store::TypeArchiveDB:
+              Relational
+              #{
+                archive.type_face:
+                  'face_id,face_code,face_name,designer_name,city_code,release_year\n'+
+                  '1,TF-1,Harbour Grotesk,Anneke Duval,C1,1934\n'+
+                  '2,TF-2,Cove Roman,Piet Vanden,C2,1951\n';
+
+                archive.foundry_city:
+                  'city_id,city_code,city_name\n'+
+                  '1,C1,Northgate\n'+
+                  '2,C2,Sanderling Bay\n';
+
+                archive.storage_case:
+                  'case_id,case_code,case_name,city_code\n'+
+                  '1,SC-1,Case A North,C1\n'+
+                  '2,SC-2,Case B South,C2\n';
+
+                archive.alloy_ref:
+                  'alloy_id,alloy_code,alloy_name\n'+
+                  '1,AL-1,Standard Antimony\n'+
+                  '2,AL-2,Hard Antimony\n';
+
+                archive.matrix_plate:
+                  'matrix_id,matrix_code,face_code,point_size,width_units,alloy_code,case_code\n'+
+                  '1,MX-1,TF-1,12,9,AL-1,SC-1\n'+
+                  '2,MX-2,TF-2,18,14,AL-2,SC-2\n'+
+                  '3,MX-3,TF-1,24,20,AL-9,SC-9\n';
+
+                archive.specimen_sheet:
+                  'specimen_id,specimen_code,sheet_title,matrix_code,face_code,press_name,printed_on\n'+
+                  '1,SP-1,Autumn Showing,MX-1,TF-1,Albion No.4,2026-04-02\n'+
+                  '2,SP-2,Spring Showing,MX-2,TF-2,Columbian,2026-05-11\n'+
+                  '3,SP-3,Trial Pull,MX-9,TF-1,Arab Platen,2026-06-01\n';
+              }#
+          ];
+          asserts:
+          [
+            specimenRowsCarryBothSides:
+              Relation
+              #{
+                specimenCode,sheetTitle,faceName,faceCityName,matrixCode,sizeSignature,caseCityName
+                SP-1,Autumn Showing,Harbour Grotesk,Northgate,MX-1,33-12,Northgate
+                SP-2,Spring Showing,Cove Roman,Sanderling Bay,MX-2,50-18,Sanderling Bay
+                SP-3,Trial Pull,Harbour Grotesk,Northgate,null,-,null;
+              }#
+          ];
+        }
+      ];
+    },
+    matrixTraversalSuite:
+    {
+      function: test::silvercove2::domain::Matrix.all()->project(~[matrixCode: m|$m.matrixCode, pointSize: m|$m.pointSize, sizeSignature: m|$m.sizeSignature, alloyName: m|$m.alloyName, caseName: m|$m.caseName, faceName: m|$m.matrixFace.faceName, designerName: m|$m.matrixFace.designerName]);
+      tests:
+      [
+        matrixReachesItsFace:
+        {
+          doc: 'Drives the matrix mapped in the composing mapping and walks the third association back to the typeface mapped in the included mapping, so the reverse direction of that association implementation is proven together with the arithmetic signature and the two single-hop reference labels; the matrix filed under an unknown case and an unknown alloy reports both reference labels as null.';
+          data:
+          [
+            test::silvercove2::store::TypeArchiveDB:
+              Relational
+              #{
+                archive.type_face:
+                  'face_id,face_code,face_name,designer_name,city_code,release_year\n'+
+                  '1,TF-1,Harbour Grotesk,Anneke Duval,C1,1934\n'+
+                  '2,TF-2,Cove Roman,Piet Vanden,C2,1951\n';
+
+                archive.foundry_city:
+                  'city_id,city_code,city_name\n'+
+                  '1,C1,Northgate\n'+
+                  '2,C2,Sanderling Bay\n';
+
+                archive.storage_case:
+                  'case_id,case_code,case_name,city_code\n'+
+                  '1,SC-1,Case A North,C1\n'+
+                  '2,SC-2,Case B South,C2\n';
+
+                archive.alloy_ref:
+                  'alloy_id,alloy_code,alloy_name\n'+
+                  '1,AL-1,Standard Antimony\n'+
+                  '2,AL-2,Hard Antimony\n';
+
+                archive.matrix_plate:
+                  'matrix_id,matrix_code,face_code,point_size,width_units,alloy_code,case_code\n'+
+                  '1,MX-1,TF-1,12,9,AL-1,SC-1\n'+
+                  '2,MX-2,TF-2,18,14,AL-2,SC-2\n'+
+                  '3,MX-3,TF-1,24,20,AL-9,SC-9\n';
+              }#
+          ];
+          asserts:
+          [
+            matrixRowsCarryFaceColumns:
+              Relation
+              #{
+                matrixCode,pointSize,sizeSignature,alloyName,caseName,faceName,designerName
+                MX-1,12,33-12,Standard Antimony,Case A North,Harbour Grotesk,Anneke Duval
+                MX-2,18,50-18,Hard Antimony,Case B South,Cove Roman,Piet Vanden
+                MX-3,24,68-24,null,null,Harbour Grotesk,Anneke Duval;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

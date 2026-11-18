@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietotter::mapping::HoltSurveyMapping
+(
+  *test::quietotter::domain::HoltSurvey[holtSurvey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietotter::store::HoltDB]riparian.holt_survey.holt_code
+    )
+    ~mainTable [test::quietotter::store::HoltDB]riparian.holt_survey
+    holtCode: [test::quietotter::store::HoltDB]riparian.holt_survey.holt_code,
+    shoreName: [test::quietotter::store::HoltDB]riparian.holt_survey.shore_name,
+    spraintScore: [test::quietotter::store::HoltDB]riparian.holt_survey.spraint_score,
+    surveyedOn: [test::quietotter::store::HoltDB]riparian.holt_survey.surveyed_on
+  }
+
+  testSuites:
+  [
+    holtSurveyExtentSuite:
+    {
+      function: |test::quietotter::domain::HoltSurvey.all(%2026-06-01)->project(
+  [
+    s|$s.holtCode,
+    s|$s.shoreName,
+    s|$s.spraintScore,
+    s|$s.surveyedOn
+  ],
+  [
+    'Holt',
+    'Shore',
+    'Spraint',
+    'Surveyed'
+  ]
+)->sort(
+  [
+    asc('Holt')
+  ]
+);
+      tests:
+      [
+        theExtentAtABusinessDateDropsTheClosedHolt:
+        {
+          doc: 'Reads the business-temporal holt extent at a fixed business date. The third holt was abandoned and its survey window closed before that date, so it is out of range and never reaches the projected string, float and date columns.';
+          data:
+          [
+            test::quietotter::store::HoltDB:
+              Relational
+              #{
+                riparian.holt_survey:
+                  'holt_code,shore_name,spraint_score,surveyed_on,from_z,thru_z\n'+
+                  'HL-01,Alder Shore,4.5,2026-05-02,2026-01-01,9999-12-31\n'+
+                  'HL-02,Willow Bend,2.25,2026-05-09,2026-01-01,9999-12-31\n'+
+                  'HL-03,Mill Cut,1.0,2024-04-18,2024-01-01,2025-01-01\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyTheHoltsStillInSurveyAreRead:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Holt":"HL-01","Shore":"Alder Shore","Spraint":4.5,"Surveyed":"2026-05-02"},{"Holt":"HL-02","Shore":"Willow Bend","Spraint":2.25,"Surveyed":"2026-05-09"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

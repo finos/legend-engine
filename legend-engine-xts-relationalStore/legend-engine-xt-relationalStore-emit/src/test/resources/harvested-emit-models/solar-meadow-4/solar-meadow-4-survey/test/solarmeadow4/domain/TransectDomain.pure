@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::solarmeadow4::domain::*;
+
+Enum test::solarmeadow4::domain::NamingScheme
+{
+  VERNACULAR,
+  SCIENTIFIC
+}
+
+Class test::solarmeadow4::domain::MeadowSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  parishName: String[0..1];
+  hectares: Float[0..1];
+}
+
+Class test::solarmeadow4::domain::RecorderShift
+{
+  shiftCode: String[1];
+  recorderName: String[1];
+  startedOn: StrictDate[1];
+  endedOn: StrictDate[1];
+}
+
+Class test::solarmeadow4::domain::CuttingPass
+{
+  passCode: String[1];
+  passLabel: String[1];
+  cutFrom: StrictDate[1];
+  cutUntil: StrictDate[1];
+}
+
+Class test::solarmeadow4::domain::IndicatorName
+{
+  scheme: NamingScheme[1];
+  nameText: String[1];
+}
+
+Class test::solarmeadow4::domain::Transect
+{
+  transectCode: String[1];
+  transectName: String[1];
+  openForSurvey: Boolean[1];
+  walkedOn: StrictDate[1];
+  recordedThru: DateTime[1];
+  quadratCount: Integer[1];
+  bloomCover: Float[0..1];
+  soilTexture: String[0..1];
+  slopeAspect: String[0..1];
+  altitudeM: Integer[0..1];
+  grazingNote: String[0..1];
+  surveyRegister: String[1];
+  recorderOn(asOf: StrictDate[1]) {$this.shifts->filter(s|($s.startedOn <= $asOf) && ($s.endedOn > $asOf))->toOne()}: RecorderShift[1];
+  cuttingOn(asOf: StrictDate[1]) {$this.passes->filter(p|($p.cutFrom <= $asOf) && ($p.cutUntil >= $asOf))->toOne()}: CuttingPass[1];
+  indicatorIn(scheme: NamingScheme[1]) {$this.indicatorNames->filter(n|$n.scheme == $scheme)->toOne()}: IndicatorName[1];
+}
+
+Association test::solarmeadow4::domain::Transect_MeadowSite
+{
+  site: MeadowSite[0..1];
+  siteTransects: Transect[*];
+}
+
+Association test::solarmeadow4::domain::Transect_RecorderShift
+{
+  shifts: RecorderShift[*];
+  shiftTransect: Transect[0..1];
+}
+
+Association test::solarmeadow4::domain::Transect_CuttingPass
+{
+  passes: CuttingPass[*];
+  passTransect: Transect[0..1];
+}
+
+Association test::solarmeadow4::domain::Transect_IndicatorName
+{
+  indicatorNames: IndicatorName[*];
+  namedTransect: Transect[0..1];
+}

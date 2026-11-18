@@ -1,0 +1,33 @@
+name: olive-canyon-3-domain
+title: "Canyon Rim Survey — Annotated Structure Hierarchy Behind a Bidirectional Trail Association"
+description: |
+  A store-less Pure domain in which a common canyon-structure supertype is
+  specialised by a gauge station and a viewing platform, each adding its own
+  typed properties. A bidirectional association reaches the structures of a
+  trail segment as a collection and the hosting segment of a structure as a
+  single instance, and two qualified properties traverse that collection end
+  polymorphically over the supertype. A profile contributes two stereotypes and
+  two tagged values applied at both class and property level.
+
+modelSources:
+  model:
+    root: olive-canyon-3-domain
+    files:
+      - test/olivecanyon3/domain/CanyonAssociation.pure
+      - test/olivecanyon3/domain/CanyonDomain.pure
+
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - canyon
+  - inheritance
+  - qualified-property
+  - stereotype
+  - store-less
+  - tagged-value

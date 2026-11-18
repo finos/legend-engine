@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::gildedvineyard4::store::VineyardDatabase
+(
+  Schema vineyard
+  (
+    Table vine_block
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      block_id VARCHAR(120) PRIMARY KEY,
+      block_code VARCHAR(120) NOT NULL,
+      varietal_code VARCHAR(120) NOT NULL,
+      estate_code VARCHAR(120) NOT NULL,
+      section_id VARCHAR(120) NOT NULL,
+      vine_count INTEGER NOT NULL,
+      hectares DECIMAL(9,3) NOT NULL,
+      soil_ph FLOAT NOT NULL,
+      planted_on DATE NOT NULL,
+      surveyed_at TIMESTAMP,
+      warden_name VARCHAR(200),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+
+    Table harvest_pass
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      pass_id VARCHAR(120) PRIMARY KEY,
+      pass_code VARCHAR(120) NOT NULL,
+      block_id VARCHAR(120) NOT NULL,
+      crew_code VARCHAR(120) NOT NULL,
+      pass_stage VARCHAR(120) NOT NULL,
+      yield_kg DECIMAL(11,2) NOT NULL,
+      sugar_brix FLOAT NOT NULL,
+      picked_on DATE NOT NULL,
+      started_at TIMESTAMP,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+
+    Table trellis_section
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      section_id VARCHAR(120) PRIMARY KEY,
+      section_code VARCHAR(120) NOT NULL,
+      canopy_style VARCHAR(120) NOT NULL,
+      estate_code VARCHAR(120) NOT NULL,
+      row_spacing_m FLOAT NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+  )
+
+  Join Block_Pass(vineyard.vine_block.block_id = vineyard.harvest_pass.block_id)
+  Join Block_Section(vineyard.vine_block.section_id = vineyard.trellis_section.section_id)
+)

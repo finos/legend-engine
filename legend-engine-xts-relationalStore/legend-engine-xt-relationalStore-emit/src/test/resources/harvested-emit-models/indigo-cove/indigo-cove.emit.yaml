@@ -1,0 +1,49 @@
+name: indigo-cove
+title: "Indigo Cove - Keyed Optical Instrument Aperture Service with Subtype Narrowing"
+description: |
+  An observatory instrument register served by a keyed multi-execution service
+  and its single-execution tested counterpart. A shared projection narrows the
+  instrument register to its optical subtype through a single-table class
+  inheritance mapping, filters instruments for an observatory by a nested
+  boolean predicate over status and a site membership set, and projects the
+  aperture reading. The multi-execution service binds the projection to a
+  primary and a standby environment by an execution key; the single-execution
+  service carries the test suite with embedded relational fixtures and a
+  tabular-data-set assertion.
+modelSources:
+  model:
+    root: indigo-cove
+    files:
+      - test/indigocove/connection/InstrumentConnections.pure
+      - test/indigocove/domain/Domain.pure
+      - test/indigocove/mapping/InstrumentMapping.pure
+      - test/indigocove/runtime/InstrumentRuntimes.pure
+      - test/indigocove/service/InstrumentApertures.pure
+      - test/indigocove/service/InstrumentAperturesAsOf.pure
+      - test/indigocove/store/InstrumentDatabase.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - mapping:relational-single-table-inheritance
+  - query:filter
+  - query:project
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+stores:
+  - relational
+complexity: advanced
+tags:
+  - class-inheritance
+  - h2
+  - instrument-register
+  - keyed-execution
+  - observatory
+  - service-test
+  - subtype-cast

@@ -1,0 +1,33 @@
+name: russet-thicket-5
+title: "Thicket Trail Survey Vocabulary — Milestoned Inheritance With JSON-Schema Generation"
+description: |
+  A storeless woodland trail-survey vocabulary carried entirely by its type system and its
+  artifact generation. A business-temporal survey record roots a small inheritance hierarchy
+  whose subtypes add surface and canopy detail, so property resolution walks the supertype
+  chain while every read of the hierarchy carries a business-date window. A non-milestoned
+  trailhead marker is referenced from the hierarchy across mandatory, optional and to-many
+  ends. A JSON-schema file generation over the domain package, sequenced by a generation
+  specification, turns the vocabulary into build artifacts.
+modelSources:
+  model:
+    root: russet-thicket-5
+    files:
+      - test/russetthicket5/domain/TrailSurvey.pure
+      - test/russetthicket5/generation/TrailSurveyGenerationSpecification.pure
+      - test/russetthicket5/generation/TrailSurveyJsonSchema.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:class-inheritance
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: intermediate
+tags:
+  - business-temporal
+  - file-generation
+  - generation-specification
+  - inheritance
+  - json-schema
+  - trail-survey
+  - woodland

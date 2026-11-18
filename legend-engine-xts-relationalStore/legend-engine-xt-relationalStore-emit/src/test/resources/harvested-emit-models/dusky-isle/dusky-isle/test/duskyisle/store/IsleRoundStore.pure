@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskyisle::store::IsleRoundStore
+(
+  Schema ref
+  (
+    Table isle
+    (
+      isle_code VARCHAR(16) PRIMARY KEY,
+      isle_name VARCHAR(64) NOT NULL
+    )
+
+    Table harbour
+    (
+      harbour_code VARCHAR(16) PRIMARY KEY,
+      harbour_name VARCHAR(64) NOT NULL,
+      isle_code VARCHAR(16) NOT NULL
+    )
+
+    Table landing_stage
+    (
+      stage_code VARCHAR(16) PRIMARY KEY,
+      stage_name VARCHAR(64) NOT NULL,
+      harbour_code VARCHAR(16) NOT NULL
+    )
+
+    Table route
+    (
+      route_code VARCHAR(16) PRIMARY KEY,
+      route_name VARCHAR(64) NOT NULL,
+      stage_code VARCHAR(16) NOT NULL
+    )
+  )
+
+  Schema depot
+  (
+    Table boat_round
+    (
+      round_id INTEGER PRIMARY KEY,
+      round_code VARCHAR(16) NOT NULL,
+      round_name VARCHAR(64) NOT NULL,
+      sack_count INTEGER NOT NULL,
+      drop_count INTEGER NOT NULL,
+      weather_code VARCHAR(8),
+      swell_code VARCHAR(16),
+      hull_code VARCHAR(16),
+      sail_code VARCHAR(16),
+      route_code VARCHAR(16) NOT NULL,
+      span_metres FLOAT,
+      remark_text VARCHAR(128)
+    )
+
+    View route_load_view
+    (
+      ~groupBy
+      (
+        depot.boat_round.route_code
+      )
+      route_code: depot.boat_round.route_code PRIMARY KEY,
+      round_count: count(depot.boat_round.round_id),
+      sack_total: sum(depot.boat_round.sack_count)
+    )
+  )
+
+  Join Round_Route(depot.boat_round.route_code = ref.route.route_code)
+  Join Route_Stage(ref.route.stage_code = ref.landing_stage.stage_code)
+  Join Stage_Harbour(ref.landing_stage.harbour_code = ref.harbour.harbour_code)
+  Join Harbour_Isle(ref.harbour.isle_code = ref.isle.isle_code)
+  Join Round_Load(depot.boat_round.route_code = depot.route_load_view.route_code)
+)

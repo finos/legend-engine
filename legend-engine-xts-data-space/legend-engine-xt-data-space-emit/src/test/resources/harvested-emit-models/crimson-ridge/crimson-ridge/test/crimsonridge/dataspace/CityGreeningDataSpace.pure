@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::crimsonridge::dataspace::CityGreeningDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'local';
+      description: 'In-process tier used for the service and mapping suites - a handful of districts, neighborhoods, parks, stops, amenities and crews.';
+      mapping: test::crimsonridge::mapping::CityMapping;
+      defaultRuntime: test::crimsonridge::runtime::CityRuntime;
+    },
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier binding the same mapping to the token-authenticated warehouse connection, so consumers plan against the governed store.';
+      mapping: test::crimsonridge::mapping::CityMapping;
+      defaultRuntime: test::crimsonridge::runtime::CityWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'local';
+  title: 'City Greening Catalogue';
+  description: 'A curated entry point over the city greening domain - planning districts, their neighborhoods, the public green spaces inside them, the amenities installed in those spaces, the transit stops that serve them and the grounds crews that maintain them. It groups the relational mapping, both runtimes, the overview layout and the featured endpoints into one consumable unit.';
+  diagrams:
+  [
+    {
+      title: 'City Greening Overview';
+      diagram: test::crimsonridge::diagram::CityGreeningDiagram;
+    }
+  ];
+  elements:
+  [
+    test::crimsonridge::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Park register';
+      description: 'Projects every green space with the neighborhood that contains it.';
+      query: |test::crimsonridge::domain::Park.all()->project(
+        [
+          x|$x.code,
+          x|$x.name,
+          x|$x.parkNeighborhood.name
+        ],
+        [
+          'Code',
+          'Name',
+          'Neighborhood'
+        ]
+      );
+      executionContextKey: 'local';
+    },
+    {
+      id: 2;
+      title: 'Amenity inventory';
+      description: 'The featured endpoint that walks amenity to park to neighborhood to district.';
+      executable: test::crimsonridge::service::AmenityInventory;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'city-greening-support@cityplanning.invalid';
+    documentationUrl: 'https://cityplanning.invalid/docs/city-greening';
+  };
+}

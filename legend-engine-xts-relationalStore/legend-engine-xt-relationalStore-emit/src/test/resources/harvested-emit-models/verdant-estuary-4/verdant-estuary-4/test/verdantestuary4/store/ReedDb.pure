@@ -1,0 +1,37 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::verdantestuary4::store::ReedDb
+(
+  Schema marsh
+  (
+    Table reed_plot
+    (
+      plot_code VARCHAR(16) PRIMARY KEY,
+      transect_code VARCHAR(16),
+      survey_wave VARCHAR(16),
+      salinity_code VARCHAR(8),
+      state_code INTEGER,
+      stem_count INTEGER,
+      reed_height_cm INTEGER,
+      litter_depth_mm INTEGER,
+      plot_note VARCHAR(120),
+      surveyed_on DATE
+    )
+  )
+
+  Filter EarlyWaveFilter(marsh.reed_plot.survey_wave = 'EARLY')
+  Filter LateWaveFilter(marsh.reed_plot.survey_wave = 'LATE')
+)

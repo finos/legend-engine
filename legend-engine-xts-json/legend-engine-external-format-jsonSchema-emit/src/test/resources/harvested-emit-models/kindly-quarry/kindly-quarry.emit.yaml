@@ -1,0 +1,62 @@
+name: kindly-quarry
+title: "Kindly Quarry - transit stop access register with an eight-arm banding conditional, a unioned corridor register and ranked patronage relations"
+description: |
+  A surface transit-network corpus whose cross-schema store carries boarding points and the operating
+  corridor register in one schema and the planning register and counted boardings in another. An
+  included base mapping resolves each counted boarding to its corridor across a two-hop path, while the
+  main mapping bands every boarding point through an eight-arm conditional with a null fallback, tags
+  two unioned corridor set implementations through string-function transforms, and is published by
+  relation-grammar services that filter, roll up, rank with a window function and cap their results.
+modelSources:
+  model:
+    root: kindly-quarry
+    files:
+      - test/kindlyquarry/connection/TransitConnections.pure
+      - test/kindlyquarry/domain/TransitDomain.pure
+      - test/kindlyquarry/external/StopBinding.pure
+      - test/kindlyquarry/mapping/TransitBaseMapping.pure
+      - test/kindlyquarry/mapping/TransitMapping.pure
+      - test/kindlyquarry/runtime/TransitRuntimes.pure
+      - test/kindlyquarry/service/CorridorPatronageRank.pure
+      - test/kindlyquarry/service/ShelteredStopRegister.pure
+      - test/kindlyquarry/service/StopAccessBoard.pure
+      - test/kindlyquarry/store/TransitDB.pure
+features:
+  - execution:external-format-binding
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:sort-limit
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - cross-schema
+  - duckdb
+  - external-format
+  - h2
+  - mapping-include
+  - multi-execution
+  - operation-mapping
+  - relation-grammar
+  - snowflake
+  - transit-network
+  - window-function

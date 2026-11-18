@@ -1,0 +1,289 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlygecko::mapping::BurrowMapping
+(
+  include test::kindlygecko::mapping::VigourEnumMapping
+  include test::kindlygecko::mapping::EnclosureBaseMapping
+
+  *test::kindlygecko::domain::GeckoSighting[geckoSighting]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlygecko::store::BurrowDatabase]survey.gecko_sighting.sighting_id
+    )
+    ~mainTable [test::kindlygecko::store::BurrowDatabase]survey.gecko_sighting
+    sightingId: [test::kindlygecko::store::BurrowDatabase]survey.gecko_sighting.sighting_id,
+    geckoTag: [test::kindlygecko::store::BurrowDatabase]survey.gecko_sighting.gecko_tag,
+    clutchCount: [test::kindlygecko::store::BurrowDatabase]survey.gecko_sighting.clutch_count,
+    vigour: EnumerationMapping VigourLevelMapping: [test::kindlygecko::store::BurrowDatabase]survey.gecko_sighting.vigour_code,
+    reading
+    (
+      lengthMm: [test::kindlygecko::store::BurrowDatabase]survey.gecko_sighting.length_mm,
+      massG: [test::kindlygecko::store::BurrowDatabase]survey.gecko_sighting.mass_g,
+      logSource: 'field-log',
+      recordedBy: [test::kindlygecko::store::BurrowDatabase]@SightingLog | [test::kindlygecko::store::BurrowDatabase]survey.field_log.recorded_by
+    ),
+    enclosureName: [test::kindlygecko::store::BurrowDatabase]@SightingEnclosure | [test::kindlygecko::store::BurrowDatabase]reference.enclosure.enclosure_name,
+    zoneName: [test::kindlygecko::store::BurrowDatabase]@SightingEnclosure > @EnclosureZone | [test::kindlygecko::store::BurrowDatabase]reference.habitat_zone.zone_name,
+    enclosure: [test::kindlygecko::store::BurrowDatabase]@SightingEnclosure
+  }
+
+  testSuites:
+  [
+    currentSightingSuite:
+    {
+      function: |test::kindlygecko::domain::GeckoSighting.all(%2026-06-01)->filter(s|$s.sightingId == 'S-1')->graphFetch(
+        #{
+          test::kindlygecko::domain::GeckoSighting
+          {
+            sightingId,
+            geckoTag,
+            clutchCount,
+            vigour,
+            enclosureName,
+            zoneName,
+            reading
+            {
+              lengthMm,
+              massG,
+              logSource,
+              recordedBy
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::kindlygecko::domain::GeckoSighting
+          {
+            sightingId,
+            geckoTag,
+            clutchCount,
+            vigour,
+            enclosureName,
+            zoneName,
+            reading
+            {
+              lengthMm,
+              massG,
+              logSource,
+              recordedBy
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        fullyPopulatedSighting:
+        {
+          doc: 'A sighting inside its business window resolves its own columns, the embedded reading with its literal default and join-reached recorder, the mapped vigour enumeration and both the one-hop and two-hop enclosure lookups.';
+          data:
+          [
+            test::kindlygecko::store::BurrowDatabase: Reference
+              #{
+                test::kindlygecko::data::BurrowData
+              }#
+          ];
+          asserts:
+          [
+            sighting:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"sightingId":"S-1","geckoTag":"G-01","clutchCount":3,"vigour":"ACTIVE","enclosureName":"Fern Terrace Enclosure","zoneName":"Lowland Scrub Zone","reading":{"lengthMm":88,"massG":12.5,"logSource":"field-log","recordedBy":"ana rivers"}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    emptyReadingSuite:
+    {
+      function: |test::kindlygecko::domain::GeckoSighting.all(%2026-06-01)->filter(s|$s.sightingId == 'S-3')->graphFetch(
+        #{
+          test::kindlygecko::domain::GeckoSighting
+          {
+            sightingId,
+            vigour,
+            enclosureName,
+            zoneName,
+            reading
+            {
+              lengthMm,
+              massG,
+              logSource,
+              recordedBy
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::kindlygecko::domain::GeckoSighting
+          {
+            sightingId,
+            vigour,
+            enclosureName,
+            zoneName,
+            reading
+            {
+              lengthMm,
+              massG,
+              logSource,
+              recordedBy
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        emptyEmbeddedAndJoinMiss:
+        {
+          doc: 'A sighting with no measurement values, no field-log row, an absent vigour code and an enclosure whose zone code has no reference row yields nulls for the embedded values, the enumeration and the second join hop while the literal default still surfaces.';
+          data:
+          [
+            test::kindlygecko::store::BurrowDatabase: Reference
+              #{
+                test::kindlygecko::data::BurrowData
+              }#
+          ];
+          asserts:
+          [
+            sighting:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"sightingId":"S-3","vigour":null,"enclosureName":"Dune Ledge Enclosure","zoneName":null,"reading":{"lengthMm":null,"massG":null,"logSource":"field-log","recordedBy":null}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    supersededSightingSuite:
+    {
+      function: |test::kindlygecko::domain::GeckoSighting.all(%2026-02-01)->filter(s|$s.sightingId == 'S-5')->graphFetch(
+        #{
+          test::kindlygecko::domain::GeckoSighting
+          {
+            sightingId,
+            clutchCount,
+            vigour,
+            reading
+            {
+              lengthMm
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::kindlygecko::domain::GeckoSighting
+          {
+            sightingId,
+            clutchCount,
+            vigour,
+            reading
+            {
+              lengthMm
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        supersededVersionOnly:
+        {
+          doc: 'Pinning the business date before the revision returns the superseded version of the twice-recorded sighting and leaves the later version out of range.';
+          data:
+          [
+            test::kindlygecko::store::BurrowDatabase: Reference
+              #{
+                test::kindlygecko::data::BurrowData
+              }#
+          ];
+          asserts:
+          [
+            sighting:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"sightingId":"S-5","clutchCount":1,"vigour":"ACTIVE","reading":{"lengthMm":50}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    includedEnclosureSuite:
+    {
+      function: |test::kindlygecko::domain::Enclosure.all()->filter(e|$e.enclosureCode == 'E-3')->graphFetch(
+        #{
+          test::kindlygecko::domain::Enclosure
+          {
+            enclosureCode,
+            enclosureName,
+            zoneName,
+            registerLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::kindlygecko::domain::Enclosure
+          {
+            enclosureCode,
+            enclosureName,
+            zoneName,
+            registerLabel
+          }
+        }#
+      );
+      tests:
+      [
+        enclosureFromIncludedMapping:
+        {
+          doc: 'The class mapping inherited across the include boundary resolves its own columns, its literal register label and its one-hop zone lookup without being redeclared here.';
+          data:
+          [
+            test::kindlygecko::store::BurrowDatabase: Reference
+              #{
+                test::kindlygecko::data::BurrowData
+              }#
+          ];
+          asserts:
+          [
+            enclosure:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"enclosureCode":"E-3","enclosureName":"Mist Gallery Enclosure","zoneName":"Lowland Scrub Zone","registerLabel":"BURROW-REGISTER"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

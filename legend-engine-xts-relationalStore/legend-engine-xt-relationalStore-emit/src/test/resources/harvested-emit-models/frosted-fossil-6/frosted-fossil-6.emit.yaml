@@ -1,0 +1,43 @@
+name: frosted-fossil-6
+title: "Frosted Fossil 6 — a business-temporal preparation-ticket register read at a requested instant through an eight-armed cascade and a four-hop catalogue path"
+description: |
+  The preparation-ticket register of a fossil laboratory, versioned on the
+  business timeline so a restated ticket closes its validity window instead of
+  overwriting the earlier state, and read only at a requested instant so a
+  ticket whose window has closed before that instant never surfaces. One
+  relational store splits the bench relations from the catalogue relations, and
+  the ticket reaches its block, formation, quarry and region names along a
+  four-hop path whose every hop is allowed to miss. The mapping derives an
+  eight-armed grit cascade falling through to no value, a note label cascade
+  that recognises only two note prefixes, an hours band over a defaulted
+  measure, and a fitted effort score, while a companion digest mapping resolves
+  three enumerations from computed expressions rather than stored codes. The
+  point-in-time suite walks every cascade arm, each of the four hop misses, an
+  unclaimed enumeration source value and the out-of-window restatement.
+modelSources:
+  model:
+    root: frosted-fossil-6
+    files:
+      - test/frostedfossil6/domain/FossilPrepDomain.pure
+      - test/frostedfossil6/mapping/PrepDigestMapping.pure
+      - test/frostedfossil6/mapping/PrepTicketMapping.pure
+      - test/frostedfossil6/store/FossilPrepDb.pure
+features:
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - business-temporal
+  - duckdb
+  - eight-arm-conditional
+  - enum-of-expression
+  - fossil-preparation-register
+  - four-hop-join-path
+  - mapping-test
+  - outer-join-miss
+  - point-in-time-query
+  - relational

@@ -1,0 +1,171 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::mapleaviary6::mapping::MillMapping
+(
+  *test::mapleaviary6::domain::MillingRun[run]: Relational
+  {
+    ~primaryKey
+    (
+      [test::mapleaviary6::store::MillDb]mill.milling_run.run_code
+    )
+    ~mainTable [test::mapleaviary6::store::MillDb]mill.milling_run
+    eventCode: [test::mapleaviary6::store::MillDb]mill.milling_run.run_code,
+    millCode: [test::mapleaviary6::store::MillDb]mill.milling_run.mill_code,
+    estateName: [test::mapleaviary6::store::MillDb]mill.milling_run.estate_name,
+    recordedOn: [test::mapleaviary6::store::MillDb]mill.milling_run.milled_on,
+    sailSet: [test::mapleaviary6::store::MillDb]mill.milling_run.sail_set,
+    grainKind: [test::mapleaviary6::store::MillDb]mill.milling_run.grain_kind,
+    runGrade: [test::mapleaviary6::store::MillDb]mill.milling_run.run_grade,
+    sackCount: [test::mapleaviary6::store::MillDb]mill.milling_run.sack_count,
+    stoneHours: [test::mapleaviary6::store::MillDb]mill.milling_run.stone_hours
+  }
+
+  *test::mapleaviary6::domain::SailCheck[check]: Relational
+  {
+    ~primaryKey
+    (
+      [test::mapleaviary6::store::MillDb]mill.sail_check.check_code
+    )
+    ~mainTable [test::mapleaviary6::store::MillDb]mill.sail_check
+    checkCode: [test::mapleaviary6::store::MillDb]mill.sail_check.check_code,
+    runCode: [test::mapleaviary6::store::MillDb]mill.sail_check.run_code,
+    checkGrade: [test::mapleaviary6::store::MillDb]mill.sail_check.check_grade,
+    canvasMetres: [test::mapleaviary6::store::MillDb]mill.sail_check.canvas_metres
+  }
+
+  test::mapleaviary6::domain::Run_Check: Relational
+  {
+    AssociationMapping
+    (
+      checks[run, check]: [test::mapleaviary6::store::MillDb]@Run_Check,
+      checkedRun[check, run]: [test::mapleaviary6::store::MillDb]@Run_Check
+    )
+  }
+
+  testSuites:
+  [
+    inheritedRunBindingSuite:
+    {
+      function: |test::mapleaviary6::domain::MillingRun.all()->project(
+  [
+    x|$x.eventCode,
+    x|$x.millCode,
+    x|$x.estateName,
+    x|$x.grainKind,
+    x|$x.sackCount,
+    x|$x.stoneHours
+  ],
+  [
+    'Run',
+    'Mill',
+    'Estate',
+    'Grain',
+    'Sacks',
+    'StoneHours'
+  ]
+)->sort(
+  [
+    asc('Run')
+  ]
+);
+      tests:
+      [
+        inheritedAndOwnPropertiesResolveOnTheSameMainTable:
+        {
+          doc: 'Projects the properties the run inherits from the base event alongside the properties the run declares itself, so the single main table behind the subtype binding has to resolve both halves of the class hierarchy through the restated primary key.';
+          data:
+          [
+            test::mapleaviary6::store::MillDb:
+              Relational
+              #{
+                mill.milling_run:
+                  'run_code,mill_code,estate_name,sail_set,grain_kind,run_grade,sack_count,stone_hours,milled_on\n'+
+                  'MR-01,ML-NORTH,NORTHFIELD,CANVAS,WHEAT,MILLED,42,6.5,2026-02-02\n'+
+                  'MR-02,ML-SOUTH,SOUTHFIELD,SHUTTER,RYE,MILLED,18,3.25,2026-02-03\n';
+              }#
+          ];
+          asserts:
+          [
+            bothRunsProjected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Run":"MR-01","Mill":"ML-NORTH","Estate":"NORTHFIELD","Grain":"WHEAT","Sacks":42,"StoneHours":6.5},{"Run":"MR-02","Mill":"ML-SOUTH","Estate":"SOUTHFIELD","Grain":"RYE","Sacks":18,"StoneHours":3.25}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    checkTraversalSuite:
+    {
+      function: |test::mapleaviary6::domain::MillingRun.all()->filter(
+  r|$r.checks->exists(c|!($c.checkGrade == 'CLEARED'))
+)->project(
+  [
+    x|$x.eventCode,
+    x|$x.sailSet
+  ],
+  [
+    'Run',
+    'SailSet'
+  ]
+)->sort(
+  [
+    asc('Run')
+  ]
+);
+      tests:
+      [
+        onlyRunsHoldingAnOpenSailCheckSurvive:
+        {
+          doc: 'Traverses the association from the run onto its sail checks and keeps only the runs holding a check the crew has not cleared, so the join the association mapping declares is exercised as a semi-join rather than as a projection.';
+          data:
+          [
+            test::mapleaviary6::store::MillDb:
+              Relational
+              #{
+                mill.milling_run:
+                  'run_code,mill_code,estate_name,sail_set,grain_kind,run_grade,sack_count,stone_hours,milled_on\n'+
+                  'MR-01,ML-NORTH,NORTHFIELD,CANVAS,WHEAT,MILLED,42,6.5,2026-02-02\n'+
+                  'MR-02,ML-SOUTH,SOUTHFIELD,SHUTTER,RYE,MILLED,18,3.25,2026-02-03\n';
+                mill.sail_check:
+                  'check_code,run_code,check_grade,canvas_metres\n'+
+                  'SC-01,MR-01,OPEN,4.5\n'+
+                  'SC-02,MR-02,CLEARED,0.0\n';
+              }#
+          ];
+          asserts:
+          [
+            singleRunSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Run":"MR-01","SailSet":"CANVAS"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::easternlighthouse6::store::SeedVaultDb
+(
+  Schema vault
+  (
+    Table SEED_ACCESSION
+    (
+      ACCESSION_CODE VARCHAR(32) PRIMARY KEY,
+      TAXON_NAME VARCHAR(96),
+      COMMON_NAME VARCHAR(96),
+      FAMILY_NAME VARCHAR(96),
+      COLLECTION_CODE VARCHAR(32),
+      STORAGE_ROOM_CODE VARCHAR(24),
+      SHELF_CODE VARCHAR(24),
+      TRAY_CODE VARCHAR(24),
+      PACKET_CODE VARCHAR(24),
+      SEED_LOT_CODE VARCHAR(24),
+      COLLECTOR_NAME VARCHAR(80),
+      COLLECTOR_TEAM VARCHAR(80),
+      HABITAT_NOTE VARCHAR(160),
+      SOIL_NOTE VARCHAR(160),
+      WEATHER_NOTE VARCHAR(160),
+      PROVENANCE_REGION VARCHAR(80),
+      PROVENANCE_DISTRICT VARCHAR(80),
+      PROVENANCE_SITE VARCHAR(80),
+      VIABILITY_GRADE VARCHAR(16),
+      GERMINATION_NOTE VARCHAR(160),
+      DORMANCY_CLASS VARCHAR(24),
+      CLEANING_METHOD VARCHAR(48),
+      DRYING_METHOD VARCHAR(48),
+      PACKAGING_TYPE VARCHAR(48),
+      CURATION_NOTE VARCHAR(160),
+      CURATOR_NAME VARCHAR(80),
+      COLLECTED_AT TIMESTAMP,
+      RECEIVED_AT TIMESTAMP,
+      TESTED_AT TIMESTAMP,
+      REPACKED_AT TIMESTAMP,
+      SEED_MASS_G DECIMAL(18, 4),
+      MOISTURE_PCT DECIMAL(18, 4),
+      GERMINATION_RATE_PCT DECIMAL(18, 4),
+      THOUSAND_SEED_MASS_G DECIMAL(18, 4),
+      PACKET_COUNT INTEGER,
+      VIABILITY_SCORE INTEGER
+    )
+  )
+)

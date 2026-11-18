@@ -1,0 +1,74 @@
+name: amber-tundra-5
+title: "Amber Tundra — Processing-Temporal Permafrost Readings with Banded Case Derivations, Inner Multi-Hop Joins, Grouped Views & Layered Store Includes"
+description: |
+  A non-financial permafrost monitoring model over two relational stores, the
+  borehole store including the field-site store. Ground temperature readings are
+  processing-temporal, so every fetch supplies a processing date and superseded
+  readings outside the window disappear. Their mapping derives a thaw band
+  through an eight-arm nested case expression with an explicit null fallback,
+  cuts probe slots and depths out of the probe label with substring and index-of
+  functions, adds and subtracts the cut depth and the sensor offset, builds a
+  reference by string conversion and concatenation, assigns a literal source,
+  embeds the probe placement from the same row, and reaches the site and region
+  names through join chains with explicit inner join types. Joins conjoin
+  several column equalities or add a literal depth condition, sub-sites point at
+  their parent through a self join, a named store filter compares the retirement
+  timestamp with the current time null-safely to keep only live boreholes, and a
+  grouped view tallies bores per site for a view-backed class mapping. Three
+  mappings layer on one another through mapping includes, and three mapping test
+  suites assert every case arm, the null fallback, join misses, the
+  out-of-window row, the filter and the grouping.
+modelSources:
+  model:
+    root: amber-tundra-5
+    files:
+      - test/ambertundra5/domain/TundraDomain.pure
+      - test/ambertundra5/mapping/BoreMapping.pure
+      - test/ambertundra5/mapping/SiteMapping.pure
+      - test/ambertundra5/mapping/ThawMapping.pure
+      - test/ambertundra5/store/ReadingDb.pure
+      - test/ambertundra5/store/SiteDb.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - execution:test-suite
+  - grammar:complex-typed-property
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - store:relational-filter
+  - mapping:relational-embedded
+  - mapping:relational-join-reached-property
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-composite-join
+  - store:relational-inner-join
+  - store:relational-join-literal-condition
+  - store:relational-nested-join
+  - store:relational-self-join
+  - store:relational-store-include
+  - store:relational-view
+  - store:relational-view-group-by
+stores:
+  - relational
+complexity: advanced
+tags:
+  - case-expression
+  - embedded
+  - grouped-view
+  - h2
+  - mapping-include
+  - multi-hop-join
+  - permafrost
+  - processing-temporal
+  - self-join
+  - store-filter
+  - store-include
+  - string-functions

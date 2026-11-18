@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::indigowarren6::data::MillTestData
+{
+  Relational
+  #{
+    milling.mill_parish:
+      'parish_name,county_name\n'+
+      'Hollow Parish,Hollow County\n'+
+      'Marsh Parish,Marsh County\n';
+
+    milling.mill_site:
+      'site_code,site_name,sail_kind,parish_name\n'+
+      'S-01,Ridge Mill,COMMON,Hollow Parish\n'+
+      'S-02,Fen Mill,SPRING,Marsh Parish\n'+
+      'S-03,Down Mill,PATENT,Unlisted Parish\n'+
+      'S-04,Shell Mill,DERELICT,Hollow Parish\n';
+
+    milling.millstone:
+      'stone_id,stone_code,stone_name,site_code,furrow_count,dressed_on,grit_code,from_z,thru_z\n'+
+      '1,MS-01,Upper Runner,S-01,16,2026-02-10,F,2024-01-01,9999-12-31\n'+
+      '2,MS-02,Lower Bed,S-02,10,2026-03-05,M,2024-01-01,9999-12-31\n'+
+      '3,MS-03,Spare Runner,S-03,6,2026-01-20,C,2024-01-01,9999-12-31\n'+
+      '4,MS-04,Retired Bed,S-01,12,2025-06-01,F,2024-01-01,2025-12-31\n';
+
+    milling.grind_run:
+      'run_id,stone_id,grain_kind,sack_count,moisture_pct\n'+
+      '1,1,WHEAT,20,12.0\n'+
+      '2,1,RYE,10,9.5\n'+
+      '3,2,OAT,8,14.0\n'+
+      '4,3,BARLEY,5,18.0\n';
+  }#
+}

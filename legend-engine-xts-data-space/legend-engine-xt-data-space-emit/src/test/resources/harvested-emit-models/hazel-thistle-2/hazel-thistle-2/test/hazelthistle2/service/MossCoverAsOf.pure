@@ -1,0 +1,140 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::hazelthistle2::service::MossCoverAsOf
+{
+  pattern: '/hazelthistle2/mossCover/{businessDate}';
+  title: 'Peatland - Moss Cover As Of';
+  ownership: UserList { users: ['peatland-restoration-desk'] };
+  documentation: 'Reads the moss survey timeline strictly as of a business date, keeps the surveys whose recorded cover clears a floor and whose plot sits in a monitored catchment, and projects the composed label, the classified recovery band, the normalised dam state and the arithmetic wetness index as a sorted relation.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], minCover: Float[1]|demo::hazelthistle2::domain::MossSurvey.all($businessDate)->filter(
+      s|($s.mossCoverPct >= $minCover) && ($s.plot.catchment.catchmentCode->in(['CAT-1', 'CAT-2'])) && (($s.mossLabel->startsWith('S')) || ($s.mossClass->startsWith('P')))
+    )->project(
+      ~[
+         Survey: s|$s.surveyCode,
+         Label: s|$s.mossLabel,
+         Band: s|$s.recoveryBand(380.0),
+         DamState: s|$s.damState,
+         Catchment: s|$s.plot.catchment.catchmentName,
+         Wetness: s|$s.wetnessIndex
+       ]
+    )->sort(~Survey->ascending())};
+    mapping: demo::hazelthistle2::mapping::MossMapping;
+    runtime: demo::hazelthistle2::runtime::BogRuntime;
+  }
+  testSuites:
+  [
+    mossCoverSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              peatland.catchment:
+                'catchment_code,catchment_name\n'+
+                'CAT-1,Northern Moss\n'+
+                'CAT-2,Southern Moss\n';
+
+              peatland.bog_plot:
+                'plot_code,plot_label,catchment_code\n'+
+                'PLT-1,Plot Ridge Alpha,CAT-1\n'+
+                'PLT-2,Plot Hollow Beta,CAT-2\n';
+
+              peatland.moss_survey:
+                'survey_code,surveyed_on,moss_class,moss_cover_pct,water_depth_cm,dam_state,plot_code,from_z,thru_z\n'+
+                'MS-0001,2026-02-10,sphagnum,45.0,8.0,intact,PLT-1,2026-01-01,9999-12-31\n'+
+                'MS-0002,2026-02-12,polytrichum,18.0,22.0,,PLT-2,2026-01-01,9999-12-31\n'+
+                'MS-0003,2026-06-20,sphagnum,52.0,5.0,breached,PLT-1,2026-07-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        coverBeforeLateSurvey:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-03-01,
+            minCover = 10.0
+          ]
+          asserts:
+          [
+            outOfRangeSurveyAbsent:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"MS-0001","Label":"SPHAGNUM-MS-0","Band":"HOLDING","DamState":"INTACT","Catchment":"Northern Moss","Wetness":360.0},{"Survey":"MS-0002","Label":"POLYTRICHUM-MS-0","Band":"RECOVERING","DamState":null,"Catchment":"Southern Moss","Wetness":396.0}]';
+                  }#;
+              }#
+          ]
+        },
+        coverAfterLateSurvey:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-08-01,
+            minCover = 10.0
+          ]
+          asserts:
+          [
+            newlyOpenedSurveyIncluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"MS-0001","Label":"SPHAGNUM-MS-0","Band":"HOLDING","DamState":"INTACT","Catchment":"Northern Moss","Wetness":360.0},{"Survey":"MS-0002","Label":"POLYTRICHUM-MS-0","Band":"RECOVERING","DamState":null,"Catchment":"Southern Moss","Wetness":396.0},{"Survey":"MS-0003","Label":"SPHAGNUM-MS-0","Band":"HOLDING","DamState":"BREACHED","Catchment":"Northern Moss","Wetness":260.0}]';
+                  }#;
+              }#
+          ]
+        },
+        coverAboveHighFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-08-01,
+            minCover = 50.0
+          ]
+          asserts:
+          [
+            onlyDensestSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"MS-0003","Label":"SPHAGNUM-MS-0","Band":"HOLDING","DamState":"BREACHED","Catchment":"Northern Moss","Wetness":260.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

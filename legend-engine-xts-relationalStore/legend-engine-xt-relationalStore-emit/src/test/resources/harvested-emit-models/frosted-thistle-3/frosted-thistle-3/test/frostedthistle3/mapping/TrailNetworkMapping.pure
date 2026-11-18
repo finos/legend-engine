@@ -1,0 +1,144 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedthistle3::mapping::TrailNetworkMapping
+(
+  *test::frostedthistle3::domain::TrailSegment[segment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.segment_code
+    )
+    ~mainTable [test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment
+    segmentCode: [test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.segment_code,
+    pathCode: [test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.path_code,
+    crewCode: [test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.crew_code,
+    gradientPct: [test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.gradient_pct,
+    spanMetres: [test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.span_metres,
+    lastInspectedOn: [test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.last_inspected_on,
+    waymarkLabel: case(
+                    isNotEmpty([test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.waymark_label),
+                    concat('WM-', toUpper(substring([test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.waymark_label, 1, 4))),
+                    sqlNull()
+                  ),
+    surface: EnumerationMapping SurfaceMapping: concat(
+               case(
+                 isNotEmpty([test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.surface_code),
+                 toUpper(trim([test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.surface_code)),
+                 'GRAVEL'
+               ),
+               '/SURF'
+             ),
+    logSource: 'TRAIL LOG'
+  }
+
+  test::frostedthistle3::domain::RidgeSegment[ridgeSegment] extends [segment]: Relational
+  {
+    ~filter [test::frostedthistle3::store::TrailNetworkDb]RidgeSegments
+    ~primaryKey
+    (
+      [test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.segment_code
+    )
+    ~mainTable [test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment
+    exposureRating: [test::frostedthistle3::store::TrailNetworkDb]trail.trail_segment.ridge_exposure
+  }
+
+  test::frostedthistle3::domain::TrailSurface: EnumerationMapping SurfaceMapping
+  {
+    GRAVEL: ['GRAVEL/SURF'],
+    BOARDWALK: ['BOARDWALK/SURF'],
+    STONE_PITCH: ['STONE/SURF'],
+    TIMBER: ['TIMBER/SURF']
+  }
+
+  testSuites:
+  [
+    segmentRegisterSuite:
+    {
+      function: |test::frostedthistle3::domain::TrailSegment.all()->project([s|$s.segmentCode, s|$s.pathCode, s|$s.surface, s|$s.waymarkLabel, s|$s.gradientPct, s|$s.spanMetres, s|$s.logSource], ['Segment', 'Path', 'Surface', 'Waymark', 'Gradient', 'Span', 'Log'])->sort([asc('Segment')]);
+      tests:
+      [
+        registerWithUnmappedSurfaceAndAbsentWaymark:
+        {
+          doc: 'Reads the whole segment register: three surface codes that the expression-sourced enumeration mapping resolves, one code that has no counterpart and therefore yields no member, and one segment with no waymark text so the composed label falls back to null.';
+          data:
+          [
+            test::frostedthistle3::store::TrailNetworkDb:
+              Relational
+              #{
+                trail.trail_segment:
+                  'segment_code,path_code,crew_code,surface_code,gradient_pct,span_metres,last_inspected_on,waymark_label,ridge_flag,ridge_exposure\n'+
+                  'TS-01,NORTH RIDGE,CR-1,GRAVEL,8,420,2026-04-18,cairn north,Y,3\n'+
+                  'TS-02,LAKESIDE,CR-1,BOARDWALK,3,260,2026-05-06,plank walk,N,\n'+
+                  'TS-03,MOORLAND,CR-2,STONE,14,510,2026-04-25,slab moor,Y,5\n'+
+                  'TS-04,NORTH RIDGE,CR-1,CINDER,6,180,2026-04-09,,N,\n'+
+                  'TS-05,LAKESIDE,CR-1,TIMBER,4,150,2026-01-12,post ridge,N,\n';
+              }#
+          ];
+          asserts:
+          [
+            fiveSegmentsOneWithoutASurfaceMember:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment":"TS-01","Path":"NORTH RIDGE","Surface":"GRAVEL","Waymark":"WM-CAIR","Gradient":8,"Span":420,"Log":"TRAIL LOG"},{"Segment":"TS-02","Path":"LAKESIDE","Surface":"BOARDWALK","Waymark":"WM-PLAN","Gradient":3,"Span":260,"Log":"TRAIL LOG"},{"Segment":"TS-03","Path":"MOORLAND","Surface":"STONE_PITCH","Waymark":"WM-SLAB","Gradient":14,"Span":510,"Log":"TRAIL LOG"},{"Segment":"TS-04","Path":"NORTH RIDGE","Surface":null,"Waymark":null,"Gradient":6,"Span":180,"Log":"TRAIL LOG"},{"Segment":"TS-05","Path":"LAKESIDE","Surface":"TIMBER","Waymark":"WM-POST","Gradient":4,"Span":150,"Log":"TRAIL LOG"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    ridgeSegmentSuite:
+    {
+      function: |test::frostedthistle3::domain::RidgeSegment.all()->project([r|$r.segmentCode, r|$r.exposureRating, r|$r.surface, r|$r.logSource], ['Segment', 'Exposure', 'Surface', 'Log'])->sort([asc('Segment')]);
+      tests:
+      [
+        onlyRidgeSideSegments:
+        {
+          doc: 'Reads the ridge-side subtype over the same table, so the store filter withholds every segment that is not flagged as running along a ridge and the subtype adds its own exposure rating to the inherited columns.';
+          data:
+          [
+            test::frostedthistle3::store::TrailNetworkDb:
+              Relational
+              #{
+                trail.trail_segment:
+                  'segment_code,path_code,crew_code,surface_code,gradient_pct,span_metres,last_inspected_on,waymark_label,ridge_flag,ridge_exposure\n'+
+                  'TS-01,NORTH RIDGE,CR-1,GRAVEL,8,420,2026-04-18,cairn north,Y,3\n'+
+                  'TS-02,LAKESIDE,CR-1,BOARDWALK,3,260,2026-05-06,plank walk,N,\n'+
+                  'TS-03,MOORLAND,CR-2,STONE,14,510,2026-04-25,slab moor,Y,5\n'+
+                  'TS-06,FELL TOP,CR-1,TIMBER,11,300,2026-04-20,post fell,Y,\n';
+              }#
+          ];
+          asserts:
+          [
+            threeRidgeSegmentsOneWithoutARating:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment":"TS-01","Exposure":3,"Surface":"GRAVEL","Log":"TRAIL LOG"},{"Segment":"TS-03","Exposure":5,"Surface":"STONE_PITCH","Log":"TRAIL LOG"},{"Segment":"TS-06","Exposure":null,"Surface":"TIMBER","Log":"TRAIL LOG"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

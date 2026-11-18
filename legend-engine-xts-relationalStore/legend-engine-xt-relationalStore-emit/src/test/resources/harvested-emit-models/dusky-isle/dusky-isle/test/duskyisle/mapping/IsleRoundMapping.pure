@@ -1,0 +1,212 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskyisle::mapping::IsleRoundMapping
+(
+  test::duskyisle::domain::BoatRound: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyisle::store::IsleRoundStore]depot.boat_round.round_id
+    )
+    ~mainTable [test::duskyisle::store::IsleRoundStore]depot.boat_round
+    roundCode: concat('RUN-', [test::duskyisle::store::IsleRoundStore]depot.boat_round.round_code),
+    roundName: toUpper(trim([test::duskyisle::store::IsleRoundStore]depot.boat_round.round_name)),
+    sackCount: [test::duskyisle::store::IsleRoundStore]depot.boat_round.sack_count,
+    dropCount: [test::duskyisle::store::IsleRoundStore]depot.boat_round.drop_count,
+    sacksPerDrop: divide(
+                    [test::duskyisle::store::IsleRoundStore]depot.boat_round.sack_count,
+                    [test::duskyisle::store::IsleRoundStore]depot.boat_round.drop_count
+                  ),
+    spanShare: divide(
+                 coalesce([test::duskyisle::store::IsleRoundStore]depot.boat_round.span_metres, 0),
+                 [test::duskyisle::store::IsleRoundStore]depot.boat_round.drop_count
+               ),
+    weatherBand: case(
+                   or(
+                     equal([test::duskyisle::store::IsleRoundStore]depot.boat_round.weather_code, 'W1'),
+                     equal([test::duskyisle::store::IsleRoundStore]depot.boat_round.weather_code, 'WA')
+                   ),
+                   'settled',
+                   case(
+                     or(
+                       equal([test::duskyisle::store::IsleRoundStore]depot.boat_round.weather_code, 'W2'),
+                       equal([test::duskyisle::store::IsleRoundStore]depot.boat_round.weather_code, 'WB')
+                     ),
+                     'breezy',
+                     case(
+                       equal([test::duskyisle::store::IsleRoundStore]depot.boat_round.weather_code, 'W3'),
+                       'squally',
+                       case(
+                         equal([test::duskyisle::store::IsleRoundStore]depot.boat_round.weather_code, 'W4'),
+                         'misted',
+                         case(
+                           equal([test::duskyisle::store::IsleRoundStore]depot.boat_round.weather_code, 'W5'),
+                           'gusting',
+                           case(
+                             equal([test::duskyisle::store::IsleRoundStore]depot.boat_round.weather_code, 'W6'),
+                             'driving rain',
+                             case(
+                               equal([test::duskyisle::store::IsleRoundStore]depot.boat_round.weather_code, 'W7'),
+                               'sea fret',
+                               case(
+                                 equal([test::duskyisle::store::IsleRoundStore]depot.boat_round.weather_code, 'W8'),
+                                 'still air',
+                                 sqlNull()
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 ),
+    remarkLabel: coalesce(
+                   [test::duskyisle::store::IsleRoundStore]depot.boat_round.remark_text,
+                   'unremarked'
+                 ),
+    codePrefix: toUpper(substring([test::duskyisle::store::IsleRoundStore]depot.boat_round.round_name, 0, 3)),
+    crewTag: concat(
+               'CREW/',
+               toLower(substring([test::duskyisle::store::IsleRoundStore]depot.boat_round.round_code, 0, 2))
+             ),
+    swell: EnumerationMapping SwellStateMapping: concat(
+             toUpper(trim([test::duskyisle::store::IsleRoundStore]depot.boat_round.swell_code)),
+             '/SEA'
+           ),
+    hull: EnumerationMapping HullClassMapping: toUpper(
+            coalesce([test::duskyisle::store::IsleRoundStore]depot.boat_round.hull_code, 'open')
+          ),
+    window: EnumerationMapping SailWindowMapping: concat(
+              'W-',
+              toUpper(trim([test::duskyisle::store::IsleRoundStore]depot.boat_round.sail_code))
+            ),
+    routeName: [test::duskyisle::store::IsleRoundStore]@Round_Route | [test::duskyisle::store::IsleRoundStore]ref.route.route_name,
+    stageName: [test::duskyisle::store::IsleRoundStore]@Round_Route > @Route_Stage | [test::duskyisle::store::IsleRoundStore]ref.landing_stage.stage_name,
+    harbourName: [test::duskyisle::store::IsleRoundStore]@Round_Route > @Route_Stage > @Stage_Harbour | [test::duskyisle::store::IsleRoundStore]ref.harbour.harbour_name,
+    isleName: [test::duskyisle::store::IsleRoundStore]@Round_Route > @Route_Stage > @Stage_Harbour > @Harbour_Isle | [test::duskyisle::store::IsleRoundStore]ref.isle.isle_name,
+    routeRoundCount: [test::duskyisle::store::IsleRoundStore]@Round_Load | [test::duskyisle::store::IsleRoundStore]depot.route_load_view.round_count,
+    routeSackTotal: [test::duskyisle::store::IsleRoundStore]@Round_Load | [test::duskyisle::store::IsleRoundStore]depot.route_load_view.sack_total
+  }
+
+  test::duskyisle::domain::RouteLeg: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyisle::store::IsleRoundStore]ref.route.route_code
+    )
+    ~mainTable [test::duskyisle::store::IsleRoundStore]ref.route
+    routeCode: [test::duskyisle::store::IsleRoundStore]ref.route.route_code,
+    routeLabel: toUpper([test::duskyisle::store::IsleRoundStore]ref.route.route_name),
+    stageLabel: [test::duskyisle::store::IsleRoundStore]@Route_Stage | [test::duskyisle::store::IsleRoundStore]ref.landing_stage.stage_name
+  }
+
+  test::duskyisle::domain::SwellState: EnumerationMapping SwellStateMapping
+  {
+    CALM: ['CALM/SEA'],
+    CHOPPY: ['CHOPPY/SEA'],
+    HEAVY: ['HEAVY/SEA']
+  }
+
+  test::duskyisle::domain::HullClass: EnumerationMapping HullClassMapping
+  {
+    OPEN: ['OPEN'],
+    DECKED: ['DECKED']
+  }
+
+  test::duskyisle::domain::SailWindow: EnumerationMapping SailWindowMapping
+  {
+    DAWN: ['W-DAWN'],
+    MIDDAY: ['W-MIDDAY'],
+    DUSK: ['W-DUSK']
+  }
+
+  testSuites:
+  [
+    boatRoundRegisterSuite:
+    {
+      function: test::duskyisle::domain::BoatRound.all()->project(~[Round: x|$x.roundCode, Name: x|$x.roundName, Band: x|$x.bandLabel(), Remark: x|$x.remarkLabel, Prefix: x|$x.codePrefix, Crew: x|$x.crewTag, Swell: x|$x.swell, Hull: x|$x.hull, Window: x|$x.window, Route: x|$x.routeText(), Stage: x|$x.stageText(), Harbour: x|$x.harbourText(), Isle: x|$x.isleText(), Tier: x|$x.loadTier()]);
+      tests:
+      [
+        everyWeatherArmAndEveryReachedHop:
+        {
+          doc: 'One fixture row per conditional arm, a row that falls through to the null band, a row per broken hop of the four-hop reference reach, a row reaching every hop, and a row whose swell source value is not decoded by the enumeration mapping.';
+          data:
+          [
+            test::duskyisle::store::IsleRoundStore:
+              Reference
+              #{
+                test::duskyisle::data::IsleTestData
+              }#
+          ];
+          asserts:
+          [
+            fifteenRoundRows:
+              Relation
+              #{
+                Round,Name,Band,Remark,Prefix,Crew,Swell,Hull,Window,Route,Stage,Harbour,Isle,Tier
+                RUN-R1,PUFFIN RUN,settled,gull remark,PU,CREW/r,CALM,OPEN,DAWN,North route,Slate stage,Cobble harbour,Dusky isle,heavy load
+                RUN-R2,SHEARWATER RUN,breezy,pier remark,SH,CREW/r,CHOPPY,DECKED,MIDDAY,North route,Slate stage,Cobble harbour,Dusky isle,heavy load
+                RUN-R3,TERN RUN,squally,unremarked,TE,CREW/r,HEAVY,OPEN,DUSK,North route,Slate stage,Cobble harbour,Dusky isle,heavy load
+                RUN-R4,EIDER RUN,misted,slip remark,EI,CREW/r,CALM,DECKED,DAWN,North route,Slate stage,Cobble harbour,Dusky isle,heavy load
+                RUN-R5,FULMAR RUN,gusting,jetty remark,FU,CREW/r,CHOPPY,OPEN,MIDDAY,North route,Slate stage,Cobble harbour,Dusky isle,heavy load
+                RUN-R6,GANNET RUN,driving rain,unremarked,GA,CREW/r,HEAVY,DECKED,DUSK,North route,Slate stage,Cobble harbour,Dusky isle,heavy load
+                RUN-R7,SKUA RUN,sea fret,ridge remark,SK,CREW/r,CALM,OPEN,DAWN,North route,Slate stage,Cobble harbour,Dusky isle,heavy load
+                RUN-R8,PETREL RUN,still air,cove remark,PE,CREW/r,CHOPPY,DECKED,MIDDAY,North route,Slate stage,Cobble harbour,Dusky isle,heavy load
+                RUN-R9,QUIET RUN,unbanded,unremarked,QU,CREW/r,HEAVY,OPEN,DUSK,North route,Slate stage,Cobble harbour,Dusky isle,heavy load
+                RUN-RA,RAZORBILL RUN,settled,stack remark,RA,CREW/r,CALM,OPEN,DAWN,North route,Slate stage,Cobble harbour,Dusky isle,heavy load
+                RUN-RB,BRISK RUN,breezy,brisk remark,BR,CREW/r,null,DECKED,MIDDAY,North route,Slate stage,Cobble harbour,Dusky isle,heavy load
+                RUN-RF,ISLELESS RUN,misted,isleless remark,IS,CREW/r,CALM,DECKED,DUSK,West route,Cinder stage,Shingle harbour,no isle,steady load
+                RUN-RE,HARBOURLESS RUN,squally,unremarked,HA,CREW/r,HEAVY,OPEN,MIDDAY,East route,Pebble stage,no harbour,no isle,steady load
+                RUN-RD,STAGELESS RUN,breezy,stageless remark,ST,CREW/r,CHOPPY,DECKED,DAWN,South route,no stage,no harbour,no isle,light load
+                RUN-RC,ADRIFT RUN,settled,adrift remark,AD,CREW/r,CALM,OPEN,DUSK,no route,no stage,no harbour,no isle,light load;
+              }#
+          ];
+        }
+      ];
+    },
+    routeLegSuite:
+    {
+      function: test::duskyisle::domain::RouteLeg.all()->project(~[Route: x|$x.routeCode, Label: x|$x.routeLabel, Stage: x|$x.stageLabel]);
+      tests:
+      [
+        legsReachTheirStage:
+        {
+          doc: 'Route legs resolve their landing stage through the declared join; a route whose stage is absent yields no stage.';
+          data:
+          [
+            test::duskyisle::store::IsleRoundStore:
+              Reference
+              #{
+                test::duskyisle::data::IsleTestData
+              }#
+          ];
+          asserts:
+          [
+            routeLegRows:
+              Relation
+              #{
+                Route,Label,Stage
+                RT-1,NORTH ROUTE,Slate stage
+                RT-3,EAST ROUTE,Pebble stage
+                RT-4,WEST ROUTE,Cinder stage
+                RT-2,SOUTH ROUTE,null;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,49 @@
+name: crimson-prairie-3
+title: "Crimson Prairie 3 — Batch-Column Reading Extent, Digest Identity & Graph-Fetch Document"
+description: |
+  A non-financial grassland plot-monitoring model whose single relational table
+  pairs the survey payload with batch bookkeeping columns: two wide-decimal
+  batch boundary markers and a digest string that carries the table's only
+  declared key. Because identity comes from the bookkeeping digest rather than
+  from a payload column, the mapped class's primary key and main-table alias are
+  declared over the digest column and both batch markers are projected alongside
+  the payload wherever the class is queried. A mapping test suite asserts the
+  projected extent from embedded relational fixtures, and a parameterised service
+  materialises the same class as a nested object graph and serialises it instead
+  of projecting a tabular result, with embedded test data covering a matched and
+  an unmatched reference.
+
+modelSources:
+  model:
+    root: crimson-prairie-3
+    files:
+      - test/crimsonprairie3/connection/PrairieConnection.pure
+      - test/crimsonprairie3/domain/PrairieDomain.pure
+      - test/crimsonprairie3/mapping/PrairieMapping.pure
+      - test/crimsonprairie3/runtime/PrairieRuntime.pure
+      - test/crimsonprairie3/service/PlotReadingDocument.pure
+      - test/crimsonprairie3/store/PrairieDB.pure
+
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-batch-bookkeeping-columns
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - duckdb
+  - graph-fetch
+  - h2
+  - batch-columns
+  - mapping-test
+  - service-test

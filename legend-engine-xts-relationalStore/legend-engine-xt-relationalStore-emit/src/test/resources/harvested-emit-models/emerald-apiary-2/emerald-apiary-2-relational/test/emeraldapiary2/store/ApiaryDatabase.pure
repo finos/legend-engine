@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::emeraldapiary2::store::ApiaryDatabase
+(
+  Schema apiary
+  (
+    Table apiary_site
+    (
+      apiary_code VARCHAR(24) PRIMARY KEY,
+      apiary_name VARCHAR(100) NOT NULL
+    )
+    Table apiary_archive
+    (
+      apiary_code VARCHAR(24) PRIMARY KEY,
+      apiary_name VARCHAR(100) NOT NULL
+    )
+    Table colony
+    (
+      colony_code VARCHAR(24) PRIMARY KEY,
+      colony_name VARCHAR(100) NOT NULL,
+      apiary_code VARCHAR(24) NOT NULL,
+      street VARCHAR(120) NOT NULL,
+      district VARCHAR(80) NOT NULL
+    )
+  )
+  Schema inspection
+  (
+    Table hive_inspection
+    (
+      inspection_code VARCHAR(24) PRIMARY KEY,
+      colony_code VARCHAR(24) NOT NULL,
+      inspected_on DATE NOT NULL,
+      inspector_name VARCHAR(100) NOT NULL
+    )
+    Table treatment_inspection
+    (
+      inspection_code VARCHAR(24) PRIMARY KEY,
+      treatment_code VARCHAR(24) NOT NULL,
+      treatment_notes VARCHAR(200)
+    )
+    Table routine_inspection
+    (
+      inspection_code VARCHAR(24) PRIMARY KEY,
+      observation_note VARCHAR(200)
+    )
+  )
+
+  Join Colony_Apiary(apiary.colony.apiary_code = apiary.apiary_site.apiary_code)
+  Join Inspection_Colony(inspection.hive_inspection.colony_code = apiary.colony.colony_code)
+  Join Treatment_Inspection(inspection.treatment_inspection.inspection_code = inspection.hive_inspection.inspection_code)
+  Join Routine_Inspection(inspection.routine_inspection.inspection_code = inspection.hive_inspection.inspection_code)
+)

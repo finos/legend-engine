@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelbeacon3::service::LensScoreRanking
+{
+  pattern: '/hazelbeacon/v1/inspections/lens-ranking';
+  title: 'Hazel Beacon - Lens Score Ranking';
+  owners:
+  [
+    'coastal-trust-beacon-register',
+    'optic-maintenance-desk'
+  ];
+  documentation: 'Ranks the recorded lens scores of every visit within its beacon, so the worst-scoring visit of each beacon can be read off the top of its partition without comparing the beacons against each other. The ranking is computed as a window over the projected register rather than by re-querying per beacon.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::hazelbeacon3::domain::BeaconInspection.all()->project(
+      [
+        i|$i.beaconName,
+        i|$i.inspectionRef,
+        i|$i.lensScore
+      ],
+      [
+        'BEACON',
+        'INSPECTION_REF',
+        'LENS_SCORE'
+      ]
+    )->olapGroupBy(
+      [
+        'BEACON'
+      ],
+      desc('LENS_SCORE'),
+      w|$w->rank(),
+      'SCORE_RANK'
+    )->sort(
+      [
+        asc('BEACON'),
+        asc('SCORE_RANK')
+      ]
+    );
+    mapping: test::hazelbeacon3::mapping::BeaconRegistryMapping;
+    runtime: test::hazelbeacon3::runtime::BeaconH2Runtime;
+  }
+  testSuites:
+  [
+    lensRankingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconH2Connection:
+            Relational
+            #{
+              registry.station_record:
+                'station_code,station_name,coast_sector\n'+
+                'ST-01,Hazel Point Station,north-shore\n';
+              registry.beacon_record:
+                'beacon_code,beacon_name,station_code,lamp_code,grade_code,commissioned_on,focal_height_m\n'+
+                'BC-01,Hazel Point Light,ST-01,LP-01,G1,1998-04-12,32\n'+
+                'BC-02,Shingle Spit Light,ST-01,LP-01,G2,2001-06-01,18\n';
+              survey.inspection_record:
+                'inspection_ref,beacon_code,inspected_on,inspector_code,lens_score,battery_pct\n'+
+                'IN-01,BC-01,2026-04-02,keeper-a,88,96\n'+
+                'IN-02,BC-01,2026-04-09,keeper-b,74,35\n'+
+                'IN-03,BC-02,2026-04-09,keeper-c,62,60\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        scoresAreRankedInsideEachBeaconPartition:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            eachBeaconRestartsTheRanking:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BEACON":"Hazel Point Light","INSPECTION_REF":"IN-01","LENS_SCORE":88,"SCORE_RANK":1},{"BEACON":"Hazel Point Light","INSPECTION_REF":"IN-02","LENS_SCORE":74,"SCORE_RANK":2},{"BEACON":"Shingle Spit Light","INSPECTION_REF":"IN-03","LENS_SCORE":62,"SCORE_RANK":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

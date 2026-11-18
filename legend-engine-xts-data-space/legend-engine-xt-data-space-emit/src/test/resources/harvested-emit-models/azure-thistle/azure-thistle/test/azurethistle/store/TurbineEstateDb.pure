@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::azurethistle::store::TurbineEstateDb
+(
+  Schema estate
+  (
+    Table turbine_record
+    (
+      reading_date DATE PRIMARY KEY,
+      asset_code VARCHAR(24) PRIMARY KEY,
+      turbine_name VARCHAR(120),
+      park_code VARCHAR(24),
+      feeder_code VARCHAR(24),
+      track_code VARCHAR(24),
+      mast_code VARCHAR(24),
+      blade_set_code VARCHAR(24),
+      model_code VARCHAR(24),
+      hub_height_m DECIMAL(9, 2),
+      rotor_diameter_m DECIMAL(9, 2),
+      rated_output_kw DECIMAL(12, 2),
+      generated_kwh DECIMAL(14, 2),
+      available_hours DECIMAL(9, 2),
+      downtime_hours DECIMAL(9, 2),
+      rotor_speed_rpm DECIMAL(9, 2),
+      pitch_angle_deg DECIMAL(9, 2),
+      nacelle_bearing_deg DECIMAL(9, 2),
+      wind_speed_ms DECIMAL(9, 2),
+      ambient_temp_c DECIMAL(9, 2),
+      commissioned_on DATE,
+      last_service_on DATE,
+      logged_at TIMESTAMP,
+      service_crew VARCHAR(120),
+      terrain_class VARCHAR(24),
+      curtailment_flag INTEGER,
+      yaw_fault_flag INTEGER,
+      deice_flag INTEGER,
+      service_lock_flag INTEGER
+    )
+
+    Table nacelle_reading
+    (
+      reading_date DATE PRIMARY KEY,
+      asset_code VARCHAR(24) PRIMARY KEY,
+      reading_seq INTEGER PRIMARY KEY,
+      gearbox_temp_c DECIMAL(9, 2),
+      generator_temp_c DECIMAL(9, 2),
+      vibration_mms DECIMAL(9, 2),
+      oil_pressure_bar DECIMAL(9, 2),
+      mast_code VARCHAR(24),
+      alarm_flag INTEGER,
+      logged_at TIMESTAMP
+    )
+
+    Table blade_inspection
+    (
+      inspection_date DATE PRIMARY KEY,
+      blade_set_code VARCHAR(24) PRIMARY KEY,
+      asset_code VARCHAR(24),
+      inspector_name VARCHAR(120),
+      defect_count INTEGER,
+      leading_edge_grade VARCHAR(24),
+      root_bolt_torque_nm DECIMAL(9, 2),
+      repair_flag INTEGER,
+      logged_at TIMESTAMP
+    )
+
+    Table substation_feeder
+    (
+      reading_date DATE PRIMARY KEY,
+      feeder_code VARCHAR(24) PRIMARY KEY,
+      substation_name VARCHAR(120),
+      export_capacity_kw DECIMAL(12, 2),
+      voltage_kv DECIMAL(9, 2),
+      track_code VARCHAR(24),
+      islanded_flag INTEGER,
+      logged_at TIMESTAMP
+    )
+
+    Table access_track
+    (
+      survey_date DATE PRIMARY KEY,
+      track_code VARCHAR(24) PRIMARY KEY,
+      track_name VARCHAR(120),
+      length_km DECIMAL(9, 2),
+      gradient_pct DECIMAL(9, 2),
+      mast_code VARCHAR(24),
+      passable_flag INTEGER,
+      logged_at TIMESTAMP
+    )
+
+    Table met_mast
+    (
+      reading_date DATE PRIMARY KEY,
+      mast_code VARCHAR(24) PRIMARY KEY,
+      mast_name VARCHAR(120),
+      height_m DECIMAL(9, 2),
+      mean_wind_ms DECIMAL(9, 2),
+      turbulence_pct DECIMAL(9, 2),
+      icing_flag INTEGER,
+      logged_at TIMESTAMP
+    )
+  )
+
+  Join Turbine_Nacelle(estate.turbine_record.asset_code = estate.nacelle_reading.asset_code)
+
+  Join Turbine_Blade(estate.turbine_record.blade_set_code = estate.blade_inspection.blade_set_code)
+
+  Join Turbine_Feeder(estate.turbine_record.feeder_code = estate.substation_feeder.feeder_code)
+
+  Join Turbine_Track(estate.turbine_record.track_code = estate.access_track.track_code)
+
+  Join Turbine_Mast(estate.turbine_record.mast_code = estate.met_mast.mast_code)
+
+  Join Nacelle_Mast(estate.nacelle_reading.mast_code = estate.met_mast.mast_code)
+
+  Join Blade_Nacelle(estate.blade_inspection.asset_code = estate.nacelle_reading.asset_code)
+
+  Join Feeder_Track(estate.substation_feeder.track_code = estate.access_track.track_code)
+
+  Join Track_Mast(estate.access_track.mast_code = estate.met_mast.mast_code)
+)

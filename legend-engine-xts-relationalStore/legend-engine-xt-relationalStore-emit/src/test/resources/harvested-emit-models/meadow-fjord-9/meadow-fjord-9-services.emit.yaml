@@ -1,0 +1,35 @@
+name: meadow-fjord-9-services
+title: "Meadow Fjord 9 - two point-in-time survey plot services with pushed-down predicates"
+description: >
+  Two single-execution services over the business-temporal meadow plot extent. Each opens the
+  extent at a supplied instant, filters rows with a predicate that compares two properties
+  against each other before testing a status equality and a zone set membership, projects a
+  tabular register including a derived richness band, and de-duplicates the result; the register
+  service narrows the projected rows once more above the projection so that plan generation
+  carries a post-projection filter over the pushed-down query.
+modelSources:
+  model:
+    root: meadow-fjord-9-services
+    files:
+      - test/meadowfjord9/service/PlotRegisterAsOf.pure
+      - test/meadowfjord9/service/ZoneRosterAsOf.pure
+  dependencies:
+    - source: meadow-fjord-9-meadowland.emit.yaml
+tds_variant: tabular-data-set
+complexity: intermediate
+stores: []
+tags:
+  - distinct
+  - h2
+  - meadow
+  - point-in-time
+  - projection
+  - service
+  - set-membership
+  - survey
+features:
+  - execution:plan-generation
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project

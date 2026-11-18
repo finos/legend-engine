@@ -1,0 +1,262 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::azuremeadow3::mapping::MeadowRefMapping
+(
+  test::azuremeadow3::domain::AccessKind: EnumerationMapping AccessKinds
+  {
+    TRACK_REACHED: ['TRACK'],
+    FOOT_REACHED: ['FOOT'],
+    WINCH_REACHED: ['WINCH']
+  }
+
+  *test::azuremeadow3::domain::TerraceRef[terrace]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azuremeadow3::store::MeadowDb]terraceside.terrace_book.terrace_code
+    )
+    ~mainTable [test::azuremeadow3::store::MeadowDb]terraceside.terrace_book
+    terraceCode: [test::azuremeadow3::store::MeadowDb]terraceside.terrace_book.terrace_code,
+    terraceName: [test::azuremeadow3::store::MeadowDb]terraceside.terrace_book.terrace_name
+  }
+
+  *test::azuremeadow3::domain::KeeperRef[keeper]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azuremeadow3::store::MeadowDb]terraceside.keeper_roster.keeper_code
+    )
+    ~mainTable [test::azuremeadow3::store::MeadowDb]terraceside.keeper_roster
+    keeperCode: [test::azuremeadow3::store::MeadowDb]terraceside.keeper_roster.keeper_code,
+    keeperName: [test::azuremeadow3::store::MeadowDb]terraceside.keeper_roster.keeper_name
+  }
+
+  *test::azuremeadow3::domain::MeadowParcel[parcel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azuremeadow3::store::MeadowDb]meadowside.parcel_book.parcel_id
+    )
+    ~mainTable [test::azuremeadow3::store::MeadowDb]meadowside.parcel_book
+    parcelCode: [test::azuremeadow3::store::MeadowDb]meadowside.parcel_book.parcel_code,
+    parcelName: [test::azuremeadow3::store::MeadowDb]meadowside.parcel_book.parcel_name,
+    terraceName: [test::azuremeadow3::store::MeadowDb]@Parcel_Terrace | [test::azuremeadow3::store::MeadowDb]terraceside.terrace_book.terrace_name,
+    access: EnumerationMapping AccessKinds: [test::azuremeadow3::store::MeadowDb]meadowside.parcel_book.access_code
+  }
+
+  *test::azuremeadow3::domain::AlpineParcel[alpineParcel] extends [parcel]: Relational
+  {
+    ~filter [test::azuremeadow3::store::MeadowDb]AlpineParcelFilter
+    slopePct: [test::azuremeadow3::store::MeadowDb]@Parcel_AlpineDetail | [test::azuremeadow3::store::MeadowDb]meadowside.alpine_parcel_detail.slope_pct,
+    aspectKind: [test::azuremeadow3::store::MeadowDb]@Parcel_AlpineDetail | [test::azuremeadow3::store::MeadowDb]meadowside.alpine_parcel_detail.aspect_kind
+  }
+
+  *test::azuremeadow3::domain::TerraceLoad[terraceLoad]: Relational
+  {
+    ~groupBy
+    (
+      [test::azuremeadow3::store::MeadowDb]meadowside.parcel_book.terrace_code
+    )
+    ~primaryKey
+    (
+      [test::azuremeadow3::store::MeadowDb]meadowside.parcel_book.terrace_code
+    )
+    ~mainTable [test::azuremeadow3::store::MeadowDb]meadowside.parcel_book
+    terraceCode: [test::azuremeadow3::store::MeadowDb]meadowside.parcel_book.terrace_code,
+    parcelTally: count([test::azuremeadow3::store::MeadowDb]meadowside.parcel_book.parcel_id),
+    plotTotal: sum([test::azuremeadow3::store::MeadowDb]meadowside.parcel_book.plot_tally)
+  }
+
+  *test::azuremeadow3::domain::TerraceSummary[terraceSummary]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azuremeadow3::store::MeadowDb]meadowside.terrace_load_vw.terrace_code
+    )
+    ~mainTable [test::azuremeadow3::store::MeadowDb]meadowside.terrace_load_vw
+    terraceCode: [test::azuremeadow3::store::MeadowDb]meadowside.terrace_load_vw.terrace_code,
+    parcelCount: [test::azuremeadow3::store::MeadowDb]meadowside.terrace_load_vw.parcel_count,
+    plotTotal: [test::azuremeadow3::store::MeadowDb]meadowside.terrace_load_vw.plot_total
+  }
+
+  testSuites:
+  [
+    alpineParcelSuite:
+    {
+      function: |test::azuremeadow3::domain::AlpineParcel.all()->project(
+        [
+          x|$x.parcelCode,
+          x|$x.parcelName,
+          x|$x.terraceName,
+          x|$x.access,
+          x|$x.slopePct,
+          x|$x.aspectKind,
+          x|$x.aspectLabel()
+        ],
+        [
+          'Parcel',
+          'Name',
+          'Terrace',
+          'Access',
+          'Slope',
+          'Aspect',
+          'Aspect Label'
+        ]
+      )->sort([asc('Parcel')]);
+      tests:
+      [
+        alpineParcelsOnly:
+        {
+          doc: 'Reads the parcel book as the alpine subtype, so the store filter drops the parcel that is not cut into an alpine terrace, the slope and aspect are carried in from the detail table joined to the parcel book, the aspect label stands in its fixed form for the parcel the detail table carries nothing for, the access enumeration resolves from a coded column and yields no member for an unlisted code, and the parcel cut into no terrace resolves its terrace as unset.';
+          data:
+          [
+            test::azuremeadow3::store::MeadowDb:
+              Relational
+              #{
+                meadowside.parcel_book:
+                  'parcel_id,parcel_code,parcel_name,terrace_code,parcel_kind,access_code,plot_tally\n'+
+                  '1,P-01,Upper Hay Parcel,T-1,ALPINE,TRACK,4\n'+
+                  '2,P-02,Middle Hay Parcel,T-1,ALPINE,FOOT,2\n'+
+                  '3,P-03,Lower Hay Parcel,T-2,MEADOW,TRACK,6\n'+
+                  '4,P-04,Spring Hay Parcel,T-2,ALPINE,WINCH,3\n'+
+                  '5,P-05,Ridge Hay Parcel,,ALPINE,ZZZ,1\n';
+
+                meadowside.alpine_parcel_detail:
+                  'parcel_id,slope_pct,aspect_kind\n'+
+                  '1,18.5,south facing\n'+
+                  '2,24.0,east facing\n'+
+                  '4,31.5,north facing\n';
+
+                terraceside.terrace_book:
+                  'terrace_code,terrace_name,keeper_code\n'+
+                  'T-1,Upper Terrace,K-1\n'+
+                  'T-2,Lower Terrace,\n';
+              }#
+          ];
+          asserts:
+          [
+            fourAlpineParcels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Parcel":"P-01","Name":"Upper Hay Parcel","Terrace":"Upper Terrace","Access":"TRACK_REACHED","Slope":18.5,"Aspect":"south facing","Aspect Label":"SOUTH FACING/P-01"},{"Parcel":"P-02","Name":"Middle Hay Parcel","Terrace":"Upper Terrace","Access":"FOOT_REACHED","Slope":24.0,"Aspect":"east facing","Aspect Label":"EAST FACING/P-02"},{"Parcel":"P-04","Name":"Spring Hay Parcel","Terrace":"Lower Terrace","Access":"WINCH_REACHED","Slope":31.5,"Aspect":"north facing","Aspect Label":"NORTH FACING/P-04"},{"Parcel":"P-05","Name":"Ridge Hay Parcel","Terrace":null,"Access":null,"Slope":null,"Aspect":null,"Aspect Label":"ASPECT UNSET/P-05"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    terraceFoldSuite:
+    {
+      function: |test::azuremeadow3::domain::TerraceLoad.all()->project(
+        [
+          x|$x.terraceCode,
+          x|$x.parcelTally,
+          x|$x.plotTotal
+        ],
+        [
+          'Terrace',
+          'Parcels',
+          'Plots'
+        ]
+      )->sort([asc('Terrace')]);
+      tests:
+      [
+        foldedByTerrace:
+        {
+          doc: 'Folds the parcel book by terrace behind the class, so the parcel tally and the plot total are aggregated by the mapping rather than by the query, over a fixture whose two terraces carry differing parcel counts and plot totals.';
+          data:
+          [
+            test::azuremeadow3::store::MeadowDb:
+              Relational
+              #{
+                meadowside.parcel_book:
+                  'parcel_id,parcel_code,parcel_name,terrace_code,parcel_kind,access_code,plot_tally\n'+
+                  '1,P-01,Upper Hay Parcel,T-1,ALPINE,TRACK,4\n'+
+                  '2,P-02,Middle Hay Parcel,T-1,ALPINE,FOOT,2\n'+
+                  '3,P-03,Lower Hay Parcel,T-2,MEADOW,TRACK,6\n'+
+                  '4,P-04,Spring Hay Parcel,T-2,ALPINE,WINCH,3\n';
+              }#
+          ];
+          asserts:
+          [
+            twoFoldedTerraces:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Terrace":"T-1","Parcels":2,"Plots":6},{"Terrace":"T-2","Parcels":2,"Plots":9}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    terraceViewSuite:
+    {
+      function: |test::azuremeadow3::domain::TerraceSummary.all()->project(
+        [
+          x|$x.terraceCode,
+          x|$x.parcelCount,
+          x|$x.plotTotal
+        ],
+        [
+          'Terrace',
+          'Parcels',
+          'Plots'
+        ]
+      )->sort([asc('Terrace')]);
+      tests:
+      [
+        readThroughTheView:
+        {
+          doc: 'Reads the same terrace fold off the store-side view instead of folding it in the mapping, so the aggregation declared once in the store is mapped straight through and returns the same counts and totals the mapping fold does.';
+          data:
+          [
+            test::azuremeadow3::store::MeadowDb:
+              Relational
+              #{
+                meadowside.parcel_book:
+                  'parcel_id,parcel_code,parcel_name,terrace_code,parcel_kind,access_code,plot_tally\n'+
+                  '1,P-01,Upper Hay Parcel,T-1,ALPINE,TRACK,4\n'+
+                  '2,P-02,Middle Hay Parcel,T-1,ALPINE,FOOT,2\n'+
+                  '3,P-03,Lower Hay Parcel,T-2,MEADOW,TRACK,6\n'+
+                  '4,P-04,Spring Hay Parcel,T-2,ALPINE,WINCH,3\n';
+              }#
+          ];
+          asserts:
+          [
+            twoViewedTerraces:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Terrace":"T-1","Parcels":2,"Plots":6},{"Terrace":"T-2","Parcels":2,"Plots":9}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

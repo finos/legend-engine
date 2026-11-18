@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'Closed vocabulary of hull kinds a visitor pontoon accepts. The register stores a two-letter code and the mapping decides the constant, so a code no member claims leaves the hull undecided.'} test::lunarharbor3::domain::HullKind
+{
+  SAIL,
+  MOTOR,
+  ROWED,
+  WORKBOAT
+}
+
+Enum {doc.doc = 'How a visiting boat is lying against the pontoon at the moment the watch was logged.'} test::lunarharbor3::domain::LineState
+{
+  MADE_FAST,
+  SLACK,
+  RELEASED
+}
+
+Enum {doc.doc = 'Brightness a watch keeper recorded for the pontoon head lantern.'} test::lunarharbor3::domain::LanternGrade
+{
+  BRIGHT,
+  DIM,
+  DARK
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'One watch entry for a boat lying on a visitor pontoon, as the register knew it at a processing date. A later correction opens a new version rather than rewriting the entry, so a read at an earlier date still sees what that reader saw and an entry whose window has closed does not surface at all.'} test::lunarharbor3::domain::MooringLog
+{
+  logCode: String[1];
+  vesselName: String[1];
+  keelDepthCm: Integer[1];
+  loggedOn: StrictDate[1];
+  hull: test::lunarharbor3::domain::HullKind[0..1];
+  lineState: test::lunarharbor3::domain::LineState[0..1];
+  lantern: test::lunarharbor3::domain::LanternGrade[0..1];
+  berthNote: String[0..1];
+  vesselLabel: String[1];
+  reachName: String[0..1];
+  pontoonName: String[0..1];
+  quayName: String[0..1];
+  stationName: String[0..1];
+}
+
+Class {doc.doc = 'A visitor pontoon and the quay it is warped to.'} test::lunarharbor3::domain::Pontoon
+{
+  pontoonCode: String[1];
+  pontoonName: String[1];
+}
+
+Class {doc.doc = 'A quay wall carrying one or more visitor pontoons, and the watch station that keeps them.'} test::lunarharbor3::domain::Quay
+{
+  quayCode: String[1];
+  quayName: String[1];
+}
+
+Class {doc.doc = 'The watch station a quay reports its pontoon entries to.'} test::lunarharbor3::domain::WatchStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+}
+
+Class {doc.doc = 'One delimited line of a pontoon watch feed as a keeper hands it in, with the vocabulary codes left as typed or omitted.'} test::lunarharbor3::domain::WatchFeed
+{
+  feedRow: String[1];
+  hullCode: String[0..1];
+  stateCode: String[0..1];
+  lanternCode: String[0..1];
+  keelDepthCm: Integer[1];
+}
+
+Class {doc.doc = 'A watch feed line folded into a digest, with each closed vocabulary resolved from an expression over the feed rather than from a stored code.'} test::lunarharbor3::domain::WatchDigest
+{
+  digestKey: String[1];
+  reachLabel: String[1];
+  laneNote: String[1];
+  hull: test::lunarharbor3::domain::HullKind[1];
+  lineState: test::lunarharbor3::domain::LineState[1];
+  lantern: test::lunarharbor3::domain::LanternGrade[1];
+}
+
+Association test::lunarharbor3::domain::Quay_Pontoons
+{
+  quaySide: test::lunarharbor3::domain::Quay[0..1];
+  pontoonSide: test::lunarharbor3::domain::Pontoon[*];
+}

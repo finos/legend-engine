@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenarboretum2::mapping::NurseryMapping
+(
+  *test::goldenarboretum2::domain::NurseryBatch[batchSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum2::store::NurseryDB]nursery.nursery_batch.batch_code
+    )
+    ~mainTable [test::goldenarboretum2::store::NurseryDB]nursery.nursery_batch
+    batchCode: [test::goldenarboretum2::store::NurseryDB]nursery.nursery_batch.batch_code,
+    batchName: [test::goldenarboretum2::store::NurseryDB]nursery.nursery_batch.batch_name,
+    sowYear: [test::goldenarboretum2::store::NurseryDB]nursery.nursery_batch.sow_year
+  }
+
+  *test::goldenarboretum2::domain::NurseryStock[stockSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum2::store::NurseryDB]nursery.nursery_stock.stock_code
+    )
+    ~mainTable [test::goldenarboretum2::store::NurseryDB]nursery.nursery_stock
+    stockCode: [test::goldenarboretum2::store::NurseryDB]nursery.nursery_stock.stock_code,
+    taxonName: [test::goldenarboretum2::store::NurseryDB]nursery.nursery_stock.taxon_name,
+    saplingCount: [test::goldenarboretum2::store::NurseryDB]nursery.nursery_stock.sapling_count,
+    batchName: [test::goldenarboretum2::store::NurseryDB]@Stock_Batch | [test::goldenarboretum2::store::NurseryDB]nursery.nursery_batch.batch_name
+  }
+
+  testSuites:
+  [
+    nurseryStockSuite:
+    {
+      function: |test::goldenarboretum2::domain::NurseryStock.all()->project(
+  [
+    s|$s.stockCode,
+    s|$s.taxonName,
+    s|$s.saplingCount,
+    s|$s.batchName
+  ],
+  [
+    'Stock',
+    'Taxon',
+    'Saplings',
+    'Batch'
+  ]
+)->sort(
+  [
+    asc('Stock')
+  ]
+);
+      tests:
+      [
+        stockLinesCarryTheirBatchName:
+        {
+          doc: 'Reads the second stores stock lines with the batch name reached over its single join hop, so the second relational mapping resolves against its own main table and alias independently of the grove mapping.';
+          data:
+          [
+            test::goldenarboretum2::store::NurseryDB:
+              Relational
+              #{
+                nursery.nursery_batch:
+                  'batch_code,batch_name,sow_year\n'+
+                  'NB-1,Spring Batch,2025\n'+
+                  'NB-2,Autumn Batch,2026\n';
+
+                nursery.nursery_stock:
+                  'stock_code,batch_code,taxon_name,sapling_count\n'+
+                  'NS-01,NB-1,Quercus alba,240\n'+
+                  'NS-02,NB-2,Betula pendula,120\n';
+              }#
+          ];
+          asserts:
+          [
+            twoStockLines:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stock":"NS-01","Taxon":"Quercus alba","Saplings":240,"Batch":"Spring Batch"},{"Stock":"NS-02","Taxon":"Betula pendula","Saplings":120,"Batch":"Autumn Batch"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

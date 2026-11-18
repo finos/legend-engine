@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::sablethicket2::domain::*;
+import test::sablethicket2::reference::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Tuning temper a casting was finished to.'} test::sablethicket2::domain::ToneTemper
+{
+  MAJOR_THIRD,
+  MINOR_THIRD,
+  UNTEMPERED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Condition recorded for the crown of a casting.'} test::sablethicket2::domain::CrownState
+{
+  SOUND,
+  HAIRLINE,
+  RECAST_PENDING
+}
+
+Class {meta::pure::profiles::doc.doc = 'One cast bell in a carillon register, with the workshop that poured it, the tuning verdicts recorded against it and the closed sets that classify its temper, crown and storage.'} test::sablethicket2::domain::BellCasting
+{
+  castingCode: String[1];
+  profileFamily: String[1];
+  profileWeightBand: String[1];
+  toneLabel: String[1];
+  workshopName: String[1];
+  founderName: String[1];
+  districtName: String[1];
+  districtClimate: String[1];
+  tunerName: String[1];
+  registerSource: String[1];
+  archiveShelf: String[1];
+  nominalHz: Float[1];
+  crownMassKg: Float[1];
+  rimDiameterCm: Float[1];
+  strikeCount: Integer[1];
+  temper: ToneTemper[1];
+  crownState: CrownState[1];
+  storageTier: StorageTier[1];
+  inscriptionScript: InscriptionScript[1];
+}

@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::noblecavern8::store::CavernSketchDb
+(
+  include test::noblecavern8::store::CavernSurveyDb
+
+  Schema sketch
+  (
+    Table passage_sketch
+    (
+      sketch_id INTEGER PRIMARY KEY,
+      sketch_ref VARCHAR(20) NOT NULL,
+      leg_ref VARCHAR(20) NOT NULL,
+      crew_code VARCHAR(20) NOT NULL,
+      out_seq INTEGER NOT NULL,
+      scale_ratio DECIMAL(10, 2) NOT NULL,
+      grid_offset DOUBLE NOT NULL,
+      drawn_at TIMESTAMP NOT NULL,
+      artist_name VARCHAR(60) NOT NULL
+    )
+
+    Table survey_marker
+    (
+      marker_id INTEGER PRIMARY KEY,
+      marker_ref VARCHAR(20) NOT NULL,
+      station_ref VARCHAR(20) NOT NULL,
+      crew_code VARCHAR(20) NOT NULL,
+      out_seq INTEGER NOT NULL,
+      cairn_height DECIMAL(6, 2),
+      placed_at TIMESTAMP NOT NULL,
+      marker_kind VARCHAR(30) NOT NULL
+    )
+
+    View sketch_view
+    (
+      sketch_id: sketch.passage_sketch.sketch_id PRIMARY KEY,
+      sketch_ref: sketch.passage_sketch.sketch_ref,
+      leg_ref: sketch.passage_sketch.leg_ref,
+      crew_code: sketch.passage_sketch.crew_code,
+      out_seq: sketch.passage_sketch.out_seq,
+      scale_ratio: sketch.passage_sketch.scale_ratio,
+      grid_offset: sketch.passage_sketch.grid_offset,
+      drawn_at: sketch.passage_sketch.drawn_at,
+      artist_name: sketch.passage_sketch.artist_name
+    )
+
+    View marker_view
+    (
+      marker_id: sketch.survey_marker.marker_id PRIMARY KEY,
+      marker_ref: sketch.survey_marker.marker_ref,
+      station_ref: sketch.survey_marker.station_ref,
+      crew_code: sketch.survey_marker.crew_code,
+      out_seq: sketch.survey_marker.out_seq,
+      cairn_height: sketch.survey_marker.cairn_height,
+      placed_at: sketch.survey_marker.placed_at,
+      marker_kind: sketch.survey_marker.marker_kind
+    )
+  )
+
+  Join SketchView_Leg(equal(sketch.sketch_view.leg_ref, survey.passage_leg.leg_ref))
+
+  Join MarkerView_Reading(equal(sketch.marker_view.station_ref, survey.station_reading.station_ref))
+
+  Join SketchView_Crew(and(equal(sketch.sketch_view.crew_code, crew.survey_crew.crew_code), equal(sketch.sketch_view.out_seq, 999999)))
+
+  Join MarkerView_Crew(and(equal(sketch.marker_view.crew_code, crew.survey_crew.crew_code), equal(sketch.marker_view.out_seq, 999999)))
+)

@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealmarsh3::mapping::MarshRefMapping
+(
+  *test::borealmarsh3::domain::BasinRef[basin]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealmarsh3::store::MarshSurveyDb]marsh.basin_block.basin_id
+    )
+    ~mainTable [test::borealmarsh3::store::MarshSurveyDb]marsh.basin_block
+    basinCode: [test::borealmarsh3::store::MarshSurveyDb]marsh.basin_block.basin_code,
+    basinName: [test::borealmarsh3::store::MarshSurveyDb]marsh.basin_block.basin_name
+  }
+
+  *test::borealmarsh3::domain::MonitorPoint[monitorPoint]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealmarsh3::store::MarshSurveyDb]marsh.monitor_point.point_id
+    )
+    ~mainTable [test::borealmarsh3::store::MarshSurveyDb]marsh.monitor_point
+    pointCode: [test::borealmarsh3::store::MarshSurveyDb]marsh.monitor_point.point_code,
+    pointName: [test::borealmarsh3::store::MarshSurveyDb]marsh.monitor_point.point_name,
+    basinName: [test::borealmarsh3::store::MarshSurveyDb]@Point_Basin | [test::borealmarsh3::store::MarshSurveyDb]marsh.basin_block.basin_name
+  }
+
+  *test::borealmarsh3::domain::PeatPoint[peatPoint] extends [monitorPoint]: Relational
+  {
+    ~filter [test::borealmarsh3::store::MarshSurveyDb]PeatPointFilter
+    peatDepthCm: [test::borealmarsh3::store::MarshSurveyDb]@Point_PeatDetail | [test::borealmarsh3::store::MarshSurveyDb]marsh.peat_point_detail.peat_depth_cm,
+    probeKind: [test::borealmarsh3::store::MarshSurveyDb]@Point_PeatDetail | [test::borealmarsh3::store::MarshSurveyDb]marsh.peat_point_detail.probe_kind
+  }
+
+  *test::borealmarsh3::domain::SurveyorRef[surveyor]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealmarsh3::store::MarshSurveyDb]marsh.surveyor_roster.surveyor_code
+    )
+    ~mainTable [test::borealmarsh3::store::MarshSurveyDb]marsh.surveyor_roster
+    surveyorCode: [test::borealmarsh3::store::MarshSurveyDb]marsh.surveyor_roster.surveyor_code,
+    surveyorName: [test::borealmarsh3::store::MarshSurveyDb]marsh.surveyor_roster.surveyor_name
+  }
+
+  *test::borealmarsh3::domain::BasinLoad[basinLoad]: Relational
+  {
+    ~groupBy
+    (
+      [test::borealmarsh3::store::MarshSurveyDb]marsh.monitor_point.basin_id
+    )
+    ~primaryKey
+    (
+      [test::borealmarsh3::store::MarshSurveyDb]marsh.monitor_point.basin_id
+    )
+    ~mainTable [test::borealmarsh3::store::MarshSurveyDb]marsh.monitor_point
+    basinId: [test::borealmarsh3::store::MarshSurveyDb]marsh.monitor_point.basin_id,
+    pointTally: count([test::borealmarsh3::store::MarshSurveyDb]marsh.monitor_point.point_id),
+    stakeTotal: sum([test::borealmarsh3::store::MarshSurveyDb]marsh.monitor_point.stake_count)
+  }
+)

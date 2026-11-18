@@ -1,0 +1,178 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::meadowdelta::domain::*;
+import test::meadowdelta::profile::*;
+
+Class <<MeadowProfile.ringingScheme>> {MeadowProfile.scheme = 'meadow-delta-ringing-scheme'} test::meadowdelta::domain::RingingRecord
+{
+  recordId: Integer[1];
+  ringCode: String[1];
+  surveyProgramme: String[1];
+  ringLabel: String[1];
+  plumageStage: Integer[1];
+  moultCode: String[0..1];
+  moultLabel: String[0..1];
+  conditionCode: String[0..1];
+  conditionLabel: String[1];
+  wingMm: Integer[1];
+  massG: Float[0..1];
+  caughtAt: DateTime[1];
+  releaseNote: String[0..1];
+  reviewNote: String[0..1];
+  commonName: String[0..1];
+  migrationCode: String[0..1];
+  familyName: String[0..1];
+  orderName: String[0..1];
+  lineageName: String[0..1];
+  zoneName: String[0..1];
+  reedbedCode: String[0..1];
+  zoneCatchCount: Integer[0..1];
+  zoneMaxWing: Integer[0..1];
+
+  plumageLabel()
+  {
+    if($this.plumageStage == 1,
+       | 'JUVENILE',
+       | if($this.plumageStage == 2,
+            | 'IMMATURE',
+            | 'ADULT'))
+  }: String[1];
+
+  conditionScore()
+  {
+    if($this.conditionCode->isEmpty(),
+       | 0,
+       | if($this.conditionCode->toOne() == 'FIT',
+            | if($this.wingMm >= 90, | 8, | 7),
+            | if($this.conditionCode->toOne() == 'WORN',
+                 | if($this.wingMm >= 90, | 6, | 5),
+                 | if($this.conditionCode->toOne() == 'THIN',
+                      | if($this.wingMm >= 90, | 4, | 3),
+                      | if($this.wingMm >= 90, | 2, | 1)))))
+  }: Integer[1];
+
+  moultStanding()
+  {
+    if($this.moultCode->isEmpty(),
+       | 'MOULT NOT SCORED',
+       | if($this.moultCode->toOne() == 'PRE',
+            | if($this.plumageStage == 1, | 'JUVENILE BEFORE MOULT', | 'ADULT BEFORE MOULT'),
+            | if($this.moultCode->toOne() == 'ACT',
+                 | if($this.plumageStage == 1, | 'JUVENILE IN MOULT', | 'ADULT IN MOULT'),
+                 | if($this.moultCode->toOne() == 'ARR',
+                      | if($this.plumageStage == 1, | 'JUVENILE MOULT HELD', | 'ADULT MOULT HELD'),
+                      | if($this.plumageStage == 1, | 'JUVENILE AFTER MOULT', | 'ADULT AFTER MOULT')))))
+  }: String[1];
+
+  reviewLabel()
+  {
+    if($this.reviewNote->isEmpty(), | 'UNREVIEWED', | $this.reviewNote->toOne()->toUpper())
+  }: String[1];
+
+  releaseLabel()
+  {
+    if($this.releaseNote->isEmpty(), | 'NO RELEASE NOTE', | $this.releaseNote->toOne()->trim())
+  }: String[1];
+
+  massStanding()
+  {
+    if($this.massG->isEmpty(), | 'UNWEIGHED', | 'WEIGHED')
+  }: String[1];
+
+  heavyBird()
+  {
+    if($this.massG->isEmpty(), | false, | $this.massG->toOne() >= 40.0)
+  }: Boolean[1];
+
+  wingIndex()
+  {
+    $this.wingMm->toFloat() / 10.0
+  }: Float[1];
+
+  wingShare()
+  {
+    if($this.zoneMaxWing->isEmpty(),
+       | 0.0,
+       | $this.wingMm->toFloat() / $this.zoneMaxWing->toOne()->toFloat())
+  }: Float[1];
+
+  crowdedZone()
+  {
+    if($this.zoneCatchCount->isEmpty(), | false, | $this.zoneCatchCount->toOne() >= 4)
+  }: Boolean[1];
+
+  longHaul()
+  {
+    if($this.migrationCode->isEmpty(), | false, | $this.migrationCode->toOne() == 'LONG')
+  }: Boolean[1];
+
+  caughtYear()
+  {
+    $this.caughtAt->year()
+  }: Integer[1];
+
+  summaryLine()
+  {
+    $this.ringCode + ' [' + $this.plumageLabel + ']'
+  }: String[1];
+
+  taxonPath()
+  {
+    $this.lineageName->concatenate($this.orderName)->concatenate($this.familyName)->joinStrings(' > ')
+  }: String[1];
+
+  netRound()
+  {
+    if($this.zoneName->isEmpty(),
+       | 'UNPLACED NET ROUND',
+       | $this.zoneName->toOne()->toUpper() + ' NET ROUND')
+  }: String[1];
+
+  scoredBand()
+  {
+    if($this.conditionScore >= 7,
+       | 'TOP BAND',
+       | if($this.conditionScore >= 5,
+            | 'UPPER BAND',
+            | if($this.conditionScore >= 3,
+                 | 'LOWER BAND',
+                 | if($this.conditionScore >= 1, | 'BOTTOM BAND', | 'UNBANDED'))))
+  }: String[1];
+}
+
+Class <<MeadowProfile.netRounded>> {MeadowProfile.surveySeason = 'meadow-delta-spring-round'} test::meadowdelta::domain::ZoneCatchSummary
+{
+  zoneCode: String[1];
+  catchCount: Integer[1];
+  maxWing: Integer[1];
+
+  busyZone()
+  {
+    $this.catchCount >= 4
+  }: Boolean[1];
+
+  wingSpread()
+  {
+    $this.maxWing->toFloat() / $this.catchCount->toFloat()
+  }: Float[1];
+
+  zoneStanding()
+  {
+    if($this.catchCount >= 4,
+       | 'HEAVILY NETTED ZONE',
+       | if($this.catchCount >= 2, | 'LIGHTLY NETTED ZONE', | 'BARELY NETTED ZONE'))
+  }: String[1];
+}

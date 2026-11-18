@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonridge::mapping::CityMapping
+(
+  include test::crimsonridge::mapping::NeighborhoodMapping
+
+  *test::crimsonridge::domain::Park[park]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonridge::store::CityDatabase]city.park.park_id
+    )
+    ~mainTable [test::crimsonridge::store::CityDatabase]city.park
+    code: [test::crimsonridge::store::CityDatabase]city.park.park_code,
+    name: [test::crimsonridge::store::CityDatabase]city.park.park_name,
+    category: EnumerationMapping ParkCategoryMapping: [test::crimsonridge::store::CityDatabase]city.park.category_code,
+    areaHectares: [test::crimsonridge::store::CityDatabase]city.park.area_hectares,
+    openedOn: [test::crimsonridge::store::CityDatabase]city.park.opened_on,
+    fenced: [test::crimsonridge::store::CityDatabase]city.park.fenced_flag
+  }
+
+  *test::crimsonridge::domain::TransitStop[stop]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonridge::store::CityDatabase]city.transit_stop.stop_id
+    )
+    ~mainTable [test::crimsonridge::store::CityDatabase]city.transit_stop
+    code: [test::crimsonridge::store::CityDatabase]city.transit_stop.stop_code,
+    name: [test::crimsonridge::store::CityDatabase]city.transit_stop.stop_name,
+    shelterSeats: [test::crimsonridge::store::CityDatabase]city.transit_stop.shelter_seats
+  }
+
+  *test::crimsonridge::domain::Amenity[amenity]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonridge::store::CityDatabase]city.amenity.amenity_id
+    )
+    ~mainTable [test::crimsonridge::store::CityDatabase]city.amenity
+    code: [test::crimsonridge::store::CityDatabase]city.amenity.amenity_code,
+    kind: [test::crimsonridge::store::CityDatabase]city.amenity.amenity_kind,
+    installedOn: [test::crimsonridge::store::CityDatabase]city.amenity.installed_on
+  }
+
+  *test::crimsonridge::domain::MaintenanceCrew[crew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonridge::store::CityDatabase]city.crew.crew_id
+    )
+    ~mainTable [test::crimsonridge::store::CityDatabase]city.crew
+    code: [test::crimsonridge::store::CityDatabase]city.crew.crew_code,
+    crewName: [test::crimsonridge::store::CityDatabase]city.crew.crew_name,
+    headcount: [test::crimsonridge::store::CityDatabase]city.crew.headcount
+  }
+
+  test::crimsonridge::domain::NeighborhoodParks: Relational
+  {
+    AssociationMapping
+    (
+      parkNeighborhood[park,neighborhood]: [test::crimsonridge::store::CityDatabase]@Park_Neighborhood,
+      parks[neighborhood,park]: [test::crimsonridge::store::CityDatabase]@Park_Neighborhood
+    )
+  }
+
+  test::crimsonridge::domain::NeighborhoodStops: Relational
+  {
+    AssociationMapping
+    (
+      stopNeighborhood[stop,neighborhood]: [test::crimsonridge::store::CityDatabase]@Stop_Neighborhood,
+      transitStops[neighborhood,stop]: [test::crimsonridge::store::CityDatabase]@Stop_Neighborhood
+    )
+  }
+
+  test::crimsonridge::domain::ParkAmenities: Relational
+  {
+    AssociationMapping
+    (
+      amenityPark[amenity,park]: [test::crimsonridge::store::CityDatabase]@Amenity_Park,
+      amenities[park,amenity]: [test::crimsonridge::store::CityDatabase]@Amenity_Park
+    )
+  }
+
+  test::crimsonridge::domain::DistrictCrews: Relational
+  {
+    AssociationMapping
+    (
+      crewDistrict[crew,district]: [test::crimsonridge::store::CityDatabase]@Crew_District,
+      crews[district,crew]: [test::crimsonridge::store::CityDatabase]@Crew_District
+    )
+  }
+
+  test::crimsonridge::domain::ParkCategory: EnumerationMapping ParkCategoryMapping
+  {
+    POCKET: ['POC'],
+    COMMUNITY: ['COM'],
+    REGIONAL: ['REG']
+  }
+
+  testSuites:
+  [
+    testSuite_Park:
+    {
+      function: |test::crimsonridge::domain::Park.all()->project(
+        [
+          x|$x.code,
+          x|$x.name,
+          x|$x.parkNeighborhood.name
+        ],
+        [
+          'Code',
+          'Name',
+          'Neighborhood'
+        ]
+      );
+      tests:
+      [
+        allParks:
+        {
+          data:
+          [
+            test::crimsonridge::store::CityDatabase: Reference
+              #{
+                test::crimsonridge::data::CityFixture
+              }#
+          ];
+          asserts:
+          [
+            everyParkReachesItsNeighborhood: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"P-01","Name":"Cedar Ridge Commons","Neighborhood":"Cedar Heights"},{"Code":"P-02","Name":"Willow Pocket","Neighborhood":"Willow Flats"},{"Code":"P-03","Name":"Kiln Quarter Green","Neighborhood":"Kiln Quarter"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

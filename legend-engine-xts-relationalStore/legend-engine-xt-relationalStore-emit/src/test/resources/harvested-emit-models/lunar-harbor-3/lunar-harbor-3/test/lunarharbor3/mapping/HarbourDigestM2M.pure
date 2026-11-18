@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarharbor3::mapping::HarbourDigestM2M
+(
+  include mapping test::lunarharbor3::mapping::HarbourEnumMappings
+
+  *test::lunarharbor3::domain::WatchDigest[watchDigestSet]: Pure
+  {
+    ~src test::lunarharbor3::domain::WatchFeed
+    digestKey: $src.feedRow->split('|')->at(0)->toUpper() + '/' + $src.keelDepthCm->toString(),
+    reachLabel: $src.feedRow->split('|')->at(1)->trim()->toUpper(),
+    laneNote: if($src.keelDepthCm >= 180,
+                 | 'DEEP KEEL LANE',
+                 | if($src.keelDepthCm >= 140,
+                      | 'MID KEEL LANE',
+                      | 'SHOAL LANE')),
+    hull: EnumerationMapping HullKindMapping: [if($src.hullCode->isEmpty(), | 'MT', | $src.hullCode->toOne()->toUpper()->trim())]->toOne(),
+    lineState: EnumerationMapping LineStateMapping: [if($src.keelDepthCm >= 150, | 'MF', | if($src.stateCode->isEmpty(), | 'SK', | $src.stateCode->toOne()->toUpper()->trim()))]->toOne(),
+    lantern: EnumerationMapping LanternGradeMapping: [if($src.lanternCode->isEmpty(), | 'DK', | $src.lanternCode->toOne()->toUpper()->trim())]->toOne()
+  }
+
+  testSuites:
+  [
+    watchDigestSuite:
+    {
+      function: |test::lunarharbor3::domain::WatchDigest.all()->graphFetch(
+  #{
+    test::lunarharbor3::domain::WatchDigest
+    {
+      digestKey,
+      reachLabel,
+      laneNote,
+      hull,
+      lineState,
+      lantern
+    }
+  }#
+)->serialize(
+  #{
+    test::lunarharbor3::domain::WatchDigest
+    {
+      digestKey,
+      reachLabel,
+      laneNote,
+      hull,
+      lineState,
+      lantern
+    }
+  }#
+);
+      tests:
+      [
+        foldedWatchFeeds:
+        {
+          doc: 'Folds a delimited watch feed into a digest, resolving each of the three closed vocabularies from an expression rather than from a stored code: an absent hull code falls back to the motor default, the line state is decided by the keel depth before the recorded code is consulted at all, and an absent lantern code is read as an unlit pontoon head.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::lunarharbor3::domain::WatchFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"feedRow":"WD-01| north pontoon ","hullCode":" sl ","stateCode":"MF","lanternCode":"BR","keelDepthCm":190},{"feedRow":"WD-02| south pontoon ","hullCode":"wb","keelDepthCm":100},{"feedRow":"WD-03| east pontoon ","hullCode":"RW","stateCode":" rl ","lanternCode":" dm ","keelDepthCm":145},{"feedRow":"WD-04| outer pontoon ","stateCode":"SK","keelDepthCm":60}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fourFoldedDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"digestKey":"WD-01/190","reachLabel":"NORTH PONTOON","laneNote":"DEEP KEEL LANE","hull":"SAIL","lineState":"MADE_FAST","lantern":"BRIGHT"},{"digestKey":"WD-02/100","reachLabel":"SOUTH PONTOON","laneNote":"SHOAL LANE","hull":"WORKBOAT","lineState":"SLACK","lantern":"DARK"},{"digestKey":"WD-03/145","reachLabel":"EAST PONTOON","laneNote":"MID KEEL LANE","hull":"ROWED","lineState":"RELEASED","lantern":"DIM"},{"digestKey":"WD-04/60","reachLabel":"OUTER PONTOON","laneNote":"SHOAL LANE","hull":"MOTOR","lineState":"SLACK","lantern":"DARK"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

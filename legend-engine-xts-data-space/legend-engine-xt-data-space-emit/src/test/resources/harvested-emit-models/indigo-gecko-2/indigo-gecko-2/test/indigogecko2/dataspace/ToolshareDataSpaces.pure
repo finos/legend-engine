@@ -1,0 +1,139 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::indigogecko2::dataspace::ToolshareDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'bench';
+      description: 'Bench tier reading the toolshare register through the local bench connection.';
+      mapping: test::indigogecko2::mapping::ToolshareMapping;
+      defaultRuntime: test::indigogecko2::runtime::ToolshareBenchRuntime;
+    },
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier reading the same register through the warehouse connection.';
+      mapping: test::indigogecko2::mapping::ToolshareMapping;
+      defaultRuntime: test::indigogecko2::runtime::ToolshareWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'bench';
+  title: 'Maker-Space Tool Sharing';
+  description: 'A governed entry point over tool checkouts, members, benches and the toolshare pool.';
+  elements:
+  [
+    test::indigogecko2::domain::ToolCheckout,
+    test::indigogecko2::domain::Member,
+    test::indigogecko2::domain::Workshop,
+    test::indigogecko2::domain::Tool,
+    test::indigogecko2::domain::CheckoutState
+  ];
+  diagrams:
+  [
+    {
+      title: 'Checkouts, Members, Benches And Tools';
+      diagram: test::indigogecko2::diagram::ToolshareDiagram;
+    }
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Period checkout tally';
+      description: 'The published tally of wear points and checkouts per bench, tool class and supplier.';
+      executable: test::indigogecko2::service::PeriodCheckoutTally;
+    },
+    {
+      id: 2;
+      title: 'Bench roster';
+      description: 'The published roster of members and tools for one bench.';
+      executable: test::indigogecko2::service::WorkshopRoster;
+    },
+    {
+      id: 3;
+      title: 'Open checkouts';
+      description: 'Saved projection of every checkout with its period, member and tool.';
+      query: |test::indigogecko2::domain::ToolCheckout.all()->project(
+        [
+          l|$l.checkoutCode,
+          l|$l.period,
+          l|$l.member.memberCode,
+          l|$l.tool.toolName
+        ],
+        [
+          'Checkout',
+          'Period',
+          'Member',
+          'Tool'
+        ]
+      );
+      executionContextKey: 'bench';
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'indigo-gecko-toolshare-desk';
+  };
+}
+
+DataSpace test::indigogecko2::dataspace::ToolsharePoolDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier over the toolshare pool.';
+      mapping: test::indigogecko2::mapping::ToolshareMapping;
+      defaultRuntime: test::indigogecko2::runtime::ToolshareWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'warehouse';
+  title: 'Toolshare Pool';
+  description: 'The tools of the toolshare pool with their suppliers.';
+  elements:
+  [
+    test::indigogecko2::domain::Tool,
+    test::indigogecko2::domain::Supplier
+  ];
+  diagrams:
+  [
+    {
+      title: 'Checkouts, Members, Benches And Tools';
+      diagram: test::indigogecko2::diagram::ToolshareDiagram;
+    }
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Tool pool';
+      description: 'Saved projection of each tool with its supplier.';
+      query: |test::indigogecko2::domain::Tool.all()->project(
+        [
+          t|$t.toolCode,
+          t|$t.toolName,
+          t|$t.supplier.supplierName
+        ],
+        [
+          'Tool',
+          'Name',
+          'Supplier'
+        ]
+      );
+      executionContextKey: 'warehouse';
+    }
+  ];
+}

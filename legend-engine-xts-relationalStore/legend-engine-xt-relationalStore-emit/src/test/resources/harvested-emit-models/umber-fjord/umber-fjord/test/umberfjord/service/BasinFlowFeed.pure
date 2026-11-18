@@ -1,0 +1,133 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::umberfjord::service::BasinFlowFeed
+{
+  pattern: '/umberfjord/v1/readings/{minFlow}/{region}';
+  title: 'Umber Fjord - Banded Flow Readings By Basin';
+  owners:
+  [
+    'hydrology-monitoring',
+    'fjord-survey-eng'
+  ];
+  documentation: 'Projects flow readings above a threshold whose station region matches the requested prefix, keeping only the high and critical flow bands, and resolves the owning basin through the station and catchment join path.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minFlow: Integer[1], region: String[1]|test::umberfjord::domain::Reading.all()->filter(
+      r|($r.flowRate >= $minFlow) && ($r.regionCode->startsWith($region))
+    )->filter(
+      r|$r.flowBand->in(['HIGH', 'CRITICAL'])
+    )->filter(
+      r|$r.samples->exists(s|$s.status == 'VALID')
+    )->project(
+      [
+        r|$r.readingId,
+        r|$r.basinName,
+        r|$r.flowBand,
+        r|$r.regionCode,
+        r|$r.temperatureC->toString()
+      ],
+      [
+        'Reading',
+        'Basin',
+        'Band',
+        'Region',
+        'Temp'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Basin'),
+        asc('Reading')
+      ]
+    )->take(50)};
+    mapping: test::umberfjord::mapping::HydroMapping;
+    runtime: test::umberfjord::runtime::HydroH2Runtime;
+  }
+  testSuites:
+  [
+    basinFlowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hydroH2Connection:
+            Relational
+            #{
+              hydro.reading:
+                'reading_id,station_id,flow_rate,temperature_c,recorded_on\n'+
+                '1,100,350,8,2026-01-01\n'+
+                '2,100,200,7,2026-01-02\n'+
+                '3,100,100,6,2026-01-03\n'+
+                '4,200,400,5,2026-01-04\n'+
+                '5,200,160,9,2026-01-05\n'+
+                '6,200,50,4,2026-01-06\n'+
+                '7,300,320,3,2026-01-07\n'+
+                '8,300,155,2,2026-01-08\n'+
+                '9,300,90,1,2026-01-09\n'+
+                '10,100,500,10,2026-01-10\n';
+              hydro.station:
+                'station_id,station_name,region_code,catchment_id\n'+
+                '100,Alpha Station,NOR,10\n'+
+                '200,Beta Station,NOR,20\n'+
+                '300,Gamma Station,SOU,20\n';
+              hydro.catchment:
+                'catchment_id,catchment_name,basin_id\n'+
+                '10,Upper Catchment,1\n'+
+                '20,Lower Catchment,2\n';
+              hydro.basin:
+                'basin_id,basin_name\n'+
+                '1,North Fjord\n'+
+                '2,South Fjord\n';
+              hydro.sample:
+                'sample_id,reading_id,status\n'+
+                '1,1,VALID\n'+
+                '2,2,VALID\n'+
+                '3,4,VALID\n'+
+                '4,10,VALID\n'+
+                '5,5,STALE\n'+
+                '6,1,STALE\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bandedRowsByBasin:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minFlow = 150,
+            region = 'NOR'
+          ]
+          asserts:
+          [
+            fiveBandedReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":1,"Basin":"North Fjord","Band":"CRITICAL","Region":"NOR","Temp":"8"},{"Reading":2,"Basin":"North Fjord","Band":"HIGH","Region":"NOR","Temp":"7"},{"Reading":10,"Basin":"North Fjord","Band":"CRITICAL","Region":"NOR","Temp":"10"},{"Reading":4,"Basin":"South Fjord","Band":"CRITICAL","Region":"NOR","Temp":"5"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

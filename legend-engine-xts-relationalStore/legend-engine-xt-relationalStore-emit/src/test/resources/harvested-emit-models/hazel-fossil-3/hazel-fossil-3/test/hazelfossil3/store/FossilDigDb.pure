@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::hazelfossil3::store::FossilDigDb
+(
+  Schema dig
+  (
+    Table specimen
+    (
+      specimen_code VARCHAR(24) PRIMARY KEY,
+      specimen_id INTEGER,
+      bed_code VARCHAR(24),
+      matrix_code VARCHAR(16),
+      prep_code VARCHAR(16),
+      condition_code VARCHAR(16),
+      condition_note VARCHAR(64),
+      logged_on DATE,
+      fragment_count INTEGER,
+      matrix_mass_g DOUBLE,
+      label_text VARCHAR(64),
+      sleeve_text VARCHAR(64),
+      grade_flag INTEGER,
+      span_mm INTEGER
+    )
+
+    Table fragment_lot
+    (
+      lot_code VARCHAR(24) PRIMARY KEY,
+      specimen_code VARCHAR(24),
+      fragment_count INTEGER,
+      cleaned_count INTEGER,
+      lot_mass_g DOUBLE
+    )
+
+    View specimen_face_vw
+    (
+      specimen_code: dig.specimen.specimen_code PRIMARY KEY,
+      face_label: concat(toUpper(dig.specimen.matrix_code), concat('/', dig.specimen.prep_code))
+    )
+
+    View lot_yield_vw
+    (
+      ~groupBy
+      (
+        dig.fragment_lot.specimen_code
+      )
+      specimen_code: dig.fragment_lot.specimen_code PRIMARY KEY,
+      lot_mass_total: sum(dig.fragment_lot.lot_mass_g)
+    )
+  )
+
+  Schema registry
+  (
+    Table quarry_bed
+    (
+      bed_code VARCHAR(24) PRIMARY KEY,
+      bed_name VARCHAR(120),
+      site_code VARCHAR(24),
+      fragment_target INTEGER
+    )
+
+    Table dig_site
+    (
+      site_code VARCHAR(24) PRIMARY KEY,
+      site_name VARCHAR(120),
+      district_code VARCHAR(24)
+    )
+
+    Table district
+    (
+      district_code VARCHAR(24) PRIMARY KEY,
+      district_name VARCHAR(120),
+      region_code VARCHAR(24)
+    )
+  )
+
+  Schema codes
+  (
+    Table region
+    (
+      region_code VARCHAR(24) PRIMARY KEY,
+      region_name VARCHAR(120),
+      terrain_text VARCHAR(64)
+    )
+  )
+
+  Filter GradedSpecimens(dig.specimen.grade_flag = 1 or dig.specimen.grade_flag = 2)
+
+  Join Specimen_Face(dig.specimen.specimen_code = dig.specimen_face_vw.specimen_code)
+  Join Specimen_Yield(dig.specimen.specimen_code = dig.lot_yield_vw.specimen_code)
+  Join Specimen_Lot(dig.specimen.specimen_code = dig.fragment_lot.specimen_code)
+  Join Specimen_Bed(dig.specimen.bed_code = registry.quarry_bed.bed_code)
+  Join Bed_Site(registry.quarry_bed.site_code = registry.dig_site.site_code)
+  Join Site_District(registry.dig_site.district_code = registry.district.district_code)
+  Join District_Region(registry.district.region_code = codes.region.region_code)
+)

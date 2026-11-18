@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::azurelighthouse2::service::RotationWatchService
+{
+  pattern: '/lighthouse/v1/rotations';
+  title: 'Lamp rotation watch list';
+  owners:
+  [
+    'beacon-survey-team'
+  ];
+  documentation: 'Publish the lamp rotation schedule as a tabular watch list, projecting a per-minute flash count from the recorded rotation period over a second mapped table of the same store.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::azurelighthouse2::domain::LampRotation.all()->filter(
+      r|$r.rotationSeconds >= 5
+    )->project(
+      [
+        x|$x.rotationId,
+        x|$x.flashPattern->toUpper(),
+        x|60 / $x.rotationSeconds,
+        x|if(
+          $x.rotationSeconds >= 20,
+          |'slow',
+          |if(
+            $x.rotationSeconds >= 10,
+            |'steady',
+            |'rapid'
+          )
+        )
+      ],
+      [
+        'Rotation',
+        'Pattern',
+        'FlashesPerMinute',
+        'Cadence'
+      ]
+    );
+    mapping: demo::azurelighthouse2::mapping::LighthouseMapping;
+    runtime: demo::azurelighthouse2::runtime::LighthouseRuntime;
+  }
+  testSuites:
+  [
+    rotationWatchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconWarehouse:
+            Relational
+            #{
+              beacons.lamp_rotation:
+                'rotation_id,station_code,flash_pattern,rotation_seconds\n'+
+                'RT-01,LS-01,white group flashing,30\n'+
+                'RT-02,LS-02,red occulting,12\n'+
+                'RT-03,LS-03,green quick,6\n'+
+                'RT-04,LS-03,fixed white,3\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rotationsWithCadence:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            fastestRotationFilteredOut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Rotation":"RT-01","Pattern":"WHITE GROUP FLASHING","FlashesPerMinute":2,"Cadence":"slow"},{"Rotation":"RT-02","Pattern":"RED OCCULTING","FlashesPerMinute":5,"Cadence":"steady"},{"Rotation":"RT-03","Pattern":"GREEN QUICK","FlashesPerMinute":10,"Cadence":"rapid"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

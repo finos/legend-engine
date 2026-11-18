@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedprairie2::service::RegionRegisterAsOf
+{
+  pattern: '/gildedprairie2/v1/region-register-as-of';
+  title: 'Largest Grassland Regions As Of A Processing Instant';
+  owners:
+  [
+    'prairie-survey-platform',
+    'grassland-stewardship'
+  ];
+  documentation: 'Reads the processing-temporal region extent at a caller-supplied instant through the reference mapping alone, projects a derived label built from two upper-cased columns alongside the steward name reached one join away, then orders by recorded area descending and takes a bounded slice, so the ordering key and the bound both live in the plan.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: DateTime[1], minHectares: Float[1]|test::gildedprairie2::domain::Region.all($asOf)->filter(
+      r|$r.hectares->isNotEmpty() && ($r.hectares->toOne() >= $minHectares)
+    )->project(
+      [
+        r|$r.regionLabel,
+        r|$r.hectares,
+        r|$r.stewardName
+      ],
+      [
+        'RegionLabel',
+        'Hectares',
+        'Steward'
+      ]
+    )->sort(
+      [
+        desc('Hectares'),
+        asc('RegionLabel')
+      ]
+    )->limit(2);};
+    mapping: test::gildedprairie2::mapping::PrairieReferenceMapping;
+    runtime: test::gildedprairie2::runtime::PrairieReferenceRuntime;
+  }
+  testSuites:
+  [
+    regionRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              prairie_ref.region_ref:
+                'region_code,region_name,steward_code,hectares,in_z,out_z\n'+
+                'RG-01,Tallgrass North,ST-01,412.50,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'RG-02,Tallgrass South,ST-01,980.25,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'RG-03,Mixedgrass West,ST-02,640.00,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'RG-04,Shortgrass East,ST-01,1500.00,2018-01-01 00:00:00,2019-01-01 00:00:00\n'+
+                'RG-05,Sandhill Fringe,ST-01,,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+              prairie_ref.steward_ref:
+                'steward_code,steward_name,contact_locality,in_z,out_z\n'+
+                'ST-01,Moorland Commission,Ridge Post,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'ST-02,Highland Trust,,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        twoLargestEffectiveRegions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            minHectares = 400.0
+          ]
+          asserts:
+          [
+            boundedDescendingSlice:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RegionLabel":"RG-02:TALLGRASS SOUTH","Hectares":980.25,"Steward":"Moorland Commission"},{"RegionLabel":"RG-03:MIXEDGRASS WEST","Hectares":640.0,"Steward":"Highland Trust"}]';
+                  }#;
+              }#
+          ]
+        },
+        supersededRegionVersionOutOfRange:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            minHectares = 1000.0
+          ]
+          asserts:
+          [
+            closedLargestRegionExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

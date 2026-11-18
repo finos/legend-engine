@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::embertundra4::service::SpecimenSizeBands
+{
+  pattern: '/ember-tundra-4/v1/size-bands/{processingDate}/{businessDate}';
+  title: 'Herbarium - Specimen Size Bands As Of';
+  documentation: 'Resolves the bitemporal specimen extent at a processing and business date, keeps four plant families, reports the eight-armed size band the mapping derives from the sheet height together with the collection year, and adds a display column that shows the band for sheets of half a metre or more and a fixed label otherwise.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['herbarium-sheet-desk', 'herbarium-curation'] };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|test::embertundra4::domain::Specimen.all($processingDate, $businessDate)->filter(s|$s.familyCode->in(['ROS', 'AST', 'POA', 'FAB']))->project([s|$s.specimenCode, s|$s.heightCm, s|$s.sizeBand, s|$s.collectedOn->year()], ['Specimen', 'Height', 'SizeBand', 'Year'])->extend([col(r:TDSRow[1]|if($r.getFloat('Height') >= 50.0, |$r.getString('SizeBand'), |'UNDER HALF METRE'), 'Display')])->sort([asc('Specimen')])};
+    mapping: test::embertundra4::mapping::HerbariumMapping;
+    runtime: test::embertundra4::runtime::HerbariumServicesRuntime;
+  }
+  testSuites:
+  [
+    sizeBandSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          herbariumServices:
+            Relational
+            #{
+              herbarium.specimen:
+                'specimen_id,specimen_code,taxon_name,family_code,sheet_count,height_cm,collected_on,condition_code,cabinet_id,in_z,out_z,from_z,thru_z\n'+
+                '1,HB-01,Rosa canina,ROS,2,72.5,2019-06-12,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '2,HB-02,Aster amellus,AST,1,63.5,2020-07-03,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '3,HB-03,Poa annua,POA,3,55.5,2021-05-20,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '4,HB-04,Vicia sativa,FAB,1,47.25,2022-06-14,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '5,HB-05,Rosa arvensis,ROS,2,42.25,2023-07-01,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '6,HB-06,Aster tripolium,AST,1,37.5,2024-08-09,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '7,HB-07,Poa pratensis,POA,2,31.75,2019-09-10,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '8,HB-08,Vicia hirsuta,FAB,1,26.5,2020-05-05,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '9,HB-09,Rosa rubiginosa,ROS,1,12.5,2021-06-06,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '10,HB-10,Aster linosyris,AST,1,50.5,2022-06-07,G,1,2026-01-01,9999-12-31,2025-01-01,2025-12-31\n'+
+                '11,HB-11,Poa nemoralis,POA,1,44.5,2023-06-08,G,1,2026-01-01,2026-02-01,2026-01-01,9999-12-31\n'+
+                '12,HB-12,Carex nigra,CYP,1,58.5,2024-06-09,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyBandArmAtMidYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            businessDate = %2026-06-01
+          ]
+          asserts:
+          [
+            eightBandsAndTheUnbandedSheet:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Specimen":"HB-01","Height":72.5,"SizeBand":"GIANT","Year":2019,"Display":"GIANT"},{"Specimen":"HB-02","Height":63.5,"SizeBand":"HUGE","Year":2020,"Display":"HUGE"},{"Specimen":"HB-03","Height":55.5,"SizeBand":"LARGE","Year":2021,"Display":"LARGE"},{"Specimen":"HB-04","Height":47.25,"SizeBand":"BROAD","Year":2022,"Display":"UNDER HALF METRE"},{"Specimen":"HB-05","Height":42.25,"SizeBand":"MEDIUM","Year":2023,"Display":"UNDER HALF METRE"},{"Specimen":"HB-06","Height":37.5,"SizeBand":"MODEST","Year":2024,"Display":"UNDER HALF METRE"},{"Specimen":"HB-07","Height":31.75,"SizeBand":"SMALL","Year":2019,"Display":"UNDER HALF METRE"},{"Specimen":"HB-08","Height":26.5,"SizeBand":"TINY","Year":2020,"Display":"UNDER HALF METRE"},{"Specimen":"HB-09","Height":12.5,"SizeBand":null,"Year":2021,"Display":"UNDER HALF METRE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

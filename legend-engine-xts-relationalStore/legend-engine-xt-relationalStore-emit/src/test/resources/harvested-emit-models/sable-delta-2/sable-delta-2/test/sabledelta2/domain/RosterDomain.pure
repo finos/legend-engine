@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::sabledelta2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'Flattened stop view assembled from the remote stop-feed document.'} test::sabledelta2::domain::StopSummary
+{
+  stopRef: String[1];
+  driverLabel: String[1];
+  dwellBand: String[1];
+  routeView: RouteSummary[0..1];
+  patronView: PatronSummary[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened route view carrying the depot and vehicle nodes of a visit.'} test::sabledelta2::domain::RouteSummary
+{
+  routeName: String[1];
+  depotView: DepotSummary[0..1];
+  vehicleView: VehicleSummary[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened depot view of the route a visit was dispatched on.'} test::sabledelta2::domain::DepotSummary
+{
+  stopRef: String[1];
+  depotCode: String[1];
+  depotName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened vehicle view with the seat band derived from the seat count.'} test::sabledelta2::domain::VehicleSummary
+{
+  stopRef: String[1];
+  plateCode: String[1];
+  seatBand: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened driver view of the crew member who worked the stop.'} test::sabledelta2::domain::DriverSummary
+{
+  stopRef: String[1];
+  driverCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened patron view of the requester recorded on a visit.'} test::sabledelta2::domain::PatronSummary
+{
+  patronCode: String[0..1];
+  patronName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened holding view of the items carried to a stop.'} test::sabledelta2::domain::HoldingSummary
+{
+  stopRef: String[1];
+  loadTag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened dwell view of the time the vehicle stood at a stop.'} test::sabledelta2::domain::DwellSummary
+{
+  stopRef: String[1];
+  dwellLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One dispatched stop as it is held in the tabular dispatch logbook.'} test::sabledelta2::domain::LogbookRow
+{
+  stopRef: String[1];
+  driverCode: String[1];
+  depotCode: String[1];
+  plateCode: String[1];
+  holdingCount: Integer[1];
+  dwellMinutes: Integer[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds a tabular logbook row to the driver view flattened out of the stop-feed document.'} test::sabledelta2::domain::LogbookRow_DriverSummary
+{
+  driverOfRecord: DriverSummary[0..1];
+  coveredLogbookRows: LogbookRow[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds a tabular logbook row to the depot view flattened out of the stop-feed document.'} test::sabledelta2::domain::LogbookRow_DepotSummary
+{
+  servingDepot: DepotSummary[0..1];
+  depotLogbookRows: LogbookRow[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds a tabular logbook row to the vehicle view flattened out of the stop-feed document.'} test::sabledelta2::domain::LogbookRow_VehicleSummary
+{
+  assignedVehicle: VehicleSummary[0..1];
+  vehicleLogbookRows: LogbookRow[*];
+}

@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solarcove2::mapping::CrossingMapping
+(
+  *test::solarcove2::domain::common::CrossingReportEvent[crossingReport]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarcove2::store::CrossingDB]civic.crossing_report.report_id
+    )
+    ~mainTable [test::solarcove2::store::CrossingDB]civic.crossing_report
+    reportCode: [test::solarcove2::store::CrossingDB]civic.crossing_report.report_code,
+    crossingKind: EnumerationMapping CrossingKindMapping: [test::solarcove2::store::CrossingDB]civic.crossing_report.crossing_form,
+    recordedOn: [test::solarcove2::store::CrossingDB]civic.crossing_report.recorded_on,
+    surveyorCode: [test::solarcove2::store::CrossingDB]civic.crossing_report.surveyor_code,
+    reviewNote: [test::solarcove2::store::CrossingDB]civic.crossing_report.review_note
+  }
+
+  test::solarcove2::domain::CrossingKind: EnumerationMapping CrossingKindMapping
+  {
+    SIGNALISED: ['SIGNALISED'],
+    ZEBRA: ['ZEBRA'],
+    RAISED_TABLE: ['RAISED_TABLE'],
+    UNMARKED: ['UNMARKED']
+  }
+
+  testSuites:
+  [
+    crossingReportAsOfSuite:
+    {
+      function: |test::solarcove2::domain::common::CrossingReportEvent.all(%2026-04-01)->graphFetch(#{test::solarcove2::domain::common::CrossingReportEvent{reportCode, crossingKind, recordedOn, surveyorCode}}#)->serialize(#{test::solarcove2::domain::common::CrossingReportEvent{reportCode, crossingKind, recordedOn, surveyorCode}}#);
+      tests:
+      [
+        onlyTheOpenObservation:
+        {
+          doc: 'The superseded observation closed on the processing timeline before the queried date and must not surface, while the open row decodes its crossing form through the enumeration mapping and carries a null surveyor code.';
+          data:
+          [
+            test::solarcove2::store::CrossingDB:
+              Relational
+              #{
+                civic.crossing_report:
+                  'report_id,report_code,crossing_form,recorded_on,surveyor_code,review_note,in_z,out_z\n'+
+                  '1,CR-0001,SIGNALISED,2026-03-02,,Phase plan re-measured on site,2026-03-05,9999-12-31\n'+
+                  '2,CR-0002,ZEBRA,2026-01-14,SV-11,Superseded by a later street walk,2026-01-20,2026-02-28\n';
+              }#
+          ];
+          asserts:
+          [
+            openObservationOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"reportCode":"CR-0001","crossingKind":"SIGNALISED","recordedOn":"2026-03-02","surveyorCode":null}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

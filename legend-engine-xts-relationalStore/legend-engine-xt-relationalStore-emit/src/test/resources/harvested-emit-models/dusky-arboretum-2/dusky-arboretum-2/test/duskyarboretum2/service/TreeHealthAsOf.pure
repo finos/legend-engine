@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyarboretum2::service::TreeHealthAsOf
+{
+  pattern: '/arboretum/v1/specimens/{businessDate}';
+  title: 'Tree Health As Of';
+  owners:
+  [
+    'arboretum-survey',
+    'canopy-ops'
+  ];
+  documentation: 'Returns tree specimens and their health rating as of the requested business date, exercising business-temporal milestoning and the Specimen_Grove join over the in-process H2 ArboretumRuntime.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|test::duskyarboretum2::domain::TreeSpecimen.all($businessDate)->project(
+      [
+        x|$x.label,
+        x|$x.healthRating,
+        x|$x.grove.name
+      ],
+      [
+        'Label',
+        'HealthRating',
+        'Grove'
+      ]
+    )->sort(
+      [
+        asc('Label')
+      ]
+    )};
+    mapping: test::duskyarboretum2::mapping::ArboretumMapping;
+    runtime: test::duskyarboretum2::runtime::ArboretumRuntime;
+  }
+  testSuites:
+  [
+    treeHealthAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              arboretum.grove:
+                'grove_id,grove_name\n'+
+                '1,North Grove\n';
+              arboretum.specimen:
+                'specimen_id,label,health_rating,grove_id,from_z,thru_z\n'+
+                '1,Copper Beech,7,1,2023-01-01,2023-06-01\n'+
+                '1,Copper Beech,9,1,2023-06-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        earlyYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2023-03-01
+          ]
+          asserts:
+          [
+            ratingSeven:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Label":"Copper Beech","HealthRating":7,"Grove":"North Grove"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

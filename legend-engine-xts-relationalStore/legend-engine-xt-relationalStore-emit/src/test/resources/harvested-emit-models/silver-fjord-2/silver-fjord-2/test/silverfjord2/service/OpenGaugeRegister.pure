@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silverfjord2::service::OpenGaugeRegisterMulti
+{
+  pattern: '/fjord/v1/register-multi';
+  title: 'Silver Fjord - Reporting gauge register (multi-environment)';
+  owners:
+  [
+    'fjord-monitoring-platform',
+    'tide-gauge-eng'
+  ];
+  documentation: 'Multi-execution register of the stations currently reporting, resolving an environment-keyed mapping/runtime binding at execution time. It projects the station and status of every reporting gauge and de-duplicates the result.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {|test::silverfjord2::domain::GaugeReading.all()->filter(
+      g|$g.gaugeStatus->in(['OPEN', 'ACTIVE'])
+    )->project(
+      [
+        g|$g.stationCode,
+        g|$g.gaugeStatus
+      ],
+      [
+        'Station',
+        'Status'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Station'),
+        asc('Status')
+      ]
+    )->limit(50)};
+    key: 'env';
+    executions['primary']:
+    {
+      mapping: test::silverfjord2::mapping::FjordMapping;
+      runtime: test::silverfjord2::runtime::FjordGaugeRuntime;
+    }
+    executions['standby']:
+    {
+      mapping: test::silverfjord2::mapping::FjordMapping;
+      runtime: test::silverfjord2::runtime::FjordGaugeRuntime;
+    }
+  }
+}
+
+Service test::silverfjord2::service::OpenGaugeRegister
+{
+  pattern: '/fjord/v1/register';
+  title: 'Silver Fjord - Reporting gauge register';
+  owners:
+  [
+    'fjord-monitoring-platform',
+    'tide-gauge-eng'
+  ];
+  documentation: 'Single-execution counterpart carrying the tested suite. It projects the station and status of every reporting gauge, de-duplicates the pairs and orders them by station.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::silverfjord2::domain::GaugeReading.all()->filter(
+      g|$g.gaugeStatus->in(['OPEN', 'ACTIVE'])
+    )->project(
+      [
+        g|$g.stationCode,
+        g|$g.gaugeStatus
+      ],
+      [
+        'Station',
+        'Status'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Station'),
+        asc('Status')
+      ]
+    )->limit(50)};
+    mapping: test::silverfjord2::mapping::FjordMapping;
+    runtime: test::silverfjord2::runtime::FjordGaugeRuntime;
+  }
+  testSuites:
+  [
+    openGaugeRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          fjordConnection:
+            Relational
+            #{
+              fjord.tide_gauge:
+                'reading_id,gauge_name,station_code,gauge_status,tide_height,wave_count\n'+
+                '1,Outer Sill,NorthArm,OPEN,120,40\n'+
+                '2,Inner Sill,NorthArm,ACTIVE,80,60\n'+
+                '3,Dry Shelf,NorthArm,SEALED,0,10\n'+
+                '4,Far Head,SouthArm,OPEN,200,90\n'+
+                '5,Mid Reach,NorthArm,OPEN,140,20\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        duplicateStationStatusPairsCollapse:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeDistinctPairs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"NorthArm","Status":"ACTIVE"},{"Station":"NorthArm","Status":"OPEN"},{"Station":"SouthArm","Status":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

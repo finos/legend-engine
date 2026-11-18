@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::coralcove2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A sheltered cove that reef monitoring sites are grouped under.'} test::coralcove2::domain::Cove
+{
+  coveCode: String[1];
+  coveName: String[1];
+  shorelineCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A monitored reef site inside a cove.'} test::coralcove2::domain::ReefSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  coveName: String[0..1];
+  depthM: Integer[0..1];
+  establishedOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A fixed measuring line laid out across a reef site.'} test::coralcove2::domain::Transect
+{
+  transectCode: String[1];
+  lengthM: Integer[0..1];
+  bearingDeg: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A diver who records survey batches.'} test::coralcove2::domain::Observer
+{
+  observerCode: String[1];
+  observerName: String[1];
+  stationName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A shore station observers are attached to.'} test::coralcove2::domain::Station
+{
+  stationCode: String[1];
+  stationName: String[1];
+  coveCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One version of a survey pass over a reef site; the same batch code recurs across versions.'} test::coralcove2::domain::SurveyBatch
+{
+  batchCode: String[1];
+  versionNo: Integer[1];
+  siteCode: String[1];
+  surveyedOn: StrictDate[0..1];
+  visibilityM: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A coral colony measured within a survey batch.'} test::coralcove2::domain::CoralColony
+{
+  colonyCode: String[1];
+  batchCode: String[1];
+  speciesCommonName: String[0..1];
+  diameterCm: Integer[0..1];
+  healthScore: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A coral species with its growth form.'} test::coralcove2::domain::Species
+{
+  speciesCode: String[1];
+  commonName: String[1];
+  growthForm: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A recorded bleaching episode at a reef site; the same episode code recurs across sequence numbers.'} test::coralcove2::domain::BleachingEvent
+{
+  eventCode: String[1];
+  eventSeq: Integer[1];
+  eventOn: StrictDate[0..1];
+  severityCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A water column reading taken at a reef site.'} test::coralcove2::domain::WaterReading
+{
+  readingCode: String[1];
+  takenOn: StrictDate[0..1];
+  temperatureC: Integer[0..1];
+  turbidityNtu: Integer[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Groups the monitored sites under their cove and back again.'} test::coralcove2::domain::Cove_Sites
+{
+  cove: Cove[0..1];
+  sites: ReefSite[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Lays the measuring lines out across their site.'} test::coralcove2::domain::Site_Transects
+{
+  site: ReefSite[0..1];
+  transects: Transect[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Attributes each survey batch version to the diver who recorded it.'} test::coralcove2::domain::Observer_Batches
+{
+  observer: Observer[0..1];
+  batches: SurveyBatch[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Files the water column readings against their site.'} test::coralcove2::domain::Site_Readings
+{
+  readingSite: ReefSite[0..1];
+  readings: WaterReading[*];
+}

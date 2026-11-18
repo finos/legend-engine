@@ -1,0 +1,56 @@
+name: cobalt-reef-3
+title: "Cobalt Reef - Processing-Temporal Reef Survey Digests Through Two-Hop Milestoned Navigation"
+description: |
+  A non-financial coral reef monitoring model. Five processing-temporal classes - reef sites,
+  anchored probes, probe regions, survey dives and dive crews - are wired by four associations
+  and mapped twice, over a live and a mirror register, each with its own runtime. Two
+  DID-owned, auto-activating services share one parameterised query: the processing date
+  arrives as a URL path parameter, drives the root retrieval and every date-qualified
+  navigation, filters on two negated enumeration equalities (one on the site and one on its
+  navigated probe), projects to-one and to-many paths up to two hops deep, collapses rows
+  duplicated by the to-many dive fan-out with distinct and sorts the result.
+modelSources:
+  model:
+    root: cobalt-reef-3
+    files:
+      - test/cobaltreef3/connection/ReefConnections.pure
+      - test/cobaltreef3/domain/ReefDomain.pure
+      - test/cobaltreef3/mapping/ReefLiveMapping.pure
+      - test/cobaltreef3/mapping/ReefMirrorMapping.pure
+      - test/cobaltreef3/runtime/ReefRuntimes.pure
+      - test/cobaltreef3/service/ReefMirrorSurveyDigest.pure
+      - test/cobaltreef3/service/ReefSiteSurveyDigest.pure
+      - test/cobaltreef3/store/ReefStores.pure
+features:
+  - execution:service
+  - execution:service-ownership
+  - execution:service-path-parameter
+  - execution:service-test
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:distinct
+  - query:enum-comparison
+  - query:filter
+  - execution:service-parameter
+  - query:project
+  - query:sort-limit
+  - grammar:association
+  - scaffolding:class
+  - grammar:enumeration
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - coral-reef
+  - distinct
+  - enum-comparison
+  - h2
+  - marine-survey
+  - milestoned-navigation
+  - processing-temporal
+  - relational
+  - service-path-parameter

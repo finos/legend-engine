@@ -1,0 +1,52 @@
+name: meadow-fjord-8
+title: "Alpine Meadow Survey Plots — Three Filtered Register Feeds Over A Kerberos-Delegated Warehouse"
+description: |
+  An alpine meadow survey estate whose walked plots, flowering counts and crew visits are held in
+  three tables of one relational extent, each mapped root-first with a declared primary key and a
+  main table alias. Three single-execution feeds sit above the mapping: a plot register pinned to a
+  slope floor the caller names, a bloom board narrowed to one species and to the counts that
+  cleared a threshold with the ground cover rounded to whole points, and a visit log from one day
+  onwards that pastes the crew onto the plot it walked. The extent is reached through a
+  Kerberos-delegated warehouse, and the mapping carries its own suite in which a slope test and an
+  aspect test sit under one filter.
+modelSources:
+  model:
+    root: meadow-fjord-8
+    files:
+      - test/meadowfjord8/connection/MeadowConnection.pure
+      - test/meadowfjord8/data/MeadowTestData.pure
+      - test/meadowfjord8/domain/MeadowDomain.pure
+      - test/meadowfjord8/mapping/MeadowMapping.pure
+      - test/meadowfjord8/runtime/MeadowRuntime.pure
+      - test/meadowfjord8/service/BloomBoard.pure
+      - test/meadowfjord8/service/PlotRegister.pure
+      - test/meadowfjord8/service/VisitLog.pure
+      - test/meadowfjord8/store/MeadowDb.pure
+features:
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - db2
+  - delegated-kerberos
+  - filter
+  - h2
+  - mapping-test
+  - multi-table
+  - parameterised-service
+  - primary-key
+  - project
+  - relational
+  - service-test
+  - tabular-data-set

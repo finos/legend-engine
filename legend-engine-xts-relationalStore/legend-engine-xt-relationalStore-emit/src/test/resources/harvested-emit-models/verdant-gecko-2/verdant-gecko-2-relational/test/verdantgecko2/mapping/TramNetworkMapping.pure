@@ -1,0 +1,303 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantgecko2::mapping::TramNetworkMapping
+(
+  *test::verdantgecko2::domain::Depot[depot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantgecko2::store::TramNetworkDB]network.current_depot.depot_id
+    )
+    ~mainTable [test::verdantgecko2::store::TramNetworkDB]network.current_depot
+    depotId: [test::verdantgecko2::store::TramNetworkDB]network.current_depot.depot_id,
+    depotName: [test::verdantgecko2::store::TramNetworkDB]network.current_depot.depot_name,
+    boroughName: [test::verdantgecko2::store::TramNetworkDB]network.current_depot.borough_name,
+    bayCount: [test::verdantgecko2::store::TramNetworkDB]network.current_depot.bay_count
+  }
+
+  *test::verdantgecko2::domain::TramLine[line]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantgecko2::store::TramNetworkDB]network.current_line.line_id
+    )
+    ~mainTable [test::verdantgecko2::store::TramNetworkDB]network.current_line
+    lineId: [test::verdantgecko2::store::TramNetworkDB]network.current_line.line_id,
+    lineCode: [test::verdantgecko2::store::TramNetworkDB]network.current_line.line_code,
+    lineName: [test::verdantgecko2::store::TramNetworkDB]network.current_line.line_name,
+    nightService: [test::verdantgecko2::store::TramNetworkDB]network.current_line.night_service
+  }
+
+  *test::verdantgecko2::domain::TramStop[stop]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantgecko2::store::TramNetworkDB]network.current_stop.stop_id
+    )
+    ~mainTable [test::verdantgecko2::store::TramNetworkDB]network.current_stop
+    stopId: [test::verdantgecko2::store::TramNetworkDB]network.current_stop.stop_id,
+    stopName: [test::verdantgecko2::store::TramNetworkDB]network.current_stop.stop_name,
+    platformLengthM: [test::verdantgecko2::store::TramNetworkDB]network.current_stop.platform_length_m,
+    openedOn: [test::verdantgecko2::store::TramNetworkDB]network.current_stop.opened_on
+  }
+
+  *test::verdantgecko2::domain::StopSector[sector]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantgecko2::store::TramNetworkDB]network.current_sector.sector_id
+    )
+    ~mainTable [test::verdantgecko2::store::TramNetworkDB]network.current_sector
+    sectorId: [test::verdantgecko2::store::TramNetworkDB]network.current_sector.sector_id,
+    sectorName: [test::verdantgecko2::store::TramNetworkDB]network.current_sector.sector_name
+  }
+
+  *test::verdantgecko2::domain::SectorGroup[sectorGroup]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantgecko2::store::TramNetworkDB]network.current_group.group_id
+    )
+    ~mainTable [test::verdantgecko2::store::TramNetworkDB]network.current_group
+    groupId: [test::verdantgecko2::store::TramNetworkDB]network.current_group.group_id,
+    groupName: [test::verdantgecko2::store::TramNetworkDB]network.current_group.group_name,
+    parentGroupName: [test::verdantgecko2::store::TramNetworkDB]network.current_group.parent_group_name
+  }
+
+  *test::verdantgecko2::domain::TramVehicle[vehicle]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantgecko2::store::TramNetworkDB]network.current_vehicle.vehicle_id
+    )
+    ~mainTable [test::verdantgecko2::store::TramNetworkDB]network.current_vehicle
+    vehicleId: [test::verdantgecko2::store::TramNetworkDB]network.current_vehicle.vehicle_id,
+    fleetNumber: [test::verdantgecko2::store::TramNetworkDB]network.current_vehicle.fleet_number,
+    seatCount: [test::verdantgecko2::store::TramNetworkDB]network.current_vehicle.seat_count,
+    axleLoadT: [test::verdantgecko2::store::TramNetworkDB]network.current_vehicle.axle_load_t
+  }
+
+  *test::verdantgecko2::domain::ServicePeriod[period]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantgecko2::store::TramNetworkDB]network.current_period.period_id
+    )
+    ~mainTable [test::verdantgecko2::store::TramNetworkDB]network.current_period
+    periodId: [test::verdantgecko2::store::TramNetworkDB]network.current_period.period_id,
+    periodName: [test::verdantgecko2::store::TramNetworkDB]network.current_period.period_name,
+    opensOn: [test::verdantgecko2::store::TramNetworkDB]network.current_period.opens_on,
+    closesOn: [test::verdantgecko2::store::TramNetworkDB]network.current_period.closes_on
+  }
+
+  *test::verdantgecko2::domain::RidershipCount[count]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantgecko2::store::TramNetworkDB]network.current_count.count_id
+    )
+    ~mainTable [test::verdantgecko2::store::TramNetworkDB]network.current_count
+    countId: [test::verdantgecko2::store::TramNetworkDB]network.current_count.count_id,
+    boardings: [test::verdantgecko2::store::TramNetworkDB]network.current_count.boardings,
+    alightings: [test::verdantgecko2::store::TramNetworkDB]network.current_count.alightings,
+    meanDwellSeconds: [test::verdantgecko2::store::TramNetworkDB]network.current_count.mean_dwell_seconds,
+    countedOn: [test::verdantgecko2::store::TramNetworkDB]network.current_count.counted_on,
+    recordedBy: [test::verdantgecko2::store::TramNetworkDB]network.current_count.recorded_by
+  }
+
+  test::verdantgecko2::domain::Line_Depot: Relational
+  {
+    AssociationMapping
+    (
+      stabledLines[depot, line]: [test::verdantgecko2::store::TramNetworkDB]@Line_Depot,
+      depot[line, depot]: [test::verdantgecko2::store::TramNetworkDB]@Line_Depot
+    )
+  }
+
+  test::verdantgecko2::domain::Stop_Line: Relational
+  {
+    AssociationMapping
+    (
+      lineStops[line, stop]: [test::verdantgecko2::store::TramNetworkDB]@Stop_Line,
+      line[stop, line]: [test::verdantgecko2::store::TramNetworkDB]@Stop_Line
+    )
+  }
+
+  test::verdantgecko2::domain::Stop_Sector: Relational
+  {
+    AssociationMapping
+    (
+      sectorStops[sector, stop]: [test::verdantgecko2::store::TramNetworkDB]@Stop_Sector,
+      sector[stop, sector]: [test::verdantgecko2::store::TramNetworkDB]@Stop_Sector
+    )
+  }
+
+  test::verdantgecko2::domain::Sector_Group: Relational
+  {
+    AssociationMapping
+    (
+      groupedSectors[sectorGroup, sector]: [test::verdantgecko2::store::TramNetworkDB]@Sector_Group,
+      sectorGroup[sector, sectorGroup]: [test::verdantgecko2::store::TramNetworkDB]@Sector_Group
+    )
+  }
+
+  test::verdantgecko2::domain::Vehicle_Line: Relational
+  {
+    AssociationMapping
+    (
+      allocatedVehicles[line, vehicle]: [test::verdantgecko2::store::TramNetworkDB]@Vehicle_Line,
+      servedLine[vehicle, line]: [test::verdantgecko2::store::TramNetworkDB]@Vehicle_Line
+    )
+  }
+
+  test::verdantgecko2::domain::Count_Stop: Relational
+  {
+    AssociationMapping
+    (
+      stopCounts[stop, count]: [test::verdantgecko2::store::TramNetworkDB]@Count_Stop,
+      countedStop[count, stop]: [test::verdantgecko2::store::TramNetworkDB]@Count_Stop
+    )
+  }
+
+  test::verdantgecko2::domain::Count_Period: Relational
+  {
+    AssociationMapping
+    (
+      periodCounts[period, count]: [test::verdantgecko2::store::TramNetworkDB]@Count_Period,
+      countedPeriod[count, period]: [test::verdantgecko2::store::TramNetworkDB]@Count_Period
+    )
+  }
+
+  testSuites:
+  [
+    countTraversalSuite:
+    {
+      function: |test::verdantgecko2::domain::RidershipCount.all()->project(
+        ~[
+          countId: c|$c.countId,
+          stopName: c|$c.countedStop.stopName,
+          lineCode: c|$c.countedStop.line.lineCode,
+          depotName: c|$c.countedStop.line.depot.depotName,
+          groupName: c|$c.countedStop.sector.sectorGroup.groupName,
+          periodName: c|$c.countedPeriod.periodName,
+          boardings: c|$c.boardings,
+          alightings: c|$c.alightings,
+          netFlow: c|$c.boardings - $c.alightings
+        ]
+      );
+      tests:
+      [
+        currentCountRow:
+        {
+          doc: 'Every relation is reached through its validity-filtered view, so the superseded count row and the superseded depot row are invisible; the surviving count row reaches its line, depot and sector group through two, three and three chained association ends.';
+          data:
+          [
+            test::verdantgecko2::store::TramNetworkDB:
+              Relational
+              #{
+                network.depot:
+                  'depot_id,depot_name,borough_name,bay_count,amended_by,valid_from,valid_thru\n'+
+                  '1,Willowbank Depot,Northgate,14,planner.a,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '2,Kiln Road Depot,Southgate,9,planner.b,2019-01-01 00:00:00,2021-01-01 00:00:00\n';
+
+                network.tram_line:
+                  'line_id,depot_id,line_code,line_name,night_service,amended_by,valid_from,valid_thru\n'+
+                  '10,1,L4,Willowbank Loop,YES,planner.a,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+                network.sector_group:
+                  'group_id,group_name,parent_group_name,amended_by,valid_from,valid_thru\n'+
+                  '30,Inner Ring,City Network,planner.c,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+                network.stop_sector:
+                  'sector_id,group_id,sector_name,amended_by,valid_from,valid_thru\n'+
+                  '20,30,Northgate Quarter,planner.c,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+                network.tram_stop:
+                  'stop_id,line_id,sector_id,stop_name,platform_length_m,opened_on,amended_by,valid_from,valid_thru\n'+
+                  '40,10,20,Willowbank Gardens,32.5,1996-04-02,planner.a,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '41,10,20,Kiln Road Sidings,12.0,1988-09-14,planner.b,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+                network.service_period:
+                  'period_id,period_name,opens_on,closes_on,amended_by,valid_from,valid_thru\n'+
+                  '50,Spring Timetable,2026-03-01,2026-05-31,planner.d,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+                network.ridership_count:
+                  'count_id,stop_id,period_id,boardings,alightings,mean_dwell_seconds,counted_on,recorded_by,amended_by,valid_from,valid_thru\n'+
+                  '60,40,50,842,795,24.5,2026-04-15,counter.e,counter.e,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '61,41,50,120,118,18.0,2026-04-15,counter.f,counter.f,2019-01-01 00:00:00,2021-01-01 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyReachableCount:
+              Relation
+              #{
+                countId,stopName,lineCode,depotName,groupName,periodName,boardings,alightings,netFlow
+                60,Willowbank Gardens,L4,Willowbank Depot,Inner Ring,Spring Timetable,842,795,47;
+              }#
+          ];
+        }
+      ];
+    },
+    vehicleTraversalSuite:
+    {
+      function: |test::verdantgecko2::domain::TramVehicle.all()->project(
+        ~[
+          fleetNumber: v|$v.fleetNumber,
+          lineName: v|$v.servedLine.lineName,
+          depotName: v|$v.servedLine.depot.depotName,
+          boroughName: v|$v.servedLine.depot.boroughName,
+          seatCount: v|$v.seatCount
+        ]
+      );
+      tests:
+      [
+        currentVehicleRow:
+        {
+          doc: 'The vehicle view drops the stored-out-of-service record, and the surviving vehicle reaches its depot borough through two chained association ends across three validity-filtered views.';
+          data:
+          [
+            test::verdantgecko2::store::TramNetworkDB:
+              Relational
+              #{
+                network.depot:
+                  'depot_id,depot_name,borough_name,bay_count,amended_by,valid_from,valid_thru\n'+
+                  '1,Willowbank Depot,Northgate,14,planner.a,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+                network.tram_line:
+                  'line_id,depot_id,line_code,line_name,night_service,amended_by,valid_from,valid_thru\n'+
+                  '10,1,L4,Willowbank Loop,YES,planner.a,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+                network.tram_vehicle:
+                  'vehicle_id,line_id,fleet_number,seat_count,axle_load_t,amended_by,valid_from,valid_thru\n'+
+                  '70,10,TR-118,64,9.25,fleet.g,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '71,10,TR-091,0,8.75,fleet.h,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            onlySeatedVehicle:
+              Relation
+              #{
+                fleetNumber,lineName,depotName,boroughName,seatCount
+                TR-118,Willowbank Loop,Willowbank Depot,Northgate,64;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

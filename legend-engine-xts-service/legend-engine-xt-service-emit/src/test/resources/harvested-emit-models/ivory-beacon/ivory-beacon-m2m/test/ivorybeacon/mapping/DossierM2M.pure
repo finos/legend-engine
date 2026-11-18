@@ -1,0 +1,237 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivorybeacon::mapping::DossierM2M
+(
+  *test::ivorybeacon::domain::SurveyDossier: Pure
+  {
+    ~src test::ivorybeacon::source::IncomingStationReport
+    dossierId: $src.stationRef,
+    windowLabel: if($src.surveyWindow->isEmpty(),
+                  | 'UNDATED',
+                  | test::ivorybeacon::function::windowPart($src.surveyWindow->toOne(), 0) + '..' + test::ivorybeacon::function::windowPart($src.surveyWindow->toOne(), 1)
+                ),
+    readings: $src.readings
+  }
+
+  *test::ivorybeacon::domain::DossierReading: Pure
+  {
+    ~src test::ivorybeacon::source::IncomingReading
+    readingCode: $src.code,
+    depthLabel: if($src.depthText->isEmpty(),
+                 | 'DEPTH-0',
+                 | 'DEPTH-' + $src.depthText->toOne()
+               ),
+    meltRateLabel: if($src.meltRateText->isEmpty(),
+                    | 'RATE--1',
+                    | 'RATE-' + $src.meltRateText->toOne()
+                  )
+  }
+
+  *test::ivorybeacon::domain::SiteDescriptor: Pure
+  {
+    ~src test::ivorybeacon::source::IncomingSite
+    descriptorId: $src.siteRef,
+    label: $src.siteRef->toUpper(),
+    kind: if($src.siteRef->length() > 7,
+            | 'EXTENDED',
+            | 'COMPACT'
+          )
+  }
+
+  testSuites:
+  [
+    dossierSuite:
+    {
+      function: |test::ivorybeacon::domain::SurveyDossier.all()->graphFetch(
+      #{
+        test::ivorybeacon::domain::SurveyDossier
+        {
+          dossierId,
+          windowLabel,
+          readings
+          {
+            readingCode,
+            depthLabel,
+            meltRateLabel
+          }
+        }
+      }#
+      )->serialize(
+      #{
+        test::ivorybeacon::domain::SurveyDossier
+        {
+          dossierId,
+          windowLabel,
+          readings
+          {
+            readingCode,
+            depthLabel,
+            meltRateLabel
+          }
+        }
+      }#
+      );
+      tests:
+      [
+        populatedWindowAndReadings:
+        {
+          doc: 'Both readings carry depth and melt rate, so every present-arm transform is exercised.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivorybeacon::source::IncomingStationReport:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stationRef": "ST-01", "surveyWindow": "2025-03-14/2025-03-20", "narrative": ["clear ice margin"], "readings": [{"code": "r1", "depthText": "64", "meltRateText": "0.42"}, {"code": "r2", "depthText": "18", "meltRateText": "0.11"}], "site": {"@type": "test::ivorybeacon::source::IncomingGlacierSite", "siteRef": "SITE-11", "glacierName": "north tongue", "terminusAltitudeText": "1450"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"dossierId":"ST-01","windowLabel":"2025-03-14..2025-03-20","readings":[{"readingCode":"r1","depthLabel":"DEPTH-64","meltRateLabel":"RATE-0.42"},{"readingCode":"r2","depthLabel":"DEPTH-18","meltRateLabel":"RATE-0.11"}]}';
+                  }#;
+              }#
+          ];
+        },
+        absentSurveyWindow:
+        {
+          doc: 'The survey window is absent, so the dossier label falls back to its sentinel.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivorybeacon::source::IncomingStationReport:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stationRef": "ST-02", "narrative": ["low cloud", "instrument reset"], "readings": [{"code": "r3", "depthText": "41", "meltRateText": "0.19"}], "site": {"@type": "test::ivorybeacon::source::IncomingSnowfieldSite", "siteRef": "SITE-22", "snowfieldName": "Upper Corrie"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"dossierId":"ST-02","windowLabel":"UNDATED","readings":[{"readingCode":"r3","depthLabel":"DEPTH-41","meltRateLabel":"RATE-0.19"}]}';
+                  }#;
+              }#
+          ];
+        },
+        readingWithoutMeasurements:
+        {
+          doc: 'The single reading carries neither depth nor melt rate, so both reading fallbacks fire.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivorybeacon::source::IncomingStationReport:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stationRef": "ST-03", "surveyWindow": "2025-04-01/2025-04-05", "readings": [{"code": "r4"}]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"dossierId":"ST-03","windowLabel":"2025-04-01..2025-04-05","readings":[{"readingCode":"r4","depthLabel":"DEPTH-0","meltRateLabel":"RATE--1"}]}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    siteDescriptorSuite:
+    {
+      function: |test::ivorybeacon::domain::SiteDescriptor.all()->graphFetch(
+      #{
+        test::ivorybeacon::domain::SiteDescriptor
+        {
+          descriptorId,
+          label,
+          kind
+        }
+      }#
+      )->serialize(
+      #{
+        test::ivorybeacon::domain::SiteDescriptor
+        {
+          descriptorId,
+          label,
+          kind
+        }
+      }#
+      );
+      tests:
+      [
+        glacierSubtypeSite:
+        {
+          doc: 'A site descriptor is flattened from an inbound site record carrying a subtype discriminator.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivorybeacon::source::IncomingSite:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"@type":"test::ivorybeacon::source::IncomingGlacierSite","siteRef":"SITE-11","glacierName":"north tongue","terminusAltitudeText":"1450"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"descriptorId":"SITE-11","label":"SITE-11","kind":"COMPACT"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::teallantern::store::HarbourLightDb
+(
+  Schema harbour
+  (
+    Table lantern_station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(24),
+      station_name VARCHAR(120),
+      reach_code VARCHAR(16),
+      elevation_m DOUBLE,
+      commissioned_on DATE,
+      last_checked_at TIMESTAMP
+    )
+    Table lamp_unit
+    (
+      lamp_id INTEGER PRIMARY KEY,
+      station_id INTEGER,
+      lamp_code VARCHAR(24),
+      lamp_kind VARCHAR(24),
+      lumen_output DOUBLE,
+      installed_on DATE
+    )
+  )
+
+  Schema works
+  (
+    Table lamp_inspection
+    (
+      inspection_id INTEGER PRIMARY KEY,
+      lamp_id INTEGER,
+      inspector_name VARCHAR(120),
+      inspected_on DATE,
+      glare_score INTEGER,
+      fault_note VARCHAR(200)
+    )
+    Table keeper_crew
+    (
+      crew_id INTEGER PRIMARY KEY,
+      station_id INTEGER,
+      crew_name VARCHAR(120),
+      shift_kind VARCHAR(16),
+      rostered_on DATE
+    )
+  )
+
+  Join Station_Lamp(harbour.lantern_station.station_id = harbour.lamp_unit.station_id)
+  Join Lamp_Inspection(harbour.lamp_unit.lamp_id = works.lamp_inspection.lamp_id)
+  Join Station_Crew(harbour.lantern_station.station_id = works.keeper_crew.station_id)
+)

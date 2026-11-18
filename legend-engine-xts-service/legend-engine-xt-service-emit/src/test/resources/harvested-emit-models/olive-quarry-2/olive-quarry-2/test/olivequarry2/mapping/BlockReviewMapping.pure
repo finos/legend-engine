@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::olivequarry2::mapping::BlockReviewMapping
+(
+  include mapping test::olivequarry2::mapping::QuarryEnumMappings
+
+  *test::olivequarry2::domain::BlockReview[blockReview]: Pure
+  {
+    ~src test::olivequarry2::source::BlockDispatch
+    dispatchRef: $src.dispatchRef,
+    grade: EnumerationMapping StoneGradeMap: $src.gradeText->filter(g|$g->trim()->toUpper()->in(['FREESTONE', 'RAGSTONE', 'FLAGSTONE']))->map(g|$g->trim()->toUpper() + '/BLOCK')->first(),
+    faceSummary: $src.faceCount->toString() + if($src.faceCount == 1, | ' face', | ' faces'),
+    notes[reviewNote]: $src
+  }
+
+  *test::olivequarry2::domain::ReviewNote[reviewNote]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(massNote, gradeNote)
+  }
+
+  test::olivequarry2::domain::ReviewNote[massNote]: Pure
+  {
+    ~src test::olivequarry2::source::BlockDispatch
+    topic: 'MASS',
+    detail: if($src.massKg->isEmpty(), | 'UNWEIGHED', | $src.massKg->toOne()->toString() + ' kg')
+  }
+
+  test::olivequarry2::domain::ReviewNote[gradeNote]: Pure
+  {
+    ~src test::olivequarry2::source::BlockDispatch
+    topic: 'GRADE',
+    detail: if($src.gradeText->isEmpty(), | 'UNGRADED', | $src.gradeText->toOne()->trim()->toLower())
+  }
+
+  testSuites:
+  [
+    reviewSuite:
+    {
+      function: |test::olivequarry2::domain::BlockReview.all()->graphFetch(
+        #{
+          test::olivequarry2::domain::BlockReview
+          {
+            dispatchRef,
+            grade,
+            faceSummary,
+            notes
+            {
+              topic,
+              detail
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::olivequarry2::domain::BlockReview
+          {
+            dispatchRef,
+            grade,
+            faceSummary,
+            notes
+            {
+              topic,
+              detail
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        weighedAndUnweighedReviews:
+        {
+          doc: 'Builds one review per dispatch through the second include of the shared enumeration mappings, pluralises the face summary only past a single face, and stacks a mass note and a grade note through the router union with their unweighed and ungraded fallbacks.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::olivequarry2::source::BlockDispatch:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"dispatchRef":"DR-1","gradeText":" Freestone ","massKg":1200,"faceCount":1},{"dispatchRef":"DR-2","faceCount":4}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            twoReviews:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"dispatchRef":"DR-1","grade":"FREESTONE","faceSummary":"1 face","notes":[{"topic":"MASS","detail":"1200 kg"},{"topic":"GRADE","detail":"freestone"}]},{"dispatchRef":"DR-2","grade":null,"faceSummary":"4 faces","notes":[{"topic":"MASS","detail":"UNWEIGHED"},{"topic":"GRADE","detail":"UNGRADED"}]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

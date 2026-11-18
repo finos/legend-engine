@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::meadowreef::store::ReefDatabase
+(
+  Schema reef
+  (
+    Table reef_species
+    (
+      species_code VARCHAR(16) PRIMARY KEY,
+      family_name VARCHAR(48) NOT NULL,
+      zone_code VARCHAR(16) NOT NULL
+    )
+    Table species_synonym
+    (
+      synonym_id INTEGER PRIMARY KEY,
+      species_code VARCHAR(16) NOT NULL,
+      synonym_text VARCHAR(64) NOT NULL,
+      usage_id INTEGER NOT NULL
+    )
+    Table usage_ref
+    (
+      usage_id INTEGER PRIMARY KEY,
+      usage_code VARCHAR(16) NOT NULL,
+      register_label VARCHAR(48) NOT NULL
+    )
+  )
+
+  Join Species_Synonym(reef.reef_species.species_code = reef.species_synonym.species_code)
+
+  Join Synonym_Usage(reef.species_synonym.usage_id = reef.usage_ref.usage_id)
+)

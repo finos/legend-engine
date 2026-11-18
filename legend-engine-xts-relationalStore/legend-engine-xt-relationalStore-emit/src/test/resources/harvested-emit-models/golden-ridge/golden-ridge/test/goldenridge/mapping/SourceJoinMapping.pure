@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenridge::mapping::SourceJoinMapping
+(
+  *test::goldenridge::domain::SourcedCase[sourcedCase]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenridge::store::RidgeDB]intake.permit_case.case_id
+    )
+    ~mainTable [test::goldenridge::store::RidgeDB]intake.permit_case
+    caseCode: [test::goldenridge::store::RidgeDB]intake.permit_case.case_code,
+    siteLabel: [test::goldenridge::store::RidgeDB]intake.permit_case.site_label,
+    storeys: [test::goldenridge::store::RidgeDB]intake.permit_case.storeys,
+    floorArea: [test::goldenridge::store::RidgeDB]intake.permit_case.floor_area,
+    filedOn: [test::goldenridge::store::RidgeDB]intake.permit_case.filed_on,
+    intakeOfficer: [test::goldenridge::store::RidgeDB]@Case_IntakeOfficer | intake.reviewer.reviewer_name,
+    inspector: [test::goldenridge::store::RidgeDB]@Case_Inspector | intake.reviewer.reviewer_name,
+    approver: [test::goldenridge::store::RidgeDB]@Case_Approver | intake.reviewer.reviewer_name,
+    wardName: [test::goldenridge::store::RidgeDB]@Case_Parcel > @Parcel_WardLink > @WardLink_Ward | reference.ward.ward_name,
+    districtLabel: [test::goldenridge::store::RidgeDB]@Case_Parcel > @Parcel_WardLink > @WardLink_Ward | reference.ward.district_label
+  }
+
+  testSuites:
+  [
+    sourcedCaseSuite:
+    {
+      function: |test::goldenridge::domain::SourcedCase.all()->filter(
+  c|(($c.storeys == 3) && ($c.inspector->isEmpty()->not()))
+)->project(
+  [
+    x|$x.caseLabel(),
+    x|$x.areaNote(),
+    x|$x.intakeOfficer,
+    x|$x.approver,
+    x|$x.wardName,
+    x|$x.districtLabel
+  ],
+  [
+    'CaseLabel',
+    'AreaNote',
+    'IntakeOfficer',
+    'Approver',
+    'WardName',
+    'DistrictLabel'
+  ]
+)->sort(
+  [
+    asc('CaseLabel')
+  ]
+);
+      tests:
+      [
+        joinPathProperties:
+        {
+          doc: 'The three reviewer roles resolve through three distinct joins onto the same lookup table while the ward chain walks three hops through the category-restricted link, and the conjunction keeps only three-storey cases whose inspector is actually present.';
+          data:
+          [
+            test::goldenridge::store::RidgeDB:
+              Relational
+              #{
+                intake.reviewer:
+                  'reviewer_id,reviewer_name,unit_label\n'+
+                  '1,Nadia Osei,Intake Desk\n'+
+                  '2,Roman Fisk,Site Inspection\n'+
+                  '3,Priya Vale,Approvals\n';
+                reference.parcel:
+                  'parcel_id,parcel_code\n'+
+                  '1,PCL-7781\n';
+                reference.ward:
+                  'ward_id,ward_name,district_label\n'+
+                  '1,Ridge Crest Ward,North Heights District\n'+
+                  '2,Fern Hollow Ward,South Flats District\n';
+                reference.ward_link:
+                  'link_id,parcel_id,ward_id,link_kind\n'+
+                  '1,1,1,PRIMARY_WARD\n'+
+                  '2,1,2,SECONDARY_WARD\n';
+                intake.permit_case:
+                  'case_id,case_code,site_label,storeys,floor_area,filed_on,intake_officer_id,inspector_id,approver_id,parcel_id\n'+
+                  '1,PMT-1001,Old Mill Terrace,3,420.5,2024-03-11,1,2,3,1\n'+
+                  '2,PMT-1002,Cedar Slope Annex,3,610.75,2024-04-02,1,77,3,1\n'+
+                  '3,PMT-1003,Harbour Steps Lot,5,210.25,2024-05-20,1,2,3,1\n'+
+                  '4,PMT-1004,Quarry Edge Plot,3,150.5,2024-06-15,1,2,3,88\n';
+              }#
+          ];
+          asserts:
+          [
+            twoSurvivingCases:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CaseLabel":"PMT-1001 - Old Mill Terrace","AreaNote":"FLOOR AREA 420.5","IntakeOfficer":"Nadia Osei","Approver":"Priya Vale","WardName":"Ridge Crest Ward","DistrictLabel":"North Heights District"},{"CaseLabel":"PMT-1004 - Quarry Edge Plot","AreaNote":"FLOOR AREA 150.5","IntakeOfficer":"Nadia Osei","Approver":"Priya Vale","WardName":null,"DistrictLabel":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

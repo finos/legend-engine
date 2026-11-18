@@ -1,0 +1,47 @@
+name: zephyr-lighthouse-5
+title: "Lighthouse Keeper Reference Extracts — Bitemporal Point-In-Time Queries With Inline Runtimes"
+description: |
+  A coastal lighthouse keeper reference corpus whose keeper, name, tenure, station
+  and grade records are all bitemporal, so every read is pinned to one processing
+  and one business instant. Two single-execution services bind the requested
+  instant to two local variables, select the keeper extent at that coordinate and
+  qualify keepers with a nested existence test over the tenure sub-collection —
+  a tenure at or above a requested year count or with no duty recorded — combined
+  with a contact-identifier condition, then project two dozen aliased columns
+  through instant-parameterized name, station, grade and district chains and
+  reduce the result with distinct. Neither service names a packageable runtime:
+  each declares an inline runtime that binds the keeper register store straight to
+  an inline local H2 database connection. Service tests cover matching and
+  non-matching tenure and contact cases, keepers with several tenures, keepers
+  with none, empty intermediate chains and rows outside the requested milestoning
+  range on both the business and the processing axis.
+modelSources:
+  model:
+    root: zephyr-lighthouse-5
+    files:
+      - test/zephyrlighthouse5/domain/KeeperDomain.pure
+      - test/zephyrlighthouse5/mapping/KeeperMapping.pure
+      - test/zephyrlighthouse5/service/KeeperContactExtract.pure
+      - test/zephyrlighthouse5/service/KeeperTenureExtract.pure
+      - test/zephyrlighthouse5/store/KeeperRegisterDB.pure
+features:
+  - execution:service
+  - grammar:qualified-property
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bitemporal
+  - collection-op
+  - distinct
+  - h2
+  - inline-runtime
+  - lighthouse
+  - milestoning
+  - point-in-time
+  - relational
+  - service-test

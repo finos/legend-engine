@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::silvergecko2::domain::DietKind
+{
+  INSECTIVORE,
+  HERBIVORE,
+  OMNIVORE
+}
+
+Class test::silvergecko2::domain::HabitatZone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+  noteText: String[1];
+}
+
+Class test::silvergecko2::domain::ZoneNote
+{
+  noteCode: String[1];
+  noteText: String[1];
+  zoneName: String[1];
+}
+
+Class test::silvergecko2::domain::Enclosure
+{
+  enclosureCode: String[1];
+  enclosureName: String[1];
+  humidityPct: Integer[1];
+  zoneName: String[1];
+}
+
+Class test::silvergecko2::domain::Substrate
+{
+  substrateCode: String[1];
+  substrateName: String[1];
+  enclosureName: String[1];
+}
+
+Class test::silvergecko2::domain::HeatLamp
+{
+  lampCode: String[1];
+  watts: Integer[1];
+  enclosureName: String[1];
+}
+
+Class test::silvergecko2::domain::Species
+{
+  speciesCode: String[1];
+  speciesName: String[1];
+  dietKind: test::silvergecko2::domain::DietKind[1];
+}
+
+Class test::silvergecko2::domain::ShiftTeam
+{
+  teamCode: String[1];
+  teamName: String[1];
+}
+
+Class test::silvergecko2::domain::Keeper
+{
+  keeperCode: String[1];
+  keeperName: String[1];
+  teamName: String[1];
+}
+
+Class test::silvergecko2::domain::Resident
+{
+  residentCode: String[1];
+  residentName: String[1];
+  hatchedOn: StrictDate[1];
+  lengthMillimetres: Integer[1];
+  enclosureName: String[1];
+  speciesName: String[1];
+  displayLabel: String[1];
+  registerKind: String[1];
+}
+
+Class test::silvergecko2::domain::Supplier
+{
+  supplierCode: String[1];
+  supplierName: String[1];
+}
+
+Class test::silvergecko2::domain::FeedStock
+{
+  feedCode: String[1];
+  stockName: String[1];
+  supplierName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Shared shape of every dated entry written against a resident, so the register kinds resolve their common properties through one supertype.'} test::silvergecko2::domain::VivariumRecord
+{
+  recordCode: String[1];
+  residentName: String[1];
+  recordKind: String[1];
+}
+
+Class test::silvergecko2::domain::FeedLog extends test::silvergecko2::domain::VivariumRecord
+{
+  feedCode: String[1];
+  feedGrams: Integer[1];
+  fedOn: StrictDate[1];
+  keeperName: String[1];
+}
+
+Class test::silvergecko2::domain::HealthCheck extends test::silvergecko2::domain::VivariumRecord
+{
+  outcomeCode: String[1];
+  checkedOn: StrictDate[1];
+  keeperName: String[1];
+}
+
+Class test::silvergecko2::domain::MoultRecord extends test::silvergecko2::domain::VivariumRecord
+{
+  stageCode: String[1];
+  recordedOn: StrictDate[1];
+}
+
+Class test::silvergecko2::domain::WeightReading extends test::silvergecko2::domain::VivariumRecord
+{
+  grams: Integer[1];
+  readOn: StrictDate[1];
+}

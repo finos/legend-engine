@@ -1,0 +1,60 @@
+name: ember-cavern-2
+title: "Cave Survey Expeditions — Point-In-Time Tabular Services Over Business-Temporal Descents"
+description: |
+  A caving club records survey expeditions and the caves they enter on business-temporal timelines,
+  with massifs, districts, access authorities, crew members and rope or lamp kit held as plain
+  reference rows. Seven single-execution services, each owned by a two-person user list with
+  auto-activated updates, share one relational mapping and runtime. Six take a date path segment
+  that is passed straight into the milestoned retrieval; one derives the date from a let-bound
+  call to the current instant. Each query filters with conjunctions and disjunctions of equality,
+  negation, membership and emptiness tests, enum comparisons and instant bounds, projects legacy
+  tabular columns through navigation paths of up to four hops (including a missing authority),
+  then applies partitioned maximum windows, typed-row post-filters and de-duplication. One
+  service groups by region and joins crew names into one string, one reads subtype-only kit
+  attributes through two casts, and one extracts the calendar day of each departure. Service test
+  suites share one relational data element and assert rows on both sides of every predicate,
+  including a superseded version resolved only at an earlier date.
+modelSources:
+  model:
+    root: ember-cavern-2
+    files:
+      - test/embercavern2/connection/CavernConnections.pure
+      - test/embercavern2/data/CavernData.pure
+      - test/embercavern2/domain/CavernDomain.pure
+      - test/embercavern2/mapping/CavernMapping.pure
+      - test/embercavern2/runtime/CavernRuntimes.pure
+      - test/embercavern2/service/CavernServices.pure
+      - test/embercavern2/store/CavernDb.pure
+features:
+  - execution:service
+  - execution:service-path-parameter
+  - execution:service-user-ownership
+  - milestoning:point-in-time-query
+  - query:aggregate-max
+  - query:collection-op
+  - query:date-part-extraction
+  - query:date-today
+  - query:deep-property-path
+  - query:distinct
+  - query:enum-comparison
+  - query:filter
+  - query:group-by
+  - query:let-binding
+  - query:membership-test
+  - execution:service-parameter
+  - query:project
+  - query:string-function
+  - query:subtype-cast
+  - query:post-projection-filter
+  - query:window
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - cave-survey
+  - h2
+  - legacy-tds
+  - olap-window
+  - service
+  - subtype-cast

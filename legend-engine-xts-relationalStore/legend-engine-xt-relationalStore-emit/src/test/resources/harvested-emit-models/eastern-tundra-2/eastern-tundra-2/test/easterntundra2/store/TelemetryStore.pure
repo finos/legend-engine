@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::easterntundra2::store::TelemetryStore
+(
+  Schema telemetry
+  (
+    Table collar_fix
+    (
+      collar_code VARCHAR(24) PRIMARY KEY,
+      animal_code VARCHAR(24) NOT NULL,
+      herd_code VARCHAR(24) NOT NULL,
+      fix_date DATE NOT NULL,
+      latitude FLOAT NOT NULL,
+      longitude FLOAT NOT NULL,
+      altitude_metres FLOAT NOT NULL,
+      collar_status VARCHAR(24) NOT NULL,
+      signal_code VARCHAR(24) NOT NULL,
+      habitat_code VARCHAR(24) NOT NULL,
+      movement_code VARCHAR(24) NOT NULL,
+      distance_km FLOAT NOT NULL,
+      temperature_c FLOAT NOT NULL,
+      snow_depth_cm FLOAT NOT NULL,
+      vegetation_code VARCHAR(24) NOT NULL,
+      observer_note VARCHAR(160),
+      deployment_year_text VARCHAR(24) NOT NULL,
+      capture_year_text VARCHAR(24) NOT NULL,
+      survey_year_text VARCHAR(24) NOT NULL,
+      age_years_text VARCHAR(24) NOT NULL,
+      distance_band_text VARCHAR(24) NOT NULL,
+      battery_text VARCHAR(24) NOT NULL,
+      tracking_code VARCHAR(24) NOT NULL,
+      gps_quality VARCHAR(24) NOT NULL,
+      satellite_count INTEGER NOT NULL,
+      transmission_seq INTEGER NOT NULL,
+      route_code VARCHAR(24) NOT NULL,
+      sex_code VARCHAR(24) NOT NULL,
+      age_class VARCHAR(24) NOT NULL,
+      body_mass_kg FLOAT NOT NULL,
+      antler_stage VARCHAR(24) NOT NULL
+    )
+  )
+)

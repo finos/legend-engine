@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::cedarfossil::store::FossilCatalogueDB
+(
+  include demo::cedarfossil::store::FossilRegistryDB
+
+  Schema catalogue
+  (
+    Table specimen_record
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      specimen_code VARCHAR(24) PRIMARY KEY,
+      taxon_group VARCHAR(8) NOT NULL,
+      condition_code VARCHAR(4) NOT NULL,
+      mass_g FLOAT NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+    Table preparation_log
+    (
+      prep_code VARCHAR(24) PRIMARY KEY,
+      specimen_code VARCHAR(24) NOT NULL,
+      prep_stage VARCHAR(20) NOT NULL,
+      prep_hours FLOAT NOT NULL
+    )
+
+    View specimen_effort_vw
+    (
+      ~groupBy
+      (
+        catalogue.preparation_log.specimen_code
+      )
+      specimen_code: catalogue.preparation_log.specimen_code PRIMARY KEY,
+      prep_entry_count: count(catalogue.preparation_log.prep_code),
+      total_prep_hours: sum(catalogue.preparation_log.prep_hours)
+    )
+  )
+
+  Filter FinishedPreparations(catalogue.preparation_log.prep_stage = 'FINISHED')
+
+  Join Specimen_Site(catalogue.specimen_record.site_code = registry.dig_site.site_code)
+  Join Specimen_Effort(catalogue.specimen_record.specimen_code = catalogue.specimen_effort_vw.specimen_code)
+)

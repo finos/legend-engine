@@ -1,0 +1,272 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldmarsh2::service::ReedStandsAsOf
+{
+  pattern: '/emeraldmarsh/v1/reed-stands';
+  title: 'Emerald Marsh - Reed Stands As Of A Pinned Instant';
+  owners:
+  [
+    'wetland-monitoring',
+    'reedbed-survey'
+  ];
+  documentation: 'Resolves the reed stands at an instant pinned far in the future so only the version whose validity window contains that instant survives, then gates the survivors on a minimum reed height, a minimum cover percentage and a recording date that is not in the future, and projects the derived density band alongside the physical columns.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minHeight: Integer[1], minCover: Integer[1], currentDate: StrictDate[1]|test::emeraldmarsh2::domain::ReedStand.all(%2036-04-01T00:00:00)->filter(
+      s|($s.reedHeightCm >= $minHeight) && ($s.coverPct >= $minCover) && ($s.recordedOn <= $currentDate)
+    )->project(
+      [
+        s|$s.standCode,
+        s|$s.sectorCode,
+        s|$s.densityBand,
+        s|$s.reedHeightCm
+      ],
+      [
+        'StandCode',
+        'SectorCode',
+        'DensityBand',
+        'HeightCm'
+      ]
+    )->sort(
+      [
+        asc('StandCode')
+      ]
+    )};
+    mapping: test::emeraldmarsh2::mapping::MarshMapping;
+    runtime: test::emeraldmarsh2::runtime::MarshRuntime;
+  }
+  testSuites:
+  [
+    reedStandsAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+              marshmonitor.reed_stand:
+                'stand_id,stand_code,sector_code,reed_height_cm,cover_pct,recorded_on,valid_from_z,valid_thru_z\n'+
+                '1,MS-01,NR-1,182,82,2026-01-15,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '2,MS-02,NR-1,204,91,2026-01-16,2020-01-01 00:00:00,2030-01-01 00:00:00\n'+
+                '3,MS-03,SR-2,94,77,2026-01-17,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        containingVersionAboveBothFloors:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minHeight = 150,
+            minCover = 60,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            onlyTheOpenStandAboveTheFloors:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StandCode":"MS-01","SectorCode":"NR-1","DensityBand":"CLOSED","HeightCm":182}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::emeraldmarsh2::service::ReedStandsBySector
+{
+  pattern: '/emeraldmarsh/v1/reed-stands/by-sector';
+  title: 'Emerald Marsh - Reed Stands In A Sector Set';
+  owners:
+  [
+    'wetland-monitoring',
+    'reedbed-survey'
+  ];
+  documentation: 'Point-in-time counterpart that gates the resolved stands on membership of a multi-valued sector parameter, tested with a set-membership operator over the parameter list, combined with a minimum cover percentage.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {sectorCodes: String[*]|test::emeraldmarsh2::domain::ReedStand.all(%2036-04-01T00:00:00)->filter(
+      s|($s.sectorCode->in($sectorCodes)) && ($s.coverPct >= 40)
+    )->project(
+      [
+        s|$s.standLabel,
+        s|$s.densityBand,
+        s|$s.coverPct
+      ],
+      [
+        'StandLabel',
+        'DensityBand',
+        'CoverPct'
+      ]
+    )->sort(
+      [
+        asc('StandLabel')
+      ]
+    )};
+    mapping: test::emeraldmarsh2::mapping::MarshMapping;
+    runtime: test::emeraldmarsh2::runtime::MarshRuntime;
+  }
+  testSuites:
+  [
+    reedStandsBySectorSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+              marshmonitor.reed_stand:
+                'stand_id,stand_code,sector_code,reed_height_cm,cover_pct,recorded_on,valid_from_z,valid_thru_z\n'+
+                '1,MS-11,NR-1,166,55,2026-02-01,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '2,MS-12,WR-3,171,64,2026-02-02,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '3,MS-13,NR-1,158,71,2026-02-03,2020-01-01 00:00:00,2029-06-01 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyRequestedSectorAndOpenWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            sectorCodes = ['NR-1', 'ER-4']
+          ]
+          asserts:
+          [
+            singleRequestedSectorStand:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StandLabel":"MS-11 / NR-1","DensityBand":"PATCHY","CoverPct":55}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::emeraldmarsh2::service::ReedStandsAsOfByEnvironment
+{
+  pattern: '/emeraldmarsh/v1/reed-stands/{environment}';
+  title: 'Emerald Marsh - Reed Stands As Of, Keyed By Environment';
+  owners:
+  [
+    'wetland-monitoring',
+    'reedbed-survey'
+  ];
+  documentation: 'Environment-keyed multi-execution twin of the pinned-instant stand board: the key selects a whole execution stack and each binding names its own mapping and runtime.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {minHeight: Integer[1], minCover: Integer[1], currentDate: StrictDate[1]|test::emeraldmarsh2::domain::ReedStand.all(%2036-04-01T00:00:00)->filter(
+      s|($s.reedHeightCm >= $minHeight) && ($s.coverPct >= $minCover) && ($s.recordedOn <= $currentDate)
+    )->project(
+      [
+        s|$s.standCode,
+        s|$s.sectorCode,
+        s|$s.densityBand,
+        s|$s.reedHeightCm
+      ],
+      [
+        'StandCode',
+        'SectorCode',
+        'DensityBand',
+        'HeightCm'
+      ]
+    )->sort(
+      [
+        asc('StandCode')
+      ]
+    )};
+    key: 'environment';
+    executions['fen']:
+    {
+      mapping: test::emeraldmarsh2::mapping::MarshMapping;
+      runtime: test::emeraldmarsh2::runtime::MarshRuntime;
+    }
+    executions['delta']:
+    {
+      mapping: test::emeraldmarsh2::mapping::MarshMapping;
+      runtime: test::emeraldmarsh2::runtime::MarshRuntime;
+    }
+  }
+}
+
+Service test::emeraldmarsh2::service::ReedStandsBySectorByEnvironment
+{
+  pattern: '/emeraldmarsh/v1/reed-stands/by-sector/{environment}';
+  title: 'Emerald Marsh - Reed Stands In A Sector Set, Keyed By Environment';
+  owners:
+  [
+    'wetland-monitoring',
+    'reedbed-survey'
+  ];
+  documentation: 'Environment-keyed multi-execution twin of the sector-set board, proving that the set-membership sector filter and the projected derived properties compile into a plan for every execution stack.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {sectorCodes: String[*]|test::emeraldmarsh2::domain::ReedStand.all(%2036-04-01T00:00:00)->filter(
+      s|($s.sectorCode->in($sectorCodes)) && ($s.coverPct >= 40)
+    )->project(
+      [
+        s|$s.standLabel,
+        s|$s.densityBand,
+        s|$s.coverPct
+      ],
+      [
+        'StandLabel',
+        'DensityBand',
+        'CoverPct'
+      ]
+    )->sort(
+      [
+        asc('StandLabel')
+      ]
+    )};
+    key: 'environment';
+    executions['fen']:
+    {
+      mapping: test::emeraldmarsh2::mapping::MarshMapping;
+      runtime: test::emeraldmarsh2::runtime::MarshRuntime;
+    }
+    executions['delta']:
+    {
+      mapping: test::emeraldmarsh2::mapping::MarshMapping;
+      runtime: test::emeraldmarsh2::runtime::MarshRuntime;
+    }
+  }
+}

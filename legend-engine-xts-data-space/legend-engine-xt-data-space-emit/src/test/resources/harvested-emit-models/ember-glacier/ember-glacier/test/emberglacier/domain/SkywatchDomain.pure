@@ -1,0 +1,128 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::emberglacier::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A site the network observes from, standing at one elevation and either open to the public on observing nights or reserved for its own crews.'} test::emberglacier::domain::Observatory
+{
+  observatoryCode: String[1];
+  observatoryName: String[1];
+  elevationM: Integer[1];
+  openedOn: StrictDate[1];
+  publicNights: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An enclosure at a site, sized by the opening it can present to the sky and built with one kind of shutter.'} test::emberglacier::domain::Dome
+{
+  domeCode: String[1];
+  apertureM: Float[1];
+  shutterKind: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An instrument-carrying telescope standing in one enclosure, described by its mirror size and the kind of mount it turns on.'} test::emberglacier::domain::Telescope
+{
+  telescopeCode: String[1];
+  mirrorCm: Integer[1];
+  mountKind: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A detector mounted on a telescope, working in one band and sampling the sky at one scale per pixel.'} test::emberglacier::domain::Instrument
+{
+  instrumentCode: String[1];
+  bandName: String[1];
+  pixelScale: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Someone who takes an observing slot, optionally enrolled in one of the network cohorts.'} test::emberglacier::domain::Observer
+{
+  observerCode: String[1];
+  observerName: String[1];
+  cohortCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Something on the sky the network observes, carrying the catalogue it was drawn from and its listed brightness.'} test::emberglacier::domain::SkyTarget
+{
+  targetCode: String[1];
+  targetName: String[1];
+  catalogCode: String[1];
+  magnitude: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One booked run of a telescope on a target, with the detector used, when it started, how long each frame was exposed, how many frames were kept and the state the run was closed in.'} test::emberglacier::domain::ObservingSession
+{
+  sessionCode: String[1];
+  startedAt: DateTime[1];
+  exposureS: Integer[1];
+  framesKept: Integer[1];
+  sessionState: String[0..1];
+  loggedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A note of how steady and how clear the sky was during a run, taken at the site the run was booked at.'} test::emberglacier::domain::SeeingReading
+{
+  readingCode: String[1];
+  siteCode: String[1];
+  seeingArcsec: Float[1];
+  cloudCover: Integer[1];
+  recordedAt: DateTime[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A site holds its enclosures and every enclosure stands at exactly one site.'} test::emberglacier::domain::Observatory_Dome
+{
+  observatory: Observatory[1];
+  domes: Dome[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'An enclosure holds the telescopes housed in it and every telescope stands in exactly one enclosure.'} test::emberglacier::domain::Dome_Telescope
+{
+  dome: Dome[1];
+  telescopes: Telescope[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A telescope carries its detectors and every detector is mounted on exactly one telescope.'} test::emberglacier::domain::Telescope_Instrument
+{
+  telescope: Telescope[1];
+  instruments: Instrument[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A telescope is booked for observing runs and every run is booked on exactly one telescope.'} test::emberglacier::domain::Telescope_Session
+{
+  bookedTelescope: Telescope[1];
+  telescopeSessions: ObservingSession[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'An observer takes observing runs and every run is taken by exactly one observer.'} test::emberglacier::domain::Observer_Session
+{
+  observer: Observer[1];
+  observerSessions: ObservingSession[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A target is observed by runs and every run points at exactly one target.'} test::emberglacier::domain::Target_Session
+{
+  target: SkyTarget[1];
+  targetSessions: ObservingSession[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A detector is used by observing runs and every run records exactly one detector.'} test::emberglacier::domain::Instrument_Session
+{
+  instrument: Instrument[1];
+  instrumentSessions: ObservingSession[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A run collects the sky notes taken while it was open and every note belongs to exactly one run.'} test::emberglacier::domain::Session_Reading
+{
+  session: ObservingSession[1];
+  readings: SeeingReading[*];
+}

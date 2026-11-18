@@ -1,0 +1,49 @@
+name: hazel-lighthouse-4
+title: "Hazel Lighthouse — Waterworks Pump Network (associations through store joins, partitioned window ranking, data space over three executables)"
+modelSources:
+  model:
+    root: hazel-lighthouse-4
+    files:
+      - test/hazellighthouse4/connection/WaterworksConnection.pure
+      - test/hazellighthouse4/dataspace/WaterworksDataSpace.pure
+      - test/hazellighthouse4/domain/WaterworksDomain.pure
+      - test/hazellighthouse4/mapping/WaterworksMapping.pure
+      - test/hazellighthouse4/runtime/WaterworksRuntime.pure
+      - test/hazellighthouse4/service/DistrictDowntimeService.pure
+      - test/hazellighthouse4/service/PumpStationRegisterService.pure
+      - test/hazellighthouse4/service/StationFlowRankService.pure
+      - test/hazellighthouse4/store/WaterworksDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - execution:mapping-test
+  - mapping:relational-primary-key
+  - query:aggregation
+  - query:project
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - chained-join
+  - data-space
+  - group-by
+  - h2
+  - inner-join
+  - project
+  - rank
+  - snowflake
+  - waterworks
+  - window

@@ -1,0 +1,35 @@
+name: scarlet-hatchery
+title: "Scarlet Hatchery — Deep Inheritance Trees under a Presentation Profile"
+description: |
+  A store-less Pure vocabulary for a turtle-hatchery monitoring pipeline that
+  combines two independent inheritance trees with a project-local presentation
+  profile. A registry-item root specialises into catalogue, tray, sheet,
+  schedule and reconciliation variants (four levels deep, each level adding
+  only optional scalars), while a processor root specialises through a
+  clutch-aware intermediate into loaders, one of which extends another loader
+  rather than the intermediate. Every class and many individual properties
+  carry a tagged value from the profile, so a display-naming layer runs in
+  parallel to — and deliberately disagrees with — the technical package
+  structure.
+
+modelSources:
+  model:
+    root: scarlet-hatchery
+    files:
+      - test/scarlethatchery/domain/HatcheryPresentation.pure
+      - test/scarlethatchery/domain/HatcheryProcessor.pure
+      - test/scarlethatchery/domain/HatcheryStation.pure
+      - test/scarlethatchery/domain/RegistryItem.pure
+
+features:
+  - grammar:class-inheritance
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - domain-only
+  - profile
+  - store-less
+  - tagged-value

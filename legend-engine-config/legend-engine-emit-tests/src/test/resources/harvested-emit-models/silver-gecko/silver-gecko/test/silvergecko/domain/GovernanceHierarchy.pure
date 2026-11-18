@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::silvergecko::domain::*;
+
+Class {doc.doc = 'Property-less marker base shared by every catalogued herbarium record.'} test::silvergecko::domain::CatalogueRecord
+{
+}
+
+Class {doc.doc = 'Property-less marker base for the identifier shapes held by the registry.'} test::silvergecko::domain::RegistryKey
+{
+}
+
+Class {doc.doc = 'Shared reference base for the two sides of a plot survey citation.'} test::silvergecko::domain::SurveyReference
+{
+  referenceLabel: String[1];
+  capturedAt: DateTime[1];
+}
+
+Class {doc.doc = 'Shared reference base for accepted and superseded taxon citations.'} test::silvergecko::domain::TaxonReference
+{
+  taxonLabel: String[1];
+  rankName: String[1];
+}
+
+Class {doc.doc = 'Catalogued pressed-plant sheet record, discriminated only by its sheet kind.'} test::silvergecko::domain::HerbariumSheetRecord extends CatalogueRecord
+{
+  sheetKind: String[1];
+}
+
+Class {doc.doc = 'Catalogued seed holding record, discriminated only by its lot kind.'} test::silvergecko::domain::SeedLotRecord extends CatalogueRecord
+{
+  lotKind: String[1];
+}
+
+Class {doc.doc = 'Catalogued curation review record, discriminated only by its review kind.'} test::silvergecko::domain::GovernanceReviewRecord extends CatalogueRecord
+{
+  reviewKind: String[1];
+}
+
+Class {doc.doc = 'Empty subclass that exists only to distinguish an accession identifier from a transfer identifier.'} test::silvergecko::domain::AccessionKey extends RegistryKey
+{
+}
+
+Class {doc.doc = 'Empty subclass that exists only to distinguish a transfer identifier from an accession identifier.'} test::silvergecko::domain::TransferKey extends RegistryKey
+{
+}
+
+Class {doc.doc = 'Survey citation as written down by the field collector.'} test::silvergecko::domain::CollectorSurveyRef extends SurveyReference
+{
+  plotLabel: String[1];
+  recordedBy: String[1];
+  origin: ProvenanceOrigin[1];
+}
+
+Class {doc.doc = 'Survey citation as restated by the curation team, overlapping the collector shape.'} test::silvergecko::domain::CuratorSurveyRef extends SurveyReference
+{
+  plotLabel: String[1];
+  reviewedBy: String[1];
+  origin: ProvenanceOrigin[1];
+}
+
+Class {doc.doc = 'Taxon citation naming the currently accepted name for a specimen.'} test::silvergecko::domain::AcceptedTaxonRef extends TaxonReference
+{
+  authorCitation: String[1];
+  acceptedSince: StrictDate[1];
+}
+
+Class {doc.doc = 'Taxon citation naming a superseded name kept for lookup, overlapping the accepted shape.'} test::silvergecko::domain::SynonymTaxonRef extends TaxonReference
+{
+  authorCitation: String[1];
+  supersededOn: StrictDate[1];
+}

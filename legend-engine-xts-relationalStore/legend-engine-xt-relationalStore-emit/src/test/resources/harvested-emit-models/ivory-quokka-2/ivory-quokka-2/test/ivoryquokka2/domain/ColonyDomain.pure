@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum {meta::pure::profiles::doc.doc = 'How a colony member forages, as the sanctuary register codes it.'} test::ivoryquokka2::domain::ForagingHabit
+{
+  BROWSER,
+  GRAZER,
+  MIXED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The condition the last weighing round recorded for a colony member.'} test::ivoryquokka2::domain::HealthStatus
+{
+  THRIVING,
+  MONITORED,
+  RECOVERING
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Whether a colony member was carrying young at the last weighing round.'} test::ivoryquokka2::domain::PouchStatus
+{
+  CARRYING,
+  EMPTY
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The ground cover of a sanctuary enclosure.'} test::ivoryquokka2::domain::EnclosureTerrain
+{
+  HEATH,
+  WOODLAND,
+  DUNE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The part of the day a keeper shift covered.'} test::ivoryquokka2::domain::KeeperShiftKind
+{
+  DAWN,
+  MIDDAY,
+  DUSK
+}
+
+Class {meta::pure::profiles::doc.doc = 'One quokka of the sanctuary colony as the weighing register holds it: its identity and weight straight off the member relation, its foraging, health and pouch codes resolved to register enumerations, and the name of the enclosure it lives in reached across the enclosure relation.'} test::ivoryquokka2::domain::ColonyMember
+{
+  memberCode: String[1];
+  givenName: String[1];
+  weightGrams: Integer[1];
+  weighedAt: DateTime[1];
+  habit: test::ivoryquokka2::domain::ForagingHabit[0..1];
+  health: test::ivoryquokka2::domain::HealthStatus[0..1];
+  pouch: test::ivoryquokka2::domain::PouchStatus[0..1];
+  enclosureName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One keeper shift of the sanctuary roster: the keeper, the number of enclosure checks completed and the start stamp off the shift relation, the shift part resolved to a roster enumeration, and the terrain of the checked enclosure reached across the enclosure relation.'} test::ivoryquokka2::domain::KeeperVisit
+{
+  shiftCode: String[1];
+  keeperName: String[1];
+  checksDone: Integer[1];
+  startedAt: DateTime[1];
+  shiftKind: test::ivoryquokka2::domain::KeeperShiftKind[0..1];
+  enclosureTerrain: test::ivoryquokka2::domain::EnclosureTerrain[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One keeper at one enclosure as the roster tally view groups it: how many shifts the keeper worked there, the most and fewest enclosure checks of a single shift, and the first and latest shift start days encoded as year-month-day integers.'} test::ivoryquokka2::domain::EnclosureShiftTally
+{
+  enclosureCode: String[1];
+  keeperName: String[1];
+  shiftTotal: Integer[1];
+  mostChecks: Integer[1];
+  fewestChecks: Integer[1];
+  firstStartKey: Integer[1];
+  latestStartKey: Integer[1];
+}

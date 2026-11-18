@@ -1,0 +1,50 @@
+name: gilded-vineyard-4-network
+title: "Gilded Vineyard - processing-temporal estate store, included mapping set and shared derivations"
+description: |
+  The model half of a vineyard estate corpus: three processing-temporal classes -
+  vine block, harvest pass and trellis section - related by two multiplicity-
+  qualified associations, over a three-table relational store where every table
+  carries its own primary key and its own processing-window block. The mapping set
+  is assembled from two elements: a core mapping binding the section and block
+  aliases, and an including mapping that adds the harvest pass, both association
+  implementations and the mapping test suites, so compile-time resolution spans
+  the include boundary. It also owns the warehouse connection, an estate runtime
+  and an archive runtime, and the two shared derivations - a published block label
+  and a sugar-reading floor - that the service artefacts delegate to.
+modelSources:
+  model:
+    root: gilded-vineyard-4-network
+    files:
+      - test/gildedvineyard4/connection/VineyardConnection.pure
+      - test/gildedvineyard4/domain/VineyardDomain.pure
+      - test/gildedvineyard4/function/VineyardDerivations.pure
+      - test/gildedvineyard4/mapping/VineyardCoreMapping.pure
+      - test/gildedvineyard4/mapping/VineyardMapping.pure
+      - test/gildedvineyard4/runtime/VineyardRuntimes.pure
+      - test/gildedvineyard4/store/VineyardDatabase.pure
+features:
+  - execution:mapping-test
+  - grammar:association
+  - grammar:function
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - estate-viticulture
+  - h2
+  - mapping-include
+  - processing-temporal
+  - relational
+  - shared-derivation

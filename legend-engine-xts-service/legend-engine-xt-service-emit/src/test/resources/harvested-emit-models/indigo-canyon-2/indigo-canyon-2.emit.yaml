@@ -1,0 +1,48 @@
+name: indigo-canyon-2
+title: "Indigo Canyon Trail Registry — Parameter-As-Payload Model-Store Endpoint With Enumeration Expansion And Deep Optional Navigation"
+description: |
+  Two model-to-model transforms of opposite character over the same trail
+  registry vocabulary: one ignores its declared source entirely and fills an
+  unbounded string property by expanding every value of a trail-grade
+  enumeration, the other navigates three optional levels of a nested event
+  document to reach a single incident reference. Every query body graph-fetches
+  a property tree and serialises the identical tree, and the endpoint's runtime
+  is declared inline so its mandatory parameter is interpolated into the
+  document location its model-store connection parses.
+modelSources:
+  model:
+    root: indigo-canyon-2
+    files:
+      - test/indigocanyon2/connection/CanyonConnections.pure
+      - test/indigocanyon2/domain/CanyonDomain.pure
+      - test/indigocanyon2/mapping/GradeRosterM2M.pure
+      - test/indigocanyon2/mapping/IncidentKeyM2M.pure
+      - test/indigocanyon2/runtime/CanyonRuntimes.pure
+      - test/indigocanyon2/service/IncidentKeyFeed.pure
+features:
+  - execution:external-format-binding
+  - execution:mapping-test
+  - scaffolding:model-connection
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:m2m-enum-values-expansion
+  - mapping:m2m-transform
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores:
+  - model
+complexity: intermediate
+tags:
+  - deep-optional-navigation
+  - embedded-runtime
+  - enumeration-expansion
+  - graph-fetch-serialize
+  - inline-data-url
+  - mapping-test
+  - model-store-connection
+  - model-to-model
+  - trail-registry

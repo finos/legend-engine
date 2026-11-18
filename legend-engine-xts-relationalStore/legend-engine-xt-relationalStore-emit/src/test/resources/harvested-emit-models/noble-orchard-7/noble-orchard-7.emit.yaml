@@ -1,0 +1,40 @@
+name: noble-orchard-7
+title: "Noble Orchard 7 - Orchard Grafting Association Registry"
+description: |
+  A relational orchard registry linking tree rows to graft records through a
+  physical inner join and a real association implementation. An including
+  mapping reuses the base tree mapping, while the mapping test traverses the
+  tree association from grafts and projects the joined tree code from a
+  relational fixture.
+modelSources:
+  model:
+    root: noble-orchard-7
+    files:
+      - test/nobleorchard7/connection/OrchardConnections.pure
+      - test/nobleorchard7/data/OrchardData.pure
+      - test/nobleorchard7/domain/OrchardDomain.pure
+      - test/nobleorchard7/mapping/OrchardMapping.pure
+      - test/nobleorchard7/mapping/TreeMapping.pure
+      - test/nobleorchard7/runtime/OrchardRuntime.pure
+      - test/nobleorchard7/store/OrchardDb.pure
+features:
+  - execution:data-element
+  - execution:mapping-test
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - grafting
+  - inner-join
+  - orchard

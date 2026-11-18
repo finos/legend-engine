@@ -1,0 +1,58 @@
+name: gilded-meadow-2
+title: "Gilded Meadow 2 - a closed-window condition board with a JSON-schema intake binding, published through a data space"
+description: |
+  A public sculpture condition register whose model spans two worlds. One class is bound to a
+  warehouse table through a single relational mapping that pins its primary key and reads
+  through an aliased main table; two further classes carry no store at all and take their
+  shape from a published JSON schema set, reached through an external format binding that
+  declares the content type and the schema the intake records must satisfy. A single
+  execution service carries the only query: a closed date window over the recorded surveys,
+  written in relation grammar, whose tests pin that both boundary days are inclusive, that a
+  one-day window keeps exactly that day, and that a window closing before the first survey
+  reports nothing. The fixture rows are held as a reusable data element rather than inline,
+  the store is reached over a Snowflake datasource under OAuth, and the endpoint is offered to
+  consumers as the featured executable of a data space with a combined support contact.
+modelSources:
+  model:
+    root: gilded-meadow-2
+    files:
+      - test/gildedmeadow2/connection/SculptureConnection.pure
+      - test/gildedmeadow2/data/SculptureTestData.pure
+      - test/gildedmeadow2/dataspace/SculptureDataSpace.pure
+      - test/gildedmeadow2/domain/SculptureDomain.pure
+      - test/gildedmeadow2/external/SculptureBinding.pure
+      - test/gildedmeadow2/mapping/SculptureMapping.pure
+      - test/gildedmeadow2/runtime/SculptureRuntime.pure
+      - test/gildedmeadow2/service/SculptureWindowBoard.pure
+      - test/gildedmeadow2/store/SculptureDb.pure
+features:
+  - execution:data-space
+  - execution:external-format-binding
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - closed-window
+  - data-space
+  - duckdb
+  - external-format
+  - json-schema
+  - main-table-alias
+  - primary-key
+  - relation-grammar
+  - relational
+  - reusable-test-data
+  - sculpture-survey
+  - snowflake

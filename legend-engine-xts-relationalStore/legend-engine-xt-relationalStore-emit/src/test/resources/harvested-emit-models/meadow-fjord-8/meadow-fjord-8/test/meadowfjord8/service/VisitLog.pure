@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowfjord8::service::VisitLog
+{
+  pattern: '/meadowfjord/v1/visits/{fromDate}';
+  title: 'Alpine Meadow - Visit Log From One Day Onwards';
+  documentation: 'Lists the walking visits paid from the day the caller names onwards, pasting the crew onto the plot it walked so one column carries both codes, beside the hours the crew spent.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['meadow-survey-desk', 'walking-crew-roster'] };
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1]|test::meadowfjord8::domain::MeadowVisit.all()->filter(
+      v|$v.visitedOn >= $fromDate
+    )->project(
+      [
+        v|$v.visitCode,
+        v|$v.crewCode + '/' + $v.plotCode,
+        v|$v.hoursSpent,
+        v|$v.visitedOn
+      ],
+      [
+        'VisitCode',
+        'CrewPlot',
+        'HoursSpent',
+        'VisitedOn'
+      ]
+    )->sort(
+      [
+        asc('VisitCode')
+      ]
+    )};
+    mapping: test::meadowfjord8::mapping::MeadowMapping;
+    runtime: test::meadowfjord8::runtime::MeadowSurveyRuntime;
+  }
+  testSuites:
+  [
+    visitLogSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowSurveyConnection: Reference
+            #{
+              test::meadowfjord8::data::MeadowTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        visitsBeforeTheNamedDayFallAway:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-06-13
+          ]
+          asserts:
+          [
+            twoVisitsFromTheNamedDayOnwards:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VisitCode":"MV-03","CrewPlot":"CR-A/PL-03","HoursSpent":4.75,"VisitedOn":"2026-06-13"},{"VisitCode":"MV-04","CrewPlot":"CR-C/PL-04","HoursSpent":1.5,"VisitedOn":"2026-06-20"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

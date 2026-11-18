@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::indigoaviary::connection::AviaryH2Connection
+{
+  store: test::indigoaviary::store::WindFarmDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists ops cascade;',
+      'drop schema if exists telemetry cascade;',
+      'drop schema if exists ref cascade;',
+      'create schema ops;',
+      'create schema telemetry;',
+      'create schema ref;',
+      'create table ops.unit_registry (unit_code varchar(24) primary key, unit_name varchar(120) not null, sector_code varchar(24) not null, turbine_kind varchar(24) not null, foundation_type varchar(48), blade_span_metres double, platform_code varchar(48), water_depth_metres double, from_date date not null, thru_date date not null);',
+      'create table ops.nacelle_registry (nacelle_code varchar(24) primary key, unit_code varchar(24) not null, model_name varchar(80) not null, condition_code varchar(24) not null, from_date date not null, thru_date date not null);',
+      'create table telemetry.sensor_reading (reading_code varchar(24) primary key, unit_code varchar(24) not null, sensor_code varchar(24) not null, reading_value double not null, captured_on date not null, condition_code varchar(24), in_date date not null, out_date date not null);',
+      'create table telemetry.sensor_reading_archive (reading_code varchar(24) primary key, unit_code varchar(24) not null, sensor_code varchar(24) not null, reading_value double not null, captured_on date not null, condition_code varchar(24), in_date date not null, out_date date not null);',
+      'create table ops.inspection_visit (visit_code varchar(24) primary key, unit_code varchar(24) not null, visit_kind varchar(24) not null, visited_on date not null, visit_note varchar(200));',
+      'create table ops.work_item (work_code varchar(24) primary key, unit_code varchar(24) not null, work_state varchar(24) not null, opened_on date not null, work_note varchar(200));',
+      'create table ops.downtime_event (event_code varchar(24) primary key, unit_code varchar(24) not null, downtime_kind varchar(24) not null, started_on date not null, duration_hours double not null);',
+      'create table ref.site_sector (sector_code varchar(24) primary key, sector_name varchar(120) not null, region_name varchar(120) not null);',
+      'create table ref.weather_snapshot (snapshot_code varchar(24) primary key, sector_code varchar(24) not null, observed_on date not null, wind_speed_metres double not null);',
+      'create view ref.sector_reading_summary as select sector_code, count(sector_code) as reading_count from ref.site_sector group by sector_code;'
+    ];
+  };
+  auth: DefaultH2;
+}

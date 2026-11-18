@@ -1,0 +1,43 @@
+name: cedar-harbor-relational
+title: "Reserve Census — Business-Temporal Relational, Single & Multi-Execution Services"
+description: |
+  An intermediate relational EMIT model in a wildlife-reserve census domain. A
+  business-temporal AnimalCount class is mapped onto a milestoned animal_count
+  table via an explicit main-table alias and composite primary key. A
+  single-execution Service projects point-in-time counts by reserve, and a
+  multi-execution Service selects a region-keyed mapping/runtime binding at
+  execution time. Both services and the mapping carry test suites (v1 tabular
+  projections), exercising parse, compile, test execution and execution-plan
+  generation.
+modelSources:
+  model:
+    root: cedar-harbor-relational
+    files:
+      - test/cedarharbor/connection/ReserveConnection.pure
+      - test/cedarharbor/domain/AnimalCount.pure
+      - test/cedarharbor/mapping/ReserveMapping.pure
+      - test/cedarharbor/runtime/ReserveRuntime.pure
+      - test/cedarharbor/service/CountsByReserve.pure
+      - test/cedarharbor/service/RegionalCounts.pure
+      - test/cedarharbor/store/ReserveDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - h2
+  - multi-execution
+  - plan-generation
+  - relational
+  - reserve-census
+  - service-test

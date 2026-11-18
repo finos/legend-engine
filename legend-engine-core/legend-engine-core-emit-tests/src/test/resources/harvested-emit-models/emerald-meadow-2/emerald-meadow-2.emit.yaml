@@ -1,0 +1,52 @@
+name: emerald-meadow-2
+title: "Emerald Meadow 2 - Tram Depot Item Register Whose Invariants Fold To-Many Inspection Findings"
+description: |
+  A store-less tram-depot item register in which the whole exercised surface is the class layer:
+  a shared item-register supertype, two leaf item kinds extending it, the inspection and finding
+  shapes hanging off it, and the invariants and derived properties that read them. Nothing is bound
+  to a store, so parse, compile and protocol round-tripping are what the group covers.
+
+  The shared supertype carries the register identity, the home depot, the operating state and the
+  inspections recorded against the depot item, and four invariants are declared on it. Two are flat
+  property assertions over the code and the withdrawal note; the other two fold the to-many
+  inspection collection down to a scalar, one walking inspections into their findings, keeping only
+  the unremedied severe ones and requiring the depot item to be off service if any survive, the other
+  requiring no inspection to carry a negative meter reading. The same fold shape appears in the
+  derived properties, which count open findings, total their outstanding repair hours, reduce the
+  worst open severity through a two-armed conditional and collect the distinct outcomes of the
+  inspections in date order, so a collection operation over a to-many traversal is what makes the
+  expressions deep rather than a long flat pipeline.
+
+  Two leaf types extend the register entry, a tram carrying the traction mode and the accumulated
+  running distance and a track section carrying the alignment and the permitted speed, so inherited
+  properties are bound above the concrete type. Three further shapes declare their own invariants:
+  an inspection entry that must raise a finding above minor severity when it records a defect and
+  none when it passes, a finding whose severe grade demands a real description and a positive hour
+  estimate, and a planned task whose booked hours must cover the estimate of the open findings it
+  covers. Four closed enumerations supply the traction mode, the operating state, the inspection
+  outcome and the severity band that the invariants and conditionals branch on.
+
+modelSources:
+  model:
+    root: emerald-meadow-2
+    files:
+      - test/emeraldmeadow2/domain/DepotDomain.pure
+      - test/emeraldmeadow2/domain/DepotReference.pure
+
+features:
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:derived-property-collection-op
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - collection-fold-constraint
+  - constraint-message
+  - cross-property-constraint
+  - derived-property
+  - enumeration
+  - store-less
+  - to-many-traversal
+  - tram-depot-register

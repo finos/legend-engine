@@ -1,0 +1,44 @@
+name: gilded-thistle-4
+title: "Plant Propagation Nursery Reference Model — Inheritance, Enumerations and Processing Milestoning"
+description: |
+  A store-less reference model over a plant propagation nursery. An abstract
+  propagation root carries the registry code, the propagation technique and an
+  optional back-reference to the glasshouse bay the work happens in, and feeds a
+  two-level generalisation lattice: cutting and seedling propagations extend the
+  root directly, and a mist-bench cutting propagation extends the cutting
+  subtype so the root property set resolves through two levels of inheritance.
+  Three enumerations supply the closed value domains referenced as property
+  types by the class layer — an eight-literal propagation technique, a
+  five-literal growing-medium blend and a three-literal vigour grade. Two
+  classes are stamped processing-temporal because they record when the nursery
+  came to know something rather than when it was true, and three locally
+  declared profiles plus the platform documentation profile annotate classes,
+  properties, enumerations and individual enumeration values.
+modelSources:
+  model:
+    root: gilded-thistle-4
+    files:
+      - test/gildedthistle4/domain/NurseryAnnotations.pure
+      - test/gildedthistle4/domain/NurseryDomain.pure
+features:
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - abstract-class
+  - class-inheritance
+  - enumeration
+  - glasshouse
+  - horticulture
+  - milestoning
+  - processing-temporal
+  - profile
+  - propagation
+  - reference-data
+  - stereotype
+  - store-less
+  - tagged-values

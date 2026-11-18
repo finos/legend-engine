@@ -1,0 +1,140 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletarboretum4::service::ArboretumRecordRegister
+{
+  pattern: '/arboretum/v1/records';
+  title: 'Scarlet Arboretum - Published Record Register';
+  owners:
+  [
+    'arboretum-register-desk'
+  ];
+  documentation: 'Graph-fetches the published specimen records assembled from both slices of the union, narrowed by a requested set of care tags and by a review window measured back from the supplied date, so the caller sees exactly which slices survive a collection membership test and a date arithmetic guard with no store behind either.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {careTagFilters: String[*], asOfDate: StrictDate[1]|test::scarletarboretum4::domain::ArboretumRecord.all()->filter(r | (($careTagFilters->isEmpty()) || ($r.careTags->exists(t | $t->in($careTagFilters)))) && test::scarletarboretum4::function::withinReviewWindow($r.measuredOn, $asOfDate))->graphFetch(
+      #{
+        test::scarletarboretum4::domain::ArboretumRecord
+        {
+          recordRef,
+          specimenLabel,
+          provenanceLabel,
+          vigour,
+          canopyLabel,
+          careDigest,
+          measuredOn
+        }
+      }#
+    )->serialize(
+      #{
+        test::scarletarboretum4::domain::ArboretumRecord
+        {
+          recordRef,
+          specimenLabel,
+          provenanceLabel,
+          vigour,
+          canopyLabel,
+          careDigest,
+          measuredOn
+        }
+      }#
+    )};
+    mapping: test::scarletarboretum4::mapping::ArboretumDigestM2M;
+    runtime: test::scarletarboretum4::runtime::ArboretumSubmissionRuntime;
+  }
+  testSuites:
+  [
+    recordRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          specimenSubmissionConnection: Reference
+            #{
+              test::scarletarboretum4::data::SpecimenSubmissionFixtures
+            }#
+        ]
+      ]
+      tests:
+      [
+        requestedCareTagNarrowsBothSlices:
+        {
+          parameters:
+          [
+            careTagFilters = ['CARE/MULCHED'],
+            asOfDate = %2026-06-01
+          ]
+          asserts:
+          [
+            taggedRecordsWithinWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"recordRef":"FLD-SV-31","specimenLabel":"SPECIMEN QC-31","provenanceLabel":"BED/BD-7/WEST WALK","vigour":"ROBUST","canopyLabel":"FULL CANOPY","careDigest":"MULCHED","measuredOn":"2026-05-02"}}';
+                  }#;
+              }#
+          ]
+        },
+        noRequestedTagLeavesOnlyTheWindowGuard:
+        {
+          parameters:
+          [
+            careTagFilters = [],
+            asOfDate = %2026-06-01
+          ]
+          asserts:
+          [
+            everyRecordWithinWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"recordRef":"FLD-SV-31","specimenLabel":"SPECIMEN QC-31","provenanceLabel":"BED/BD-7/WEST WALK","vigour":"ROBUST","canopyLabel":"FULL CANOPY","careDigest":"MULCHED","measuredOn":"2026-05-02"},{"recordRef":"AUD-SV-33","specimenLabel":"SPECIMEN QC-33","provenanceLabel":"REVIEW/BD-9","vigour":"FAIR","canopyLabel":"PARTIAL CANOPY","careDigest":"REVIEWED | RE-TAGGED","measuredOn":"2026-05-04"}]}';
+                  }#;
+              }#
+          ]
+        },
+        unknownCareTagReturnsNothing:
+        {
+          parameters:
+          [
+            careTagFilters = ['CARE/UNRECOGNISED'],
+            asOfDate = %2026-06-01
+          ]
+          asserts:
+          [
+            emptyRegister:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

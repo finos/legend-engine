@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::opallantern3::service::LampVisitHistory
+{
+  pattern: '/opallantern/v1/lamp-visit-history/{maxHours}';
+  title: 'Harbour Lights Office - Lamp Visit History';
+  documentation: 'Scans every stored version of the servicing visits, keeps the versions whose outcome is a member of the recognised literal set and whose recorded duration is absent or within the supplied ceiling, and projects the stored attributes together with both processing window columns and the serviced unit reached at the far-future sentinel instant.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {maxHours: Float[1]|test::opallantern3::domain::ServiceVisit.allVersions()->filter(
+      v|($v.outcomeCode->in(['RELAMPED', 'CLEANED', 'ADJUSTED'])) && (($v.durationHours->isEmpty()) || ($v.durationHours->toOne() <= $maxHours))
+    )->project(
+      [
+        v|$v.visitCode,
+        v|$v.technicianName,
+        v|$v.outcomeCode,
+        v|$v.durationHours,
+        v|$v.visitedOn,
+        v|$v.windowIn,
+        v|$v.windowOut,
+        v|$v.servicedUnit(%9999-12-30).unitCode,
+        v|$v.servicedUnit(%9999-12-30).stationName->toUpper()->trim()
+      ],
+      [
+        'Visit Code',
+        'Technician Name',
+        'Outcome Code',
+        'Duration Hours',
+        'Visited On',
+        'Window In',
+        'Window Out',
+        'Unit Code',
+        'Station Tag'
+      ]
+    )->sort(
+      [
+        asc('Visit Code'),
+        asc('Window In')
+      ]
+    )};
+    mapping: test::opallantern3::mapping::LanternServicingMapping;
+    runtime: test::opallantern3::runtime::LanternServicingRuntime;
+  }
+  testSuites:
+  [
+    lampVisitHistorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lanternServicingConnection:
+            Relational
+            #{
+              lantern.lamp_unit:
+                'unit_code,station_name,lens_grade,keeper_code,focal_height_m,rated_candela,commissioned_on,surveyed_at,in_z,out_z\n'+
+                'LU-01, Harbour Approach Light ,ALPHA,K-01,12.5,4500.00,2024-05-01,2026-02-10 08:15:00,2026-02-01,9999-12-31\n'+
+                'LU-02,Outer Mole Light,DELTA,K-02,8.0,,,,2026-02-01,9999-12-31\n';
+              lantern.service_visit:
+                'visit_code,unit_code,technician_name,outcome_code,duration_hours,visited_on,in_z,out_z\n'+
+                'SV-01,LU-01,Perry Cobble,CLEANED,1.5,2026-01-04,2026-01-04,2026-02-01\n'+
+                'SV-01,LU-01,Perry Cobble,RELAMPED,2.25,2026-02-02,2026-02-01,9999-12-31\n'+
+                'SV-02,LU-02,Wren Halyard,ADJUSTED,,2026-02-06,2026-02-06,9999-12-31\n'+
+                'SV-03,LU-02,Wren Halyard,DEFERRED,0.5,2026-02-07,2026-02-07,9999-12-31\n'+
+                'SV-04,LU-01,Perry Cobble,CLEANED,9.0,2026-02-08,2026-02-08,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyRecognisedVisitVersion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            maxHours = 2.5
+          ]
+          asserts:
+          [
+            closedAndOpenVersionsOfTheSameVisit:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit Code":"SV-01","Technician Name":"Perry Cobble","Outcome Code":"CLEANED","Duration Hours":1.5,"Visited On":"2026-01-04","Window In":"2026-01-04","Window Out":"2026-02-01","Unit Code":"LU-01","Station Tag":"HARBOUR APPROACH LIGHT"},{"Visit Code":"SV-01","Technician Name":"Perry Cobble","Outcome Code":"RELAMPED","Duration Hours":2.25,"Visited On":"2026-02-02","Window In":"2026-02-01","Window Out":"9999-12-31","Unit Code":"LU-01","Station Tag":"HARBOUR APPROACH LIGHT"},{"Visit Code":"SV-02","Technician Name":"Wren Halyard","Outcome Code":"ADJUSTED","Duration Hours":null,"Visited On":"2026-02-06","Window In":"2026-02-06","Window Out":"9999-12-31","Unit Code":"LU-02","Station Tag":"OUTER MOLE LIGHT"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

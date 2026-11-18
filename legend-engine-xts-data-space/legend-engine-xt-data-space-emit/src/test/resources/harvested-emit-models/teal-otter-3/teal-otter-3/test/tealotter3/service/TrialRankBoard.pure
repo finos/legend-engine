@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealotter3::service::TrialRankBoard
+{
+  pattern: '/tealotter/v1/trial-rank-board/{minPct}';
+  title: 'Seed Vault - Germination Trial Rank Board';
+  owners:
+  [
+    'seed-conservation-office'
+  ];
+  documentation: 'Ranks the germination trials inside the taxon they belong to with a partitioned window over the germinated percentage, so a taxon whose two trials tie shares the leading rank while a taxon with a single trial reports one row, and reads the taxon name through the chained trial-to-accession-to-taxon traversal.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minPct: Integer[1]|test::tealotter3::domain::GerminationTrial.all()->filter(
+      t|($t.germinatedPct >= $minPct) && ($t.germinatedPct <= 100)
+    )->project(
+      [
+        t|$t.taxonNameAtTrial,
+        t|$t.trialledAccession.accessionCode,
+        t|$t.trialId,
+        t|$t.germinatedPct
+      ],
+      [
+        'Taxon Name',
+        'Accession',
+        'Trial',
+        'Germinated Pct'
+      ]
+    )->distinct()->olapGroupBy(
+      [
+        'Taxon Name'
+      ],
+      desc('Germinated Pct'),
+      w|$w->rank(),
+      'Taxon Rank'
+    )->sort(
+      [
+        asc('Taxon Name'),
+        asc('Taxon Rank'),
+        asc('Trial')
+      ]
+    )};
+    mapping: test::tealotter3::mapping::SeedArchiveMapping;
+    runtime: test::tealotter3::runtime::SeedVaultRuntime;
+  }
+  testSuites:
+  [
+    trialRankBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedVaultWarehouse: Reference
+            #{
+              test::tealotter3::data::SeedArchiveData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyTaxonIsRankedIndependently:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minPct = 60
+          ]
+          asserts:
+          [
+            tiesShareTheLeadingRank:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Taxon Name":"Bristle Sedge","Accession":"AC-01","Trial":1,"Germinated Pct":84,"Taxon Rank":1},{"Taxon Name":"Bristle Sedge","Accession":"AC-01","Trial":2,"Germinated Pct":79,"Taxon Rank":2},{"Taxon Name":"Marsh Vetch","Accession":"AC-02","Trial":3,"Germinated Pct":61,"Taxon Rank":1},{"Taxon Name":"Marsh Vetch","Accession":"AC-02","Trial":4,"Germinated Pct":61,"Taxon Rank":1}]';
+                  }#;
+              }#
+          ]
+        },
+        theThresholdExcludesEveryTrial:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minPct = 99
+          ]
+          asserts:
+          [
+            noTrialClearsTheThreshold:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

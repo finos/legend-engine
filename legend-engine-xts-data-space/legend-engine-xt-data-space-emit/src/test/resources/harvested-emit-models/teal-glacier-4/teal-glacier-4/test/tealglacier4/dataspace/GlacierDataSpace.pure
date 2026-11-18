@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace <<test::tealglacier4::profile::GlacierCatalogProfile.publicRecord, test::tealglacier4::profile::GlacierCatalogProfile.curated>> {test::tealglacier4::profile::GlacierCatalogProfile.taxonomyArea = 'cryosphere-monitoring', test::tealglacier4::profile::GlacierCatalogProfile.steward = 'glacier-field-desk'} test::tealglacier4::dataspace::GlacierMonitoringDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'field';
+      description: 'Live field record of glaciers, ablation stakes and crevasse surveys.';
+      mapping: test::tealglacier4::mapping::GlacierFieldMapping;
+      defaultRuntime: test::tealglacier4::runtime::GlacierFieldRuntime;
+    },
+    {
+      name: 'archive';
+      description: 'Long-term archive of glaciers and stake readings with the same shapes as the field record.';
+      mapping: test::tealglacier4::mapping::GlacierArchiveMapping;
+      defaultRuntime: test::tealglacier4::runtime::GlacierArchiveRuntime;
+    }
+  ];
+  defaultExecutionContext: 'field';
+  title: 'Teal Glacier Monitoring';
+  description: 'Entry point over a glacier monitoring network: the live field record and its archive, each bound to its own warehouse.';
+  elements:
+  [
+    test::tealglacier4::domain::field::Glacier,
+    test::tealglacier4::domain::field::StakeReading,
+    test::tealglacier4::domain::field::CrevasseSurvey,
+    test::tealglacier4::domain::archive::ArchivedGlacier,
+    test::tealglacier4::domain::archive::ArchivedStakeReading
+  ];
+}

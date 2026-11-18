@@ -1,0 +1,164 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernthistle::mapping::CorridorMapping
+(
+  *test::westernthistle::domain::CycleCorridor[corridor]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthistle::store::CorridorDB]network.cycle_corridor.corridor_code
+    )
+    ~mainTable [test::westernthistle::store::CorridorDB]network.cycle_corridor
+    corridorCode: [test::westernthistle::store::CorridorDB]network.cycle_corridor.corridor_code,
+    corridorName: [test::westernthistle::store::CorridorDB]network.cycle_corridor.corridor_name,
+    surfaceGrade: [test::westernthistle::store::CorridorDB]network.cycle_corridor.surface_grade,
+    lengthKm: [test::westernthistle::store::CorridorDB]network.cycle_corridor.length_km,
+    lit: [test::westernthistle::store::CorridorDB]network.cycle_corridor.lit_flag,
+    openedOn: [test::westernthistle::store::CorridorDB]network.cycle_corridor.opened_on,
+    lastAuditedAt: [test::westernthistle::store::CorridorDB]network.cycle_corridor.last_audited_at
+  }
+
+  *test::westernthistle::domain::StopShelter[shelter]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthistle::store::CorridorDB]network.stop_shelter.shelter_code
+    )
+    ~mainTable [test::westernthistle::store::CorridorDB]network.stop_shelter
+    shelterCode: [test::westernthistle::store::CorridorDB]network.stop_shelter.shelter_code,
+    corridorCode: [test::westernthistle::store::CorridorDB]network.stop_shelter.corridor_code,
+    seatCount: [test::westernthistle::store::CorridorDB]network.stop_shelter.seat_count,
+    sheltered: [test::westernthistle::store::CorridorDB]network.stop_shelter.sheltered_flag,
+    installedOn: [test::westernthistle::store::CorridorDB]network.stop_shelter.installed_on
+  }
+
+  *test::westernthistle::domain::CountStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthistle::store::CorridorDB]network.count_station.station_code
+    )
+    ~mainTable [test::westernthistle::store::CorridorDB]network.count_station
+    stationCode: [test::westernthistle::store::CorridorDB]network.count_station.station_code,
+    corridorCode: [test::westernthistle::store::CorridorDB]network.count_station.corridor_code,
+    dailyAverage: [test::westernthistle::store::CorridorDB]network.count_station.daily_average,
+    lastReadingAt: [test::westernthistle::store::CorridorDB]network.count_station.last_reading_at
+  }
+
+  testSuites:
+  [
+    corridorSuite:
+    {
+      function: |test::westernthistle::domain::CycleCorridor.all()->project(
+        [
+          c|$c.corridorCode,
+          c|$c.corridorName,
+          c|$c.surfaceGrade,
+          c|$c.lengthKm,
+          c|$c.lit,
+          c|$c.openedOn
+        ],
+        [
+          'CorridorCode',
+          'CorridorName',
+          'SurfaceGrade',
+          'LengthKm',
+          'Lit',
+          'OpenedOn'
+        ]
+      )->sort([asc('CorridorCode')]);
+      tests:
+      [
+        corridorColumnTypes:
+        {
+          doc: 'Projects every corridor column through the aliased main table so text, floating point, boolean and date primitives are all read back.';
+          data:
+          [
+            test::westernthistle::store::CorridorDB:
+              Relational
+              #{
+                network.cycle_corridor:
+                  'corridor_code,corridor_name,surface_grade,length_km,lit_flag,opened_on,last_audited_at\n'+
+                  'CC-01,Thistle Greenway,ASPHALT,4.2,true,2021-03-15,2024-05-02 08:30:00\n'+
+                  'CC-02,Western Towpath,GRAVEL,7.5,false,2019-07-01,2024-04-11 06:15:00\n';
+              }#
+          ];
+          asserts:
+          [
+            projectedCorridors:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CorridorCode":"CC-01","CorridorName":"Thistle Greenway","SurfaceGrade":"ASPHALT","LengthKm":4.2,"Lit":true,"OpenedOn":"2021-03-15"},{"CorridorCode":"CC-02","CorridorName":"Western Towpath","SurfaceGrade":"GRAVEL","LengthKm":7.5,"Lit":false,"OpenedOn":"2019-07-01"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    shelterSuite:
+    {
+      function: |test::westernthistle::domain::StopShelter.all()->project(
+        [
+          s|$s.shelterCode,
+          s|$s.corridorCode,
+          s|$s.seatCount,
+          s|$s.sheltered
+        ],
+        [
+          'ShelterCode',
+          'CorridorCode',
+          'SeatCount',
+          'Sheltered'
+        ]
+      )->sort([asc('ShelterCode')]);
+      tests:
+      [
+        shelterInventory:
+        {
+          doc: 'Projects the shelter inventory from its own primary keyed main table alias in the same multi table store.';
+          data:
+          [
+            test::westernthistle::store::CorridorDB:
+              Relational
+              #{
+                network.stop_shelter:
+                  'shelter_code,corridor_code,seat_count,sheltered_flag,installed_on\n'+
+                  'SH-01,CC-01,4,true,2022-06-01\n'+
+                  'SH-02,CC-02,2,false,2020-09-12\n';
+              }#
+          ];
+          asserts:
+          [
+            projectedShelters:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ShelterCode":"SH-01","CorridorCode":"CC-01","SeatCount":4,"Sheltered":true},{"ShelterCode":"SH-02","CorridorCode":"CC-02","SeatCount":2,"Sheltered":false}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::lunarcanyon2::domain::*;
+import test::lunarcanyon2::profile::*;
+
+Class <<CavernStewardship.protectedZone>> {CavernStewardship.steward = 'cavern-registrar'} test::lunarcanyon2::domain::SurveyEntity
+{
+  <<SurveyQuality.verified>> {SurveyQuality.documentation = 'Registry code issued once per surveyed entity.'} entityCode: String[1];
+  recordedBy: String[1];
+  surveyMethod: SurveyMethod[1];
+  notation: String[0..1];
+  notationLabel() {if($this.notation->isEmpty(), | 'UNDOCUMENTED', | $this.notation->toOne()->toUpper()->trim())}: String[1];
+  methodLabel() {if($this.surveyMethod == SurveyMethod.SKETCH_ONLY, | 'INDICATIVE', | 'INSTRUMENTED')}: String[1];
+}
+
+Class <<CavernStewardship.protectedZone>> {CavernStewardship.reviewCadence = 'seasonal'} test::lunarcanyon2::domain::CaveFeature extends SurveyEntity
+{
+  featureName: String[1];
+  moisture: MoistureRegime[1];
+  mappedYear: Integer[1];
+  moistureLabel() {if($this.moisture == MoistureRegime.FLOODED, | 'CLOSED', | if($this.moisture == MoistureRegime.DRY, | 'OPEN', | 'CAUTION'))}: String[1];
+}
+
+Class <<CavernStewardship.provisionalZone>> {CavernStewardship.accessNote = 'helmet and light required'} test::lunarcanyon2::domain::PassageSegment extends CaveFeature
+{
+  grade: PassageGrade[1];
+  lengthM: Integer[1];
+  ceilingHeightM: Float[1];
+  gradeLabel() {if($this.grade == PassageGrade.UNGRADED, | 'PENDING SURVEY', | 'GRADED')}: String[1];
+  traverseBand() {if($this.lengthM >= 120, | 'LONG', | if($this.lengthM >= 40, | 'MEDIUM', | 'SHORT'))}: String[1];
+}
+
+Class <<CavernStewardship.openAccess>> test::lunarcanyon2::domain::ChamberSpace extends CaveFeature
+{
+  floorAreaM2: Float[1];
+  formationCount: Integer[1];
+  formationLabel() {if($this.formationCount == 0, | 'BARE CHAMBER', | if($this.formationCount >= 25, | 'FORMATION RICH', | 'FORMATION SPARSE'))}: String[1];
+}
+
+Class <<SurveyQuality.verified>> {SurveyQuality.method = 'laser-scan'} test::lunarcanyon2::domain::SurveyStation extends SurveyEntity
+{
+  stationTag: String[1];
+  depthBelowEntranceM: Float[1];
+  bearingDeg: Integer[1];
+}
+
+Class <<CavernStewardship.openAccess>> {CavernStewardship.accessNote = 'gate key held by the warden hut'} test::lunarcanyon2::domain::EntranceGate
+{
+  gateTag: String[1];
+  sheltered: Boolean[1];
+  aspect: String[1];
+}
+
+Class test::lunarcanyon2::domain::MonitoringVisit
+{
+  visitTag: String[1];
+  visitDate: StrictDate[1];
+  observerTag: String[1];
+  teamSize: Integer[1];
+}
+
+Class <<SurveyQuality.unverified>> {SurveyQuality.confidence = 'low'} test::lunarcanyon2::domain::LichenPatch
+{
+  patchTag: String[1];
+  coverPct: Integer[1];
+  substrateNote: String[0..1];
+}

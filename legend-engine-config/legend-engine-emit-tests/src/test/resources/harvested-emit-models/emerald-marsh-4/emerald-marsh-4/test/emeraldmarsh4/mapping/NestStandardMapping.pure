@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldmarsh4::mapping::NestStandardMapping
+(
+  test::emeraldmarsh4::domain::NestKind: EnumerationMapping NestKindMap
+  {
+    GROUND: ['GRD'],
+    REED: ['REED'],
+    FLOATING: ['FLT'],
+    CAVITY: ['CAV'],
+    UNKNOWN: ['UNK']
+  }
+
+  test::emeraldmarsh4::domain::EggStage: EnumerationMapping EggStageMap
+  {
+    FRESH: ['f'],
+    INCUBATING: ['i'],
+    PIPPING: ['p'],
+    HATCHED: ['h'],
+    NONE: ['none']
+  }
+
+  *test::emeraldmarsh4::domain::NestRecord[nestRecord]: Pure
+  {
+    ~src test::emeraldmarsh4::source::NestReport
+    reportRef: $src.reportRef->toOne(),
+    kind: EnumerationMapping NestKindMap: [if($src.header.kindCode->isEmpty(),
+                                              | 'UNK',
+                                              | if($src.header.kindCode->toOne()->trim()->toUpper()->in(['GRD', 'REED', 'FLT', 'CAV']),
+                                                   | $src.header.kindCode->toOne()->trim()->toUpper(),
+                                                   | 'UNK'))]->toOne(),
+    zoneLabel: if($src.site.zone.label->isNotEmpty(),
+                  | $src.site.zone.label->toOne()->trim()->toUpper(),
+                  | if($src.site.marshCode->isNotEmpty(),
+                       | 'MARSH ' + $src.site.marshCode->toOne()->toUpper(),
+                       | 'UNPLACED')),
+    depthBand: test::emeraldmarsh4::function::depthBand($src.site.zone.depthCm->first()),
+    firstEggStage: EnumerationMapping EggStageMap: [if($src.clutch.eggs->isEmpty(),
+                                                       | 'none',
+                                                       | if($src.clutch.eggs->at(0).stageCode->isEmpty(),
+                                                            | 'none',
+                                                            | $src.clutch.eggs->at(0).stageCode->toOne()->toLower()))]->toOne(),
+    eggCount: $src.clutch.eggs->size(),
+    leadAlias: if($src.leadObserver.alias->isNotEmpty(),
+                  | test::emeraldmarsh4::function::observerAlias($src.leadObserver)->toOne(),
+                  | if($src.backupObserver.alias->isNotEmpty(),
+                       | 'BACKUP ' + test::emeraldmarsh4::function::observerAlias($src.backupObserver)->toOne(),
+                       | 'UNATTENDED')),
+    observers[nestObservers]: $src
+  }
+
+  *test::emeraldmarsh4::domain::ObserverRef[nestObservers]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(leadObserverRef, backupObserverRef)
+  }
+
+  test::emeraldmarsh4::domain::ObserverRef[leadObserverRef]: Pure
+  {
+    ~src test::emeraldmarsh4::source::NestReport
+    ~filter $src.leadObserver.alias->isNotEmpty()
+    role: 'LEAD',
+    alias: test::emeraldmarsh4::function::observerAlias($src.leadObserver)->toOne()
+  }
+
+  test::emeraldmarsh4::domain::ObserverRef[backupObserverRef]: Pure
+  {
+    ~src test::emeraldmarsh4::source::NestReport
+    ~filter $src.backupObserver.alias->isNotEmpty()
+    role: 'BACKUP',
+    alias: test::emeraldmarsh4::function::observerAlias($src.backupObserver)->toOne()
+  }
+
+  testSuites:
+  [
+    depthLadderSuite:
+    {
+      function: |test::emeraldmarsh4::domain::NestRecord.all()->graphFetch(
+        #{
+          test::emeraldmarsh4::domain::NestRecord{
+            reportRef,
+            kind,
+            zoneLabel,
+            depthBand,
+            firstEggStage,
+            eggCount,
+            leadAlias,
+            observers{
+              role,
+              alias
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::emeraldmarsh4::domain::NestRecord{
+            reportRef,
+            kind,
+            zoneLabel,
+            depthBand,
+            firstEggStage,
+            eggCount,
+            leadAlias,
+            observers{
+              role,
+              alias
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        everyDepthArmAndFallbacks:
+        {
+          doc: 'Hits all eight depth arms, the zero-depth and absent-site fallbacks that leave the band null, an unlisted kind code folded onto the unknown sentinel before the enumeration lookup, and every observer combination of the union.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::emeraldmarsh4::source::NestReport:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"reportRef":"R-01","header":{"kindCode":"reed","seasonWeek":14},"site":{"marshCode":"m1","zone":{"label":" north reeds ","depthCm":120}},"clutch":{"eggs":[{"stageCode":"f","massGrams":21.5},{"stageCode":"i","massGrams":20.0}]},"leadObserver":{"alias":"ana"},"backupObserver":{"alias":"bo"}},{"reportRef":"R-02","header":{"kindCode":"GRD"},"site":{"marshCode":"m2","zone":{"label":"east shore","depthCm":85}},"clutch":{"eggs":[{"stageCode":"i"},{"stageCode":"i"},{"stageCode":"p"},{"stageCode":"h"}]},"leadObserver":{"alias":"cy"}},{"reportRef":"R-03","header":{"kindCode":"flt"},"site":{"marshCode":"m7","zone":{"depthCm":65}},"clutch":{"eggs":[{"stageCode":"p"}]},"backupObserver":{"alias":"dee"}},{"reportRef":"R-04","header":{"kindCode":"cav"},"site":{"zone":{"label":"south pool","depthCm":50}},"clutch":{"eggs":[{"stageCode":"h"},{"stageCode":"h"}]},"leadObserver":{"alias":"eli"},"backupObserver":{"alias":"fay"}},{"reportRef":"R-05","header":{"kindCode":"reed"},"site":{"zone":{"label":"west fringe","depthCm":35}},"clutch":{"eggs":[]}},{"reportRef":"R-06","header":{"kindCode":"grd"},"site":{"zone":{"label":"mud spit","depthCm":20}},"clutch":{"eggs":[{"massGrams":18.0}]},"leadObserver":{"alias":"gus"}},{"reportRef":"R-07","header":{"kindCode":"xyz"},"site":{"zone":{"label":"inlet","depthCm":10}},"clutch":{"eggs":[{"stageCode":"f"},{"stageCode":"f"},{"stageCode":"f"},{"stageCode":"f"},{"stageCode":"f"}]},"leadObserver":{"alias":"hal"},"backupObserver":{"alias":"ivy"}},{"reportRef":"R-08","site":{"zone":{"label":"margin","depthCm":2}},"clutch":{"eggs":[{"stageCode":"i"}]}},{"reportRef":"R-09","header":{"kindCode":"flt"},"clutch":{"eggs":[{"stageCode":"h"}]},"leadObserver":{"alias":"jo"}},{"reportRef":"R-10","header":{"kindCode":"cav"},"site":{"zone":{"label":"dry hummock","depthCm":0}},"backupObserver":{"alias":"kit"}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            tenStandardisedNests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"reportRef":"R-01","kind":"REED","zoneLabel":"NORTH REEDS","depthBand":"DEEP_POOL","firstEggStage":"FRESH","eggCount":2,"leadAlias":"ANA","observers":[{"role":"LEAD","alias":"ANA"},{"role":"BACKUP","alias":"BO"}]},{"reportRef":"R-02","kind":"GROUND","zoneLabel":"EAST SHORE","depthBand":"OPEN_WATER","firstEggStage":"INCUBATING","eggCount":4,"leadAlias":"CY","observers":[{"role":"LEAD","alias":"CY"}]},{"reportRef":"R-03","kind":"FLOATING","zoneLabel":"MARSH M7","depthBand":"REED_BED","firstEggStage":"PIPPING","eggCount":1,"leadAlias":"BACKUP DEE","observers":[{"role":"BACKUP","alias":"DEE"}]},{"reportRef":"R-04","kind":"CAVITY","zoneLabel":"SOUTH POOL","depthBand":"SEDGE","firstEggStage":"HATCHED","eggCount":2,"leadAlias":"ELI","observers":[{"role":"LEAD","alias":"ELI"},{"role":"BACKUP","alias":"FAY"}]},{"reportRef":"R-05","kind":"REED","zoneLabel":"WEST FRINGE","depthBand":"WET_MEADOW","firstEggStage":"NONE","eggCount":0,"leadAlias":"UNATTENDED","observers":[]},{"reportRef":"R-06","kind":"GROUND","zoneLabel":"MUD SPIT","depthBand":"MUD_FLAT","firstEggStage":"NONE","eggCount":1,"leadAlias":"GUS","observers":[{"role":"LEAD","alias":"GUS"}]},{"reportRef":"R-07","kind":"UNKNOWN","zoneLabel":"INLET","depthBand":"SHALLOW","firstEggStage":"FRESH","eggCount":5,"leadAlias":"HAL","observers":[{"role":"LEAD","alias":"HAL"},{"role":"BACKUP","alias":"IVY"}]},{"reportRef":"R-08","kind":"UNKNOWN","zoneLabel":"MARGIN","depthBand":"DAMP","firstEggStage":"INCUBATING","eggCount":1,"leadAlias":"UNATTENDED","observers":[]},{"reportRef":"R-09","kind":"FLOATING","zoneLabel":"UNPLACED","depthBand":null,"firstEggStage":"HATCHED","eggCount":1,"leadAlias":"JO","observers":[{"role":"LEAD","alias":"JO"}]},{"reportRef":"R-10","kind":"CAVITY","zoneLabel":"DRY HUMMOCK","depthBand":null,"firstEggStage":"NONE","eggCount":0,"leadAlias":"BACKUP KIT","observers":[{"role":"BACKUP","alias":"KIT"}]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

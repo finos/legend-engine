@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::verdantotter2::service::KeeperShiftsAsOf
+{
+  pattern: '/waterway/v1/keeper-shifts/{processingDate}';
+  title: 'Waterway - Keeper Shifts As Of';
+  owners:
+  [
+    'waterway-navigation',
+    'lock-keeper-roster'
+  ];
+  documentation: 'Returns the lock-keeper duty shifts whose processing window is in force on the requested processing date, projecting the keeper, the shift label, the reach code, the reach name reached across the declared join and narrowed to a single value, and the hours on duty.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|demo::verdantotter2::domain::KeeperShift.all($processingDate)->project([k|$k.keeperName, k|$k.shiftLabel, k|$k.reachCode, k|$k.reachName->toOne(), k|$k.hoursOnDuty], ['Keeper', 'Shift', 'Reach', 'ReachName', 'Hours'])};
+    mapping: demo::verdantotter2::mapping::WaterwayMapping;
+    runtime: demo::verdantotter2::runtime::WaterwayRuntime;
+  }
+  testSuites:
+  [
+    keeperShiftsAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          waterwayConnection:
+            Relational
+            #{
+              navigation.reach:
+                'reach_code,reach_name,region_name,summit_metres\n'+
+                'RE-02,Millpond Reach,Western Levels,18.25\n';
+
+              waterway.keeper_shift:
+                'shift_id,keeper_name,reach_code,shift_label,hours_on_duty,in_z,out_z\n'+
+                '1,Odette Marsh,RE-02,early-turn,7.5,2026-04-01,9999-12-31\n'+
+                '2,Rowan Pike,RE-02,late-turn,8.0,2025-02-01,2025-11-30\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        inForceShiftOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-05-01
+          ]
+          asserts:
+          [
+            oneShiftInForce:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Keeper":"Odette Marsh","Shift":"early-turn","Reach":"RE-02","ReachName":"Millpond Reach","Hours":7.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

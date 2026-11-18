@@ -1,0 +1,53 @@
+name: ivory-estuary-2
+title: "Ivory Estuary 2 — point-in-time roost census extract with a relative-day count window"
+description: |
+  An estuary water-bird census corpus whose roost sites and their tally
+  sub-collection are both business-temporal, so every read is pinned to one
+  business instant. A single-execution service binds the requested instant to a
+  local variable, selects the site extent at that instant and qualifies sites by
+  a habitat set membership, a nested existence test over the tally sub-collection
+  and a last-count date at or after a relative-day window measured back from the
+  current date, then projects aliased site and tally columns and reduces the
+  result with distinct. Service tests cover the qualifying set, sites excluded by
+  habitat, by the count window and by the absence of a high-tide tally, and a
+  site whose business range ends before the requested instant.
+modelSources:
+  model:
+    root: ivory-estuary-2
+    files:
+      - test/ivoryestuary2/connection/EstuaryConnection.pure
+      - test/ivoryestuary2/domain/EstuaryDomain.pure
+      - test/ivoryestuary2/mapping/EstuaryMapping.pure
+      - test/ivoryestuary2/runtime/EstuaryRuntime.pure
+      - test/ivoryestuary2/service/RoostCensusExtract.pure
+      - test/ivoryestuary2/store/EstuaryRegisterDb.pure
+features:
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - collection-op
+  - date-arithmetic
+  - estuary
+  - h2
+  - point-in-time
+  - relational
+  - roost-census
+  - service-test

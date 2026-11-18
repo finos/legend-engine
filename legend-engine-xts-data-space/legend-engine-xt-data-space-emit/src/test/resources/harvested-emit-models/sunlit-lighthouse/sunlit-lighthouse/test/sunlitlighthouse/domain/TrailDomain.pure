@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::sunlitlighthouse::domain::*;
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A waymarking post on a public trail network, versioned on the processing window it was loaded in.'} demo::sunlitlighthouse::domain::TrailMarker
+{
+  markerCode: String[1];
+  markerName: String[0..1];
+  routeCode: String[0..1];
+  surfaceClass: String[0..1];
+  elevationM: Float[0..1];
+  postHeightM: Decimal[0..1];
+  installedOn: StrictDate[0..1];
+  checkedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'An overnight shelter on a public trail network, versioned on the processing window it was loaded in.'} demo::sunlitlighthouse::domain::TrailShelter
+{
+  shelterCode: String[1];
+  shelterName: String[0..1];
+  routeCode: String[0..1];
+  conditionBand: String[0..1];
+  bunkCount: Integer[0..1];
+  floorAreaM2: Float[0..1];
+  openedOn: StrictDate[0..1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'An upkeep visit recorded against a waymarking post, versioned on the processing window it was loaded in.'} demo::sunlitlighthouse::domain::UpkeepInspection
+{
+  inspectionCode: String[1];
+  markerCode: String[0..1];
+  crewCode: String[0..1];
+  outcomeCode: String[0..1];
+  durationMinutes: Integer[0..1];
+  materialKg: Decimal[0..1];
+  inspectedOn: StrictDate[0..1];
+  loggedAt: DateTime[0..1];
+}

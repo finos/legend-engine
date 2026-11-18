@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulaviary2::mapping::HerbariumMapping
+(
+  include test::wistfulaviary2::mapping::HerbariumBaseMapping
+  *test::wistfulaviary2::domain::Accession[accession]: Relational
+  {
+    ~filter [test::wistfulaviary2::store::HerbariumDb]CurrentAccession
+    ~primaryKey
+    (
+      [test::wistfulaviary2::store::HerbariumDb]garden.accession.accession_code
+    )
+    ~mainTable [test::wistfulaviary2::store::HerbariumDb]garden.accession
+    accessionCode: [test::wistfulaviary2::store::HerbariumDb]garden.accession.accession_code,
+    accessionName: [test::wistfulaviary2::store::HerbariumDb]garden.accession.accession_name,
+    taxonCode: [test::wistfulaviary2::store::HerbariumDb]garden.accession.taxon_code,
+    receivedOn: [test::wistfulaviary2::store::HerbariumDb]garden.accession.received_on,
+    familyName:
+      [test::wistfulaviary2::store::HerbariumDb]@accessionTaxon
+      | [test::wistfulaviary2::store::HerbariumDb]garden.taxon.family_name
+  }
+  *test::wistfulaviary2::domain::SeedLot[seedLot] extends [accession]: Relational
+  {
+    ~mainTable [test::wistfulaviary2::store::HerbariumDb]garden.seed_lot
+    lotCode: [test::wistfulaviary2::store::HerbariumDb]garden.seed_lot.lot_code,
+    viabilityPct: [test::wistfulaviary2::store::HerbariumDb]garden.seed_lot.viability_pct
+  }
+  test::wistfulaviary2::domain::AccessionCell: Relational
+  {
+    AssociationMapping
+    (
+      cell[accession, cell]:
+        [test::wistfulaviary2::store::HerbariumDb]@accessionCell > @cellVault,
+      accessions[cell, accession]:
+        [test::wistfulaviary2::store::HerbariumDb]@accessionCell
+    )
+  }
+  test::wistfulaviary2::domain::SeedState: EnumerationMapping SeedStateMapping
+  {
+    STORED: ['STORED'],
+    RELEASED: ['RELEASED'],
+    TESTING: ['TESTING']
+  }
+  testSuites:
+  [
+    accessionSuite:
+    {
+      function:
+        |test::wistfulaviary2::domain::Accession.all()->filter(x|$x.familyName->trim()->toUpper()->isNotEmpty())->project([x|$x.accessionCode->trim()->toUpper(), x|$x.familyName->trim()->toUpper()], ['Code', 'Family'])->sort([asc('Code')]);
+      tests:
+      [
+        milestoningOutOfRangeRow:
+        {
+          data:
+          [
+            test::wistfulaviary2::store::HerbariumDb:
+              Relational
+              #{
+                garden.accession:
+                  'accession_code,accession_name,taxon_code,received_on,lake_in_id,lake_out_id\n'+
+                  'A-1,Blue Iris,TX-1,2026-01-01,1,999999999\n'+
+                  'A-2,Old Fern,TX-2,2020-01-01,1,2';
+                garden.taxon:
+                  'taxon_code,family_name\n'+
+                  'TX-1,Iridaceae\n'+
+                  'TX-2,Polypodiaceae';
+              }#
+          ];
+          asserts:
+          [
+            oneOpen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"A-1","Family":"IRIDACEAE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

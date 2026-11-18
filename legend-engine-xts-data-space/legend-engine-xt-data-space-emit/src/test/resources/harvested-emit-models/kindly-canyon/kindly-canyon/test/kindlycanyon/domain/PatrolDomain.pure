@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::kindlycanyon::domain::*;
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A stretch of the canyon trail that groups the patrol posts standing along it.'} test::kindlycanyon::domain::TrailSegment
+{
+  {doc.doc = 'Register code of the segment.'} segmentCode: String[1];
+  {doc.doc = 'Published name of the segment.'} segmentName: String[1];
+  {doc.doc = 'Walked length of the segment in metres.'} lengthM: Integer[1];
+}
+
+Class {doc.doc = 'A staffed patrol point on the trail, held as the common surface all three post kinds resolve against, so a query over this extent sees the posts of every kind through their inherited properties alone.'} test::kindlycanyon::domain::PatrolPost
+{
+  {doc.doc = 'Register code of the post.'} postId: String[1];
+  {doc.doc = 'Published name of the post.'} postName: String[1];
+  {doc.doc = 'Which kind of post this is, carried on the shared surface so the hierarchy is observable without a cast.'} postKind: String[1];
+  {doc.doc = 'Name of the warden rostered to the post, reached across the roster schema.'} wardenName: String[0..1];
+}
+
+Class {doc.doc = 'A patrol post set on the canyon rim, so it declares the height it looks down from.'} test::kindlycanyon::domain::RidgePost extends PatrolPost
+{
+  {doc.doc = 'Height of the rim the post stands on, in metres above the canyon floor.'} ridgeHeightM: Integer[1];
+}
+
+Class {doc.doc = 'A patrol post set on the canyon floor, so it declares how far below the rim it sits.'} test::kindlycanyon::domain::CanyonFloorPost extends PatrolPost
+{
+  {doc.doc = 'Depth of the floor the post stands on, in metres below the rim.'} floorDepthM: Integer[1];
+}
+
+Class {doc.doc = 'A patrol post carried on a vehicle, so it declares the vehicle rather than a fixed elevation.'} test::kindlycanyon::domain::MobilePost extends PatrolPost
+{
+  {doc.doc = 'Plate of the vehicle carrying the post.'} vehiclePlate: String[1];
+}
+
+Class {doc.doc = 'One walked patrol recorded against a post. The two instants and the walked duration are what the published board measures, and an unclosed patrol keeps its second instant absent.'} test::kindlycanyon::domain::PatrolLog
+{
+  {doc.doc = 'Register code of the patrol.'} logId: String[1];
+  {doc.doc = 'Instant the patrol was walked.'} loggedOn: StrictDate[1];
+  {doc.doc = 'Instant the patrol was signed off, absent while the patrol is still open.'} closedOn: StrictDate[0..1];
+  {doc.doc = 'Minutes the patrol took.'} walkMinutes: Integer[1];
+  {doc.doc = 'Reported trail condition.'} conditionCode: String[1];
+  {doc.doc = 'Free text hazard note, absent when nothing was reported.'} hazardNote: String[0..1];
+
+  {doc.doc = 'Days the patrol stayed open, measured to the sign-off instant, or a negative marker while it is still open so the column stays single-valued.'}
+  openDays()
+  {
+    if($this.closedOn->isEmpty(),
+       | -1,
+       | dateDiff($this.loggedOn, $this.closedOn->toOne(), DurationUnit.DAYS))
+  }: Integer[1];
+
+  {doc.doc = 'Bands the walked duration, with the longest band also admitting a shorter patrol that reported a hazard, so the band depends on two stored columns rather than one.'}
+  effortBand()
+  {
+    if($this.walkMinutes >= 90,
+       | 'LONG',
+       | if(($this.walkMinutes >= 45) || ($this.hazardNote->isNotEmpty()),
+            | 'MEDIUM',
+            | 'SHORT'))
+  }: String[1];
+}
+
+Class {doc.doc = 'A warden published in the shared roster schema rather than in the trail schema.'} test::kindlycanyon::domain::Warden
+{
+  {doc.doc = 'Roster code of the warden.'} wardenCode: String[1];
+  {doc.doc = 'Published name of the warden.'} wardenName: String[1];
+  {doc.doc = 'Rota band the warden is held in.'} rotaBand: String[1];
+}
+
+Association {doc.doc = 'Binds each walked patrol to the post it was recorded against; a patrol whose post code matches nothing keeps the hop absent rather than dropping the patrol.'} test::kindlycanyon::domain::Log_Post
+{
+  logs: PatrolLog[*];
+  post: PatrolPost[0..1];
+}
+
+Association {doc.doc = 'Binds each post to the trail segment it stands on, so the segment is reached from the patrol two hops out.'} test::kindlycanyon::domain::Post_Segment
+{
+  posts: PatrolPost[*];
+  segment: TrailSegment[0..1];
+}

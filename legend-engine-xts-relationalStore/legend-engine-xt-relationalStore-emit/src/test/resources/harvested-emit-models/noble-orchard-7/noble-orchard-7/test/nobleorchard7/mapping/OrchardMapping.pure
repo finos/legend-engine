@@ -1,0 +1,73 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::nobleorchard7::mapping::OrchardMapping
+(
+  include mapping test::nobleorchard7::mapping::TreeMapping
+
+  *test::nobleorchard7::domain::Graft[graft]: Relational
+  {
+    ~primaryKey
+    (
+      [test::nobleorchard7::store::OrchardDb]ORCHARD.GRAFT.GRAFT_ID
+    )
+    ~mainTable [test::nobleorchard7::store::OrchardDb]ORCHARD.GRAFT
+    graftCode: [test::nobleorchard7::store::OrchardDb]ORCHARD.GRAFT.GRAFT_CODE,
+    scionLabel: [test::nobleorchard7::store::OrchardDb]ORCHARD.GRAFT.SCION_LABEL
+  }
+
+  test::nobleorchard7::domain::Tree_Graft: Relational
+  {
+    AssociationMapping
+    (
+      tree[graft, tree]: [test::nobleorchard7::store::OrchardDb]@Tree_Graft,
+      grafts[tree, graft]: [test::nobleorchard7::store::OrchardDb]@Tree_Graft
+    )
+  }
+
+  testSuites:
+  [
+    graftTreeSuite:
+    {
+      function: |test::nobleorchard7::domain::Graft.all()->project(~[Graft: g|$g.graftCode, Scion: g|$g.scionLabel, Tree: g|$g.tree.treeCode]);
+      tests:
+      [
+        graftRowsWalkBackToTree:
+        {
+          data:
+          [
+            test::nobleorchard7::store::OrchardDb: Reference
+              #{
+                test::nobleorchard7::data::OrchardData
+              }#
+          ];
+          asserts:
+          [
+            joinedGraftRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Graft":"GR-501","Scion":"Early Gold","Tree":"TR-101"},{"Graft":"GR-502","Scion":"Red Crest","Tree":"TR-101"},{"Graft":"GR-503","Scion":"Winter Green","Tree":"TR-102"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

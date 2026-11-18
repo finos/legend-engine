@@ -1,0 +1,55 @@
+name: lunar-meadow
+title: "Lunar Meadow - Keyed Cave-Ripening Services over a Cross-Schema Cellar Store"
+description: |
+  A cheese cave register served over a cross-schema relational store whose dairy
+  wheel and rack tables join out to a cellar chamber schema and a roster schema
+  of cheesemakers. A keyed multi-execution service and its single-execution
+  tested counterpart return the wheels ripe enough to grade through a deep
+  boolean predicate combining a date-arithmetic ageing test, a milk-type
+  membership set, a chamber-prefix or upper-tier disjunction and an arithmetic
+  mass floor, while an unfiltered directory service gives the trivial
+  projection. The mapping binds the chamber humidity and the accountable
+  cheesemaker through two distinct two-hop join paths and carries its own
+  tabular-data-set test suite alongside the service suites.
+modelSources:
+  model:
+    root: lunar-meadow
+    files:
+      - test/lunarmeadow/connection/CellarConnections.pure
+      - test/lunarmeadow/domain/Domain.pure
+      - test/lunarmeadow/mapping/CellarMapping.pure
+      - test/lunarmeadow/runtime/CellarRuntimes.pure
+      - test/lunarmeadow/service/RipeningWheels.pure
+      - test/lunarmeadow/service/RipeningWheelsGraded.pure
+      - test/lunarmeadow/service/WheelDirectory.pure
+      - test/lunarmeadow/store/CellarDatabase.pure
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - cave-ripening
+  - cheese-cellar
+  - cross-schema-join
+  - h2
+  - keyed-execution
+  - multi-hop-join-path
+  - service-test

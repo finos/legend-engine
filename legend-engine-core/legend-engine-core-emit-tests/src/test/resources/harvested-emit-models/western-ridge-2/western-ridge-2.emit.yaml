@@ -1,0 +1,37 @@
+name: western-ridge-2
+title: "Western Ridge 2 — Ridge Fire-Watch Posts with a Refined Subtype, a Milestoned Rotation and a Filing Association"
+description: |
+  A ridge fire-watch vocabulary in which the three grammar layers deliberately
+  land on different classes. The lookout post is the plain reference class the
+  rest of the model keys on; a staffed variant extends it and adds only what a
+  crewed post has, so property resolution over the post has to walk the
+  supertype chain and see the subtype's crew arrangements. The watch rotation is
+  declared business-temporal, so a reissued rotation supersedes its earlier
+  record while the period it was issued for stays put, and it keys back to the
+  post by reference rather than by association so the milestoning stereotype is
+  exercised on its own. The filing association binds the post to the sightings
+  written up at it with explicit end names, mandatory and single-valued on the
+  post side and unbounded on the sighting side, so navigation is only available
+  through the association rather than through a declared property.
+modelSources:
+  model:
+    root: western-ridge-2
+    files:
+      - test/westernridge2/domain/RidgeAssociations.pure
+      - test/westernridge2/domain/RidgeDomain.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - business-temporal
+  - class-inheritance
+  - fire-watch
+  - milestoning
+  - model-only
+  - ridge-lookout
+  - store-less

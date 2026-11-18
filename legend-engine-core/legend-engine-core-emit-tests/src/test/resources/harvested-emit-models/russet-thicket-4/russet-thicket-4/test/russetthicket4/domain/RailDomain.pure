@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::russetthicket4::domain::*;
+
+Class test::russetthicket4::domain::Depot
+{
+  depotCode: String[1];
+  depotName: String[1];
+  trackGauge: TrackGauge[1];
+  turntableFitted: Boolean[1];
+}
+
+Class test::russetthicket4::domain::Branchline
+{
+  lineCode: String[1];
+  lineName: String[1];
+  routeKilometres: Float[1];
+  rulingGradient: String[1];
+}
+
+Class test::russetthicket4::domain::VolunteerCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  rosteredTurns: Integer[1];
+}
+
+Class test::russetthicket4::domain::RollingStock
+{
+  stockNumber: String[1];
+  buildYear: Integer[1];
+  livery: LiveryScheme[1];
+  tareTonnes: Float[1];
+}
+
+Class test::russetthicket4::domain::Locomotive extends RollingStock
+{
+  tractiveEffortKilonewtons: Float[1];
+  duty: HaulageDuty[1];
+  wheelArrangement: String[1];
+}
+
+Class test::russetthicket4::domain::SteamLocomotive extends Locomotive
+{
+  boilerPressureBar: Float[1];
+  tenderCapacityLitres: Integer[1];
+}
+
+Class test::russetthicket4::domain::DieselLocomotive extends Locomotive
+{
+  engineRatingKilowatts: Integer[1];
+  fuelTankLitres: Integer[1];
+}
+
+Class test::russetthicket4::domain::Carriage extends RollingStock
+{
+  seatCount: Integer[1];
+  gangwayFitted: Boolean[1];
+}
+
+Class test::russetthicket4::domain::ObservationCarriage extends Carriage
+{
+  glazedPanelCount: Integer[1];
+  openBalcony: Boolean[1];
+}
+
+Class test::russetthicket4::domain::GoodsWagon extends RollingStock
+{
+  payloadTonnes: Float[1];
+  vacuumBrakeFitted: Boolean[1];
+}
+
+Class <<temporal.processingtemporal>> test::russetthicket4::domain::ShedInspection
+{
+  inspectionRef: String[1];
+  condition: ShedCondition[1];
+  inspectorNote: String[0..1];
+  liftedBoilerCertificate: Boolean[1];
+}
+
+Class <<temporal.processingtemporal>> test::russetthicket4::domain::TimetableRevision
+{
+  revisionRef: String[1];
+  revisionLabel: String[1];
+  dailyDepartures: Integer[1];
+  gauge: TrackGauge[1];
+}
+
+Class <<temporal.processingtemporal>> test::russetthicket4::domain::HaulageAssignment
+{
+  assignmentRef: String[1];
+  assignedDuty: HaulageDuty[1];
+  turnCount: Integer[1];
+}

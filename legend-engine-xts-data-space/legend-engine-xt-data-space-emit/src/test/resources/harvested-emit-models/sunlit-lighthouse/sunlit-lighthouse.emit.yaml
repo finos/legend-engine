@@ -1,0 +1,78 @@
+name: sunlit-lighthouse
+title: "Sunlit Lighthouse — Public Trail Network Register (Processing-Temporal, Cross-Schema, Warehouse-Dialect)"
+description: |
+  A public trail network register published as a data product. Three sibling
+  registers of the same structural family — waymarking posts, overnight shelters
+  and the upkeep inspections recorded against the posts — live in one relational
+  store across two schemas; every table declares its own primary key and its own
+  table-level processing window with an infinity sentinel for the row still open,
+  and every domain class carries the matching processing-temporal stereotype, so
+  each read supplies a processing date and the compiler rewrites it into a window
+  predicate. One mapping binds all three classes, each anchored on a schema
+  qualified main-table alias with an explicit key over the identifier and the
+  window-in column and one property mapping per column, so the classes' wide
+  primitive surfaces (strings, integers, floats, fixed-precision numerics, dates
+  and timestamps) stay type-compatible with the store. A cloud-warehouse
+  connection with key-pair authentication fixes the SQL dialect, three engine
+  runtimes pair the mapping with it, and a data space groups them into named
+  execution contexts and publishes the three services as executables. The
+  services enter through the milestoned accessor with a date parameter and
+  project a wide tabular result, two of them narrowing rows with a membership
+  test against a literal set that pushes down as an in-list; their tests drive
+  the processing date so that rows inside the window, rows already closed out
+  and rows not yet loaded are each observable, and the mapping suite asserts the
+  same rewrite directly.
+
+modelSources:
+  model:
+    root: sunlit-lighthouse
+    files:
+      - test/sunlitlighthouse/connection/TrailWarehouseConnection.pure
+      - test/sunlitlighthouse/dataspace/TrailRegisterDataSpace.pure
+      - test/sunlitlighthouse/domain/TrailDomain.pure
+      - test/sunlitlighthouse/mapping/TrailRegisterMapping.pure
+      - test/sunlitlighthouse/runtime/TrailRuntimes.pure
+      - test/sunlitlighthouse/service/MarkerRegisterFeed.pure
+      - test/sunlitlighthouse/service/ShelterRegisterFeed.pure
+      - test/sunlitlighthouse/service/UpkeepInspectionFeed.pure
+      - test/sunlitlighthouse/store/TrailRegisterDB.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - cross-schema
+  - data-space
+  - h2
+  - in-list-membership
+  - main-table-alias
+  - mapping-test
+  - multi-table
+  - point-in-time
+  - processing-temporal
+  - project
+  - relational
+  - service-test
+  - snowflake
+  - snowflake-dialect
+  - trail-network

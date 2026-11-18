@@ -1,0 +1,170 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service <<test::nobleestuary::domain::CurationProfile.specGenerated>> test::nobleestuary::service::ExhibitGraph
+{
+  pattern: '/nobleestuary/v1/exhibit/graph';
+  title: 'Noble Estuary - Exhibit Object Graph';
+  owners:
+  [
+    'collection-platform',
+    'curation-eng'
+  ];
+  documentation: 'Fans one flat intake record out into an exhibit hub and its location, steward and audience spokes, then returns the graph-fetched exhibit tree including the association-derived location branch.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::nobleestuary::domain::Exhibit.all()->graphFetch(
+      #{
+        test::nobleestuary::domain::Exhibit{
+          exhibitId,
+          exhibitTitle,
+          galleryName,
+          location{
+            roomCode
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::nobleestuary::domain::Exhibit{
+          exhibitId,
+          exhibitTitle,
+          galleryName,
+          location{
+            roomCode
+          }
+        }
+      }#
+    );
+    mapping: test::nobleestuary::mapping::IntakeFanOutMapping;
+    runtime: test::nobleestuary::runtime::IntakeRuntime;
+  }
+  testSuites:
+  [
+    exhibitGraphSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          intakeFeedConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"feedId":"EX-4471","title":"Tidal Marsh Life","gallery":"East Gallery","openedYear":1974,"buildingName":"Estuary Wing","floorLabel":"Level 2","roomCode":"R12","stewardName":"Marsh Ecology Desk","stewardAlias":"marsh-ecology","stewardTeam":"Living Collections","stewardPhoneExt":"4471","stewardRoomCode":"R14","stewardNote":"Rotates seasonally","accessTier":"OPEN","audienceNote":"Open to all visitors"}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        fannedOutExhibit:
+        {
+          asserts:
+          [
+            exhibitTree:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"exhibitId":"EX-4471","exhibitTitle":"Tidal Marsh Life","galleryName":"East Gallery","location":{"roomCode":"R12"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::nobleestuary::service::SpecimenSummaryGraph
+{
+  pattern: '/nobleestuary/v1/specimen/graph';
+  title: 'Noble Estuary - Specimen Summary Object Graph';
+  ownership: UserList { users: ['collection-steward', 'registration-desk'] };
+  documentation: 'Returns the graph-fetched specimen summary tree, whose nested site branch is written first and whose duplicated taxon label pins the two differently-named target attributes derived from a single source attribute.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::nobleestuary::domain::SpecimenSummary.all()->graphFetch(
+      #{
+      test::nobleestuary::domain::SpecimenSummary{
+        site{
+        streetLine,
+        cityName,
+        postalCode
+        },
+        recordId,
+        taxonName,
+        taxonNameAlt
+      }
+      }#
+    )->serialize(
+      #{
+      test::nobleestuary::domain::SpecimenSummary{
+        site{
+        streetLine,
+        cityName,
+        postalCode
+        },
+        recordId,
+        taxonName,
+        taxonNameAlt
+      }
+      }#
+    );
+    mapping: test::nobleestuary::mapping::SpecimenSummaryMapping;
+    runtime: test::nobleestuary::runtime::SpecimenRuntime;
+  }
+  testSuites:
+  [
+    specimenGraphSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          specimenRecordConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"recordId":"SPC-8890","taxonName":"Salicornia europaea","siteStreet":"4 Saltings Lane","siteCity":"Westmarsh","sitePostalCode":"WM7 5BD"}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        nestedSiteBranch:
+        {
+          asserts:
+          [
+            summaryTree:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"site":{"streetLine":"4 Saltings Lane","cityName":"Westmarsh","postalCode":"WM7 5BD"},"recordId":"SPC-8890","taxonName":"Salicornia europaea","taxonNameAlt":"Salicornia europaea"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

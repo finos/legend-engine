@@ -1,0 +1,152 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulhatchery::mapping::BroodMapping
+(
+  include mapping test::wistfulhatchery::mapping::BroodBaseMapping
+
+  *test::wistfulhatchery::domain::LarvalCohort[cohort]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulhatchery::store::BroodDb]brood.larval_cohort.cohort_id
+    )
+    ~mainTable [test::wistfulhatchery::store::BroodDb]brood.larval_cohort
+    cohortCode: [test::wistfulhatchery::store::BroodDb]brood.larval_cohort.cohort_code,
+    speciesName: [test::wistfulhatchery::store::BroodDb]brood.larval_cohort.species_name,
+    larvaCount: [test::wistfulhatchery::store::BroodDb]brood.larval_cohort.larva_count,
+    startedOn: [test::wistfulhatchery::store::BroodDb]brood.larval_cohort.started_on,
+    roomCode: [test::wistfulhatchery::store::BroodDb]@Cohort_Room | [test::wistfulhatchery::store::BroodDb]brood.brood_room.room_code,
+    regionName: [test::wistfulhatchery::store::BroodDb]@Cohort_Room > @Room_Facility | [test::wistfulhatchery::store::BroodDb]brood.facility.region_name,
+    vigourBand: case(
+                  isNull([test::wistfulhatchery::store::BroodDb]brood.larval_cohort.vigour_score),
+                  sqlNull(),
+                  case(
+                    equal([test::wistfulhatchery::store::BroodDb]brood.larval_cohort.vigour_score, 1),
+                    'dormant',
+                    case(
+                      equal([test::wistfulhatchery::store::BroodDb]brood.larval_cohort.vigour_score, 2),
+                      'stirring',
+                      case(
+                        equal([test::wistfulhatchery::store::BroodDb]brood.larval_cohort.vigour_score, 3),
+                        'feeding',
+                        case(
+                          equal([test::wistfulhatchery::store::BroodDb]brood.larval_cohort.vigour_score, 4),
+                          'moulting',
+                          case(
+                            equal([test::wistfulhatchery::store::BroodDb]brood.larval_cohort.vigour_score, 5),
+                            'spinning',
+                            case(
+                              equal([test::wistfulhatchery::store::BroodDb]brood.larval_cohort.vigour_score, 6),
+                              'pupating',
+                              case(
+                                equal([test::wistfulhatchery::store::BroodDb]brood.larval_cohort.vigour_score, 7),
+                                'hardening',
+                                case(
+                                  equal([test::wistfulhatchery::store::BroodDb]brood.larval_cohort.vigour_score, 8),
+                                  'thriving',
+                                  sqlNull()
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+  }
+
+  *test::wistfulhatchery::domain::HostPlant[plant]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulhatchery::store::BroodDb]brood.host_plant.plant_id
+    )
+    ~mainTable [test::wistfulhatchery::store::BroodDb]brood.host_plant
+    plantCode: [test::wistfulhatchery::store::BroodDb]brood.host_plant.plant_code,
+    plantSpecies: [test::wistfulhatchery::store::BroodDb]brood.host_plant.plant_species,
+    plantedOn: [test::wistfulhatchery::store::BroodDb]brood.host_plant.planted_on,
+    roomCode: [test::wistfulhatchery::store::BroodDb]@Plant_Room | [test::wistfulhatchery::store::BroodDb]brood.brood_room.room_code
+  }
+
+  testSuites:
+  [
+    cohortVigourSuite:
+    {
+      function: test::wistfulhatchery::domain::LarvalCohort.all(%2026-06-01)->project(~[cohortCode: c|$c.cohortCode, vigourBand: c|$c.vigourBand, readiness: c|$c.readinessNote, roomCode: c|$c.roomCode, regionName: c|$c.regionName])->sort([~cohortCode->ascending()]);
+      tests:
+      [
+        everyVigourArmAndReadinessBand:
+        {
+          doc: 'Projects each in-force cohort through the chained relational vigour transform so every band arm, the null-score sentinel and the unmatched-score sentinel are exercised, together with the single-hop room lookup, the two-hop room-to-facility region and the derived readiness bands; the cohort whose processing window closed before the query date must not appear.';
+          data:
+          [
+            test::wistfulhatchery::store::BroodDb:
+              Relational
+              #{
+                brood.facility:
+                  'facility_id,facility_name,region_name\n'+
+                  '1,Ridge Conservatory,North Ridge\n'+
+                  '2,Fen Conservatory,South Fen\n';
+
+                brood.brood_room:
+                  'room_id,room_code,facility_id,temperature_c\n'+
+                  '1,BR-100,1,24.5\n'+
+                  '2,BR-200,2,21.0\n';
+
+                brood.larval_cohort:
+                  'cohort_id,cohort_code,room_id,species_name,larva_count,vigour_score,started_on,in_z,out_z\n'+
+                  '1,C-01,1,Ridge Swallowtail,500,1,2026-03-01,2026-01-01,9999-12-31\n'+
+                  '2,C-02,1,Ridge Swallowtail,300,2,2026-03-02,2026-01-01,9999-12-31\n'+
+                  '3,C-03,1,Fen Blue,100,3,2026-03-03,2026-01-01,9999-12-31\n'+
+                  '4,C-04,1,Fen Blue,450,4,2026-03-04,2026-01-01,9999-12-31\n'+
+                  '5,C-05,1,Meadow Fritillary,250,5,2026-03-05,2026-01-01,9999-12-31\n'+
+                  '6,C-06,1,Meadow Fritillary,150,6,2026-03-06,2026-01-01,9999-12-31\n'+
+                  '7,C-07,2,Heath Copper,400,7,2026-03-07,2026-01-01,9999-12-31\n'+
+                  '8,C-08,2,Heath Copper,200,8,2026-03-08,2026-01-01,9999-12-31\n'+
+                  '9,C-09,2,Marsh Ringlet,220,,2026-03-09,2026-01-01,9999-12-31\n'+
+                  '10,C-10,2,Marsh Ringlet,260,9,2026-03-10,2026-01-01,9999-12-31\n'+
+                  '11,C-11,2,Retired Hairstreak,310,5,2020-03-01,2020-01-01,2021-12-31\n';
+
+                brood.host_plant:
+                  'plant_id,plant_code,room_id,plant_species,planted_on\n'+
+                  '1,HP-01,1,Ridge Fennel,2026-02-01\n'+
+                  '2,HP-02,2,Fen Vetch,2026-02-02\n';
+              }#
+          ];
+          asserts:
+          [
+            cohortVigourRows:
+              Relation
+              #{
+                cohortCode,vigourBand,readiness,roomCode,regionName
+                C-01,dormant,DORMANT-DENSE,BR-100,North Ridge
+                C-02,stirring,STIRRING-STEADY,BR-100,North Ridge
+                C-03,feeding,FEEDING-SPARSE,BR-100,North Ridge
+                C-04,moulting,MOULTING-DENSE,BR-100,North Ridge
+                C-05,spinning,SPINNING-STEADY,BR-100,North Ridge
+                C-06,pupating,PUPATING-SPARSE,BR-100,North Ridge
+                C-07,hardening,HARDENING-DENSE,BR-200,South Fen
+                C-08,thriving,THRIVING-STEADY,BR-200,South Fen
+                C-09,,unassessed,BR-200,South Fen
+                C-10,,unassessed,BR-200,South Fen;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

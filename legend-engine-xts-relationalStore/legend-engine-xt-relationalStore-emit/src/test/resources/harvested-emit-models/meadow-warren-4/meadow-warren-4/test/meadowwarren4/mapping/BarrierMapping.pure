@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::meadowwarren4::mapping::BarrierMapping
+(
+  *demo::meadowwarren4::domain::BarrierRun[barrier]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowwarren4::store::WarrenDb]warren.barrier_run.barrier_ref
+    )
+    ~mainTable [demo::meadowwarren4::store::WarrenDb]warren.barrier_run
+    barrierRef: [demo::meadowwarren4::store::WarrenDb]warren.barrier_run.barrier_ref,
+    plotRef: [demo::meadowwarren4::store::WarrenDb]warren.barrier_run.plot_ref,
+    lengthMetres: [demo::meadowwarren4::store::WarrenDb]warren.barrier_run.length_metres,
+    barrierKind: EnumerationMapping BarrierKindMap: [demo::meadowwarren4::store::WarrenDb]warren.barrier_run.barrier_kind_code,
+    barrierNote: case(
+                   greaterThan([demo::meadowwarren4::store::WarrenDb]warren.barrier_run.length_metres, 100),
+                   'LONG RUN',
+                   sqlNull()
+                 )
+  }
+
+  demo::meadowwarren4::domain::BarrierKind: EnumerationMapping BarrierKindMap
+  {
+    STOCK_FENCE: ['FN'],
+    LAID_BRUSHWOOD: ['HD']
+  }
+
+  testSuites:
+  [
+    barrierBitemporalSuite:
+    {
+      function: |demo::meadowwarren4::domain::BarrierRun.all(%2026-06-01, %2026-06-01)->project(
+        [
+          x|$x.barrierRef,
+          x|$x.barrierKind,
+          x|$x.barrierNote,
+          x|$x.lengthMetres
+        ],
+        [
+          'Barrier Ref',
+          'Barrier Kind',
+          'Barrier Note',
+          'Length Metres'
+        ]
+      )->sort([asc('Barrier Ref')]);
+      tests:
+      [
+        bothDimensionsMustContainTheInstants:
+        {
+          doc: 'Two instants open the doubly-dimensioned barrier extent: one run is inside both windows, one closed on the validity dimension before the instant and one on the correction dimension, so only the first survives and its conditional note takes the long-run arm.';
+          data:
+          [
+            demo::meadowwarren4::store::WarrenDb:
+              Relational
+              #{
+                warren.barrier_run:
+                  'barrier_ref,plot_ref,barrier_kind_code,length_metres,from_z,thru_z,in_z,out_z\n'+
+                  'BR-01,P-01,FN,150,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  'BR-02,P-02,HD,60,2019-01-01,2019-12-31,2026-01-01,9999-12-31\n'+
+                  'BR-03,P-03,HD,80,2026-01-01,9999-12-31,2019-01-01,2019-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyTheDoublyOpenRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Barrier Ref":"BR-01","Barrier Kind":"STOCK_FENCE","Barrier Note":"LONG RUN","Length Metres":150}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

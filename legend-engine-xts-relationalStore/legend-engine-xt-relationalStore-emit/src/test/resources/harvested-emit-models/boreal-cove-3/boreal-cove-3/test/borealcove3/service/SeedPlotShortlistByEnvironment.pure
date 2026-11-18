@@ -1,0 +1,184 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealcove3::service::SeedPlotShortlistByEnvironment
+{
+  pattern: '/borealcove/v1/{environment}/plot-shortlist/{asOf}';
+  title: 'Dune Seed Depot - Meadow Plot Shortlist As Of A Business Date';
+  documentation: 'Shortlists the meadow plots standing at the requested business date whose habitat code is one of the supplied codes and which still hold a seed lot at or above the requested weight floor, so the survival test has to resolve the plot\'s milestoned lots at that same date before it can be evaluated. The shortlist is deduplicated, ordered by plot code and capped so the published page stays stable. Keyed by environment so the same shortlist is planned against either runtime.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Multi
+  {
+    query: {asOf: StrictDate[1], habitatCodes: String[*], minGrams: Integer[1]|test::borealcove3::domain::MeadowPlot.all($asOf)->filter(
+      p|$p.habitatCode->in($habitatCodes)
+    )->filter(
+      p|$p.lots($asOf)->exists(
+        l|$l.seedGrams >= $minGrams
+      )
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.plotName,
+        p|$p.keeper.keeperName
+      ],
+      [
+        'Plot',
+        'Name',
+        'Keeper'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Plot')
+      ]
+    )->limit(2)};
+    key: 'environment';
+    executions['register']:
+    {
+      mapping: test::borealcove3::mapping::SeedDepotMapping;
+      runtime: test::borealcove3::runtime::SeedDepotRegisterRuntime;
+    }
+    executions['mirror']:
+    {
+      mapping: test::borealcove3::mapping::SeedDepotMapping;
+      runtime: test::borealcove3::runtime::SeedDepotMirrorRuntime;
+    }
+  }
+  testSuites:
+  [
+    seedPlotShortlistSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedDepotRegister:
+            Relational
+            #{
+              meadow.seed_keeper:
+                'keeper_code,keeper_name,contact_note\n'+
+                'K-01,Rowan Sandhill,radio channel two\n'+
+                'K-02,Ash Duneway,\n';
+
+              meadow.germination_trial:
+                'trial_code,plot_code,trial_crew\n'+
+                'GT-01,MP-01,dawn crew\n'+
+                'GT-02,MP-01,dusk crew\n'+
+                'GT-03,MP-02,\n'+
+                'GT-04,MP-03,heath crew\n';
+
+              meadow.meadow_plot:
+                'plot_code,plot_name,habitat_code,keeper_code,from_z,thru_z\n'+
+                'MP-01, Windward Dune ,DU,K-01,2026-01-01,9999-12-31\n'+
+                'MP-02,Hollow Dune,DU,K-02,2026-01-01,9999-12-31\n'+
+                'MP-03,Ridge Heath,HE,K-01,2026-01-01,9999-12-31\n'+
+                'MP-04,Retired Dune,DU,K-01,2026-01-01,2026-02-01\n';
+
+              meadow.seed_lot:
+                'lot_code,plot_code,taxon_name,seed_grams,state_code,from_z,thru_z\n'+
+                'SL-01,MP-01,dune fescue,120,AC,2026-02-01,9999-12-31\n'+
+                'SL-02,MP-02,hollow vetch,45,AC,2026-02-01,9999-12-31\n'+
+                'SL-03,MP-03,heath bedstraw,60,AC,2026-02-01,9999-12-31\n'+
+                'SL-04,MP-01,rested fescue,30,RE,2026-02-01,9999-12-31\n'+
+                'SL-05,MP-04,retired lot,15,AC,2026-02-01,9999-12-31\n'+
+                'SL-06,MP-01,marram grass,80,AC,2026-01-01,2026-02-15\n';
+            }#,
+          seedDepotMirror:
+            Relational
+            #{
+              meadow.seed_keeper:
+                'keeper_code,keeper_name,contact_note\n'+
+                'K-01,Rowan Sandhill,radio channel two\n'+
+                'K-02,Ash Duneway,\n';
+
+              meadow.germination_trial:
+                'trial_code,plot_code,trial_crew\n'+
+                'GT-01,MP-01,dawn crew\n'+
+                'GT-02,MP-01,dusk crew\n'+
+                'GT-03,MP-02,\n'+
+                'GT-04,MP-03,heath crew\n';
+
+              meadow.meadow_plot:
+                'plot_code,plot_name,habitat_code,keeper_code,from_z,thru_z\n'+
+                'MP-01, Windward Dune ,DU,K-01,2026-01-01,9999-12-31\n'+
+                'MP-02,Hollow Dune,DU,K-02,2026-01-01,9999-12-31\n'+
+                'MP-03,Ridge Heath,HE,K-01,2026-01-01,9999-12-31\n'+
+                'MP-04,Retired Dune,DU,K-01,2026-01-01,2026-02-01\n';
+
+              meadow.seed_lot:
+                'lot_code,plot_code,taxon_name,seed_grams,state_code,from_z,thru_z\n'+
+                'SL-01,MP-01,dune fescue,120,AC,2026-02-01,9999-12-31\n'+
+                'SL-02,MP-02,hollow vetch,45,AC,2026-02-01,9999-12-31\n'+
+                'SL-03,MP-03,heath bedstraw,60,AC,2026-02-01,9999-12-31\n'+
+                'SL-04,MP-01,rested fescue,30,RE,2026-02-01,9999-12-31\n'+
+                'SL-05,MP-04,retired lot,15,AC,2026-02-01,9999-12-31\n'+
+                'SL-06,MP-01,marram grass,80,AC,2026-01-01,2026-02-15\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothHabitatsAboveTheWeightFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['register', 'mirror'];
+          parameters:
+          [
+            asOf = %2026-03-01,
+            habitatCodes = ['DU', 'HE'],
+            minGrams = 50
+          ]
+          asserts:
+          [
+            theHollowPlotFallsUnderTheFloorAndTheClosedPlotNeverStands:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"MP-01","Name":" Windward Dune ","Keeper":"Rowan Sandhill"},{"Plot":"MP-03","Name":"Ridge Heath","Keeper":"Rowan Sandhill"}]';
+                  }#;
+              }#
+          ]
+        },
+        theHeathHabitatOnItsOwn:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['mirror'];
+          parameters:
+          [
+            asOf = %2026-03-01,
+            habitatCodes = ['HE'],
+            minGrams = 50
+          ]
+          asserts:
+          [
+            onlyTheHeathPlotSurvivesTheMembershipGuard:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"MP-03","Name":"Ridge Heath","Keeper":"Rowan Sandhill"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

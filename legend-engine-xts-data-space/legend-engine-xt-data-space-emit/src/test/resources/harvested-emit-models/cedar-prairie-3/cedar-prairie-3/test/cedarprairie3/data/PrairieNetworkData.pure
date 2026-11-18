@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::cedarprairie3::data::PrairieNetworkData
+{
+  Relational
+  #{
+    planting.prairie_plot:
+      'plot_id,plot_code,plot_name,sector_code,seeded_on,area_ha,native_pct,invasive_pct,canopy_code,moisture_code,lot_id,crew_id\n'+
+      '1,P-01,Ridge Remnant,north ,2026-03-01,12,95,2,OPEN,DRY,1,1\n'+
+      '2,P-02,Ridge Swale,north ,2026-03-08,9,80,5,OPEN,MESIC,1,1\n'+
+      '3,P-03,Hollow Terrace,south,2026-03-15,7,65,20,OPEN,DRY,2,2\n'+
+      '4,P-04,Hollow Bench,south,2026-03-22,6,45,8,OPEN,MESIC,2,2\n'+
+      '5,P-05,Fenceline Strip,west,2026-04-01,4,30,70,OPEN,DRY,3,2\n'+
+      '6,P-06,Seep Margin,west,2026-04-08,3,35,20,OPEN,WET,3,3\n'+
+      '7,P-07,Oak Understory,east,2026-04-15,5,25,15,SHADE,DRY,4,3\n'+
+      '8,P-08,Track Verge,east,2026-04-22,2,20,10,OPEN,DRY,4,3\n'+
+      '9,P-09,Borrow Pit,east,2026-05-01,1,5,5,OPEN,DRY,,\n';
+
+    planting.seed_lot:
+      'lot_id,lot_code,mix_name,germination_pct,purity_pct,harvest_year\n'+
+      '1,L-1,upland tallgrass mix,90,95,2025\n'+
+      '2,L-2,mesic forb mix,80,90,2025\n'+
+      '3,L-3,wet meadow mix,70,80,2024\n'+
+      '4,L-4,shade sedge mix,60,75,2024\n';
+
+    steward.steward_crew:
+      'crew_id,crew_code,crew_name,depot_code,staffed_count\n'+
+      '1,C-1,Ridge Stewards,ridge ,6\n'+
+      '2,C-2,Hollow Stewards,hollow,4\n'+
+      '3,C-3,Verge Stewards,verge,3\n';
+  }#
+}

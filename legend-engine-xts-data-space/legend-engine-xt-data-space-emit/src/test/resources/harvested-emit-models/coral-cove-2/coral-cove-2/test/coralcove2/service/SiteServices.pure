@@ -1,0 +1,199 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralcove2::service::ReefSiteRegisterService
+{
+  pattern: '/coralcove/v1/sites/register';
+  title: 'Reef Site Register';
+  owners:
+  [
+    'reef-monitoring',
+    'cove-stewardship'
+  ];
+  documentation: 'Publishes the monitored reef sites with the cove name reached over the store join and the optional depth and establishment columns, so an unpopulated optional column surfaces as a null result column.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::ReefSite.all()->project(
+      [
+        s|$s.siteCode,
+        s|$s.siteName,
+        s|$s.coveName,
+        s|$s.depthM
+      ],
+      [
+        'SITE_CODE',
+        'SITE_NAME',
+        'COVE_NAME',
+        'DEPTH_M'
+      ]
+    )->sort(
+      [
+        asc('SITE_CODE')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefH2Runtime;
+  }
+  testSuites:
+  [
+    siteRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              reef.cove:
+                'cove_code,cove_name,shoreline_code\n'+
+                'CV-01,Lantern Cove,SH-N\n'+
+                'CV-02,Turtle Cove,SH-S\n';
+              reef.reef_site:
+                'site_code,site_name,cove_code,depth_m,established_on\n'+
+                'RS-01,Lantern Shoulder,CV-01,12,2019-05-04\n'+
+                'RS-02,Turtle Ledge,CV-02,,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        allSites:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoSitesTheSecondWithANullDepth:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SITE_CODE":"RS-01","SITE_NAME":"Lantern Shoulder","COVE_NAME":"Lantern Cove","DEPTH_M":12},{"SITE_CODE":"RS-02","SITE_NAME":"Turtle Ledge","COVE_NAME":"Turtle Cove","DEPTH_M":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::coralcove2::service::CoveSiteRosterService
+{
+  pattern: '/coralcove/v1/coves/sites';
+  title: 'Cove Site Roster';
+  owners:
+  [
+    'reef-monitoring',
+    'cove-stewardship'
+  ];
+  documentation: 'Publishes each cove alongside the sites reached through the to-many association end, so a cove with several sites multiplies rows and a cove with none contributes nothing.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::Cove.all()->project(
+      [
+        c|$c.coveCode,
+        c|$c.coveName,
+        c|$c.sites.siteCode
+      ],
+      [
+        'COVE_CODE',
+        'COVE_NAME',
+        'SITE_CODE'
+      ]
+    )->sort(
+      [
+        asc('COVE_CODE'),
+        asc('SITE_CODE')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefRuntime;
+  }
+}
+
+Service test::coralcove2::service::TransectPlanService
+{
+  pattern: '/coralcove/v1/transects/plan';
+  title: 'Transect Plan';
+  owners:
+  [
+    'reef-monitoring',
+    'survey-planning'
+  ];
+  documentation: 'Publishes the measuring lines of the reserve with their length and bearing, filtered to the lines long enough to carry a full colony count.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::Transect.all()->filter(
+      t|$t.lengthM > 25
+    )->project(
+      [
+        t|$t.transectCode,
+        t|$t.lengthM,
+        t|$t.bearingDeg
+      ],
+      [
+        'TRANSECT_CODE',
+        'LENGTH_M',
+        'BEARING_DEG'
+      ]
+    )->sort(
+      [
+        asc('TRANSECT_CODE')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefRuntime;
+  }
+}
+
+Service test::coralcove2::service::StationRosterService
+{
+  pattern: '/coralcove/v1/stations/roster';
+  title: 'Shore Station Roster';
+  owners:
+  [
+    'reef-monitoring',
+    'shore-operations'
+  ];
+  documentation: 'Publishes the shore stations with the cove they serve, projected straight from the aliased station table.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::Station.all()->project(
+      [
+        s|$s.stationCode,
+        s|$s.stationName,
+        s|$s.coveCode
+      ],
+      [
+        'STATION_CODE',
+        'STATION_NAME',
+        'COVE_CODE'
+      ]
+    )->sort(
+      [
+        asc('STATION_CODE')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefRuntime;
+  }
+}

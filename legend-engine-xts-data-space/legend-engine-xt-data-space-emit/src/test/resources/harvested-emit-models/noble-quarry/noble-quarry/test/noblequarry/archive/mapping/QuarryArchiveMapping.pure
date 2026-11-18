@@ -1,0 +1,227 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::noblequarry::archive::mapping::QuarryArchiveMapping
+(
+  include mapping test::noblequarry::shared::mapping::SiteRegistryMapping
+
+  *test::noblequarry::archive::domain::BenchSurvey[archiveSurvey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.survey_ref,
+      [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.archive_cycle,
+      [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.bench_code,
+      [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.surveyor_code,
+      [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.surveyed_on,
+      [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.valid_from
+    )
+    ~mainTable [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey
+    surveyRef: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.survey_ref,
+    archiveCycle: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.archive_cycle,
+    benchCode: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.bench_code,
+    surveyorCode: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.surveyor_code,
+    faceHeightMetres: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.face_height_m,
+    surveyedOn: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.surveyed_on,
+    validFrom: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.valid_from,
+    validTo: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_survey.valid_to
+  }
+
+  *test::noblequarry::archive::domain::BlastRecord[archiveBlast]: Relational
+  {
+    ~primaryKey
+    (
+      [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.blast_ref,
+      [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.archive_cycle,
+      [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.bench_code,
+      [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.site_ref,
+      [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.fired_on
+    )
+    ~mainTable [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast
+    blastRef: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.blast_ref,
+    archiveCycle: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.archive_cycle,
+    benchCode: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.bench_code,
+    siteRef: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.site_ref,
+    firedOn: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.fired_on,
+    chargeKg: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.charge_kg,
+    holeCount: [test::noblequarry::archive::store::QuarryArchiveDB]quarry_archive.archived_blast.hole_count
+  }
+
+  test::noblequarry::archive::domain::SurveyBlasts: Relational
+  {
+    AssociationMapping
+    (
+      blasts[archiveSurvey, archiveBlast]: [test::noblequarry::archive::store::QuarryArchiveDB]@ArchiveSurvey_Blast,
+      surveys[archiveBlast, archiveSurvey]: [test::noblequarry::archive::store::QuarryArchiveDB]@ArchiveSurvey_Blast
+    )
+  }
+
+  test::noblequarry::archive::domain::SurveySites: Relational
+  {
+    AssociationMapping
+    (
+      sites[archiveSurvey, quarrySite]: [test::noblequarry::archive::store::QuarryArchiveDB]@ArchiveSurvey_Scheme > @ArchiveScheme_Link > @ArchiveScheme_Site,
+      archivedSurveys[quarrySite, archiveSurvey]: [test::noblequarry::archive::store::QuarryArchiveDB]@ArchiveScheme_Site > @ArchiveScheme_Link > @ArchiveSurvey_Scheme
+    )
+  }
+
+  test::noblequarry::archive::domain::BlastSites: Relational
+  {
+    AssociationMapping
+    (
+      sites[archiveBlast, quarrySite]: [test::noblequarry::archive::store::QuarryArchiveDB]@ArchiveBlast_Scheme > @ArchiveScheme_Site,
+      archivedBlasts[quarrySite, archiveBlast]: [test::noblequarry::archive::store::QuarryArchiveDB]@ArchiveScheme_Site > @ArchiveBlast_Scheme
+    )
+  }
+
+  testSuites:
+  [
+    archivedSurveyChainSuite:
+    {
+      function: |test::noblequarry::archive::domain::BenchSurvey.all()->project(
+  [
+    s|$s.surveyRef,
+    s|$s.sites.siteName,
+    s|$s.blasts.blastRef
+  ],
+  [
+    'Survey',
+    'Site',
+    'Blast'
+  ]
+)->sort(
+  [
+    asc('Survey')
+  ]
+);
+      tests:
+      [
+        archivedChainAndWindow:
+        {
+          doc: 'An archived survey reaches its site through the three-hop chain and only the blast fired inside its closed validity window; a survey with no registry key in its link group reaches neither.';
+          data:
+          [
+            test::noblequarry::archive::store::QuarryArchiveDB:
+              Reference #{ test::noblequarry::data::ArchiveQuarryFixture }#
+          ];
+          asserts:
+          [
+            archivedSurveyResolution:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"AS-1","Site":"North Face Pit","Blast":"AB-1"},{"Survey":"AS-2","Site":null,"Blast":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    archivedBlastSuite:
+    {
+      function: |test::noblequarry::archive::domain::BlastRecord.all()->project(
+  [
+    b|$b.blastRef,
+    b|$b.chargeKg,
+    b|$b.sites.siteName,
+    b|$b.surveys.surveyRef
+  ],
+  [
+    'Blast',
+    'Charge',
+    'Site',
+    'Survey'
+  ]
+)->sort(
+  [
+    asc('Blast')
+  ]
+);
+      tests:
+      [
+        blastOutsideWindowHasNoSurvey:
+        {
+          doc: 'Both archived blasts reach the same site over the two-hop chain, but the blast fired after the survey window closed has no survey.';
+          data:
+          [
+            test::noblequarry::archive::store::QuarryArchiveDB:
+              Reference #{ test::noblequarry::data::ArchiveQuarryFixture }#
+          ];
+          asserts:
+          [
+            archivedBlastResolution:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Blast":"AB-1","Charge":200.0,"Site":"North Face Pit","Survey":"AS-1"},{"Blast":"AB-2","Charge":220.0,"Site":"North Face Pit","Survey":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    siteToArchivedBlastSuite:
+    {
+      function: |test::noblequarry::shared::domain::QuarrySite.all()->project(
+  [
+    q|$q.siteId,
+    q|$q.archivedBlasts.blastRef,
+    q|$q.archivedSurveys.surveyRef
+  ],
+  [
+    'Site Id',
+    'Blast',
+    'Survey'
+  ]
+)->sort(
+  [
+    asc('Site Id'),
+    asc('Blast')
+  ]
+);
+      tests:
+      [
+        reverseArchivedChains:
+        {
+          doc: 'From each site back to its archived blasts and surveys; the two to-many branches are projected independently rather than crossed, so each blast and each survey lands on its own row, and the site with no cross-reference rows yields one empty row.';
+          data:
+          [
+            test::noblequarry::archive::store::QuarryArchiveDB:
+              Reference #{ test::noblequarry::data::ArchiveQuarryFixture }#
+          ];
+          asserts:
+          [
+            reverseArchivedResolution:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site Id":101,"Blast":null,"Survey":"AS-1"},{"Site Id":101,"Blast":"AB-1","Survey":null},{"Site Id":101,"Blast":"AB-2","Survey":null},{"Site Id":102,"Blast":null,"Survey":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solarridge6::mapping::ArrayReadingMapping
+(
+  *test::solarridge6::domain::ArrayReading[arrayReading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.reading_date,
+      [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.array_code,
+      [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.string_code
+    )
+    ~mainTable [test::solarridge6::store::RidgeArrayDb]ridge.array_reading
+    readingDate: [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.reading_date,
+    arrayCode: [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.array_code,
+    stringCode: [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.string_code,
+    tiltClass: [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.tilt_class,
+    inverterState: [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.inverter_state,
+    sitingLabel: concat(
+                   concat(
+                     toUpper(trim(coalesce([test::solarridge6::store::RidgeArrayDb]ridge.array_reading.array_code, 'unsited array'))),
+                     '/'
+                   ),
+                   [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.string_code
+                 ),
+    tiltBand: case(
+                equal(toUpper(trim(coalesce([test::solarridge6::store::RidgeArrayDb]ridge.array_reading.tilt_class, ''))), 'STEEP'),
+                'TILT_STEEP',
+                case(
+                  equal(toUpper(trim(coalesce([test::solarridge6::store::RidgeArrayDb]ridge.array_reading.tilt_class, ''))), 'SHALLOW'),
+                  'TILT_SHALLOW',
+                  'TILT_UNRECORDED'
+                )
+              ),
+    soilingLabel: case(
+                    greaterThanEqual(coalesce([test::solarridge6::store::RidgeArrayDb]ridge.array_reading.soiling_pct, 0.0), 8.0),
+                    concat('SOIL_HEAVY_', toUpper(trim(coalesce([test::solarridge6::store::RidgeArrayDb]ridge.array_reading.inverter_state, 'unknown')))),
+                    case(
+                      greaterThanEqual(coalesce([test::solarridge6::store::RidgeArrayDb]ridge.array_reading.soiling_pct, 0.0), 2.0),
+                      'SOIL_MODERATE',
+                      'SOIL_LIGHT'
+                    )
+                  ),
+    panelCount: [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.panel_count,
+    irradianceWm2: [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.irradiance_wm2,
+    irradianceIndexPct: times(
+                          divide(
+                            coalesce([test::solarridge6::store::RidgeArrayDb]ridge.array_reading.irradiance_wm2, 0.0),
+                            1000.0
+                          ),
+                          100.0
+                        ),
+    outputKwh: [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.output_kwh,
+    yieldPerPanelKwh: case(
+                        greaterThan(coalesce([test::solarridge6::store::RidgeArrayDb]ridge.array_reading.panel_count, 0), 0),
+                        divide(
+                          coalesce([test::solarridge6::store::RidgeArrayDb]ridge.array_reading.output_kwh, 0.0),
+                          [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.panel_count
+                        ),
+                        sqlNull()
+                      ),
+    soilingPct: [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.soiling_pct,
+    downtimeMinutes: [test::solarridge6::store::RidgeArrayDb]ridge.array_reading.downtime_min,
+    noteLength: length(coalesce([test::solarridge6::store::RidgeArrayDb]ridge.array_reading.observer_note, ''))
+  }
+)

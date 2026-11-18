@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletwillow::mapping::PlanningMapping
+(
+  *test::scarletwillow::domain::Tree[tree]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow::store::PlanningDatabase]inventory.TREE.tree_id
+    )
+    ~mainTable [test::scarletwillow::store::PlanningDatabase]inventory.TREE
+    treeTag: [test::scarletwillow::store::PlanningDatabase]inventory.TREE.tree_tag,
+    plantedOn: [test::scarletwillow::store::PlanningDatabase]inventory.TREE.planted_on,
+    heightMeters: [test::scarletwillow::store::PlanningDatabase]inventory.TREE.height_meters,
+    zoneName: [test::scarletwillow::store::PlanningDatabase]@Tree_Site > @Site_District > @District_Region > @Region_Zone | [test::scarletwillow::store::PlanningDatabase]reference.ZONE.zone_name,
+    activeSiteName: [test::scarletwillow::store::PlanningDatabase]@Tree_ActiveSite | [test::scarletwillow::store::PlanningDatabase]sites.SITE.site_name,
+    site[site]: [test::scarletwillow::store::PlanningDatabase]@Tree_Site,
+    species[species]: [test::scarletwillow::store::PlanningDatabase]@Tree_Species
+  }
+  *test::scarletwillow::domain::Site[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow::store::PlanningDatabase]sites.SITE.site_id
+    )
+    ~mainTable [test::scarletwillow::store::PlanningDatabase]sites.SITE
+    siteCode: [test::scarletwillow::store::PlanningDatabase]sites.SITE.site_code,
+    siteName: [test::scarletwillow::store::PlanningDatabase]sites.SITE.site_name,
+    district[district]: [test::scarletwillow::store::PlanningDatabase]@Site_District,
+    trees[tree]: [test::scarletwillow::store::PlanningDatabase]@Tree_Site
+  }
+  *test::scarletwillow::domain::District[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow::store::PlanningDatabase]reference.DISTRICT.district_id
+    )
+    ~mainTable [test::scarletwillow::store::PlanningDatabase]reference.DISTRICT
+    districtCode: [test::scarletwillow::store::PlanningDatabase]reference.DISTRICT.district_code,
+    districtName: [test::scarletwillow::store::PlanningDatabase]reference.DISTRICT.district_name,
+    region[region]: [test::scarletwillow::store::PlanningDatabase]@District_Region,
+    sites[site]: [test::scarletwillow::store::PlanningDatabase]@Site_District
+  }
+  *test::scarletwillow::domain::Region[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow::store::PlanningDatabase]reference.REGION.region_id
+    )
+    ~mainTable [test::scarletwillow::store::PlanningDatabase]reference.REGION
+    regionCode: [test::scarletwillow::store::PlanningDatabase]reference.REGION.region_code,
+    regionName: [test::scarletwillow::store::PlanningDatabase]reference.REGION.region_name,
+    districts[district]: [test::scarletwillow::store::PlanningDatabase]@District_Region
+  }
+  *test::scarletwillow::domain::Species[species]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow::store::PlanningDatabase]reference.SPECIES.species_id
+    )
+    ~mainTable [test::scarletwillow::store::PlanningDatabase]reference.SPECIES
+    commonName: [test::scarletwillow::store::PlanningDatabase]reference.SPECIES.common_name,
+    group[group]: [test::scarletwillow::store::PlanningDatabase]@Species_Group,
+    specimens[tree]: [test::scarletwillow::store::PlanningDatabase]@Tree_Species
+  }
+  *test::scarletwillow::domain::SpeciesGroup[group]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow::store::PlanningDatabase]reference.SPECIES_GROUP.group_id
+    )
+    ~mainTable [test::scarletwillow::store::PlanningDatabase]reference.SPECIES_GROUP
+    groupCode: [test::scarletwillow::store::PlanningDatabase]reference.SPECIES_GROUP.group_code,
+    groupName: [test::scarletwillow::store::PlanningDatabase]reference.SPECIES_GROUP.group_name,
+    members[species]: [test::scarletwillow::store::PlanningDatabase]@Species_Group
+  }
+  *test::scarletwillow::domain::TreeStatus[treeStatus]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow::store::PlanningDatabase]inventory.TREE_STATUS_VW.treeId
+    )
+    ~mainTable [test::scarletwillow::store::PlanningDatabase]inventory.TREE_STATUS_VW
+    treeTag: [test::scarletwillow::store::PlanningDatabase]inventory.TREE_STATUS_VW.treeTag,
+    lifecycleStatus: [test::scarletwillow::store::PlanningDatabase]inventory.TREE_STATUS_VW.lifecycleStatus
+  }
+)

@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskyapiary3::mapping::ApiaryMapping
+(
+  test::duskyapiary3::domain::HiveStatus: EnumerationMapping HiveStatusMapping
+  {
+    ACTIVE: ['A'],
+    RESTING: ['R'],
+    EMPTY: ['E']
+  }
+
+  *test::duskyapiary3::domain::ApiaryYard[yard_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyapiary3::relational::ApiaryDB]apiary.yard.yard_id
+    )
+    ~mainTable [test::duskyapiary3::relational::ApiaryDB]apiary.yard
+    yardId: [test::duskyapiary3::relational::ApiaryDB]apiary.yard.yard_id,
+    yardCode: [test::duskyapiary3::relational::ApiaryDB]apiary.yard.yard_code,
+    yardName: [test::duskyapiary3::relational::ApiaryDB]apiary.yard.yard_name,
+    plotId: [test::duskyapiary3::relational::ApiaryDB]apiary.yard.plot_id
+  }
+
+  *test::duskyapiary3::domain::ForagePlot[plot_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyapiary3::relational::ApiaryDB]apiary.forage_plot.plot_id
+    )
+    ~mainTable [test::duskyapiary3::relational::ApiaryDB]apiary.forage_plot
+    plotId: [test::duskyapiary3::relational::ApiaryDB]apiary.forage_plot.plot_id,
+    plotCode: [test::duskyapiary3::relational::ApiaryDB]apiary.forage_plot.plot_code,
+    plotName: [test::duskyapiary3::relational::ApiaryDB]apiary.forage_plot.plot_name,
+    bloomNote: [test::duskyapiary3::relational::ApiaryDB]apiary.forage_plot.bloom_note
+  }
+
+  *test::duskyapiary3::domain::Hive[hive_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyapiary3::relational::ApiaryDB]apiary.hive.hive_id
+    )
+    ~mainTable [test::duskyapiary3::relational::ApiaryDB]apiary.hive
+    hiveId: [test::duskyapiary3::relational::ApiaryDB]apiary.hive.hive_id,
+    hiveCode: [test::duskyapiary3::relational::ApiaryDB]apiary.hive.hive_code,
+    hiveName: [test::duskyapiary3::relational::ApiaryDB]apiary.hive.hive_name,
+    yardId: [test::duskyapiary3::relational::ApiaryDB]apiary.hive.yard_id,
+    yardCode: [test::duskyapiary3::relational::ApiaryDB]apiary.hive.yard_code,
+    population: [test::duskyapiary3::relational::ApiaryDB]apiary.hive.population,
+    status: EnumerationMapping HiveStatusMapping: [test::duskyapiary3::relational::ApiaryDB]apiary.hive.status_code,
+    plotName: [test::duskyapiary3::relational::ApiaryDB]@Hive_Yard > @Yard_Forage | [test::duskyapiary3::relational::ApiaryDB]apiary.forage_plot.plot_name,
+    inspectionNote: [test::duskyapiary3::relational::ApiaryDB]@Hive_Inspection | [test::duskyapiary3::relational::ApiaryDB]apiary.inspection.inspection_note
+  }
+
+  *test::duskyapiary3::domain::Inspection[inspection_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyapiary3::relational::ApiaryDB]apiary.inspection.inspection_id
+    )
+    ~mainTable [test::duskyapiary3::relational::ApiaryDB]apiary.inspection
+    inspectionId: [test::duskyapiary3::relational::ApiaryDB]apiary.inspection.inspection_id,
+    hiveId: [test::duskyapiary3::relational::ApiaryDB]apiary.inspection.hive_id,
+    inspectorName: [test::duskyapiary3::relational::ApiaryDB]apiary.inspection.inspector_name,
+    inspectionNote: [test::duskyapiary3::relational::ApiaryDB]apiary.inspection.inspection_note
+  }
+
+  test::duskyapiary3::domain::HiveYard: Relational
+  {
+    AssociationMapping
+    (
+      hive[yard, hive]: [test::duskyapiary3::relational::ApiaryDB]@Hive_Yard,
+      yard[hive, yard]: [test::duskyapiary3::relational::ApiaryDB]@Hive_Yard
+    )
+  }
+
+  testSuites:
+  [
+    hiveRegister:
+    {
+      function: |test::duskyapiary3::domain::Hive.all()->project(
+        [
+          h|$h.hiveCode,
+          h|$h.status,
+          h|$h.plotName,
+          h|$h.inspectionNote
+        ],
+        [
+          'HiveCode',
+          'Status',
+          'PlotName',
+          'InspectionNote'
+        ]
+      )->sort([asc('HiveCode')]);
+      tests:
+      [
+        enumAndMultiHop:
+        {
+          data:
+          [
+            test::duskyapiary3::relational::ApiaryDB: Reference #{
+              test::duskyapiary3::data::ApiaryTestData
+            }#
+          ];
+          asserts:
+          [
+            resolvedHiveRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                #{
+                  contentType: 'application/json';
+                  data: '[{"HiveCode":"HV-01","Status":"ACTIVE","PlotName":"Clover Bend","InspectionNote":"steady brood"},{"HiveCode":"HV-02","Status":"RESTING","PlotName":"Willow Rise","InspectionNote":"quiet colony"},{"HiveCode":"HV-03","Status":"EMPTY","PlotName":"Clover Bend","InspectionNote":"empty frames"}]';
+                }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

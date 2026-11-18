@@ -1,0 +1,45 @@
+name: olive-delta
+title: Reef Survey Entry Point With Processing-Temporal Monitoring
+description: A reef survey domain whose sites, coral colonies and dive teams are joined through two association implementations over a two-schema relational store. Bleaching observations sit on a processing timeline, and a curated data space binds the mapping, runtime, domain layout and two featured endpoints into one consumable unit.
+modelSources:
+  model:
+    root: olive-delta
+    files:
+      - test/olivedelta/connection/ReefConnection.pure
+      - test/olivedelta/dataspace/ReefDataSpace.pure
+      - test/olivedelta/diagram/ReefDiagram.pure
+      - test/olivedelta/domain/ReefDomain.pure
+      - test/olivedelta/mapping/ReefMapping.pure
+      - test/olivedelta/runtime/ReefRuntime.pure
+      - test/olivedelta/service/BleachWatchService.pure
+      - test/olivedelta/service/ColonyRegisterService.pure
+      - test/olivedelta/store/ReefDB.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:diagram
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - test::olivedelta::store::ReefDB
+complexity: advanced
+tags:
+  - association
+  - data-space
+  - diagram
+  - h2
+  - marine-biology
+  - processing-temporal
+  - relational
+  - snowflake

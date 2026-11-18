@@ -1,0 +1,186 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietcove4::service::CoveVisitRegister
+{
+  pattern: '/quietcove4/v1/cove-visit-register/{environment}/{since}/{windowDays}';
+  title: 'Quiet Cove - Mooring Visit Register';
+  ownership: UserList { users: ['cove-harbour-desk', 'cove-survey-office'] };
+  documentation: 'One tabular mooring-visit query planned twice: the requested start date opens a window whose end is computed by date arithmetic from the requested day count, the berth vocabulary is a literal set membership test, and the day offset column is itself a date difference. The harbour and archive keys differ only in the runtime and connection the same mapping is planned against.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {since: StrictDate[1], windowDays: Integer[1]|test::quietcove4::domain::MooringVisit.all()->filter(
+      v|(($v.arrivedOn >= $since) && ($v.arrivedOn <= $since->adjust($windowDays, meta::pure::functions::date::DurationUnit.DAYS))) && $v.berthKind->in(['ANCHORAGE', 'PILE', 'PONTOON', 'SWING'])
+    )->project(
+      [
+        v|$v.visitCode,
+        v|$v.coveCode,
+        v|$v.vesselName,
+        v|$v.berthKind,
+        v|dateDiff($since, $v.arrivedOn, meta::pure::functions::date::DurationUnit.DAYS),
+        v|$v.nights
+      ],
+      [
+        'Visit',
+        'Cove',
+        'Vessel',
+        'Berth',
+        'DayOffset',
+        'Nights'
+      ]
+    )->sort(
+      [
+        asc('Visit')
+      ]
+    )};
+    key: 'environment';
+    executions['harbour']:
+    {
+      mapping: test::quietcove4::mapping::CoveMapping;
+      runtime: test::quietcove4::runtime::CoveHarbourRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::quietcove4::mapping::CoveMapping;
+      runtime: test::quietcove4::runtime::CoveArchiveRuntime;
+    }
+  }
+  testSuites:
+  [
+    harbourVisitSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveHarbourConnection:
+            Relational
+            #{
+              cove.mooring_visit:
+                'visit_id,visit_code,cove_code,vessel_name,berth_code,nights,arrived_on\n'+
+                '1,MV-01,CV-NORTH,Kittiwake,SW,3,2026-06-02\n'+
+                '2,MV-02,CV-NORTH,Guillemot,PN,1,2026-06-05\n'+
+                '3,MV-03,CV-SOUTH,Shearwater,ZZ,2,2026-06-08\n'+
+                '4,MV-04,CV-SOUTH,Fulmar,AN,5,2026-07-20\n'+
+                '5,MV-05,CV-WEST,Petrel,PL,4,2026-06-11\n';
+
+              cove.dive_log:
+                'log_id,log_code,cove_code,site_name,depth_m,visibility_m,team_size,dived_on\n'+
+                '1,DL-01,CV-NORTH,Kelp Shelf,18,9,4,2026-06-03\n'+
+                '2,DL-02,CV-WEST,Boulder Reef,26,5,2,2026-06-12\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        harbourWindowWithBerthedVisits:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['harbour'];
+          parameters:
+          [
+            since = %2026-06-01,
+            windowDays = 14
+          ]
+          asserts:
+          [
+            berthedVisitsInsideTheWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"MV-01","Cove":"CV-NORTH","Vessel":"Kittiwake","Berth":"SWING","DayOffset":1,"Nights":3},{"Visit":"MV-02","Cove":"CV-NORTH","Vessel":"Guillemot","Berth":"PONTOON","DayOffset":4,"Nights":1},{"Visit":"MV-05","Cove":"CV-WEST","Vessel":"Petrel","Berth":"PILE","DayOffset":10,"Nights":4}]';
+                  }#;
+              }#
+          ]
+        },
+        harbourWindowAfterTheLastVisit:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['harbour'];
+          parameters:
+          [
+            since = %2026-09-01,
+            windowDays = 7
+          ]
+          asserts:
+          [
+            noVisitsInsideTheLaterWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    archiveVisitSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveArchiveConnection:
+            Relational
+            #{
+              cove.mooring_visit:
+                'visit_id,visit_code,cove_code,vessel_name,berth_code,nights,arrived_on\n'+
+                '1,MV-90,CV-EAST,Storm Petrel,AN,6,2026-05-04\n'+
+                '2,MV-91,CV-EAST,Razorbill,ZZ,2,2026-05-06\n'+
+                '3,MV-92,CV-NORTH,Gannet,PL,1,2026-05-30\n';
+
+              cove.dive_log:
+                'log_id,log_code,cove_code,site_name,depth_m,visibility_m,team_size,dived_on\n'+
+                '1,DL-90,CV-EAST,Old Slipway,12,7,3,2026-05-05\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        archiveWindowWithOneBerthedVisit:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['archive'];
+          parameters:
+          [
+            since = %2026-05-01,
+            windowDays = 10
+          ]
+          asserts:
+          [
+            onlyTheAnchorageVisitSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"MV-90","Cove":"CV-EAST","Vessel":"Storm Petrel","Berth":"ANCHORAGE","DayOffset":3,"Nights":6}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

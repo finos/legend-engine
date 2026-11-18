@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace {meta::pure::profiles::doc.doc = 'Governed publication of the community airtime schedule model.'} test::ivoryridge2::dataspace::AirtimeDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'primary';
+      description: 'Primary tier - the airtime mapping resolved against the local runtime used for curation and test execution.';
+      mapping: test::ivoryridge2::mapping::BroadcastMapping;
+      defaultRuntime: test::ivoryridge2::runtime::BroadcastH2Runtime;
+    },
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier - the same mapping resolved against the warehouse runtime.';
+      mapping: test::ivoryridge2::mapping::BroadcastMapping;
+      defaultRuntime: test::ivoryridge2::runtime::BroadcastWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'primary';
+  title: 'Community Airtime Schedule';
+  description: 'A governed entry point over the community airtime model - stations with their transmitter ratings, the programmes they carry, the rostered presenters and the aired slots with their derived labels, listener-minute totals and audience bands - wiring the mapping, runtimes and featured endpoints consumers should start from.';
+  elements:
+  [
+    test::ivoryridge2::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Slot roster';
+      description: 'Featured endpoint projecting the aired slots of one genre with their station, presenter and derived values.';
+      executable: test::ivoryridge2::service::SlotRoster;
+    },
+    {
+      id: 2;
+      title: 'Station totals';
+      description: 'Featured endpoint aggregating listener and airtime totals per station above a listener floor.';
+      executable: test::ivoryridge2::service::StationTotals;
+    },
+    {
+      id: 3;
+      title: 'Audience rank';
+      description: 'Featured endpoint ranking slots within their station partition by measured listeners.';
+      executable: test::ivoryridge2::service::AudienceRank;
+    }
+  ];
+  supportInfo: Email {
+    address: 'airtime-scheduling@example.invalid';
+  };
+}

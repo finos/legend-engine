@@ -1,0 +1,44 @@
+name: noble-ridge-3
+title: "Trail network reference chain — an included reference mapping, three association implementations and a three-hop join-reached projection"
+description: |
+  A upland trail-network model whose single relational store holds segments,
+  trailheads, reserves and steward crews, wired by three named joins that each
+  pair a key equality with a state literal so a closed trailhead, an inactive
+  reserve or an off-roster crew silently drops the hop. An inner reference
+  mapping owns the reserve and crew extents; the outer mapping pulls it in and
+  owns the segment and trailhead extents, two properties reached across two and
+  three join hops respectively, and the three association implementations that
+  bind segment to trailhead, trailhead to reserve and reserve to steward crew.
+  The outer mapping carries an extent suite that seeds all four tables and proves
+  the multi-hop path: a gravel segment behind an open trailhead publishes its
+  reserve name and steward crew, while an otherwise identical segment behind a
+  closed trailhead is dropped because the first hop misses.
+modelSources:
+  model:
+    root: noble-ridge-3
+    files:
+      - test/nobleridge3/domain/TrailNetwork.pure
+      - test/nobleridge3/mapping/TerrainReferenceMapping.pure
+      - test/nobleridge3/mapping/TrailSegmentMapping.pure
+      - test/nobleridge3/store/TrailNetworkDB.pure
+features:
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-multi-hop-join-path
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: basic
+tags:
+  - association-implementation
+  - h2
+  - included-mapping
+  - join-reached-column
+  - mapping-test
+  - multi-hop-join
+  - relational
+  - trail-network
+  - upland-reserve

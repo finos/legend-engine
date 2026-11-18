@@ -1,0 +1,57 @@
+name: teal-lantern-4
+title: "Teal Lantern 4 — An Include-Only Store And Mapping Published Through A Date-Keyed Service And A Data Space Over A Schema-Remapped Snowflake Connection"
+description: |
+  A harbour's coastal tide gauges and the daily water-height readings they record. The physical
+  readings table and its normalising mapping live in an upstream store and mapping; the store
+  and mapping that the runtime and connection bind to contain nothing but an include of those
+  upstream elements, so every table and class mapping resolves through the dependency. The
+  upstream mapping trims and upper-cases station and gauge codes and reports a missing or blank
+  quality flag as unchecked. One single-execution service takes the reading day as a path
+  parameter and keeps only float-gauge readings verified as good, projecting the day, the
+  station, the reading code and the height. The Snowflake connection authenticates with OAuth
+  and its mapper post-processor rewrites the lower-case logical schema to its upper-case
+  physical name. A data space pairs the include-only mapping with the runtime as its default
+  context and lists the service as its one executable. The fixtures prove radar, suspect and
+  unchecked readings drop out of the day and that a day with no readings returns nothing.
+modelSources:
+  model:
+    root: teal-lantern-4
+    files:
+      - test/teallantern4/connection/HarbourLakeConnection.pure
+      - test/teallantern4/dataspace/HarbourTideDataSpace.pure
+      - test/teallantern4/domain/TideDomain.pure
+      - test/teallantern4/mapping/HarbourLakeMapping.pure
+      - test/teallantern4/mapping/TideGaugeMapping.pure
+      - test/teallantern4/runtime/HarbourLakeRuntime.pure
+      - test/teallantern4/service/FloatGaugeDailyReadings.pure
+      - test/teallantern4/store/HarbourLakeDb.pure
+      - test/teallantern4/store/TideGaugeDb.pure
+features:
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:service
+  - execution:service-path-parameter
+  - execution:service-user-ownership
+  - mapping:mapping-include
+  - query:filter
+  - query:project
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-store-include
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - coastal-monitoring
+  - data-space
+  - date-path-parameter
+  - duckdb
+  - h2
+  - include-only-mapping
+  - include-only-store
+  - schema-mapper
+  - snowflake
+  - snowflake-oauth
+  - user-list-ownership

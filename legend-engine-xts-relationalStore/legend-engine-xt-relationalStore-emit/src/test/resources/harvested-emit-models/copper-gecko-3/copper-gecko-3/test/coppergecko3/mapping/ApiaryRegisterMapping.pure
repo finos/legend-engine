@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coppergecko3::mapping::ApiaryRegisterMapping
+(
+  *test::coppergecko3::domain::Hive[hive]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coppergecko3::store::ApiaryDb]apiary.hive.hive_code
+    )
+    ~mainTable [test::coppergecko3::store::ApiaryDb]apiary.hive
+    hiveCode: [test::coppergecko3::store::ApiaryDb]apiary.hive.hive_code,
+    apiaryCode: [test::coppergecko3::store::ApiaryDb]apiary.hive.apiary_code,
+    queenLine: [test::coppergecko3::store::ApiaryDb]apiary.hive.queen_line,
+    installYear: [test::coppergecko3::store::ApiaryDb]apiary.hive.install_year
+  }
+
+  *test::coppergecko3::domain::ApiarySite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coppergecko3::store::ApiaryDb]apiary.apiary_site.apiary_code
+    )
+    ~mainTable [test::coppergecko3::store::ApiaryDb]apiary.apiary_site
+    apiaryCode: [test::coppergecko3::store::ApiaryDb]apiary.apiary_site.apiary_code,
+    siteName: [test::coppergecko3::store::ApiaryDb]apiary.apiary_site.site_name,
+    districtCode: [test::coppergecko3::store::ApiaryDb]apiary.apiary_site.district_code,
+    summary[siteSummary]: [test::coppergecko3::store::ApiaryDb]@Site_Summary
+  }
+
+  *test::coppergecko3::domain::ApiarySummary[siteSummary]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coppergecko3::store::ApiaryDb]apiary.apiary_hive_summary.apiary_code
+    )
+    ~mainTable [test::coppergecko3::store::ApiaryDb]apiary.apiary_hive_summary
+    apiaryCode: [test::coppergecko3::store::ApiaryDb]apiary.apiary_hive_summary.apiary_code,
+    hiveCount: [test::coppergecko3::store::ApiaryDb]apiary.apiary_hive_summary.hive_count,
+    latestInstallYear: [test::coppergecko3::store::ApiaryDb]apiary.apiary_hive_summary.latest_install_year
+  }
+
+  *test::coppergecko3::domain::District[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coppergecko3::store::ApiaryDb]apiary.district.district_code
+    )
+    ~mainTable [test::coppergecko3::store::ApiaryDb]apiary.district
+    districtCode: [test::coppergecko3::store::ApiaryDb]apiary.district.district_code,
+    districtName: [test::coppergecko3::store::ApiaryDb]apiary.district.district_name,
+    regionName: [test::coppergecko3::store::ApiaryDb]apiary.district.region_name
+  }
+)

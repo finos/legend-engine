@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::ivoryfossil3::store::VaultDb
+(
+  include test::ivoryfossil3::store::FieldDb
+
+  Schema vault
+  (
+    Table specimen
+    (
+      site_code VARCHAR(12) PRIMARY KEY,
+      specimen_no INTEGER PRIMARY KEY,
+      layer_no INTEGER,
+      label_note VARCHAR(40),
+      kind_code VARCHAR(4),
+      grade_code VARCHAR(4),
+      length_mm FLOAT,
+      width_mm FLOAT,
+      found_on DATE,
+      status_code VARCHAR(2)
+    )
+    Table specimen_archive
+    (
+      site_code VARCHAR(12) PRIMARY KEY,
+      specimen_no INTEGER PRIMARY KEY,
+      layer_no INTEGER,
+      label_note VARCHAR(40),
+      kind_code VARCHAR(4),
+      grade_code VARCHAR(4),
+      length_mm FLOAT,
+      width_mm FLOAT,
+      found_on DATE,
+      shelf_state VARCHAR(2)
+    )
+  )
+
+  Join SpecimenStratum(vault.specimen.site_code = field.stratum.site_code and vault.specimen.layer_no = field.stratum.layer_no)
+  Join ArchiveStratum(vault.specimen_archive.site_code = field.stratum.site_code and vault.specimen_archive.layer_no = field.stratum.layer_no)
+
+  Filter CataloguedSpecimen(vault.specimen.status_code = 'C')
+  Filter ShelvedArchive(vault.specimen_archive.shelf_state = 'S')
+)

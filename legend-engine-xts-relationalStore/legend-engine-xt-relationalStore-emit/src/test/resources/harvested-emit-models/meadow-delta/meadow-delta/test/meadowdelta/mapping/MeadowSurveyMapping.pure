@@ -1,0 +1,382 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::meadowdelta::mapping::MeadowSurveyMapping
+(
+  *test::meadowdelta::domain::RingingRecord[record]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.record_id
+    )
+    ~mainTable [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record
+    recordId: [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.record_id,
+    ringCode: [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.ring_code,
+    surveyProgramme: 'MEADOW DELTA RINGING',
+    ringLabel: concat('MD-', toUpper([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.ring_code)),
+    plumageStage: [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.plumage_stage,
+    moultCode: [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code,
+    moultLabel: case(
+                equal([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.plumage_stage, 1),
+                case(equal([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code, 'PRE'), 'JUVENILE PRE-MOULT', case(equal([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code, 'ACT'), 'JUVENILE ACTIVE MOULT', case(equal([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code, 'ARR'), 'JUVENILE ARRESTED MOULT', case(equal([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code, 'SUS'), 'JUVENILE SUSPENDED MOULT', case(equal([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code, 'FIN'), 'JUVENILE MOULT COMPLETED', [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code))))),
+                case(equal([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code, 'PRE'), 'ADULT PRE-MOULT', case(equal([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code, 'ACT'), 'ADULT ACTIVE MOULT', case(equal([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code, 'ARR'), 'ADULT ARRESTED MOULT', case(equal([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code, 'SUS'), 'ADULT SUSPENDED MOULT', case(equal([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code, 'FIN'), 'ADULT MOULT COMPLETED', [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.moult_code)))))
+              ),
+    conditionCode: [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.condition_code,
+    conditionLabel: case(
+                      isNotEmpty([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.condition_code),
+                      toUpper([test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.condition_code),
+                      'NOT ASSESSED'
+                    ),
+    wingMm: [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.wing_mm,
+    massG: [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.mass_g,
+    caughtAt: [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.caught_at,
+    releaseNote: [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.release_note,
+    reviewNote: [test::meadowdelta::store::MeadowSurveyDb]survey.ringing_record.review_note,
+    commonName: rtrim([test::meadowdelta::store::MeadowSurveyDb]@Record_Species | survey.species_ref.common_name),
+    migrationCode: [test::meadowdelta::store::MeadowSurveyDb]@Record_Species | survey.species_ref.migration_code,
+    familyName: [test::meadowdelta::store::MeadowSurveyDb]@Record_Species > @Species_Family | survey.family_ref.family_name,
+    orderName: [test::meadowdelta::store::MeadowSurveyDb]@Record_Species > @Species_Family > @Family_Order | survey.taxon_order.order_name,
+    lineageName: [test::meadowdelta::store::MeadowSurveyDb]@Record_Species > @Species_Family > @Family_Order > @Order_Lineage | survey.taxon_lineage.lineage_name,
+    zoneName: [test::meadowdelta::store::MeadowSurveyDb]@Record_Zone | survey.zone_ref.zone_name,
+    reedbedCode: [test::meadowdelta::store::MeadowSurveyDb]@Record_Zone | survey.zone_ref.reedbed_code,
+    zoneCatchCount: [test::meadowdelta::store::MeadowSurveyDb]@Record_ZoneSummary | survey.zone_catch_summary.catch_count,
+    zoneMaxWing: [test::meadowdelta::store::MeadowSurveyDb]@Record_ZoneSummary | survey.zone_catch_summary.max_wing
+  }
+
+  *test::meadowdelta::domain::ZoneCatchSummary[zoneSummary]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowdelta::store::MeadowSurveyDb]survey.zone_catch_summary.zone_code
+    )
+    ~mainTable [test::meadowdelta::store::MeadowSurveyDb]survey.zone_catch_summary
+    zoneCode: [test::meadowdelta::store::MeadowSurveyDb]survey.zone_catch_summary.zone_code,
+    catchCount: [test::meadowdelta::store::MeadowSurveyDb]survey.zone_catch_summary.catch_count,
+    maxWing: [test::meadowdelta::store::MeadowSurveyDb]survey.zone_catch_summary.max_wing
+  }
+
+  testSuites:
+  [
+    recordShapeSuite:
+    {
+      function: |test::meadowdelta::domain::RingingRecord.all()->project(
+  [
+    r|$r.recordId,
+    r|$r.ringCode,
+    r|$r.surveyProgramme,
+    r|$r.ringLabel,
+    r|$r.moultLabel,
+    r|$r.conditionLabel,
+    r|$r.commonName,
+    r|$r.familyName,
+    r|$r.orderName,
+    r|$r.lineageName,
+    r|$r.zoneName,
+    r|$r.zoneCatchCount,
+    r|$r.zoneMaxWing
+  ],
+  [
+    'RecordId',
+    'RingCode',
+    'SurveyProgramme',
+    'RingLabel',
+    'MoultLabel',
+    'ConditionLabel',
+    'CommonName',
+    'FamilyName',
+    'OrderName',
+    'LineageName',
+    'ZoneName',
+    'ZoneCatchCount',
+    'ZoneMaxWing'
+  ]
+)->sort(
+  [
+    asc('RecordId')
+  ]
+);
+      tests:
+      [
+        moultArmsAndReferenceHops:
+        {
+          doc: 'Every ringing record reports the moult sentence of the arm it falls in — five scored moult states crossed with the juvenile and the adult plumage stage — and the record whose moult was never scored falls through every arm to the unscored column and reports nothing. The assessed-condition sentence is written from the raw condition letter code, the programme name is a fixed literal, the ring label is built from the ring code, the species common name is right-trimmed over one reference hop and the family, order and lineage names are resolved over two, three and four hops, while the netting zone is resolved over its own hop and the counted catch and widest wing of that zone are read from the grouped record view.';
+          data:
+          [
+            test::meadowdelta::store::MeadowSurveyDb:
+              Relational
+              #{
+                survey.taxon_lineage:
+                  'lineage_code,lineage_name\n'+
+                  'LN-SNG,Songbird Lineage\n'+
+                  'LN-WAD,Wading Lineage\n';
+
+                survey.taxon_order:
+                  'order_code,order_name,lineage_code\n'+
+                  'OR-PAS,Perching Bird Order,LN-SNG\n'+
+                  'OR-CHA,Shorebird Order,LN-WAD\n'+
+                  'OR-GRU,Crane And Rail Order,LN-WAD\n';
+
+                survey.family_ref:
+                  'family_code,family_name,order_code\n'+
+                  'FM-ACR,Marsh Warbler Family,OR-PAS\n'+
+                  'FM-SCO,Wader Family,OR-CHA\n'+
+                  'FM-RAL,Rail Family,OR-GRU\n';
+
+                survey.species_ref:
+                  'species_code,common_name,family_code,migration_code\n'+
+                  'SP-REED,Reedbed Warbler ,FM-ACR,LONG\n'+
+                  'SP-SEDGE,Sedge Warbler ,FM-ACR,LONG\n'+
+                  'SP-SNIPE,Marsh Snipe ,FM-SCO,SHORT\n'+
+                  'SP-CRAKE,Spotted Crake ,FM-RAL,LONG\n';
+
+                survey.zone_ref:
+                  'zone_code,zone_name,reedbed_code,patrolled_at\n'+
+                  'ZN-01,Upper Reedbed Zone,RB-A,2026-04-18 05:30:00\n'+
+                  'ZN-02,Lower Reedbed Zone,RB-B,2026-04-18 06:00:00\n'+
+                  'ZN-03,Willow Carr Zone,RB-C,2026-04-19 05:15:00\n';
+
+                survey.ringing_record:
+                  'record_id,ring_code,species_code,zone_code,ringer_alias,plumage_stage,moult_code,condition_code,wing_mm,mass_g,caught_at,release_note,review_note\n'+
+                  '1,RG-0001,SP-REED,ZN-01,rn-a,1,PRE,FIT,92,31.5,2026-04-18 05:40:00, released at net ,checked by scheme\n'+
+                  '2,RG-0002,SP-REED,ZN-01,rn-a,1,ACT,WORN,88,27.0,2026-04-18 05:55:00,,\n'+
+                  '3,RG-0003,SP-SEDGE,ZN-01,rn-b,1,ARR,THIN,95,22.5,2026-04-18 06:10:00, held for water ,second round\n'+
+                  '4,RG-0004,SP-SEDGE,ZN-02,rn-b,1,FIN,FIT,84,24.0,2026-04-18 06:25:00,,\n'+
+                  '5,RG-0005,SP-SNIPE,ZN-02,rn-c,3,PRE,WORN,108,96.0,2026-04-18 06:40:00, flushed from ditch ,ringed by trainee\n'+
+                  '6,RG-0006,SP-SNIPE,ZN-02,rn-c,3,ACT,THIN,101,88.5,2026-04-18 06:55:00,,\n'+
+                  '7,RG-0007,SP-CRAKE,ZN-03,rn-d,3,ARR,FIT,76,41.0,2026-04-19 05:25:00, walked into cover ,crake round\n'+
+                  '8,RG-0008,SP-CRAKE,ZN-03,rn-d,3,FIN,WORN,91,44.5,2026-04-19 05:40:00,,\n'+
+                  '9,RG-0009,SP-REED,ZN-03,rn-a,3,,,87,,2026-04-19 05:55:00,,\n'+
+                  '10,RG-0010,SP-SEDGE,ZN-01,rn-b,1,SUS,FIT,79,19.5,2026-04-19 06:10:00,,suspended moult\n'+
+                  '11,RG-0011,SP-SNIPE,ZN-03,rn-c,3,SUS,THIN,104,91.5,2026-04-19 06:25:00,,\n';
+              }#
+          ];
+          asserts:
+          [
+            moultArmRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordId":1,"RingCode":"RG-0001","SurveyProgramme":"MEADOW DELTA RINGING","RingLabel":"MD-RG-0001","MoultLabel":"JUVENILE PRE-MOULT","ConditionLabel":"FIT","CommonName":"Reedbed Warbler","FamilyName":"Marsh Warbler Family","OrderName":"Perching Bird Order","LineageName":"Songbird Lineage","ZoneName":"Upper Reedbed Zone","ZoneCatchCount":4,"ZoneMaxWing":95},{"RecordId":2,"RingCode":"RG-0002","SurveyProgramme":"MEADOW DELTA RINGING","RingLabel":"MD-RG-0002","MoultLabel":"JUVENILE ACTIVE MOULT","ConditionLabel":"WORN","CommonName":"Reedbed Warbler","FamilyName":"Marsh Warbler Family","OrderName":"Perching Bird Order","LineageName":"Songbird Lineage","ZoneName":"Upper Reedbed Zone","ZoneCatchCount":4,"ZoneMaxWing":95},{"RecordId":3,"RingCode":"RG-0003","SurveyProgramme":"MEADOW DELTA RINGING","RingLabel":"MD-RG-0003","MoultLabel":"JUVENILE ARRESTED MOULT","ConditionLabel":"THIN","CommonName":"Sedge Warbler","FamilyName":"Marsh Warbler Family","OrderName":"Perching Bird Order","LineageName":"Songbird Lineage","ZoneName":"Upper Reedbed Zone","ZoneCatchCount":4,"ZoneMaxWing":95},{"RecordId":4,"RingCode":"RG-0004","SurveyProgramme":"MEADOW DELTA RINGING","RingLabel":"MD-RG-0004","MoultLabel":"JUVENILE MOULT COMPLETED","ConditionLabel":"FIT","CommonName":"Sedge Warbler","FamilyName":"Marsh Warbler Family","OrderName":"Perching Bird Order","LineageName":"Songbird Lineage","ZoneName":"Lower Reedbed Zone","ZoneCatchCount":3,"ZoneMaxWing":108},{"RecordId":5,"RingCode":"RG-0005","SurveyProgramme":"MEADOW DELTA RINGING","RingLabel":"MD-RG-0005","MoultLabel":"ADULT PRE-MOULT","ConditionLabel":"WORN","CommonName":"Marsh Snipe","FamilyName":"Wader Family","OrderName":"Shorebird Order","LineageName":"Wading Lineage","ZoneName":"Lower Reedbed Zone","ZoneCatchCount":3,"ZoneMaxWing":108},{"RecordId":6,"RingCode":"RG-0006","SurveyProgramme":"MEADOW DELTA RINGING","RingLabel":"MD-RG-0006","MoultLabel":"ADULT ACTIVE MOULT","ConditionLabel":"THIN","CommonName":"Marsh Snipe","FamilyName":"Wader Family","OrderName":"Shorebird Order","LineageName":"Wading Lineage","ZoneName":"Lower Reedbed Zone","ZoneCatchCount":3,"ZoneMaxWing":108},{"RecordId":7,"RingCode":"RG-0007","SurveyProgramme":"MEADOW DELTA RINGING","RingLabel":"MD-RG-0007","MoultLabel":"ADULT ARRESTED MOULT","ConditionLabel":"FIT","CommonName":"Spotted Crake","FamilyName":"Rail Family","OrderName":"Crane And Rail Order","LineageName":"Wading Lineage","ZoneName":"Willow Carr Zone","ZoneCatchCount":4,"ZoneMaxWing":104},{"RecordId":8,"RingCode":"RG-0008","SurveyProgramme":"MEADOW DELTA RINGING","RingLabel":"MD-RG-0008","MoultLabel":"ADULT MOULT COMPLETED","ConditionLabel":"WORN","CommonName":"Spotted Crake","FamilyName":"Rail Family","OrderName":"Crane And Rail Order","LineageName":"Wading Lineage","ZoneName":"Willow Carr Zone","ZoneCatchCount":4,"ZoneMaxWing":104},{"RecordId":9,"RingCode":"RG-0009","SurveyProgramme":"MEADOW DELTA RINGING","RingLabel":"MD-RG-0009","MoultLabel":null,"ConditionLabel":"NOT ASSESSED","CommonName":"Reedbed Warbler","FamilyName":"Marsh Warbler Family","OrderName":"Perching Bird Order","LineageName":"Songbird Lineage","ZoneName":"Willow Carr Zone","ZoneCatchCount":4,"ZoneMaxWing":104},{"RecordId":10,"RingCode":"RG-0010","SurveyProgramme":"MEADOW DELTA RINGING","RingLabel":"MD-RG-0010","MoultLabel":"JUVENILE SUSPENDED MOULT","ConditionLabel":"FIT","CommonName":"Sedge Warbler","FamilyName":"Marsh Warbler Family","OrderName":"Perching Bird Order","LineageName":"Songbird Lineage","ZoneName":"Upper Reedbed Zone","ZoneCatchCount":4,"ZoneMaxWing":95},{"RecordId":11,"RingCode":"RG-0011","SurveyProgramme":"MEADOW DELTA RINGING","RingLabel":"MD-RG-0011","MoultLabel":"ADULT SUSPENDED MOULT","ConditionLabel":"THIN","CommonName":"Marsh Snipe","FamilyName":"Wader Family","OrderName":"Shorebird Order","LineageName":"Wading Lineage","ZoneName":"Willow Carr Zone","ZoneCatchCount":4,"ZoneMaxWing":104}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+
+    derivedShapeSuite:
+    {
+      function: |test::meadowdelta::domain::RingingRecord.all()->project(
+  [
+    r|$r.recordId,
+    r|$r.plumageLabel(),
+    r|$r.conditionScore(),
+    r|$r.moultStanding(),
+    r|$r.reviewLabel(),
+    r|$r.massStanding(),
+    r|$r.heavyBird(),
+    r|$r.crowdedZone(),
+    r|$r.longHaul(),
+    r|$r.caughtYear(),
+    r|$r.scoredBand()
+  ],
+  [
+    'RecordId',
+    'PlumageLabel',
+    'ConditionScore',
+    'MoultStanding',
+    'ReviewLabel',
+    'MassStanding',
+    'HeavyBird',
+    'CrowdedZone',
+    'LongHaul',
+    'CaughtYear',
+    'ScoredBand'
+  ]
+)->sort(
+  [
+    asc('RecordId')
+  ]
+);
+      tests:
+      [
+        derivedArmsOverMappedColumns:
+        {
+          doc: 'The derived sentences computed on the model rather than in the mapping resolve over the same rows: the plumage stage is named, the condition score walks eight arms crossing three condition letters with a wing-length threshold and returns nothing scored for the unassessed record, the moult standing is named per stage, the unreviewed and unweighed records report their fallback sentences, the heavy-bird and crowded-zone flags compare a nullable mass and a view-counted catch against a floor, the long-haul flag reads the migration code reached over a reference hop and the banded sentence re-reads the score it depends on.';
+          data:
+          [
+            test::meadowdelta::store::MeadowSurveyDb:
+              Relational
+              #{
+                survey.taxon_lineage:
+                  'lineage_code,lineage_name\n'+
+                  'LN-SNG,Songbird Lineage\n'+
+                  'LN-WAD,Wading Lineage\n';
+
+                survey.taxon_order:
+                  'order_code,order_name,lineage_code\n'+
+                  'OR-PAS,Perching Bird Order,LN-SNG\n'+
+                  'OR-CHA,Shorebird Order,LN-WAD\n'+
+                  'OR-GRU,Crane And Rail Order,LN-WAD\n';
+
+                survey.family_ref:
+                  'family_code,family_name,order_code\n'+
+                  'FM-ACR,Marsh Warbler Family,OR-PAS\n'+
+                  'FM-SCO,Wader Family,OR-CHA\n'+
+                  'FM-RAL,Rail Family,OR-GRU\n';
+
+                survey.species_ref:
+                  'species_code,common_name,family_code,migration_code\n'+
+                  'SP-REED,Reedbed Warbler ,FM-ACR,LONG\n'+
+                  'SP-SEDGE,Sedge Warbler ,FM-ACR,LONG\n'+
+                  'SP-SNIPE,Marsh Snipe ,FM-SCO,SHORT\n'+
+                  'SP-CRAKE,Spotted Crake ,FM-RAL,LONG\n';
+
+                survey.zone_ref:
+                  'zone_code,zone_name,reedbed_code,patrolled_at\n'+
+                  'ZN-01,Upper Reedbed Zone,RB-A,2026-04-18 05:30:00\n'+
+                  'ZN-02,Lower Reedbed Zone,RB-B,2026-04-18 06:00:00\n'+
+                  'ZN-03,Willow Carr Zone,RB-C,2026-04-19 05:15:00\n';
+
+                survey.ringing_record:
+                  'record_id,ring_code,species_code,zone_code,ringer_alias,plumage_stage,moult_code,condition_code,wing_mm,mass_g,caught_at,release_note,review_note\n'+
+                  '1,RG-0001,SP-REED,ZN-01,rn-a,1,PRE,FIT,92,31.5,2026-04-18 05:40:00, released at net ,checked by scheme\n'+
+                  '2,RG-0002,SP-REED,ZN-01,rn-a,1,ACT,WORN,88,27.0,2026-04-18 05:55:00,,\n'+
+                  '3,RG-0003,SP-SEDGE,ZN-01,rn-b,1,ARR,THIN,95,22.5,2026-04-18 06:10:00, held for water ,second round\n'+
+                  '4,RG-0004,SP-SEDGE,ZN-02,rn-b,1,FIN,FIT,84,24.0,2026-04-18 06:25:00,,\n'+
+                  '5,RG-0005,SP-SNIPE,ZN-02,rn-c,3,PRE,WORN,108,96.0,2026-04-18 06:40:00, flushed from ditch ,ringed by trainee\n'+
+                  '6,RG-0006,SP-SNIPE,ZN-02,rn-c,3,ACT,THIN,101,88.5,2026-04-18 06:55:00,,\n'+
+                  '7,RG-0007,SP-CRAKE,ZN-03,rn-d,3,ARR,FIT,76,41.0,2026-04-19 05:25:00, walked into cover ,crake round\n'+
+                  '8,RG-0008,SP-CRAKE,ZN-03,rn-d,3,FIN,WORN,91,44.5,2026-04-19 05:40:00,,\n'+
+                  '9,RG-0009,SP-REED,ZN-03,rn-a,3,,,87,,2026-04-19 05:55:00,,\n'+
+                  '10,RG-0010,SP-SEDGE,ZN-01,rn-b,1,SUS,FIT,79,19.5,2026-04-19 06:10:00,,suspended moult\n'+
+                  '11,RG-0011,SP-SNIPE,ZN-03,rn-c,3,SUS,THIN,104,91.5,2026-04-19 06:25:00,,\n';
+              }#
+          ];
+          asserts:
+          [
+            derivedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordId":1,"PlumageLabel":"JUVENILE","ConditionScore":8,"MoultStanding":"JUVENILE BEFORE MOULT","ReviewLabel":"CHECKED BY SCHEME","MassStanding":"WEIGHED","HeavyBird":false,"CrowdedZone":true,"LongHaul":true,"CaughtYear":2026,"ScoredBand":"TOP BAND"},{"RecordId":2,"PlumageLabel":"JUVENILE","ConditionScore":5,"MoultStanding":"JUVENILE IN MOULT","ReviewLabel":"UNREVIEWED","MassStanding":"WEIGHED","HeavyBird":false,"CrowdedZone":true,"LongHaul":true,"CaughtYear":2026,"ScoredBand":"UPPER BAND"},{"RecordId":3,"PlumageLabel":"JUVENILE","ConditionScore":4,"MoultStanding":"JUVENILE MOULT HELD","ReviewLabel":"SECOND ROUND","MassStanding":"WEIGHED","HeavyBird":false,"CrowdedZone":true,"LongHaul":true,"CaughtYear":2026,"ScoredBand":"LOWER BAND"},{"RecordId":4,"PlumageLabel":"JUVENILE","ConditionScore":7,"MoultStanding":"JUVENILE AFTER MOULT","ReviewLabel":"UNREVIEWED","MassStanding":"WEIGHED","HeavyBird":false,"CrowdedZone":false,"LongHaul":true,"CaughtYear":2026,"ScoredBand":"TOP BAND"},{"RecordId":5,"PlumageLabel":"ADULT","ConditionScore":6,"MoultStanding":"ADULT BEFORE MOULT","ReviewLabel":"RINGED BY TRAINEE","MassStanding":"WEIGHED","HeavyBird":true,"CrowdedZone":false,"LongHaul":false,"CaughtYear":2026,"ScoredBand":"UPPER BAND"},{"RecordId":6,"PlumageLabel":"ADULT","ConditionScore":4,"MoultStanding":"ADULT IN MOULT","ReviewLabel":"UNREVIEWED","MassStanding":"WEIGHED","HeavyBird":true,"CrowdedZone":false,"LongHaul":false,"CaughtYear":2026,"ScoredBand":"LOWER BAND"},{"RecordId":7,"PlumageLabel":"ADULT","ConditionScore":7,"MoultStanding":"ADULT MOULT HELD","ReviewLabel":"CRAKE ROUND","MassStanding":"WEIGHED","HeavyBird":true,"CrowdedZone":true,"LongHaul":true,"CaughtYear":2026,"ScoredBand":"TOP BAND"},{"RecordId":8,"PlumageLabel":"ADULT","ConditionScore":6,"MoultStanding":"ADULT AFTER MOULT","ReviewLabel":"UNREVIEWED","MassStanding":"WEIGHED","HeavyBird":true,"CrowdedZone":true,"LongHaul":true,"CaughtYear":2026,"ScoredBand":"UPPER BAND"},{"RecordId":9,"PlumageLabel":"ADULT","ConditionScore":0,"MoultStanding":"MOULT NOT SCORED","ReviewLabel":"UNREVIEWED","MassStanding":"UNWEIGHED","HeavyBird":false,"CrowdedZone":true,"LongHaul":true,"CaughtYear":2026,"ScoredBand":"UNBANDED"},{"RecordId":10,"PlumageLabel":"JUVENILE","ConditionScore":7,"MoultStanding":"JUVENILE AFTER MOULT","ReviewLabel":"SUSPENDED MOULT","MassStanding":"WEIGHED","HeavyBird":false,"CrowdedZone":true,"LongHaul":true,"CaughtYear":2026,"ScoredBand":"TOP BAND"},{"RecordId":11,"PlumageLabel":"ADULT","ConditionScore":4,"MoultStanding":"ADULT AFTER MOULT","ReviewLabel":"UNREVIEWED","MassStanding":"WEIGHED","HeavyBird":true,"CrowdedZone":true,"LongHaul":false,"CaughtYear":2026,"ScoredBand":"LOWER BAND"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+
+    zoneSummarySuite:
+    {
+      function: |test::meadowdelta::domain::ZoneCatchSummary.all()->project(
+  [
+    z|$z.zoneCode,
+    z|$z.catchCount,
+    z|$z.maxWing,
+    z|$z.busyZone(),
+    z|$z.zoneStanding()
+  ],
+  [
+    'ZoneCode',
+    'CatchCount',
+    'MaxWing',
+    'BusyZone',
+    'ZoneStanding'
+  ]
+)->sort(
+  [
+    asc('ZoneCode')
+  ]
+);
+      tests:
+      [
+        groupedZoneRows:
+        {
+          doc: 'The grouped record view is mapped as a class in its own right, so each netting zone reports the number of records folded into it and the widest wing among them, and the busy flag and the netted-zone sentence fall in the arm the counted catch reaches.';
+          data:
+          [
+            test::meadowdelta::store::MeadowSurveyDb:
+              Relational
+              #{
+                survey.taxon_lineage:
+                  'lineage_code,lineage_name\n'+
+                  'LN-SNG,Songbird Lineage\n'+
+                  'LN-WAD,Wading Lineage\n';
+
+                survey.taxon_order:
+                  'order_code,order_name,lineage_code\n'+
+                  'OR-PAS,Perching Bird Order,LN-SNG\n'+
+                  'OR-CHA,Shorebird Order,LN-WAD\n'+
+                  'OR-GRU,Crane And Rail Order,LN-WAD\n';
+
+                survey.family_ref:
+                  'family_code,family_name,order_code\n'+
+                  'FM-ACR,Marsh Warbler Family,OR-PAS\n'+
+                  'FM-SCO,Wader Family,OR-CHA\n'+
+                  'FM-RAL,Rail Family,OR-GRU\n';
+
+                survey.species_ref:
+                  'species_code,common_name,family_code,migration_code\n'+
+                  'SP-REED,Reedbed Warbler ,FM-ACR,LONG\n'+
+                  'SP-SEDGE,Sedge Warbler ,FM-ACR,LONG\n'+
+                  'SP-SNIPE,Marsh Snipe ,FM-SCO,SHORT\n'+
+                  'SP-CRAKE,Spotted Crake ,FM-RAL,LONG\n';
+
+                survey.zone_ref:
+                  'zone_code,zone_name,reedbed_code,patrolled_at\n'+
+                  'ZN-01,Upper Reedbed Zone,RB-A,2026-04-18 05:30:00\n'+
+                  'ZN-02,Lower Reedbed Zone,RB-B,2026-04-18 06:00:00\n'+
+                  'ZN-03,Willow Carr Zone,RB-C,2026-04-19 05:15:00\n';
+
+                survey.ringing_record:
+                  'record_id,ring_code,species_code,zone_code,ringer_alias,plumage_stage,moult_code,condition_code,wing_mm,mass_g,caught_at,release_note,review_note\n'+
+                  '1,RG-0001,SP-REED,ZN-01,rn-a,1,PRE,FIT,92,31.5,2026-04-18 05:40:00, released at net ,checked by scheme\n'+
+                  '2,RG-0002,SP-REED,ZN-01,rn-a,1,ACT,WORN,88,27.0,2026-04-18 05:55:00,,\n'+
+                  '3,RG-0003,SP-SEDGE,ZN-01,rn-b,1,ARR,THIN,95,22.5,2026-04-18 06:10:00, held for water ,second round\n'+
+                  '4,RG-0004,SP-SEDGE,ZN-02,rn-b,1,FIN,FIT,84,24.0,2026-04-18 06:25:00,,\n'+
+                  '5,RG-0005,SP-SNIPE,ZN-02,rn-c,3,PRE,WORN,108,96.0,2026-04-18 06:40:00, flushed from ditch ,ringed by trainee\n'+
+                  '6,RG-0006,SP-SNIPE,ZN-02,rn-c,3,ACT,THIN,101,88.5,2026-04-18 06:55:00,,\n'+
+                  '7,RG-0007,SP-CRAKE,ZN-03,rn-d,3,ARR,FIT,76,41.0,2026-04-19 05:25:00, walked into cover ,crake round\n'+
+                  '8,RG-0008,SP-CRAKE,ZN-03,rn-d,3,FIN,WORN,91,44.5,2026-04-19 05:40:00,,\n'+
+                  '9,RG-0009,SP-REED,ZN-03,rn-a,3,,,87,,2026-04-19 05:55:00,,\n'+
+                  '10,RG-0010,SP-SEDGE,ZN-01,rn-b,1,SUS,FIT,79,19.5,2026-04-19 06:10:00,,suspended moult\n'+
+                  '11,RG-0011,SP-SNIPE,ZN-03,rn-c,3,SUS,THIN,104,91.5,2026-04-19 06:25:00,,\n';
+              }#
+          ];
+          asserts:
+          [
+            zoneRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ZoneCode":"ZN-01","CatchCount":4,"MaxWing":95,"BusyZone":true,"ZoneStanding":"HEAVILY NETTED ZONE"},{"ZoneCode":"ZN-02","CatchCount":3,"MaxWing":108,"BusyZone":false,"ZoneStanding":"LIGHTLY NETTED ZONE"},{"ZoneCode":"ZN-03","CatchCount":4,"MaxWing":104,"BusyZone":true,"ZoneStanding":"HEAVILY NETTED ZONE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,46 @@
+name: ivory-tundra-2
+title: "Ivory Tundra — optional-parameter collar observation search with bitemporal qualified-property projections behind two single-execution services"
+description: >-
+  A tundra herd-tracking programme exposed through two single-execution services over one
+  mapping and runtime. The first takes a mode flag and three optional multi-valued identifier
+  parameters and filters through a left-nested conjunction of empty-guard-or-membership tests
+  preceded by a flag-or-property disjunction, then projects twelve aliased columns in which the
+  bitemporal herd season is resolved four times at a caller-supplied processing and business
+  instant and dereferenced two further hops to its range zone and field station. The second
+  narrows the same mapping to four columns behind a date-range conjunction closed with an
+  enumeration-literal equality.
+modelSources:
+  model:
+    root: ivory-tundra-2
+    files:
+      - test/ivorytundra2/connection/TundraH2Connection.pure
+      - test/ivorytundra2/domain/TundraDomain.pure
+      - test/ivorytundra2/mapping/TundraMapping.pure
+      - test/ivorytundra2/runtime/TundraH2Runtime.pure
+      - test/ivorytundra2/service/CollarObservationSearch.pure
+      - test/ivorytundra2/service/CollarObservationWindow.pure
+      - test/ivorytundra2/store/TundraDB.pure
+features:
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bitemporal
+  - collar-tracking
+  - date-range-filter
+  - enumeration-literal-filter
+  - h2
+  - optional-parameters
+  - point-in-time
+  - set-membership
+  - single-execution
+  - wildlife-tracking

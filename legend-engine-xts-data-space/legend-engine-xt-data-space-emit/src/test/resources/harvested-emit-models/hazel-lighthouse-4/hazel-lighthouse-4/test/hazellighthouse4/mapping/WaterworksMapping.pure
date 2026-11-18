@@ -1,0 +1,232 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazellighthouse4::mapping::WaterworksMapping
+(
+  *test::hazellighthouse4::domain::Reservoir[reservoir_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazellighthouse4::store::WaterworksDb]waterworks.reservoir.reservoir_code
+    )
+    ~mainTable [test::hazellighthouse4::store::WaterworksDb]waterworks.reservoir
+    reservoirCode: [test::hazellighthouse4::store::WaterworksDb]waterworks.reservoir.reservoir_code,
+    reservoirName: [test::hazellighthouse4::store::WaterworksDb]waterworks.reservoir.reservoir_name,
+    districtName: [test::hazellighthouse4::store::WaterworksDb]waterworks.reservoir.district_name,
+    commissionedOn: [test::hazellighthouse4::store::WaterworksDb]waterworks.reservoir.commissioned_on
+  }
+
+  *test::hazellighthouse4::domain::PumpStation[pump_station_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazellighthouse4::store::WaterworksDb]waterworks.pump_station.station_code
+    )
+    ~mainTable [test::hazellighthouse4::store::WaterworksDb]waterworks.pump_station
+    stationCode: [test::hazellighthouse4::store::WaterworksDb]waterworks.pump_station.station_code,
+    modelName: [test::hazellighthouse4::store::WaterworksDb]waterworks.pump_station.model_name,
+    ratedFlowLps: [test::hazellighthouse4::store::WaterworksDb]waterworks.pump_station.rated_flow_lps,
+    headMetres: [test::hazellighthouse4::store::WaterworksDb]waterworks.pump_station.head_metres,
+    activeFlag: [test::hazellighthouse4::store::WaterworksDb]waterworks.pump_station.active_flag,
+    districtLabel: [test::hazellighthouse4::store::WaterworksDb]@Reservoir_Station | waterworks.reservoir.district_name,
+    crewDepot: [test::hazellighthouse4::store::WaterworksDb]@Station_Call > @Call_Crew | waterworks.maintenance_crew.depot_name
+  }
+
+  *test::hazellighthouse4::domain::ServiceCall[service_call_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazellighthouse4::store::WaterworksDb]waterworks.service_call.call_code
+    )
+    ~mainTable [test::hazellighthouse4::store::WaterworksDb]waterworks.service_call
+    callCode: [test::hazellighthouse4::store::WaterworksDb]waterworks.service_call.call_code,
+    calledOn: [test::hazellighthouse4::store::WaterworksDb]waterworks.service_call.called_on,
+    downtimeHours: [test::hazellighthouse4::store::WaterworksDb]waterworks.service_call.downtime_hours,
+    completed: [test::hazellighthouse4::store::WaterworksDb]waterworks.service_call.completed,
+    reservoirName: [test::hazellighthouse4::store::WaterworksDb]@Station_Call > @Reservoir_Station | waterworks.reservoir.reservoir_name
+  }
+
+  *test::hazellighthouse4::domain::MaintenanceCrew[maintenance_crew_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazellighthouse4::store::WaterworksDb]waterworks.maintenance_crew.crew_code
+    )
+    ~mainTable [test::hazellighthouse4::store::WaterworksDb]waterworks.maintenance_crew
+    crewCode: [test::hazellighthouse4::store::WaterworksDb]waterworks.maintenance_crew.crew_code,
+    crewName: [test::hazellighthouse4::store::WaterworksDb]waterworks.maintenance_crew.crew_name,
+    depotName: [test::hazellighthouse4::store::WaterworksDb]waterworks.maintenance_crew.depot_name
+  }
+
+  test::hazellighthouse4::domain::Reservoir_PumpStation: Relational
+  {
+    AssociationMapping
+    (
+      pumpStations[reservoir_set, pump_station_set]: [test::hazellighthouse4::store::WaterworksDb]@Reservoir_Station,
+      reservoir[pump_station_set, reservoir_set]: [test::hazellighthouse4::store::WaterworksDb]@Reservoir_Station
+    )
+  }
+
+  test::hazellighthouse4::domain::PumpStation_MaintenanceCrew: Relational
+  {
+    AssociationMapping
+    (
+      servicingCrew[pump_station_set, maintenance_crew_set]: [test::hazellighthouse4::store::WaterworksDb]@Station_Call > @Call_Crew,
+      servicedStations[maintenance_crew_set, pump_station_set]: [test::hazellighthouse4::store::WaterworksDb]@Call_Crew > @Station_Call
+    )
+  }
+
+  testSuites:
+  [
+    pumpStationSuite:
+    {
+      function: |test::hazellighthouse4::domain::PumpStation.all()->project(
+  [
+    s|$s.stationCode,
+    s|$s.districtLabel,
+    s|$s.reservoir.reservoirName,
+    s|$s.servicingCrew.crewName,
+    s|$s.crewDepot,
+    s|$s.activeFlag
+  ],
+  [
+    'StationCode',
+    'District',
+    'ReservoirName',
+    'CrewName',
+    'CrewDepot',
+    'Active'
+  ]
+)->sort(
+  [
+    asc('StationCode')
+  ]
+);
+      tests:
+      [
+        joinedColumnsAndOptionalCrew:
+        {
+          doc: 'Covers the joined district column, the chained two-hop depot column, the association-navigated reservoir name and the optional crew end both resolved and unresolved, plus the station whose reservoir key does not resolve at all so every join-reached column on that row is empty.';
+          data:
+          [
+            test::hazellighthouse4::store::WaterworksDb:
+              Relational
+              #{
+                waterworks.reservoir:
+                  'reservoir_code,reservoir_name,district_name,commissioned_on\n'+
+                  'RS-1,Hazel Ridge Reservoir,North Ridge,2015-04-01\n'+
+                  'RS-2,Alder Flat Reservoir,South Fen,2017-06-15\n'+
+                  'RS-3,Basalt Mesa Reservoir,South Fen,2019-09-30\n'+
+                  'RS-4,Granite Bay Reservoir,East Bay,2021-03-20\n';
+
+                waterworks.pump_station:
+                  'station_code,reservoir_code,model_name,rated_flow_lps,head_metres,active_flag\n'+
+                  'PS-1,RS-1,GX-40,3.5,90.0,true\n'+
+                  'PS-2,RS-1,GX-40,3.5,85.0,true\n'+
+                  'PS-3,RS-2,HX-52,4.0,110.0,true\n'+
+                  'PS-4,RS-9,GX-40,1.5,70.0,false\n'+
+                  'PS-5,RS-4,LX-30,2.0,75.0,true\n';
+
+                waterworks.service_call:
+                  'call_code,station_code,crew_code,called_on,downtime_hours,completed\n'+
+                  'SC-1,PS-1,CR-1,2026-02-10,4.5,true\n'+
+                  'SC-2,PS-2,CR-2,2026-02-12,2.0,true\n'+
+                  'SC-3,PS-3,CR-9,2026-03-01,6.5,false\n';
+
+                waterworks.maintenance_crew:
+                  'crew_code,crew_name,depot_name\n'+
+                  'CR-1,Ridge Crew,North Depot\n'+
+                  'CR-2,Flat Crew,North Depot\n';
+              }#
+          ];
+          asserts:
+          [
+            stationRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"PS-1","District":"North Ridge","ReservoirName":"Hazel Ridge Reservoir","CrewName":"Ridge Crew","CrewDepot":"North Depot","Active":true},{"StationCode":"PS-2","District":"North Ridge","ReservoirName":"Hazel Ridge Reservoir","CrewName":"Flat Crew","CrewDepot":"North Depot","Active":true},{"StationCode":"PS-3","District":"South Fen","ReservoirName":"Alder Flat Reservoir","CrewName":null,"CrewDepot":null,"Active":true},{"StationCode":"PS-4","District":null,"ReservoirName":null,"CrewName":null,"CrewDepot":null,"Active":false},{"StationCode":"PS-5","District":"East Bay","ReservoirName":"Granite Bay Reservoir","CrewName":null,"CrewDepot":null,"Active":true}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    reservoirFleetSuite:
+    {
+      function: |test::hazellighthouse4::domain::Reservoir.all()->project(
+  [
+    r|$r.reservoirCode,
+    r|$r.districtName,
+    r|$r.pumpStations.stationCode
+  ],
+  [
+    'ReservoirCode',
+    'District',
+    'StationCode'
+  ]
+)->sort(
+  [
+    asc('ReservoirCode'),
+    asc('StationCode')
+  ]
+);
+      tests:
+      [
+        toManyStationsIncludingEmptyParent:
+        {
+          doc: 'Walks the to-many association end so a reservoir with several stations multiplies into one row per station, a reservoir with a single station yields one row, and the reservoir with no stations still surfaces with an empty station code.';
+          data:
+          [
+            test::hazellighthouse4::store::WaterworksDb:
+              Relational
+              #{
+                waterworks.reservoir:
+                  'reservoir_code,reservoir_name,district_name,commissioned_on\n'+
+                  'RS-1,Hazel Ridge Reservoir,North Ridge,2015-04-01\n'+
+                  'RS-2,Alder Flat Reservoir,South Fen,2017-06-15\n'+
+                  'RS-3,Basalt Mesa Reservoir,South Fen,2019-09-30\n'+
+                  'RS-4,Granite Bay Reservoir,East Bay,2021-03-20\n';
+
+                waterworks.pump_station:
+                  'station_code,reservoir_code,model_name,rated_flow_lps,head_metres,active_flag\n'+
+                  'PS-1,RS-1,GX-40,3.5,90.0,true\n'+
+                  'PS-2,RS-1,GX-40,3.5,85.0,true\n'+
+                  'PS-3,RS-2,HX-52,4.0,110.0,true\n'+
+                  'PS-4,RS-9,GX-40,1.5,70.0,false\n'+
+                  'PS-5,RS-4,LX-30,2.0,75.0,true\n';
+              }#
+          ];
+          asserts:
+          [
+            reservoirStationRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReservoirCode":"RS-1","District":"North Ridge","StationCode":"PS-1"},{"ReservoirCode":"RS-1","District":"North Ridge","StationCode":"PS-2"},{"ReservoirCode":"RS-2","District":"South Fen","StationCode":"PS-3"},{"ReservoirCode":"RS-3","District":"South Fen","StationCode":null},{"ReservoirCode":"RS-4","District":"East Bay","StationCode":"PS-5"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

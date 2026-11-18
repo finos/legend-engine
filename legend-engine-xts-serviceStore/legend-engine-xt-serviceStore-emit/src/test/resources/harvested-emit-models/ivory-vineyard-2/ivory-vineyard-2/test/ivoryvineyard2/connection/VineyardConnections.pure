@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::ivoryvineyard2::connection::VineyardH2Connection
+{
+  store: test::ivoryvineyard2::store::VineyardDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists vine;',
+      'create schema vine;',
+      'create table vine.panel (panel_id integer primary key, panel_name varchar(60) not null, warden_name varchar(60) not null);',
+      'create table vine.grade (grade_id integer primary key, grade_code varchar(20) not null, panel_id integer not null, in_z date not null, out_z date not null, from_z date not null, thru_z date not null);',
+      'create table vine.parcel (parcel_id integer primary key, parcel_code varchar(20) not null, trellis_code varchar(20) not null, slope_pct double not null, grade_id integer not null, block_code varchar(20), from_z date not null, thru_z date not null);',
+      'create table vine.press_run (run_id integer primary key, run_code varchar(20) not null, parcel_code varchar(20), run_kind varchar(20) not null, juice_litres double, must_kg integer, region_code varchar(20));',
+      'create table vine.harvest_lot (lot_id integer primary key, lot_code varchar(20) not null, region_code varchar(20), tonnes integer);'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+###Connection
+ServiceStoreConnection test::ivoryvineyard2::connection::PressExchangeApiConnection
+{
+  store: test::ivoryvineyard2::store::PressExchangeApi;
+  baseUrl: 'local://vineyard-press-exchange';
+}
+
+###Connection
+JsonModelConnection test::ivoryvineyard2::connection::PressDocConnection
+{
+  class: test::ivoryvineyard2::external::PressDoc;
+  url: 'data:application/json,%7B%7D';
+}
+
+###Connection
+JsonModelConnection test::ivoryvineyard2::connection::PanelDocConnection
+{
+  class: test::ivoryvineyard2::external::PanelDoc;
+  url: 'data:application/json,%7B%7D';
+}

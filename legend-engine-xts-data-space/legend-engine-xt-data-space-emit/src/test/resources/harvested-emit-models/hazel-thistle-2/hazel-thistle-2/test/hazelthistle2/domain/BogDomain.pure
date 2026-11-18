@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::hazelthistle2::domain::*;
+
+Class demo::hazelthistle2::domain::Catchment
+{
+  catchmentCode: String[1];
+  catchmentName: String[1];
+}
+
+Class demo::hazelthistle2::domain::BogPlot
+{
+  plotCode: String[1];
+  plotLabel: String[1];
+  catchment: Catchment[1];
+}
+
+Class <<temporal.businesstemporal>> demo::hazelthistle2::domain::MossSurvey
+{
+  surveyCode: String[1];
+  surveyedOn: StrictDate[1];
+  mossClass: String[1];
+  mossLabel: String[1];
+  mossCoverPct: Float[1];
+  waterDepthCm: Float[1];
+  wetnessIndex: Float[1];
+  damState: String[0..1];
+  plot: BogPlot[1];
+  recoveryBand(wetnessFloor: Float[1])
+  {
+    if($this.wetnessIndex >= $wetnessFloor,
+       |'RECOVERING',
+       |if($this.mossCoverPct >= 20.0,
+           |'HOLDING',
+           |'DEGRADED'))
+  }: String[1];
+}

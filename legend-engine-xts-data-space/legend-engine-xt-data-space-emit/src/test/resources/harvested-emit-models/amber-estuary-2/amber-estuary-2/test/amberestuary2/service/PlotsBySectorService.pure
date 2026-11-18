@@ -1,0 +1,152 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::amberestuary2::service::PlotsBySectorService
+{
+  pattern: '/reedbed/v1/plots/{sector}';
+  title: 'Plots By Sector';
+  owners:
+  [
+    'reed-bed-survey-team'
+  ];
+  documentation: 'Publishes the surveyed reed plots of one reserve sector whose season code is one of the recognised survey windows and whose stem count clears the reporting floor, projecting the plot columns together with the joined nesting platform label and the banded water depth.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {sector: String[1]|test::amberestuary2::domain::ReedPlot.all()->filter(
+      p|($p.sectorCode == $sector) && ($p.seasonCode->in(['spring-early', 'spring-late', 'summer-early', 'summer-late', 'autumn-early', 'autumn-late']) && ($p.stemCount >= 40))
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.surveyDate,
+        p|$p.plotLabel->toUpper(),
+        p|$p.stemCount,
+        p|$p.reedDensity,
+        p|$p.waterDepthCm,
+        p|test::amberestuary2::function::depthBand($p.waterDepthCm),
+        p|$p.platformLabel
+      ],
+      [
+        'Plot',
+        'Surveyed',
+        'Label',
+        'Stems',
+        'Density',
+        'Depth',
+        'DepthBand',
+        'Platform'
+      ]
+    )->sort(
+      [
+        asc('Plot'),
+        asc('Surveyed')
+      ]
+    )};
+    mapping: test::amberestuary2::mapping::ReedBedMapping;
+    runtime: test::amberestuary2::runtime::ReedBedRuntime;
+  }
+  testSuites:
+  [
+    sectorPlotSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              wetland.reed_plot:
+                'plot_code,survey_date,plot_label,sector_code,reed_density,water_depth_cm,stem_count,salinity_psu,canopy_pct,warden_code,habitat_note,season_code,access_flag,tide_stage\n'+
+                'RP-01,2026-04-12,North Reed Plot,SEC-NORTH,5.2,38.4,120,1.2,72.5,wd-north,dense stand,spring-early,Y,ebb\n'+
+                'RP-01,2026-05-18,North Reed Plot,SEC-NORTH,5.8,44.2,140,1.4,80.4,wd-north,dense stand,spring-late,Y,flood\n'+
+                'RP-02,,South Reed Plot,SEC-SOUTH,2.5,12.6,60,0.8,40.1,wd-south,patchy stand,summer-early,N,slack\n'+
+                'RP-03,2026-06-02,East Fen Plot,SEC-EAST,1.5,8.3,25,0.5,,,,summer-late,N,ebb\n';
+              wetland.nesting_platform:
+                'platform_code,sector_code,platform_label,install_year,mount_height_m\n'+
+                'NP-01,SEC-NORTH,North Ridge Platform,2019,2.5\n'+
+                'NP-02,SEC-SOUTH,South Fen Platform,2021,3.4\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northSectorPlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            sector = 'SEC-NORTH'
+          ]
+          asserts:
+          [
+            bothNorthSurveysBanded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"RP-01","Surveyed":"2026-04-12","Label":"NORTH REED PLOT","Stems":120,"Density":5.2,"Depth":38.4,"DepthBand":"mid","Platform":"North Ridge Platform"},{"Plot":"RP-01","Surveyed":"2026-05-18","Label":"NORTH REED PLOT","Stems":140,"Density":5.8,"Depth":44.2,"DepthBand":"deep","Platform":"North Ridge Platform"}]';
+                  }#;
+              }#
+          ]
+        },
+        southSectorPlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            sector = 'SEC-SOUTH'
+          ]
+          asserts:
+          [
+            southSurveyWithNullKeyDateRetained:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"RP-02","Surveyed":null,"Label":"SOUTH REED PLOT","Stems":60,"Density":2.5,"Depth":12.6,"DepthBand":"shallow","Platform":"South Fen Platform"}]';
+                  }#;
+              }#
+          ]
+        },
+        unsurveyedSectorPlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            sector = 'SEC-WEST'
+          ]
+          asserts:
+          [
+            noPlotsForUnsurveyedSector:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

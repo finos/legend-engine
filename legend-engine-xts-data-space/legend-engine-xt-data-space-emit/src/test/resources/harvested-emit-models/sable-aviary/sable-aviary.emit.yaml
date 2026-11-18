@@ -1,0 +1,73 @@
+name: sable-aviary
+title: "Sable Aviary — Processing-Milestoned Ringing Register With A Data Space And Grouped Register Services"
+description: |
+  An aviary ringing register whose single-schema store carries three processing-milestoned tables —
+  the ringed bird, the flight enclosure and the delivered feed batch — beside the unmilestoned species
+  guide and keeper shift they are joined to, so every extent resolves at a processing date and a
+  restated row closed out earlier falls out of range. One relational mapping pins each of the five
+  classes onto its own main table with an explicit primary key, resolves the diet label through four
+  case arms and an unrecorded fallback, pins the register provenance on with a literal transform, and
+  binds the enclosure name one join hop out of the milestoned bird extent; the four associations are
+  mapped as association implementations so the register can be walked from either end. Above the
+  mapping sit a nested condition-banding function, a day-count register-age helper and a headline
+  composer, three single-execution services — a filtered and de-duplicated bird register, a
+  date-shifted recent-ringing feed and a grouped feed tally — and a data space whose single execution
+  context pairs the mapping with the register runtime and features all three services, so a consumer
+  can execute without naming either.
+modelSources:
+  model:
+    root: sable-aviary
+    files:
+      - test/sableaviary/connection/AviaryConnections.pure
+      - test/sableaviary/dataspace/AviaryDataSpace.pure
+      - test/sableaviary/domain/AviaryDomain.pure
+      - test/sableaviary/function/AviaryFunctions.pure
+      - test/sableaviary/mapping/AviaryRegisterMapping.pure
+      - test/sableaviary/runtime/AviaryRuntimes.pure
+      - test/sableaviary/service/AviaryServices.pure
+      - test/sableaviary/store/AviaryRegisterDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:test-data
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:function
+  - grammar:qualified-property
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - milestoning:processing-temporal
+  - query:date-arithmetic
+  - query:distinct
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - aviary-register
+  - conditional-transform
+  - data-space
+  - group-by
+  - h2
+  - mapping-test
+  - milestoning
+  - processing-temporal
+  - relational
+  - service-test
+  - snowflake
+  - snowflake-connection
+  - tabular-data-set

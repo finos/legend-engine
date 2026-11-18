@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealcanyon::service::ReachRoster
+{
+  pattern: '/tealcanyon/v1/reach-roster';
+  title: 'Canyon River Reach Roster';
+  owners:
+  [
+    'example-teal-canyon-hydrology'
+  ];
+  documentation: 'Named river reaches of the canyon with their surveyed length and a display label.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::tealcanyon::domain::RiverReach.all()->project(
+      [
+        r|$r.reachCode,
+        r|$r.reachName,
+        r|$r.reachLengthKm,
+        r|$r.reachCode + ' / ' + $r.reachName
+      ],
+      [
+        'Reach',
+        'Name',
+        'Length Km',
+        'Label'
+      ]
+    )->sort([asc('Reach')]);
+    mapping: test::tealcanyon::mapping::CanyonMapping;
+    runtime: test::tealcanyon::runtime::CanyonRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              canyon.river_reach:
+                'reach_code,reach_name,reach_length_km\n'+
+                'RC-1,Upper Teal Narrows,12.40\n'+
+                'RC-2,Lower Teal Flats,8.75\n'+
+                'RC-3,Dry Side Channel,3.50\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_reach_roster:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            assertion_roster: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reach":"RC-1","Name":"Upper Teal Narrows","Length Km":12.4,"Label":"RC-1 / Upper Teal Narrows"},{"Reach":"RC-2","Name":"Lower Teal Flats","Length Km":8.75,"Label":"RC-2 / Lower Teal Flats"},{"Reach":"RC-3","Name":"Dry Side Channel","Length Km":3.5,"Label":"RC-3 / Dry Side Channel"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

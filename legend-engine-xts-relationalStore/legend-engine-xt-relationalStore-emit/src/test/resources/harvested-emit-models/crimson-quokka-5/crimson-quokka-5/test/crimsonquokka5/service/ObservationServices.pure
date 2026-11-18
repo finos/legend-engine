@@ -1,0 +1,178 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::crimsonquokka5::service::HabitatObservationRegister
+{
+  pattern: '/crimsonquokka5/v1/habitat-observations';
+  title: 'Crimson Quokka - Habitat Observation Register';
+  owners:
+  [
+    'coastal-wildlife-survey'
+  ];
+  documentation: 'Publishes observations whose habitat is selected by the caller, resolved at the requested business date. The projection includes a natural span band so the register retains a readable field-survey classification.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], habitatCodes: String[*]|test::crimsonquokka5::domain::QuokkaObservation.all($asOfDate)->filter(
+      q|$q.habitatCode->in($habitatCodes)
+    )->project(
+      [
+        q|$q.observationCode,
+        q|$q.coveName,
+        q|if($q.wingSpanCm >= 90, | 'LONG', | if($q.wingSpanCm >= 60, | 'MEDIUM', | 'SHORT')),
+        q|$q.wingSpanCm
+      ],
+      [
+        'ObservationCode',
+        'Cove',
+        'SpanBand',
+        'WingSpanCm'
+      ]
+    )->sort(
+      [
+        asc('ObservationCode')
+      ]
+    )};
+    mapping: test::crimsonquokka5::mapping::CoastalMapping;
+    runtime: test::crimsonquokka5::runtime::CoastalRuntime;
+  }
+  testSuites:
+  [
+    habitatObservationRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coastalSurvey:
+            Relational
+            #{
+              coastal.quokka_observation:
+                'observation_code,habitat_code,cove_name,wing_span_cm,spotted_on,field_note,bus_from_z,bus_thru_z\n'+
+                'QK-101,REEF,Reef Shelf,96,2026-03-10,bright ear tufts,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'QK-102,TIDEPOOL,Tide Pool,54,2026-03-11,tracks near the wrack line,2026-01-01 00:00:00,2026-04-01 00:00:00\n'+
+                'QK-103,SEAGRASS,Seagrass Cove,72,2026-03-12,foraging beside reeds,2026-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        reefObservationsAtJune:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            habitatCodes = ['REEF', 'SEAGRASS']
+          ]
+          asserts:
+          [
+            closedObservationIsExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ObservationCode":"QK-101","Cove":"Reef Shelf","SpanBand":"LONG","WingSpanCm":96},{"ObservationCode":"QK-103","Cove":"Seagrass Cove","SpanBand":"MEDIUM","WingSpanCm":72}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::crimsonquokka5::service::LargeObservationRegister
+{
+  pattern: '/crimsonquokka5/v1/large-observations';
+  title: 'Crimson Quokka - Large Observation Register';
+  owners:
+  [
+    'coastal-wildlife-survey'
+  ];
+  documentation: 'Publishes point-in-time observations at or above a requested span threshold, retaining the observation code, habitat and measured span for shoreline review.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], minimumSpanCm: Integer[1]|test::crimsonquokka5::domain::QuokkaObservation.all($asOfDate)->filter(
+      q|$q.wingSpanCm >= $minimumSpanCm
+    )->project(
+      [
+        q|$q.observationCode,
+        q|$q.habitatCode,
+        q|$q.wingSpanCm
+      ],
+      [
+        'ObservationCode',
+        'Habitat',
+        'WingSpanCm'
+      ]
+    )->sort(
+      [
+        asc('WingSpanCm'),
+        asc('ObservationCode')
+      ]
+    )};
+    mapping: test::crimsonquokka5::mapping::CoastalMapping;
+    runtime: test::crimsonquokka5::runtime::CoastalRuntime;
+  }
+  testSuites:
+  [
+    largeObservationRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coastalSurvey:
+            Relational
+            #{
+              coastal.quokka_observation:
+                'observation_code,habitat_code,cove_name,wing_span_cm,spotted_on,field_note,bus_from_z,bus_thru_z\n'+
+                'QK-201,REEF,Outer Shelf,88,2026-05-01,low tide watch,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'QK-202,SHORE,Shore Grass,64,2026-05-02,resting under saltbush,2026-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        spansAtLeastSeventy:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            minimumSpanCm = 70
+          ]
+          asserts:
+          [
+            onlyLargeObservationRemains:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ObservationCode":"QK-201","Habitat":"REEF","WingSpanCm":88}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

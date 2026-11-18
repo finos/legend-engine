@@ -1,0 +1,230 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quiettundra2::service::PlotIntakeCheckService
+{
+  pattern: '/quiettundra2/v1/plot-intake/check';
+  title: 'Quiet Tundra 2 - Checked plot intake';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Accepts a plot submission from a field tablet as JSON and returns the plot graph with its station and sample bags as a checked payload, so plot constraint warnings are reported alongside the produced values. The runtime is declared inline and binds the model store to a JSON model connection of the plot submission class.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::quiettundra2::domain::Plot.all()->graphFetchChecked(
+      #{
+        test::quiettundra2::domain::Plot
+        {
+          code,
+          season,
+          habitat,
+          coverBand,
+          shortLabel,
+          quadratCount,
+          coveredCount,
+          sampleLabels,
+          station
+          {
+            code,
+            stationName,
+            ridgeCode
+          },
+          samples
+          {
+            sampleCode,
+            kind,
+            massG
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::quiettundra2::domain::Plot
+        {
+          code,
+          season,
+          habitat,
+          coverBand,
+          shortLabel,
+          quadratCount,
+          coveredCount,
+          sampleLabels,
+          station
+          {
+            code,
+            stationName,
+            ridgeCode
+          },
+          samples
+          {
+            sampleCode,
+            kind,
+            massG
+          }
+        }
+      }#
+    );
+    mapping: test::quiettundra2::mapping::PlotIntakeM2M;
+    runtime:
+    #{
+      mappings:
+      [
+        test::quiettundra2::mapping::PlotIntakeM2M
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          plotSubmissionJson:
+          #{
+            JsonModelConnection
+            {
+              class: test::quiettundra2::source::PlotSubmission;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    plotIntakeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          plotSubmissionJson:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"plotCode":"PL-31","season":"S26","plotName":"Ice Wedge Trough","habitatCode":"H","quadrats":4,"covered":5,"station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"},"samples":[{"code":"SM-310","kindCode":"SO","mass":42.5}]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        heathPlotWithoutBandAndOvercountedQuadrats:
+        {
+          asserts:
+          [
+            checkedPlotGraph:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"defects":[{"id":"vegetatedPlotHasBand","externalId":null,"message":"A vegetated plot carries a cover band","enforcementLevel":"Warn","ruleType":"ClassConstraint","ruleDefinerPath":"test::quiettundra2::domain::Plot","path":[]},{"id":"coverRatioInRange","externalId":null,"message":"Covered quadrats never outnumber the quadrats laid","enforcementLevel":"Warn","ruleType":"ClassConstraint","ruleDefinerPath":"test::quiettundra2::domain::Plot","path":[]}],"source":{"defects":[],"source":{"number":1,"record":"{\\"plotCode\\":\\"PL-31\\",\\"season\\":\\"S26\\",\\"plotName\\":\\"Ice Wedge Trough\\",\\"habitatCode\\":\\"H\\",\\"quadrats\\":4,\\"covered\\":5,\\"station\\":{\\"code\\":\\"ST-1\\",\\"name\\":\\"Upper Knoll Hut\\",\\"ridge\\":\\"rg1\\"},\\"samples\\":[{\\"code\\":\\"SM-310\\",\\"kindCode\\":\\"SO\\",\\"mass\\":42.5}]}"},"value":{"coverPct":null,"covered":5,"habitatCode":"H","plotCode":"PL-31","plotName":"Ice Wedge Trough","quadrats":4,"samples":[{"code":"SM-310","kindCode":"SO","mass":42.5}],"season":"S26","station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"}}},"value":{"code":"PL-31","season":"S26","habitat":"HEATH","coverBand":null,"shortLabel":"Ice We","quadratCount":4,"coveredCount":5,"sampleLabels":["SM-310"],"station":{"code":"ST-1","stationName":"Upper Knoll Hut","ridgeCode":"RG1"},"samples":[{"sampleCode":"SM-310","kind":"SOIL","massG":42.5}]}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::quiettundra2::service::CrewIntakeCheckService
+{
+  pattern: '/quiettundra2/v1/crew-intake/check';
+  title: 'Quiet Tundra 2 - Checked crew intake';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Accepts a crew submission from a field tablet as JSON and returns the crew with its trimmed roster as a checked payload, reporting a warning for a crew walking alone. The runtime is declared inline and binds the model store to a JSON model connection of the crew submission class.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::quiettundra2::domain::Crew.all()->graphFetchChecked(
+      #{
+        test::quiettundra2::domain::Crew
+        {
+          code,
+          leadName,
+          memberCount,
+          roster
+        }
+      }#
+    )->serialize(
+      #{
+        test::quiettundra2::domain::Crew
+        {
+          code,
+          leadName,
+          memberCount,
+          roster
+        }
+      }#
+    );
+    mapping: test::quiettundra2::mapping::PlotIntakeM2M;
+    runtime:
+    #{
+      mappings:
+      [
+        test::quiettundra2::mapping::PlotIntakeM2M
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          crewSubmissionJson:
+          #{
+            JsonModelConnection
+            {
+              class: test::quiettundra2::source::CrewSubmission;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    crewIntakeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          crewSubmissionJson:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"crewCode":"CR-7","lead":" hut warden ","members":[" lone surveyor "]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        loneCrewIsWarned:
+        {
+          asserts:
+          [
+            checkedCrew:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"defects":[{"id":"walksInPairs","externalId":null,"message":"A crew walks the tundra in pairs at least","enforcementLevel":"Warn","ruleType":"ClassConstraint","ruleDefinerPath":"test::quiettundra2::domain::Crew","path":[]}],"source":{"defects":[],"source":{"number":1,"record":"{\\"crewCode\\":\\"CR-7\\",\\"lead\\":\\" hut warden \\",\\"members\\":[\\" lone surveyor \\"]}"},"value":{"crewCode":"CR-7","lead":" hut warden ","members":[" lone surveyor "]}},"value":{"code":"CR-7","leadName":"HUT WARDEN","memberCount":1,"roster":["lone surveyor"]}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

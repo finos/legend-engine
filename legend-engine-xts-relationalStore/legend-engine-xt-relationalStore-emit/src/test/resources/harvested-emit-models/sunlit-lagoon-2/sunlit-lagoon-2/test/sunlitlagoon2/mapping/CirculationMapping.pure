@@ -1,0 +1,164 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitlagoon2::mapping::CirculationMapping
+(
+  *test::sunlitlagoon2::domain::CirculationView[view]: Pure
+  {
+    ~src test::sunlitlagoon2::domain::RawCheckoutRecord
+    checkoutCode: $src.checkoutCode,
+    titleLabel: test::sunlitlagoon2::function::titleLabel($src.itemTitle, $src.checkoutCode),
+    circulationBand:
+      if($src.statusCode->isEmpty(),
+        |'UNCLASSIFIED',
+        |if($src.statusCode->filter(x|$x == 'AVAILABLE')->isNotEmpty(),
+          |'READY',
+          |if($src.statusCode->filter(x|$x == 'CHECKED_OUT')->isNotEmpty(),
+            |'OUT',
+            |if($src.statusCode->filter(x|$x == 'RENEWED')->isNotEmpty(),
+              |'RENEWED',
+              |if($src.statusCode->filter(x|$x == 'HOLD')->isNotEmpty(),
+                |'HELD',
+                |if($src.statusCode->filter(x|$x == 'OVERDUE')->isNotEmpty(),
+                  |'LATE',
+                  |if($src.statusCode->filter(x|$x == 'LOST')->isNotEmpty(),
+                    |'MISSING',
+                    |if($src.statusCode->filter(x|$x == 'REPAIR')->isNotEmpty(),
+                      |'REPAIR',
+                      |if($src.statusCode->filter(x|$x == 'RETIRED')->isNotEmpty(),
+                        |'RETIRED',
+                        |'UNKNOWN'))))))))),
+    renewalCount:
+      if($src.overdueDays->isEmpty(),
+        |test::sunlitlagoon2::function::renewalNumber($src.renewalText) + 1,
+        |if($src.overdueDays->toOne() <= 0,
+          |test::sunlitlagoon2::function::renewalNumber($src.renewalText) + 1,
+          |test::sunlitlagoon2::function::renewalNumber($src.renewalText) + 2)),
+    sourceChannels: if($src.channelCodes->isEmpty(), |[], |$src.channelCodes),
+          branchTag: if($src.borrowerCode->isEmpty() || $src.borrowerCode->toOne() == '', |'NO-BORROWER', |if($src.borrowerCode->in(['B-001', 'B-002']), |'NORTH', |'GENERAL')),
+    programmeTag: $src.programmeTag
+  }
+
+  *test::sunlitlagoon2::domain::BorrowerSnapshot[borrowerSnapshot]: Pure
+  {
+    ~src test::sunlitlagoon2::domain::RawBorrowerRecord
+    borrowerCode: $src.borrowerCode,
+    displayName: $src.displayName
+  }
+
+  testSuites:
+  [
+    mappingScenarios:
+    {
+      function: |test::sunlitlagoon2::domain::CirculationView.all()->graphFetch(
+        #{
+          test::sunlitlagoon2::domain::CirculationView
+          {
+            checkoutCode,
+            titleLabel,
+            circulationBand,
+            renewalCount,
+            sourceChannels,
+            branchTag,
+            programmeTag
+          }
+        }#
+      )->serialize(
+        #{
+          test::sunlitlagoon2::domain::CirculationView
+          {
+            checkoutCode,
+            titleLabel,
+            circulationBand,
+            renewalCount,
+            sourceChannels,
+            branchTag,
+            programmeTag
+          }
+        }#
+      );
+      tests:
+      [
+        conditionalArm1Hit:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::sunlitlagoon2::domain::RawCheckoutRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"checkoutCode":"L-01","borrowerCode":"B-001","itemTitle":"Moon Atlas","statusCode":"AVAILABLE","renewalText":"0","channelCodes":["DESK"],"programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                #{
+                  contentType: 'application/json';
+                  data: '{"checkoutCode":"L-01","titleLabel":"Moon Atlas [L-01]","circulationBand":"READY","renewalCount":1,"sourceChannels":["DESK"],"branchTag":"NORTH","programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}';
+                }#;
+              }#
+          ];
+        },
+        conditionalArm2Hit:
+        {
+          data: [ModelStore: ModelStore #{test::sunlitlagoon2::domain::RawCheckoutRecord: ExternalFormat #{contentType: 'application/json'; data: '[{"checkoutCode":"L-02","borrowerCode":"B-002","itemTitle":"Quiet Roads","statusCode":"CHECKED_OUT","renewalText":"1","channelCodes":["MOBILE"],"programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}]';}#}#];
+          asserts: [rows: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '{"checkoutCode":"L-02","titleLabel":"Quiet Roads [L-02]","circulationBand":"OUT","renewalCount":2,"sourceChannels":["MOBILE"],"branchTag":"NORTH","programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}';}#;}#];
+        },
+        conditionalArm3Hit:
+        {
+          data: [ModelStore: ModelStore #{test::sunlitlagoon2::domain::RawCheckoutRecord: ExternalFormat #{contentType: 'application/json'; data: '[{"checkoutCode":"L-03","borrowerCode":"B-003","itemTitle":"Harbor Poems","statusCode":"RENEWED","renewalText":"2","channelCodes":["KIOSK"],"programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}]';}#}#];
+          asserts: [rows: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '{"checkoutCode":"L-03","titleLabel":"Harbor Poems [L-03]","circulationBand":"RENEWED","renewalCount":3,"sourceChannels":["KIOSK"],"branchTag":"GENERAL","programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}';}#;}#];
+        },
+        conditionalArm4Hit:
+        {
+          data: [ModelStore: ModelStore #{test::sunlitlagoon2::domain::RawCheckoutRecord: ExternalFormat #{contentType: 'application/json'; data: '[{"checkoutCode":"L-04","borrowerCode":"B-004","itemTitle":"River Maps","statusCode":"HOLD","renewalText":"3","channelCodes":["DESK"],"programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}]';}#}#];
+          asserts: [rows: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '{"checkoutCode":"L-04","titleLabel":"River Maps [L-04]","circulationBand":"HELD","renewalCount":4,"sourceChannels":["DESK"],"branchTag":"GENERAL","programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}';}#;}#];
+        },
+        conditionalArm5Hit:
+        {
+          data: [ModelStore: ModelStore #{test::sunlitlagoon2::domain::RawCheckoutRecord: ExternalFormat #{contentType: 'application/json'; data: '[{"checkoutCode":"L-05","borrowerCode":"B-005","itemTitle":"Garden Almanac","statusCode":"OVERDUE","renewalText":"4","channelCodes":["MOBILE"],"programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}]';}#}#];
+          asserts: [rows: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '{"checkoutCode":"L-05","titleLabel":"Garden Almanac [L-05]","circulationBand":"LATE","renewalCount":5,"sourceChannels":["MOBILE"],"branchTag":"GENERAL","programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}';}#;}#];
+        },
+        conditionalArm6Hit:
+        {
+          data: [ModelStore: ModelStore #{test::sunlitlagoon2::domain::RawCheckoutRecord: ExternalFormat #{contentType: 'application/json'; data: '[{"checkoutCode":"L-06","borrowerCode":"B-006","itemTitle":"Stone Bridges","statusCode":"LOST","renewalText":"5","channelCodes":["KIOSK"],"programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}]';}#}#];
+          asserts: [rows: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '{"checkoutCode":"L-06","titleLabel":"Stone Bridges [L-06]","circulationBand":"MISSING","renewalCount":6,"sourceChannels":["KIOSK"],"branchTag":"GENERAL","programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}';}#;}#];
+        },
+        conditionalArm7Hit:
+        {
+          data: [ModelStore: ModelStore #{test::sunlitlagoon2::domain::RawCheckoutRecord: ExternalFormat #{contentType: 'application/json'; data: '[{"checkoutCode":"L-07","borrowerCode":"B-007","itemTitle":"Cloud Stories","statusCode":"REPAIR","renewalText":"6","channelCodes":["DESK"],"programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}]';}#}#];
+          asserts: [rows: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '{"checkoutCode":"L-07","titleLabel":"Cloud Stories [L-07]","circulationBand":"REPAIR","renewalCount":7,"sourceChannels":["DESK"],"branchTag":"GENERAL","programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}';}#;}#];
+        },
+        conditionalArm8Hit:
+        {
+          data: [ModelStore: ModelStore #{test::sunlitlagoon2::domain::RawCheckoutRecord: ExternalFormat #{contentType: 'application/json'; data: '[{"checkoutCode":"L-08","borrowerCode":"B-008","itemTitle":"Night Trains","statusCode":"RETIRED","renewalText":"7","channelCodes":["MOBILE"],"programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}]';}#}#];
+          asserts: [rows: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '{"checkoutCode":"L-08","titleLabel":"Night Trains [L-08]","circulationBand":"RETIRED","renewalCount":8,"sourceChannels":["MOBILE"],"branchTag":"GENERAL","programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}';}#;}#];
+        },
+        conditionalFallbackNull:
+        {
+          data: [ModelStore: ModelStore #{test::sunlitlagoon2::domain::RawCheckoutRecord: ExternalFormat #{contentType: 'application/json'; data: '[{"checkoutCode":"L-09","borrowerCode":"","itemTitle":"Uncatalogued Leaflet","renewalText":"","channelCodes":[],"programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}]';}#}#];
+          asserts: [rows: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '{"checkoutCode":"L-09","titleLabel":"Uncatalogued Leaflet [L-09]","circulationBand":"UNCLASSIFIED","renewalCount":1,"sourceChannels":[],"branchTag":"NO-BORROWER","programmeTag":"COMMUNITY_LIBRARY_CIRCULATION"}';}#;}#];
+        }
+      ];
+    }
+  ]
+)

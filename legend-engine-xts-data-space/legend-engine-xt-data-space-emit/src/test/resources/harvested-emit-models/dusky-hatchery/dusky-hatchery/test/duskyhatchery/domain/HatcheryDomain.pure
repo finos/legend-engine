@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::duskyhatchery::domain::*;
+import meta::pure::profiles::*;
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A rearing pond on a single processing axis, so every query resolves the pond as it was recorded at the requested instant.'} test::duskyhatchery::domain::RearingPond
+{
+  pondCode: String[1];
+  pondName: String[1];
+  volumeLitres: Integer[1];
+  aerated: Boolean[1];
+  commissionedOn: StrictDate[1];
+}
+
+Class {doc.doc = 'The hatchery site a pond belongs to, carrying the watershed it draws from.'} test::duskyhatchery::domain::HatcherySite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  watershed: String[1];
+  elevationMetres: Integer[1];
+}
+
+Class {doc.doc = 'A stocking of one species into a pond, with the fry tally and mean mass measured at stocking time.'} test::duskyhatchery::domain::SpeciesStock
+{
+  stockCode: String[1];
+  speciesName: String[1];
+  fryCount: Integer[1];
+  meanGrams: Float[1];
+  stockedAt: DateTime[1];
+}
+
+Class {doc.doc = 'A delivered feed batch assigned to a pond, optionally annotated by the supplying store.'} test::duskyhatchery::domain::FeedBatch
+{
+  batchCode: String[1];
+  feedType: String[1];
+  kilograms: Float[1];
+  deliveredOn: StrictDate[1];
+  supplierNote: String[0..1];
+}
+
+Class {doc.doc = 'A water quality reading taken on a pond, flagged for compliance against the rearing standard.'} test::duskyhatchery::domain::WaterReading
+{
+  readingId: Integer[1];
+  temperatureC: Float[1];
+  oxygenMgl: Float[1];
+  recordedAt: DateTime[1];
+  compliant: Boolean[1];
+}
+
+Association test::duskyhatchery::domain::Pond_Site
+{
+  site: HatcherySite[0..1];
+  ponds: RearingPond[*];
+}
+
+Association test::duskyhatchery::domain::Pond_Stock
+{
+  stocks: SpeciesStock[*];
+  pond: RearingPond[0..1];
+}
+
+Association test::duskyhatchery::domain::Pond_Feed
+{
+  feedBatches: FeedBatch[*];
+  fedPond: RearingPond[0..1];
+}
+
+Association test::duskyhatchery::domain::Pond_Reading
+{
+  readings: WaterReading[*];
+  monitoredPond: RearingPond[0..1];
+}

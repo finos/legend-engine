@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::russetcanyon2::service::LayerThicknessSurvey
+{
+  pattern: '/russetcanyon2/v1/layer-thickness/{processingDate}/{minimumThickness}';
+  title: 'Russet Canyon 2 - Layer Thickness Survey';
+  owners:
+  [
+    'canyon-trail-survey',
+    'canyon-survey-desk'
+  ];
+  documentation: 'Resolves the rock-layer extent at a processing instant, keeps the layers that clear a thickness bound and composes the segment key reached through the association join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], minimumThickness: Integer[1]|test::russetcanyon2::domain::RockLayer.all($processingDate)->filter(
+      l|$l.thicknessM >= $minimumThickness
+    )->project(
+      [
+        l|$l.layerCode,
+        l|$l.layerName->toUpper(),
+        l|$l.thicknessM,
+        l|$l.segment($processingDate).segmentCode->toOne() + '/' + $l.segment($processingDate).surfaceType->toOne()
+      ],
+      [
+        'Layer/Code',
+        'Layer/Name',
+        'Layer/ThicknessM',
+        'Layer/SegmentKey'
+      ]
+    )->sort(
+      [
+        asc('Layer/Code')
+      ]
+    )->limit(4)};
+    mapping: test::russetcanyon2::mapping::CanyonMapping;
+    runtime: test::russetcanyon2::runtime::CanyonRuntime;
+  }
+  testSuites:
+  [
+    layerThicknessSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          canyonConnection:
+            Relational
+            #{
+              canyon.trail_segment:
+                'segment_code,trail_code,surface_type,length_m,grade_percent,in_z,out_z\n'+
+                'SG-01,TH-01,gravel path,1400,14,2026-02-01,9999-12-31\n'+
+                'SG-03,TH-02,boardwalk,300,22,2026-02-01,9999-12-31\n';
+              canyon.rock_layer:
+                'layer_code,segment_code,layer_name,thickness_m,in_z,out_z\n'+
+                'RL-01,SG-01,russet sandstone,12,2026-02-01,9999-12-31\n'+
+                'RL-02,SG-01,shale band,4,2026-02-01,9999-12-31\n'+
+                'RL-03,SG-03,basalt cap,15,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        thicknessBoundAndSupersededLayer:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-03-01,
+            minimumThickness = 8
+          ]
+          asserts:
+          [
+            onlyTheCurrentThickLayer:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Layer/Code":"RL-01","Layer/Name":"RUSSET SANDSTONE","Layer/ThicknessM":12,"Layer/SegmentKey":"SG-01/gravel path"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

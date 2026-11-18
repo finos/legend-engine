@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitorchard::mapping::GradeSummaryM2M
+(
+  *test::sunlitorchard::domain::GradeSummary: Pure
+  {
+    ~src test::sunlitorchard::source::InboundGradeDocument
+    summaryCode: $src.documentRef,
+    gradeLabel: $src.grade,
+    crateCount: $src.crates
+  }
+
+  testSuites:
+  [
+    gradeSummarySuite:
+    {
+      function: |test::sunlitorchard::domain::GradeSummary.all()->graphFetch(
+  #{
+    test::sunlitorchard::domain::GradeSummary{
+      summaryCode,
+      gradeLabel,
+      crateCount
+    }
+  }#
+)->serialize(
+  #{
+    test::sunlitorchard::domain::GradeSummary{
+      summaryCode,
+      gradeLabel,
+      crateCount
+    }
+  }#
+);
+      tests:
+      [
+        gradeRead:
+        {
+          doc: 'Projects a single grade property out of an inbound grading document.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::sunlitorchard::source::InboundGradeDocument:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"documentRef":"GR-0001","grade":"Premium","crates":42}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mappedSummary:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"summaryCode":"GR-0001","gradeLabel":"Premium","crateCount":42}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

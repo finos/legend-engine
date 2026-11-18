@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::lunararboretum::store::NurseryDB
+(
+  Table conservatory
+  (
+    conservatory_id INTEGER PRIMARY KEY,
+    conservatory_name VARCHAR(200) NOT NULL
+  )
+  Table tree_north
+  (
+    tree_id INTEGER PRIMARY KEY,
+    label VARCHAR(200) NOT NULL,
+    height_m DOUBLE NOT NULL,
+    conservatory_id INTEGER NOT NULL
+  )
+  Table tree_south
+  (
+    tree_id INTEGER PRIMARY KEY,
+    label VARCHAR(200) NOT NULL,
+    height_m DOUBLE NOT NULL,
+    conservatory_id INTEGER NOT NULL
+  )
+
+  Filter TallFilter(tree_north.height_m > 10.0)
+
+  View tall_north_view
+  (
+    ~filter TallFilter
+    tree_id: tree_north.tree_id,
+    label: tree_north.label,
+    height_m: tree_north.height_m,
+    conservatory_id: tree_north.conservatory_id
+  )
+
+  Join TallNorth_Conservatory(tall_north_view.conservatory_id = conservatory.conservatory_id)
+  Join South_Conservatory(tree_south.conservatory_id = conservatory.conservatory_id)
+)

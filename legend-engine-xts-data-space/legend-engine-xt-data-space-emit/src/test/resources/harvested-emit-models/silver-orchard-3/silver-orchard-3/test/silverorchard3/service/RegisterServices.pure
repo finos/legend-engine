@@ -1,0 +1,343 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silverorchard3::service::HiveRegisterAsOf
+{
+  pattern: '/silverorchard3/hives/{asOf}';
+  documentation: 'Every hive of the register in the version open on the requested processing day, with all of its delivered properties and the inspection extension reached through the association at the same day.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::silverorchard3::domain::HiveRecord.all($asOf)->project([h|$h.globalId, h|$h.hiveLabel, h|$h.colonyStrain, h|$h.frameCount, h|$h.regionCode, h|$h.batchInId, h|$h.batchOutId, h|$h.batchInOn, h|$h.batchOutOn, h|$h.rowDigest, h|$h.hiveDetail.temperament, h|$h.hiveDetail.queenYear], ['Hive', 'Label', 'Strain', 'Frames', 'Region', 'Batch In Id', 'Batch Out Id', 'Batch In', 'Batch Out', 'Digest', 'Temperament', 'Queen Year'])->sort('Hive')};
+    mapping: test::silverorchard3::mapping::ApiaryMapping;
+    runtime: test::silverorchard3::runtime::NorthRuntime;
+  }
+  testSuites:
+  [
+    hiveRegisterAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          northRegister: Reference
+            #{
+              test::silverorchard3::data::ApiaryRegisterData
+            }#
+        ]
+      ]
+      tests:
+      [
+        midMarchRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-15
+          ]
+          asserts:
+          [
+            currentVersionsWithTheirExtension:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hive":"HV-01","Label":"Clover Row One","Strain":"carniolan","Frames":10,"Region":"NORTH","Batch In Id":2,"Batch Out Id":999999999,"Batch In":"2026-02-01","Batch Out":"9999-12-31","Digest":"d-h1b","Temperament":"calm","Queen Year":2025},{"Hive":"HV-02","Label":"Heather Knoll","Strain":"buckfast","Frames":null,"Region":"NORTH","Batch In Id":1,"Batch Out Id":999999999,"Batch In":"2026-01-01","Batch Out":"9999-12-31","Digest":"d-h2","Temperament":null,"Queen Year":null}]';
+                  }#;
+              }#
+          ]
+        },
+        midJanuaryRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-01-15
+          ]
+          asserts:
+          [
+            theFirstVersionOfCloverRowIsOpen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hive":"HV-01","Label":"Clover Row One","Strain":"carniolan","Frames":8,"Region":"NORTH","Batch In Id":1,"Batch Out Id":2,"Batch In":"2026-01-01","Batch Out":"2026-02-01","Digest":"d-h1a","Temperament":"calm","Queen Year":2025},{"Hive":"HV-02","Label":"Heather Knoll","Strain":"buckfast","Frames":null,"Region":"NORTH","Batch In Id":1,"Batch Out Id":999999999,"Batch In":"2026-01-01","Batch Out":"9999-12-31","Digest":"d-h2","Temperament":null,"Queen Year":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::silverorchard3::service::HiveRegisterHistory
+{
+  pattern: '/silverorchard3/hives/history';
+  documentation: 'Every delivered version of every hive of the register, with the batch identifiers and days that opened and closed it, and the inspection extension that is current today.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['apiary-register-stewards', 'apiary-register-audit'] };
+  execution: Single
+  {
+    query: |test::silverorchard3::domain::HiveRecord.allVersions()->project([h|$h.globalId, h|$h.frameCount, h|$h.batchInId, h|$h.batchOutId, h|$h.batchInOn, h|$h.batchOutOn, h|$h.rowDigest, h|$h.hiveDetail(%9999-12-30).temperament], ['Hive', 'Frames', 'Batch In Id', 'Batch Out Id', 'Batch In', 'Batch Out', 'Digest', 'Temperament'])->sort([asc('Hive'), asc('Batch In')]);
+    mapping: test::silverorchard3::mapping::ApiaryMapping;
+    runtime: test::silverorchard3::runtime::NorthRuntime;
+  }
+  testSuites:
+  [
+    hiveRegisterHistorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          northRegister: Reference
+            #{
+              test::silverorchard3::data::ApiaryRegisterData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyDeliveredVersion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            everyVersionIncludingTheOneOpenedLater:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hive":"HV-01","Frames":8,"Batch In Id":1,"Batch Out Id":2,"Batch In":"2026-01-01","Batch Out":"2026-02-01","Digest":"d-h1a","Temperament":"calm"},{"Hive":"HV-01","Frames":10,"Batch In Id":2,"Batch Out Id":999999999,"Batch In":"2026-02-01","Batch Out":"9999-12-31","Digest":"d-h1b","Temperament":"calm"},{"Hive":"HV-02","Frames":null,"Batch In Id":1,"Batch Out Id":999999999,"Batch In":"2026-01-01","Batch Out":"9999-12-31","Digest":"d-h2","Temperament":null},{"Hive":"HV-03","Frames":6,"Batch In Id":3,"Batch Out Id":999999999,"Batch In":"2026-04-01","Batch Out":"9999-12-31","Digest":"d-h3","Temperament":"defensive"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::silverorchard3::service::HiveLabelSearch
+{
+  pattern: '/silverorchard3/hives/search/{asOf}/{labelPart}';
+  documentation: 'Hives of the northern region whose label contains the requested fragment, matched without regard to case or surrounding blanks, in the version open on the requested processing day.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], labelPart: String[1]|let needle = $labelPart->trim()->toLower(); test::silverorchard3::domain::HiveRecord.all($asOf)->filter(h|$h.hiveLabel->toLower()->contains($needle) && ($h.regionCode == 'NORTH'))->project([h|$h.globalId, h|$h.hiveLabel, h|$h.hiveDetail.queenYear], ['Hive', 'Label', 'Queen Year'])->sort('Hive');};
+    mapping: test::silverorchard3::mapping::ApiaryMapping;
+    runtime: test::silverorchard3::runtime::NorthRuntime;
+  }
+  testSuites:
+  [
+    hiveLabelSearchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          northRegister: Reference
+            #{
+              test::silverorchard3::data::ApiaryRegisterData
+            }#
+        ]
+      ]
+      tests:
+      [
+        paddedUpperCaseFragment:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-15,
+            labelPart = ' CLOVER '
+          ]
+          asserts:
+          [
+            theFragmentIsNormalisedBeforeMatching:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hive":"HV-01","Label":"Clover Row One","Queen Year":2025}]';
+                  }#;
+              }#
+          ]
+        },
+        fragmentOfAHiveWithoutExtension:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-15,
+            labelPart = 'knoll'
+          ]
+          asserts:
+          [
+            aMatchWithoutExtensionReportsNoQueenYear:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hive":"HV-02","Label":"Heather Knoll","Queen Year":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::silverorchard3::service::ApiaryIdentifierLookup
+{
+  pattern: '/silverorchard3/apiaries/{asOf}';
+  documentation: 'Apiaries whose register identifier is one of the requested identifiers and whose forage has been declared, in the version open on the requested processing day, with the shelter recorded on the site extension.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], ids: String[*]|let wanted = $ids; test::silverorchard3::domain::ApiaryRecord.all($asOf)->filter(a|$a.globalId->in($wanted) && !$a.forageKind->isEmpty())->project([a|$a.globalId, a|$a.apiaryName, a|$a.altitudeM, a|$a.forageKind, a|$a.apiaryDetail.shelterKind], ['Apiary', 'Name', 'Altitude', 'Forage', 'Shelter'])->sort('Apiary');};
+    mapping: test::silverorchard3::mapping::ApiaryMapping;
+    runtime: test::silverorchard3::runtime::SouthRuntime;
+  }
+  testSuites:
+  [
+    apiaryIdentifierLookupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          southRegister: Reference
+            #{
+              test::silverorchard3::data::ApiaryRegisterData
+            }#
+        ]
+      ]
+      tests:
+      [
+        threeRequestedSites:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-15,
+            ids = ['AP-01', 'AP-02', 'AP-03']
+          ]
+          asserts:
+          [
+            undeclaredForageIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Apiary":"AP-01","Name":"Willow Meadow","Altitude":120,"Forage":"clover","Shelter":"thicket"},{"Apiary":"AP-03","Name":"Moor Edge","Altitude":415,"Forage":"heather","Shelter":"stone wall"}]';
+                  }#;
+              }#
+          ]
+        },
+        onlyASiteWithoutForage:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-15,
+            ids = ['AP-02']
+          ]
+          asserts:
+          [
+            nothingSurvivesTheEmptinessTest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::silverorchard3::service::ApiaryRegisterHistory
+{
+  pattern: '/silverorchard3/apiaries/history';
+  documentation: 'Every delivered version of every apiary of the register with the batch days that opened and closed it.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['apiary-register-stewards'] };
+  execution: Single
+  {
+    query: |test::silverorchard3::domain::ApiaryRecord.allVersions()->project([a|$a.globalId, a|$a.altitudeM, a|$a.batchInOn, a|$a.batchOutOn, a|$a.rowDigest], ['Apiary', 'Altitude', 'Batch In', 'Batch Out', 'Digest'])->sort([asc('Apiary'), asc('Batch In')]);
+    mapping: test::silverorchard3::mapping::ApiaryMapping;
+    runtime: test::silverorchard3::runtime::SouthRuntime;
+  }
+  testSuites:
+  [
+    apiaryRegisterHistorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          southRegister: Reference
+            #{
+              test::silverorchard3::data::ApiaryRegisterData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyDeliveredSiteVersion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            theResurveyedSiteShowsBothVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Apiary":"AP-01","Altitude":120,"Batch In":"2026-01-01","Batch Out":"9999-12-31","Digest":"d-a1"},{"Apiary":"AP-02","Altitude":340,"Batch In":"2026-01-01","Batch Out":"9999-12-31","Digest":"d-a2"},{"Apiary":"AP-03","Altitude":410,"Batch In":"2026-01-01","Batch Out":"2026-03-01","Digest":"d-a3a"},{"Apiary":"AP-03","Altitude":415,"Batch In":"2026-03-01","Batch Out":"9999-12-31","Digest":"d-a3b"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

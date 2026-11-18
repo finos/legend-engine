@@ -1,0 +1,130 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easternlantern6::service::ShelfCopyRegister
+{
+  pattern: '/eastern-lantern-6/v1/shelf-copies/{processingDate}/{branchFilter}';
+  title: 'Eastern Lantern 6 - Shelf Copy Register';
+  documentation: 'Resolves the copy extent at an explicit processing instant and admits a copy only if it was acquired before a bound derived by date arithmetic, if the requested branch was supplied and matches, if the format is one of the lent formats and if the copy has not been withdrawn.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], branchFilter: String[0..1]|test::easternlantern6::domain::ShelfCopy.all($processingDate)->filter(
+      c|($c.acquiredOn <= adjust(%2026-06-30, -30, DurationUnit.DAYS)) &&
+        ((!$branchFilter->isEmpty() && ($c.branchCode == $branchFilter->toOne())) &&
+          (($c.formatCode->in(['FM-PRINT', 'FM-LARGE', 'FM-AUDIO'])) && !($c.conditionCode == 'CN-WITHDRAWN')))
+    )->project(
+      [
+        c|$c.copyCode,
+        c|$c.titleCode,
+        c|$c.branchCode,
+        c|$c.formatCode,
+        c|$c.acquiredOn,
+        c|$c.unitCost,
+        c|$c.catalogueLabel,
+        c|$c.registerLabel
+      ],
+      [
+        'CopyCode',
+        'TitleCode',
+        'BranchCode',
+        'FormatCode',
+        'AcquiredOn',
+        'UnitCost',
+        'CatalogueLabel',
+        'RegisterLabel'
+      ]
+    )->distinct()->sort(
+      [
+        asc('CopyCode')
+      ]
+    )};
+    mapping: test::easternlantern6::mapping::CatalogueMapping;
+    runtime: test::easternlantern6::runtime::CatalogueRuntime;
+  }
+  testSuites:
+  [
+    shelfCopyRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          catalogueConnection:
+            Relational
+            #{
+              library.shelf_copy:
+                'copy_code,title_code,branch_code,format_code,condition_code,acquired_on,replacement_cost,copy_units,in_z,out_z\n'+
+                'C-01,T-1,BR-1,FM-PRINT,CN-GOOD,2026-04-02,45.0,2,2026-04-01,9999-12-31\n'+
+                'C-02,T-2,BR-1,FM-AUDIO,CN-GOOD,2026-05-20,33.0,4,2026-04-01,9999-12-31\n'+
+                'C-03,T-1,BR-1,FM-PRINT,CN-WITHDRAWN,2026-04-10,20.0,2,2026-04-01,9999-12-31\n'+
+                'C-04,T-3,BR-1,FM-MICRO,CN-GOOD,2026-04-11,60.0,3,2026-04-01,9999-12-31\n'+
+                'C-05,T-1,BR-1,FM-PRINT,CN-GOOD,2026-06-15,50.0,2,2026-04-01,9999-12-31\n'+
+                'C-06,T-2,BR-2,FM-PRINT,CN-GOOD,2026-04-05,24.0,3,2026-04-01,9999-12-31\n'+
+                'C-07,T-1,BR-1,FM-PRINT,CN-GOOD,2026-04-06,18.0,2,2026-01-01,2026-03-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        copiesLentFromTheRequestedBranch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            branchFilter = 'BR-1'
+          ]
+          asserts:
+          [
+            withdrawnUnlistedLateOtherBranchAndClosedCopiesAreAllStruck:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CopyCode":"C-01","TitleCode":"T-1","BranchCode":"BR-1","FormatCode":"FM-PRINT","AcquiredOn":"2026-04-02","UnitCost":22.5,"CatalogueLabel":"FM-PRINT/CN-GOOD","RegisterLabel":"EASTERN-CATALOGUE"},{"CopyCode":"C-02","TitleCode":"T-2","BranchCode":"BR-1","FormatCode":"FM-AUDIO","AcquiredOn":"2026-05-20","UnitCost":8.25,"CatalogueLabel":"FM-AUDIO/CN-GOOD","RegisterLabel":"EASTERN-CATALOGUE"}]';
+                  }#;
+              }#
+          ]
+        },
+        registerAtAnInstantBeforeTheCopiesWereRecorded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-02-15,
+            branchFilter = 'BR-1'
+          ]
+          asserts:
+          [
+            theProcessingWindowExcludesEveryRowRecordedLater:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CopyCode":"C-07","TitleCode":"T-1","BranchCode":"BR-1","FormatCode":"FM-PRINT","AcquiredOn":"2026-04-06","UnitCost":9.0,"CatalogueLabel":"FM-PRINT/CN-GOOD","RegisterLabel":"EASTERN-CATALOGUE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

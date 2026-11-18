@@ -1,0 +1,36 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::solarmeadow::dataspace::MeadowDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'localMeadow';
+      description: 'Primary tier - live plots, their grouped bloom view and the banded counts over the in-process store.';
+      mapping: test::solarmeadow::mapping::MeadowMapping;
+      defaultRuntime: test::solarmeadow::runtime::MeadowH2Runtime;
+    },
+    {
+      name: 'archiveMeadow';
+      description: 'Archive tier - the same curated mapping bound to the warehouse surface that holds the retained survey seasons.';
+      mapping: test::solarmeadow::mapping::MeadowMapping;
+      defaultRuntime: test::solarmeadow::runtime::MeadowLakeRuntime;
+    }
+  ];
+  defaultExecutionContext: 'localMeadow';
+  title: 'Solar Meadow Restoration Monitoring';
+  description: 'A governed entry point over restored wildflower plots, their sward types, the grouped per-plot bloom view and the banded pollinator bloom counts, wiring the curated mapping to an in-process tier and a warehouse archive tier.';
+}

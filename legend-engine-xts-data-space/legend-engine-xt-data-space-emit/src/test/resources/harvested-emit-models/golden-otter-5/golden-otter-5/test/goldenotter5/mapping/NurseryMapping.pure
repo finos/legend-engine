@@ -1,0 +1,148 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenotter5::mapping::NurseryMapping
+(
+  *test::goldenotter5::domain::PropagationBatch[batch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter5::store::NurseryDb]nursery.propagation_batch.batch_id
+    )
+    ~mainTable [test::goldenotter5::store::NurseryDb]nursery.propagation_batch
+    batchId: [test::goldenotter5::store::NurseryDb]nursery.propagation_batch.batch_id,
+    sownDate: [test::goldenotter5::store::NurseryDb]nursery.propagation_batch.sown_date,
+    cuttingCount: [test::goldenotter5::store::NurseryDb]nursery.propagation_batch.cutting_count,
+    rootedCount: [test::goldenotter5::store::NurseryDb]nursery.propagation_batch.rooted_count,
+    vigourCode: [test::goldenotter5::store::NurseryDb]nursery.propagation_batch.vigour_code,
+    cultivarName: [test::goldenotter5::store::NurseryDb]nursery.propagation_batch.cultivar_name,
+    mistingNote: [test::goldenotter5::store::NurseryDb]nursery.propagation_batch.misting_note,
+    gradeLabel: case(
+      equal([test::goldenotter5::store::NurseryDb]nursery.propagation_batch.vigour_code, 'A'),
+      'ALPHA',
+      case(
+        equal([test::goldenotter5::store::NurseryDb]nursery.propagation_batch.vigour_code, 'B'),
+        'BETA',
+        case(
+          equal([test::goldenotter5::store::NurseryDb]nursery.propagation_batch.vigour_code, 'C'),
+          'GAMMA',
+          case(
+            equal([test::goldenotter5::store::NurseryDb]nursery.propagation_batch.vigour_code, 'D'),
+            'DELTA',
+            case(
+              equal([test::goldenotter5::store::NurseryDb]nursery.propagation_batch.vigour_code, 'E'),
+              'EPSILON',
+              case(
+                equal([test::goldenotter5::store::NurseryDb]nursery.propagation_batch.vigour_code, 'F'),
+                'ZETA',
+                case(
+                  equal([test::goldenotter5::store::NurseryDb]nursery.propagation_batch.vigour_code, 'G'),
+                  'ETA',
+                  case(
+                    equal([test::goldenotter5::store::NurseryDb]nursery.propagation_batch.vigour_code, 'H'),
+                    'THETA',
+                    sqlNull()
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    benchLabel: [test::goldenotter5::store::NurseryDb]@Batch_Bench | [test::goldenotter5::store::NurseryDb]nursery.bench.bench_label,
+    houseName: [test::goldenotter5::store::NurseryDb]@Batch_Bench > [test::goldenotter5::store::NurseryDb]@Bench_Glasshouse | [test::goldenotter5::store::NurseryDb]nursery.glasshouse.house_name,
+    benchBatchCount: [test::goldenotter5::store::NurseryDb]@Batch_BenchLoad | [test::goldenotter5::store::NurseryDb]nursery.bench_load_vw.batch_count
+  }
+  *test::goldenotter5::domain::BenchLoad[benchLoad]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter5::store::NurseryDb]nursery.bench_load_vw.bench_id
+    )
+    ~mainTable [test::goldenotter5::store::NurseryDb]nursery.bench_load_vw
+    benchId: [test::goldenotter5::store::NurseryDb]nursery.bench_load_vw.bench_id,
+    batchCount: [test::goldenotter5::store::NurseryDb]nursery.bench_load_vw.batch_count,
+    totalCuttings: [test::goldenotter5::store::NurseryDb]nursery.bench_load_vw.total_cuttings,
+    peakCuttings: [test::goldenotter5::store::NurseryDb]nursery.bench_load_vw.peak_cuttings
+  }
+  testSuites:
+  [
+    nurseryMappingSuite:
+    {
+      function: |test::goldenotter5::domain::PropagationBatch.all()->project(
+        [
+          b|$b.batchId,
+          b|$b.gradeLabel,
+          b|$b.benchLabel,
+          b|$b.houseName,
+          b|$b.benchBatchCount
+        ],
+        [
+          'BatchId',
+          'GradeLabel',
+          'BenchLabel',
+          'HouseName',
+          'BenchBatchCount'
+        ]
+      )->sort([asc('BatchId')]);
+      tests:
+      [
+        allConditionalArms:
+        {
+          data:
+          [
+            test::goldenotter5::store::NurseryDb:
+              Relational
+              #{
+                nursery.propagation_batch:
+                  'batch_id,bench_id,sown_date,cutting_count,vigour_code,cultivar_name,misting_note,rooted_count\n'+
+                  '1,1,2026-05-01,10,A,FERN,light,5\n'+
+                  '2,1,2026-05-02,20,B,FERN,light,10\n'+
+                  '3,1,2026-05-03,30,C,FERN,light,15\n'+
+                  '4,1,2026-05-04,40,D,MOSS,light,20\n'+
+                  '5,1,2026-05-05,50,E,MOSS,light,25\n'+
+                  '6,1,2026-05-06,60,F,MOSS,light,30\n'+
+                  '7,1,2026-05-07,70,G,IVY,,35\n'+
+                  '8,1,2026-05-08,80,H,IVY,light,40\n'+
+                  '9,1,2026-05-09,90,X,IVY,light,\n'+
+                  '10,2,2025-12-01,120,A,FERN,light,60\n';
+                nursery.bench:
+                  'bench_id,bench_label,house_id,bench_area_m2\n'+
+                  '1,BENCH-1,1,20\n'+
+                  '2,BENCH-2,1,30\n';
+                nursery.glasshouse:
+                  'house_id,house_name,zone_label\n'+
+                  '1,HOUSE-1,NORTH\n';
+              }#
+          ];
+          asserts:
+          [
+            tenRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BatchId":1,"GradeLabel":"ALPHA","BenchLabel":"BENCH-1","HouseName":"HOUSE-1","BenchBatchCount":9},{"BatchId":2,"GradeLabel":"BETA","BenchLabel":"BENCH-1","HouseName":"HOUSE-1","BenchBatchCount":9},{"BatchId":3,"GradeLabel":"GAMMA","BenchLabel":"BENCH-1","HouseName":"HOUSE-1","BenchBatchCount":9},{"BatchId":4,"GradeLabel":"DELTA","BenchLabel":"BENCH-1","HouseName":"HOUSE-1","BenchBatchCount":9},{"BatchId":5,"GradeLabel":"EPSILON","BenchLabel":"BENCH-1","HouseName":"HOUSE-1","BenchBatchCount":9},{"BatchId":6,"GradeLabel":"ZETA","BenchLabel":"BENCH-1","HouseName":"HOUSE-1","BenchBatchCount":9},{"BatchId":7,"GradeLabel":"ETA","BenchLabel":"BENCH-1","HouseName":"HOUSE-1","BenchBatchCount":9},{"BatchId":8,"GradeLabel":"THETA","BenchLabel":"BENCH-1","HouseName":"HOUSE-1","BenchBatchCount":9},{"BatchId":9,"GradeLabel":null,"BenchLabel":"BENCH-1","HouseName":"HOUSE-1","BenchBatchCount":9},{"BatchId":10,"GradeLabel":"ALPHA","BenchLabel":"BENCH-2","HouseName":"HOUSE-1","BenchBatchCount":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

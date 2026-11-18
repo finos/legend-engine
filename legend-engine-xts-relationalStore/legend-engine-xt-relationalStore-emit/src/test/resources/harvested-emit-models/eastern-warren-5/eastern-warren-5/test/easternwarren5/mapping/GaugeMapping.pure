@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easternwarren5::mapping::GaugeMapping
+(
+  *test::easternwarren5::domain::CatchmentZone[catchmentZone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternwarren5::store::GaugeDb]catchment.catchment_zone.zone_code
+    )
+    ~mainTable [test::easternwarren5::store::GaugeDb]catchment.catchment_zone
+    zoneCode: [test::easternwarren5::store::GaugeDb]catchment.catchment_zone.zone_code,
+    zoneName: [test::easternwarren5::store::GaugeDb]catchment.catchment_zone.zone_name,
+    uplandFlag: [test::easternwarren5::store::GaugeDb]catchment.catchment_zone.upland_flag
+  }
+
+  *test::easternwarren5::domain::GaugeStation[gaugeStation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternwarren5::store::GaugeDb]catchment.gauge_station.station_code
+    )
+    ~mainTable [test::easternwarren5::store::GaugeDb]catchment.gauge_station
+    stationCode: [test::easternwarren5::store::GaugeDb]catchment.gauge_station.station_code,
+    stationName: [test::easternwarren5::store::GaugeDb]catchment.gauge_station.station_name,
+    sensorGrade: [test::easternwarren5::store::GaugeDb]catchment.gauge_station.sensor_grade,
+    zone[catchmentZone]: [test::easternwarren5::store::GaugeDb]@Station_Zone
+  }
+
+  *test::easternwarren5::domain::GaugeReading[gaugeReading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternwarren5::store::GaugeDb]catchment.gauge_reading.reading_code
+    )
+    ~mainTable [test::easternwarren5::store::GaugeDb]catchment.gauge_reading
+    readingCode: [test::easternwarren5::store::GaugeDb]catchment.gauge_reading.reading_code,
+    recordedOn: [test::easternwarren5::store::GaugeDb]catchment.gauge_reading.recorded_on,
+    reviewState: [test::easternwarren5::store::GaugeDb]catchment.gauge_reading.review_state,
+    stageMetres: [test::easternwarren5::store::GaugeDb]catchment.gauge_reading.stage_metres,
+    dischargeCumecs: [test::easternwarren5::store::GaugeDb]catchment.gauge_reading.discharge_cumecs,
+    rainfallMm: [test::easternwarren5::store::GaugeDb]catchment.gauge_reading.rainfall_mm,
+    flowBand: case(
+                greaterThan([test::easternwarren5::store::GaugeDb]catchment.gauge_reading.stage_metres, 4.0),
+                'SPATE',
+                case(
+                  greaterThan([test::easternwarren5::store::GaugeDb]catchment.gauge_reading.stage_metres, 3.0),
+                  'HIGH-FLOW',
+                  case(
+                    greaterThan([test::easternwarren5::store::GaugeDb]catchment.gauge_reading.stage_metres, 2.0),
+                    'ABOVE-MEAN',
+                    case(
+                      greaterThan([test::easternwarren5::store::GaugeDb]catchment.gauge_reading.stage_metres, 1.5),
+                      'MEAN-FLOW',
+                      case(
+                        greaterThan([test::easternwarren5::store::GaugeDb]catchment.gauge_reading.stage_metres, 1.0),
+                        'BELOW-MEAN',
+                        case(
+                          greaterThan([test::easternwarren5::store::GaugeDb]catchment.gauge_reading.stage_metres, 0.6),
+                          'LOW-FLOW',
+                          case(
+                            greaterThan([test::easternwarren5::store::GaugeDb]catchment.gauge_reading.stage_metres, 0.3),
+                            'RECESSION',
+                            case(
+                              greaterThan([test::easternwarren5::store::GaugeDb]catchment.gauge_reading.rainfall_mm, 0.0),
+                              'RAIN-TRICKLE',
+                              sqlNull()
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+    advisoryNote: case(
+                    equal([test::easternwarren5::store::GaugeDb]catchment.gauge_reading.review_state, 'PROVISIONAL'),
+                    concat('REVIEW-', toUpper([test::easternwarren5::store::GaugeDb]@Reading_Station | [test::easternwarren5::store::GaugeDb]catchment.gauge_station.sensor_grade)),
+                    case(
+                      greaterThan([test::easternwarren5::store::GaugeDb]catchment.gauge_reading.turbidity_ntu, 50.0),
+                      'SILT-WATCH',
+                      sqlNull()
+                    )
+                  ),
+    stationName: [test::easternwarren5::store::GaugeDb]@Reading_Station | [test::easternwarren5::store::GaugeDb]catchment.gauge_station.station_name,
+    zoneName: [test::easternwarren5::store::GaugeDb]@Reading_Station > @Station_Zone | [test::easternwarren5::store::GaugeDb]catchment.catchment_zone.zone_name,
+    station[gaugeStation]: [test::easternwarren5::store::GaugeDb]@Reading_Station
+  }
+)

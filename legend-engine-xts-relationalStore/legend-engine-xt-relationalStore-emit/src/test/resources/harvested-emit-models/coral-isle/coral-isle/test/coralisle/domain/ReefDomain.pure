@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::coralisle::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A fixed intertidal monitoring station on a reef flat, visited on a survey rotation.'} test::coralisle::domain::SurveyStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  shoreZone: String[0..1];
+  depthMeters: Integer[0..1];
+  monitored: Boolean[1];
+  commissionedOn: DateTime[1];
+  habitatNotes: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One recorded visit to a monitoring station, carrying the surface conditions observed on the day.'} test::coralisle::domain::SurveyVisit
+{
+  visitRef: String[1];
+  stationCode: String[1];
+  visitedOn: DateTime[1];
+  surfaceTempC: Integer[0..1];
+  swellNoted: Boolean[1];
+  observerCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A plankton net tow taken alongside a station visit, described by its net configuration.'} test::coralisle::domain::PlanktonTow
+{
+  towRef: String[1];
+  towName: String[1];
+  netMeshMicrons: Integer[0..1];
+  towCompleted: Boolean[1];
+  sampledAt: DateTime[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single instrument reading of the water column at a station.'} test::coralisle::domain::WaterReading
+{
+  readingRef: String[1];
+  stationCode: String[1];
+  salinityPsu: Integer[0..1];
+  recordedAt: DateTime[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A field observer rostered onto the survey teams.'} test::coralisle::domain::FieldObserver
+{
+  observerCode: String[1];
+  observerName: String[1];
+  teamName: String[0..1];
+  certified: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A servicing entry for a piece of field equipment carried on the survey rotation.'} test::coralisle::domain::EquipmentLog
+{
+  gearTag: String[1];
+  gearName: String[1];
+  servicedOn: DateTime[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named transect line across the reef flat, grouping the visits recorded along it.'} test::coralisle::domain::ReefTransect
+{
+  transectRef: String[1];
+  transectName: String[1];
+  visits: SurveyVisit[*];
+}

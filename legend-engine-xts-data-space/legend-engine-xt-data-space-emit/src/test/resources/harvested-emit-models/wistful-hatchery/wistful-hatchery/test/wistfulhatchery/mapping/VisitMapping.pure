@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulhatchery::mapping::VisitMapping
+(
+  *test::wistfulhatchery::domain::GuidedVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulhatchery::store::VisitDb]visit.guided_visit.visit_id
+    )
+    ~mainTable [test::wistfulhatchery::store::VisitDb]visit.guided_visit
+    visitCode: [test::wistfulhatchery::store::VisitDb]visit.guided_visit.visit_code,
+    visitorCount: [test::wistfulhatchery::store::VisitDb]visit.guided_visit.visitor_count,
+    visitedOn: [test::wistfulhatchery::store::VisitDb]visit.guided_visit.visited_on,
+    docentName: [test::wistfulhatchery::store::VisitDb]@Visit_Docent | [test::wistfulhatchery::store::VisitDb]visit.docent.docent_name,
+    shiftName: [test::wistfulhatchery::store::VisitDb]@Visit_Docent | [test::wistfulhatchery::store::VisitDb]visit.docent.shift_name
+  }
+
+  *test::wistfulhatchery::domain::Docent[docent]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulhatchery::store::VisitDb]visit.docent.docent_id
+    )
+    ~mainTable [test::wistfulhatchery::store::VisitDb]visit.docent
+    docentName: [test::wistfulhatchery::store::VisitDb]visit.docent.docent_name,
+    shiftName: [test::wistfulhatchery::store::VisitDb]visit.docent.shift_name
+  }
+
+  testSuites:
+  [
+    guidedVisitSuite:
+    {
+      function: test::wistfulhatchery::domain::GuidedVisit.all(%2026-06-01)->project(~[visitCode: v|$v.visitCode, docentName: v|$v.docentName, shiftName: v|$v.shiftName, visitorCount: v|$v.visitorCount])->sort([~visitCode->ascending()]);
+      tests:
+      [
+        inForceVisitsOnly:
+        {
+          doc: 'Projects the guided visits that are in force at the query date with the docent reached by a single hop, proving the withdrawn visit is filtered out by the processing window.';
+          data:
+          [
+            test::wistfulhatchery::store::VisitDb:
+              Relational
+              #{
+                visit.docent:
+                  'docent_id,docent_name,shift_name\n'+
+                  '1,Linnet Fern,Morning Shift\n'+
+                  '2,Aspen Hale,Evening Shift\n';
+
+                visit.guided_visit:
+                  'visit_id,visit_code,docent_id,visitor_count,visited_on,in_z,out_z\n'+
+                  '1,GV-01,1,24,2026-05-20,2026-01-01,9999-12-31\n'+
+                  '2,GV-02,2,16,2026-05-21,2026-01-01,9999-12-31\n'+
+                  '3,GV-03,1,40,2026-05-22,2020-01-01,2021-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            visitRows:
+              Relation
+              #{
+                visitCode,docentName,shiftName,visitorCount
+                GV-01,Linnet Fern,Morning Shift,24
+                GV-02,Aspen Hale,Evening Shift,16;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

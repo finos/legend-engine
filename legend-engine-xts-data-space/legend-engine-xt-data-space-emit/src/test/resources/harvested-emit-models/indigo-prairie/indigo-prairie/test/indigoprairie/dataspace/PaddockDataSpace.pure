@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace demo::indigoprairie::dataspace::PaddockDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'rangeTier';
+      description: 'Paddock tier - paddocks, forage samples, herd moves and field notes over the in-process store.';
+      mapping: demo::indigoprairie::mapping::PaddockMapping;
+      defaultRuntime: demo::indigoprairie::runtime::PaddockH2Runtime;
+    },
+    {
+      name: 'warehouseTier';
+      description: 'Warehouse tier - the same paddock mapping wired to the governed warehouse connection.';
+      mapping: demo::indigoprairie::mapping::PaddockMapping;
+      defaultRuntime: demo::indigoprairie::runtime::PaddockWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'rangeTier';
+  title: 'Prairie Grazing Rotation';
+  description: 'A governed entry point over grazing paddocks, their clipped forage samples and the herd moves and field notes recorded against them.';
+  elements:
+  [
+    demo::indigoprairie::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Forage digest';
+      description: 'Featured endpoint returning qualifying forage samples with their joined grass association.';
+      executable: demo::indigoprairie::service::ForageDigestService;
+    },
+    {
+      id: 2;
+      title: 'Herd rotation register';
+      description: 'Featured endpoint returning herd moves above a size floor with their note recorders.';
+      executable: demo::indigoprairie::service::HerdRotationService;
+    }
+  ];
+}

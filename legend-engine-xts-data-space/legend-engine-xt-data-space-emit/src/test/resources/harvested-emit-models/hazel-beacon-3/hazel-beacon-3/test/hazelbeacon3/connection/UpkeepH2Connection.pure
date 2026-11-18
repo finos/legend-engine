@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::hazelbeacon3::connection::UpkeepH2Connection
+{
+  store: test::hazelbeacon3::store::UpkeepDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists work;',
+      'create schema work;',
+      'drop schema if exists crew;',
+      'create schema crew;',
+      'create table crew.crew_record (crew_code varchar(24) primary key, crew_name varchar(120) not null, depot_name varchar(120) not null);',
+      'create table work.work_order (order_ref varchar(24) primary key, beacon_code varchar(24) not null, crew_code varchar(24) not null, priority_code varchar(8), opened_on date not null, closed_on date);',
+      'create table work.part_usage (usage_ref varchar(24) primary key, order_ref varchar(24) not null, part_code varchar(24) not null, quantity integer not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

@@ -1,0 +1,247 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskydelta::mapping::ApiaryMapping
+(
+  test::duskydelta::domain::Hive[hive]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskydelta::store::ApiaryDatabase]apiary.hive_record.hive_id
+    )
+    ~mainTable [test::duskydelta::store::ApiaryDatabase]apiary.hive_record
+    hiveCode: [test::duskydelta::store::ApiaryDatabase]apiary.hive_record.hive_code,
+    frameCount: [test::duskydelta::store::ApiaryDatabase]apiary.hive_record.frame_count,
+    broodScore: [test::duskydelta::store::ApiaryDatabase]apiary.hive_record.brood_score,
+    varroaCount: [test::duskydelta::store::ApiaryDatabase]apiary.hive_record.varroa_count,
+    queenLabel: case(
+                  equal([test::duskydelta::store::ApiaryDatabase]apiary.hive_record.queen_code, 'UNSET'),
+                  sqlNull(),
+                  toUpper(trim([test::duskydelta::store::ApiaryDatabase]apiary.hive_record.queen_code))
+                ),
+    registerKind: 'FIELD-REGISTER',
+    healthBand: case(greaterThan([test::duskydelta::store::ApiaryDatabase]apiary.hive_record.brood_score, 90), 'BAND_A',
+      case(greaterThan([test::duskydelta::store::ApiaryDatabase]apiary.hive_record.brood_score, 80), 'BAND_B',
+      case(greaterThan([test::duskydelta::store::ApiaryDatabase]apiary.hive_record.brood_score, 70), 'BAND_C',
+      case(greaterThan([test::duskydelta::store::ApiaryDatabase]apiary.hive_record.brood_score, 60), 'BAND_D',
+      case(greaterThan([test::duskydelta::store::ApiaryDatabase]apiary.hive_record.brood_score, 50), 'BAND_E',
+      case(greaterThan([test::duskydelta::store::ApiaryDatabase]apiary.hive_record.brood_score, 40), 'BAND_F',
+      case(greaterThan([test::duskydelta::store::ApiaryDatabase]apiary.hive_record.brood_score, 30), 'BAND_G',
+      case(and(greaterThan([test::duskydelta::store::ApiaryDatabase]apiary.hive_record.brood_score, 20), lessThanEqual([test::duskydelta::store::ApiaryDatabase]apiary.hive_record.varroa_count, 5)), 'BAND_H',
+      sqlNull())))))))),
+    siteName: [test::duskydelta::store::ApiaryDatabase]@Hive_Site | [test::duskydelta::store::ApiaryDatabase]apiary.apiary_site.site_name,
+    forageName: [test::duskydelta::store::ApiaryDatabase]@Hive_Site > @Site_Forage | [test::duskydelta::store::ApiaryDatabase]forage.forage_zone.forage_name,
+    keeperName: [test::duskydelta::store::ApiaryDatabase]@Hive_Keeper | [test::duskydelta::store::ApiaryDatabase]forage.keeper.keeper_name
+  }
+
+  test::duskydelta::domain::ApiarySite[apiarySite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskydelta::store::ApiaryDatabase]apiary.apiary_site.site_code
+    )
+    ~mainTable [test::duskydelta::store::ApiaryDatabase]apiary.apiary_site
+    siteCode: [test::duskydelta::store::ApiaryDatabase]apiary.apiary_site.site_code,
+    siteName: [test::duskydelta::store::ApiaryDatabase]apiary.apiary_site.site_name,
+    terrainClass: [test::duskydelta::store::ApiaryDatabase]apiary.apiary_site.terrain_class
+  }
+
+  test::duskydelta::domain::ForageZone[forageZone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskydelta::store::ApiaryDatabase]forage.forage_zone.forage_code
+    )
+    ~mainTable [test::duskydelta::store::ApiaryDatabase]forage.forage_zone
+    forageCode: [test::duskydelta::store::ApiaryDatabase]forage.forage_zone.forage_code,
+    forageName: [test::duskydelta::store::ApiaryDatabase]forage.forage_zone.forage_name,
+    bloomClass: [test::duskydelta::store::ApiaryDatabase]forage.forage_zone.bloom_class,
+    nectarIndex: [test::duskydelta::store::ApiaryDatabase]forage.forage_zone.nectar_index
+  }
+
+  test::duskydelta::domain::Keeper[keeper]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskydelta::store::ApiaryDatabase]forage.keeper.keeper_code
+    )
+    ~mainTable [test::duskydelta::store::ApiaryDatabase]forage.keeper
+    keeperCode: [test::duskydelta::store::ApiaryDatabase]forage.keeper.keeper_code,
+    keeperName: [test::duskydelta::store::ApiaryDatabase]forage.keeper.keeper_name,
+    roundLabel: [test::duskydelta::store::ApiaryDatabase]forage.keeper.round_label
+  }
+
+  test::duskydelta::domain::Hive_Site: Relational
+  {
+    AssociationMapping
+    (
+      hives[apiarySite, hive]: [test::duskydelta::store::ApiaryDatabase]@Hive_Site,
+      site[hive, apiarySite]: [test::duskydelta::store::ApiaryDatabase]@Hive_Site
+    )
+  }
+
+  test::duskydelta::domain::Site_Forage: Relational
+  {
+    AssociationMapping
+    (
+      sites[forageZone, apiarySite]: [test::duskydelta::store::ApiaryDatabase]@Site_Forage,
+      forage[apiarySite, forageZone]: [test::duskydelta::store::ApiaryDatabase]@Site_Forage
+    )
+  }
+
+  testSuites:
+  [
+    hiveHealthSuite:
+    {
+      function: |test::duskydelta::domain::Hive.all()->project(
+        [
+          h|$h.hiveCode,
+          h|$h.healthBand,
+          h|$h.queenLabel,
+          h|$h.registerKind,
+          h|$h.broodScore,
+          h|$h.varroaCount,
+          h|$h.frameCount,
+          h|$h.siteName,
+          h|$h.forageName,
+          h|$h.keeperName
+        ],
+        [
+          'Hive',
+          'Band',
+          'Queen',
+          'Register',
+          'Brood',
+          'Varroa',
+          'Frames',
+          'Site',
+          'Forage',
+          'Keeper'
+        ]
+      )->sort([asc('Hive')]);
+      tests:
+      [
+        everyBandArmAndBothNullOutcomesAreReached:
+        {
+          doc: 'Ten stored hive rows drive the eight graded arms of the banding transform, the unbanded fallback and the sentinel arm that turns the placeholder queen token into an absent value, while the projected site, forage zone and keeper columns force a one-hop path, a two-hop path across the namespace boundary and a second one-hop path out of the hive unit.';
+          data:
+          [
+            test::duskydelta::store::ApiaryDatabase:
+              Relational
+              #{
+                  apiary.apiary_site:
+                    'site_code,site_name,terrain_class,forage_code\n'+
+                    'AS-1,Hollow Meadow Stand,LOWLAND,FZ-1\n'+
+                    'AS-2,Ridge Orchard Stand,UPLAND,FZ-2\n';
+
+                  forage.forage_zone:
+                    'forage_code,forage_name,bloom_class,nectar_index\n'+
+                    'FZ-1,Clover Meadow Belt,EARLY,7\n'+
+                    'FZ-2,Lime Avenue Belt,LATE,5\n';
+
+                  forage.keeper:
+                    'keeper_code,keeper_name,round_label\n'+
+                    'KP-1,Rowan Ashby,Morning Round\n'+
+                    'KP-2,Juno Pell,Evening Round\n';
+
+                  apiary.hive_record:
+                    'hive_id,hive_code,site_code,keeper_code,queen_code,frame_count,brood_score,varroa_count\n'+
+                    '1,HV-01,AS-1,KP-1,qn-1101,11,95,1\n'+
+                    '2,HV-02,AS-1,KP-1,qn-1102,10,85,2\n'+
+                    '3,HV-03,AS-2,KP-2,qn-1103,12,75,2\n'+
+                    '4,HV-04,AS-2,KP-2,qn-1104,9,65,3\n'+
+                    '5,HV-05,AS-1,KP-2,qn-1105,8,55,4\n'+
+                    '6,HV-06,AS-1,KP-1,qn-1106,7,45,5\n'+
+                    '7,HV-07,AS-2,KP-1,qn-1107,6,35,4\n'+
+                    '8,HV-08,AS-2,KP-2,qn-1108,6,25,2\n'+
+                    '9,HV-09,AS-1,KP-1,qn-1109,5,15,1\n'+
+                    '10,HV-10,AS-2,KP-2,UNSET,5,25,9\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hive":"HV-01","Band":"BAND_A","Queen":"QN-1101","Register":"FIELD-REGISTER","Brood":95,"Varroa":1,"Frames":11,"Site":"Hollow Meadow Stand","Forage":"Clover Meadow Belt","Keeper":"Rowan Ashby"},{"Hive":"HV-02","Band":"BAND_B","Queen":"QN-1102","Register":"FIELD-REGISTER","Brood":85,"Varroa":2,"Frames":10,"Site":"Hollow Meadow Stand","Forage":"Clover Meadow Belt","Keeper":"Rowan Ashby"},{"Hive":"HV-03","Band":"BAND_C","Queen":"QN-1103","Register":"FIELD-REGISTER","Brood":75,"Varroa":2,"Frames":12,"Site":"Ridge Orchard Stand","Forage":"Lime Avenue Belt","Keeper":"Juno Pell"},{"Hive":"HV-04","Band":"BAND_D","Queen":"QN-1104","Register":"FIELD-REGISTER","Brood":65,"Varroa":3,"Frames":9,"Site":"Ridge Orchard Stand","Forage":"Lime Avenue Belt","Keeper":"Juno Pell"},{"Hive":"HV-05","Band":"BAND_E","Queen":"QN-1105","Register":"FIELD-REGISTER","Brood":55,"Varroa":4,"Frames":8,"Site":"Hollow Meadow Stand","Forage":"Clover Meadow Belt","Keeper":"Juno Pell"},{"Hive":"HV-06","Band":"BAND_F","Queen":"QN-1106","Register":"FIELD-REGISTER","Brood":45,"Varroa":5,"Frames":7,"Site":"Hollow Meadow Stand","Forage":"Clover Meadow Belt","Keeper":"Rowan Ashby"},{"Hive":"HV-07","Band":"BAND_G","Queen":"QN-1107","Register":"FIELD-REGISTER","Brood":35,"Varroa":4,"Frames":6,"Site":"Ridge Orchard Stand","Forage":"Lime Avenue Belt","Keeper":"Rowan Ashby"},{"Hive":"HV-08","Band":"BAND_H","Queen":"QN-1108","Register":"FIELD-REGISTER","Brood":25,"Varroa":2,"Frames":6,"Site":"Ridge Orchard Stand","Forage":"Lime Avenue Belt","Keeper":"Juno Pell"},{"Hive":"HV-09","Band":null,"Queen":"QN-1109","Register":"FIELD-REGISTER","Brood":15,"Varroa":1,"Frames":5,"Site":"Hollow Meadow Stand","Forage":"Clover Meadow Belt","Keeper":"Rowan Ashby"},{"Hive":"HV-10","Band":null,"Queen":null,"Register":"FIELD-REGISTER","Brood":25,"Varroa":9,"Frames":5,"Site":"Ridge Orchard Stand","Forage":"Lime Avenue Belt","Keeper":"Juno Pell"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    apiarySiteRegisterSuite:
+    {
+      function: |test::duskydelta::domain::ApiarySite.all()->project(
+        [
+          s|$s.siteCode,
+          s|$s.siteName,
+          s|$s.terrainClass,
+          s|$s.forage.forageName,
+          s|$s.forage.bloomClass,
+          s|$s.forage.nectarIndex
+        ],
+        [
+          'Site',
+          'SiteName',
+          'Terrain',
+          'Forage',
+          'Bloom',
+          'Nectar'
+        ]
+      )->sort([asc('Site')]);
+      tests:
+      [
+        siteRowsResolveTheAssociatedForageZone:
+        {
+          doc: 'Each stand is projected beside the forage belt reached through the declared relationship between the two units, so the generated statement resolves the relationship through the shared reference path rather than through a column held on the stand.';
+          data:
+          [
+            test::duskydelta::store::ApiaryDatabase:
+              Relational
+              #{
+                  apiary.apiary_site:
+                    'site_code,site_name,terrain_class,forage_code\n'+
+                    'AS-1,Hollow Meadow Stand,LOWLAND,FZ-1\n'+
+                    'AS-2,Ridge Orchard Stand,UPLAND,FZ-2\n';
+
+                  forage.forage_zone:
+                    'forage_code,forage_name,bloom_class,nectar_index\n'+
+                    'FZ-1,Clover Meadow Belt,EARLY,7\n'+
+                    'FZ-2,Lime Avenue Belt,LATE,5\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Site" : "AS-1",\n  "SiteName" : "Hollow Meadow Stand",\n  "Terrain" : "LOWLAND",\n  "Forage" : "Clover Meadow Belt",\n  "Bloom" : "EARLY",\n  "Nectar" : 7\n}, {\n  "Site" : "AS-2",\n  "SiteName" : "Ridge Orchard Stand",\n  "Terrain" : "UPLAND",\n  "Forage" : "Lime Avenue Belt",\n  "Bloom" : "LATE",\n  "Nectar" : 5\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

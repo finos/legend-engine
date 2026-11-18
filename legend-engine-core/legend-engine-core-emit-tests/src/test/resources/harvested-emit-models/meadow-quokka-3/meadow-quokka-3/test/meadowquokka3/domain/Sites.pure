@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::meadowquokka3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A place where propagation work is carried out and where beds and glasshouses are sited.'} test::meadowquokka3::domain::PropagationSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  elevationMetres: Integer[1];
+  frostFreeDays: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A covered growing structure on a propagation site, with the environment it can hold.'} test::meadowquokka3::domain::Glasshouse
+{
+  houseCode: String[1];
+  site: PropagationSite[1];
+  benchAreaSquareMetres: Float[1];
+  heated: Boolean[1];
+  minimumNightTemperature: Float[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An outdoor bed that seed lots are sown into, optionally sheltered by a glasshouse on the same site.'} test::meadowquokka3::domain::NurseryBed
+{
+  bedCode: String[1];
+  site: PropagationSite[1];
+  shelter: Glasshouse[0..1];
+  lengthMetres: Float[1];
+  drainageNotes: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A labelled container that seed is dried into and held in, kept at a stated temperature.'} test::meadowquokka3::domain::StorageVessel
+{
+  vesselCode: String[1];
+  site: PropagationSite[1];
+  capacityGrams: Float[1];
+  holdingTemperature: Float[1];
+  sealedOn: StrictDate[0..1];
+}

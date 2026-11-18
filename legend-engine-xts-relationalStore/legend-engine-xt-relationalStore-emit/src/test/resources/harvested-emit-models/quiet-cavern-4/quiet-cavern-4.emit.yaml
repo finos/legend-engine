@@ -1,0 +1,58 @@
+name: quiet-cavern-4
+title: "Quiet Cavern — Milestoned Cave Passage Survey Services"
+description: |
+  A cave survey model whose processing-temporal passage register is published through two
+  parameterised single-execution services owned by a deployment identifier. Both take a
+  processing date in the path and a list of passage codes as a query parameter, keep the
+  requested passages by membership, project a legacy tabular result and collapse duplicate
+  rows. The access sheet downcasts passages to their flooded and crawl subtypes to read the
+  sealing level and gate of the nested access rule, flags marker presence with conditional
+  columns and falls back from an optional approach trail to the chamber label. The visit
+  roster traverses a bitemporal visit association at the processing and business dates and
+  continues to the leading team's members. Fixtures include a superseded passage version
+  and visits outside the processing or business window.
+modelSources:
+  model:
+    root: quiet-cavern-4
+    files:
+      - test/quietcavern4/connection/CavernSurveyConnection.pure
+      - test/quietcavern4/domain/CavernSurveyDomain.pure
+      - test/quietcavern4/mapping/CavernSurveyMapping.pure
+      - test/quietcavern4/runtime/CavernSurveyRuntime.pure
+      - test/quietcavern4/service/PassageAccessSheet.pure
+      - test/quietcavern4/service/PassageVisitRoster.pure
+      - test/quietcavern4/store/CavernSurveyDb.pure
+features:
+  - execution:service
+  - execution:service-ownership-did
+  - execution:service-path-parameter
+  - execution:service-test
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:milestoned-qualified-property-traversal
+  - mapping:enumeration-mapping
+  - mapping:relational-association-implementation
+  - milestoning:bi-temporal
+  - milestoning:processing-temporal
+  - query:conditional-projection
+  - query:deep-property-path
+  - query:distinct
+  - query:membership-test
+  - execution:service-parameter
+  - query:project
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+complexity: advanced
+tags:
+  - cave-survey
+  - h2
+  - milestoning
+  - parameterised-service
+  - subtype-cast
+stores:
+  - relational

@@ -1,0 +1,211 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::azuremeadow3::mapping::MeadowCutMapping
+(
+  include mapping test::azuremeadow3::mapping::MeadowRefMapping
+
+  test::azuremeadow3::domain::SwardKind: EnumerationMapping SwardKinds
+  {
+    MEADOW_GRASS: ['MEADOW'],
+    HERB_RICH: ['HERB'],
+    SEDGE_FLUSH: ['SEDGE']
+  }
+
+  test::azuremeadow3::domain::DryStage: EnumerationMapping DryStages
+  {
+    FIELD_DRY: ['FIELD'],
+    BARN_DRY: ['BARN'],
+    WRAPPED_WET: ['WRAPPED']
+  }
+
+  *test::azuremeadow3::domain::HayCut[hayCut]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.cut_id
+    )
+    ~mainTable [test::azuremeadow3::store::MeadowDb]meadowside.hay_cut
+    cutCode: [test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.cut_code,
+    sward: EnumerationMapping SwardKinds: [test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.sward_code,
+    dry: EnumerationMapping DryStages: [test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.dry_code,
+    baleTally: [test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.bale_tally,
+    moisturePct: [test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.moisture_pct,
+    stemLenCm: [test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.stem_len_cm,
+    cutOn: [test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.cut_on,
+    baleTier: case(
+                lessThan([test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.bale_tally, 10),
+                'BALE-A',
+                case(
+                  lessThan([test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.bale_tally, 20),
+                  'BALE-B',
+                  case(
+                    lessThan([test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.bale_tally, 30),
+                    'BALE-C',
+                    case(
+                      lessThan([test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.bale_tally, 40),
+                      'BALE-D',
+                      case(
+                        lessThan([test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.bale_tally, 50),
+                        'BALE-E',
+                        case(
+                          lessThan([test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.bale_tally, 60),
+                          'BALE-F',
+                          case(
+                            lessThan([test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.bale_tally, 70),
+                            'BALE-G',
+                            case(
+                              lessThan([test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.bale_tally, 80),
+                              'BALE-H',
+                              sqlNull()
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+    noteLabel: concat(
+                 concat('CUT-', toUpper(substring([test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.cut_note, 1, 5))),
+                 concat('/', toString(length(trim([test::azuremeadow3::store::MeadowDb]meadowside.hay_cut.cut_note))))
+               ),
+    parcelName: [test::azuremeadow3::store::MeadowDb]@Cut_Parcel | [test::azuremeadow3::store::MeadowDb]meadowside.parcel_book.parcel_name,
+    terraceName: [test::azuremeadow3::store::MeadowDb]@Cut_Parcel > (INNER) @Parcel_Terrace | [test::azuremeadow3::store::MeadowDb]terraceside.terrace_book.terrace_name,
+    keeperName: [test::azuremeadow3::store::MeadowDb]@Cut_Parcel > (INNER) @Parcel_Terrace > (INNER) @Terrace_Keeper | [test::azuremeadow3::store::MeadowDb]terraceside.keeper_roster.keeper_name
+  }
+
+  testSuites:
+  [
+    hayCutTransformSuite:
+    {
+      function: |test::azuremeadow3::domain::HayCut.all(%2031-12-01)->project(
+        [
+          x|$x.cutCode,
+          x|$x.sward,
+          x|$x.dry,
+          x|$x.baleTally,
+          x|$x.baleTier,
+          x|$x.noteLabel,
+          x|$x.cutOn,
+          x|$x.parcelName,
+          x|$x.terraceName,
+          x|$x.keeperName,
+          x|$x.cutIndex(),
+          x|$x.yieldBand()
+        ],
+        [
+          'Cut',
+          'Sward',
+          'Dry',
+          'Bales',
+          'Tier',
+          'Note',
+          'Cut On',
+          'Parcel',
+          'Terrace',
+          'Keeper',
+          'Index',
+          'Band'
+        ]
+      )->sort([asc('Cut')]);
+      tests:
+      [
+        everyTierAtOneBusinessDate:
+        {
+          doc: 'Reads the meadow book at one business date over a fixture whose rows walk all eight arms of the bale tiering and fall through to the unresolved tail, hit every arm of the four-armed yield banding and its floor, resolve the parcel one hop out, the terrace of that parcel two hops out and the keeper three hops out, leave the terrace and keeper unresolved where the chain breaks, compose the note label from the note and its own measured length, fold the cut arithmetic deep enough that the plan has to compute it before it reads the columns, yield no sward member for an unlisted code and drop the row whose business window closed two years earlier.';
+          data:
+          [
+            test::azuremeadow3::store::MeadowDb:
+              Reference
+              #{
+                test::azuremeadow3::data::MeadowTestData
+              }#
+          ];
+          asserts:
+          [
+            nineOpenWindowCuts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cut":"MC-01","Sward":"MEADOW_GRASS","Dry":"FIELD_DRY","Bales":5,"Tier":"BALE-A","Note":"CUT-FIRST/14","Cut On":"2031-06-05","Parcel":"Upper Hay Parcel","Terrace":"Upper Terrace","Keeper":"Upper Meadow Keeper","Index":51.5,"Band":"BAND FLOOR"},{"Cut":"MC-02","Sward":"HERB_RICH","Dry":"BARN_DRY","Bales":15,"Tier":"BALE-B","Note":"CUT-SECON/15","Cut On":"2031-06-06","Parcel":"Upper Hay Parcel","Terrace":"Upper Terrace","Keeper":"Upper Meadow Keeper","Index":57.5,"Band":"BAND FOUR DAMP"},{"Cut":"MC-03","Sward":"SEDGE_FLUSH","Dry":"WRAPPED_WET","Bales":25,"Tier":"BALE-C","Note":"CUT-THIRD/14","Cut On":"2031-06-07","Parcel":"Middle Hay Parcel","Terrace":"Upper Terrace","Keeper":"Upper Meadow Keeper","Index":63.5,"Band":"BAND THREE FAIR"},{"Cut":"MC-04","Sward":null,"Dry":"FIELD_DRY","Bales":35,"Tier":"BALE-D","Note":"CUT-FOURT/15","Cut On":"2031-06-08","Parcel":"Middle Hay Parcel","Terrace":"Upper Terrace","Keeper":"Upper Meadow Keeper","Index":69.5,"Band":"BAND THREE FAIR"},{"Cut":"MC-05","Sward":"MEADOW_GRASS","Dry":"BARN_DRY","Bales":45,"Tier":"BALE-E","Note":"CUT-FIFTH/14","Cut On":"2031-06-09","Parcel":"Lower Hay Parcel","Terrace":"Lower Terrace","Keeper":null,"Index":75.5,"Band":"BAND TWO FULL"},{"Cut":"MC-06","Sward":"HERB_RICH","Dry":"WRAPPED_WET","Bales":55,"Tier":"BALE-F","Note":"CUT-SIXTH/14","Cut On":"2031-06-10","Parcel":"Lower Hay Parcel","Terrace":"Lower Terrace","Keeper":null,"Index":81.5,"Band":"BAND TWO FULL"},{"Cut":"MC-07","Sward":"SEDGE_FLUSH","Dry":"FIELD_DRY","Bales":65,"Tier":"BALE-G","Note":"CUT-SEVEN/16","Cut On":"2031-06-11","Parcel":"Spring Hay Parcel","Terrace":"Lower Terrace","Keeper":null,"Index":87.5,"Band":"BAND TWO FULL"},{"Cut":"MC-08","Sward":"MEADOW_GRASS","Dry":"BARN_DRY","Bales":75,"Tier":"BALE-H","Note":"CUT-EIGHT/15","Cut On":"2031-06-12","Parcel":"Spring Hay Parcel","Terrace":"Lower Terrace","Keeper":null,"Index":93.5,"Band":"BAND ONE HEAVY"},{"Cut":"MC-09","Sward":"HERB_RICH","Dry":"WRAPPED_WET","Bales":95,"Tier":null,"Note":"CUT-NINTH/14","Cut On":"2031-06-13","Parcel":"Ridge Hay Parcel","Terrace":null,"Keeper":null,"Index":99.5,"Band":"BAND ONE HEAVY"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    hayCutClosedWindowSuite:
+    {
+      function: |test::azuremeadow3::domain::HayCut.all(%2029-06-01)->project(
+        [
+          x|$x.cutCode,
+          x|$x.baleTally,
+          x|$x.baleTier,
+          x|$x.noteLabel,
+          x|$x.cutOn,
+          x|$x.parcelName,
+          x|$x.terraceName,
+          x|$x.keeperName,
+          x|$x.cutIndex(),
+          x|$x.yieldBand()
+        ],
+        [
+          'Cut',
+          'Bales',
+          'Tier',
+          'Note',
+          'Cut On',
+          'Parcel',
+          'Terrace',
+          'Keeper',
+          'Index',
+          'Band'
+        ]
+      )->sort([asc('Cut')]);
+      tests:
+      [
+        onlyTheClosedWindowCut:
+        {
+          doc: 'Reads the same book at a business date inside the window that closed two years before the other read, so the row the first read drops is the only row this read returns — the named date, not the extent, is doing the scoping.';
+          data:
+          [
+            test::azuremeadow3::store::MeadowDb:
+              Reference
+              #{
+                test::azuremeadow3::data::MeadowTestData
+              }#
+          ];
+          asserts:
+          [
+            oneClosedWindowCut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cut":"MC-10","Bales":8,"Tier":"BALE-A","Note":"CUT-CLOSE/15","Cut On":"2029-06-05","Parcel":"Upper Hay Parcel","Terrace":"Upper Terrace","Keeper":"Upper Meadow Keeper","Index":45.5,"Band":"BAND FLOOR"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

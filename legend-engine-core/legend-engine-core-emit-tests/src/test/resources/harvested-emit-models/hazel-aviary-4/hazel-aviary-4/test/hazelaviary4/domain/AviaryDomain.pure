@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::hazelaviary4::domain::*;
+
+Enum test::hazelaviary4::domain::PlumageStage
+{
+  DOWNY,
+  FLEDGED,
+  ADULT
+}
+
+Enum test::hazelaviary4::domain::FeedingHabit
+{
+  NECTAR,
+  SEED,
+  INSECT
+}
+
+Class {meta::pure::profiles::doc.doc = 'The shared shape of any bird kept in the aviary, specialised by the songbird and waterfowl kinds that extend it.'} test::hazelaviary4::domain::AviaryResident
+{
+  residentRef: String[1];
+  ringCode: String[0..1];
+  plumage: PlumageStage[0..1];
+  habit: FeedingHabit[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A perching resident, adding the motif count its song was last transcribed at.'} test::hazelaviary4::domain::Songbird extends AviaryResident
+{
+  songMotifCount: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A wading resident, adding the webbed span measured at its last handling.'} test::hazelaviary4::domain::Waterfowl extends AviaryResident
+{
+  webbedSpan: Float[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A flight cage the residents are housed in.'} test::hazelaviary4::domain::FlightCage
+{
+  cageCode: String[1];
+  cageName: String[0..1];
+  perchCount: Integer[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'An occupancy record over one flight cage whose business validity window is part of its identity, so every traversal of it resolves as of a business date.'} test::hazelaviary4::domain::CageOccupancy
+{
+  occupancyId: Integer[1];
+  cageCode: String[1];
+  headCount: Integer[0..1];
+  keeperNote: String[0..1];
+}
+
+Association test::hazelaviary4::domain::Cage_Resident
+{
+  residents: AviaryResident[*];
+  housedIn: FlightCage[0..1];
+}

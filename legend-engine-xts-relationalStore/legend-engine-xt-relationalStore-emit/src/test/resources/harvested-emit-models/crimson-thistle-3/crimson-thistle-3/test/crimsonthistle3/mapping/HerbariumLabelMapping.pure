@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonthistle3::mapping::HerbariumLabelMapping
+(
+  *test::crimsonthistle3::domain::CollectionLabel[label]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.sheet_id
+    )
+    ~mainTable [test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet
+    labelText: toUpper(trim([test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.label_text))
+  }
+
+  *test::crimsonthistle3::domain::LabelledSpecimen[specimen] extends [label]: Relational
+  {
+    specimenCode: [test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.specimen_code,
+    herbariumSheetCode: [test::crimsonthistle3::store::HerbariumDb]@Label_Register | herbarium.sheet_register.sheet_code,
+    lifeFormClass: case(equal([test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.life_form_code, 'TR'), 'tree',
+                     case(equal([test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.life_form_code, 'SH'), 'shrub',
+                       case(equal([test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.life_form_code, 'CL'), 'climber',
+                         case(equal([test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.life_form_code, 'HB'), 'herb',
+                           case(equal([test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.life_form_code, 'GR'), 'grass',
+                             case(equal([test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.life_form_code, 'FN'), 'fern',
+                               case(equal([test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.life_form_code, 'SC'), 'succulent',
+                                 case(equal([test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.life_form_code, 'AQ'), 'aquatic',
+                                   sqlNull())))))))),
+    conservationClass: case(equal([test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.conservation_code, 'CR'), 'critically endangered',
+                         case(equal([test::crimsonthistle3::store::HerbariumDb]herbarium.label_sheet.conservation_code, 'EN'), 'endangered', 'least concern'))
+  }
+
+  testSuites:
+  [
+    LabelledSpecimenSuite:
+    {
+      function: |test::crimsonthistle3::domain::LabelledSpecimen.all()->graphFetch(
+      #{
+        test::crimsonthistle3::domain::LabelledSpecimen{
+          labelText,
+          specimenCode,
+          herbariumSheetCode,
+          lifeFormClass,
+          conservationClass
+        }
+      }#
+    )->serialize(
+      #{
+        test::crimsonthistle3::domain::LabelledSpecimen{
+          labelText,
+          specimenCode,
+          herbariumSheetCode,
+          lifeFormClass,
+          conservationClass
+        }
+      }#
+    );
+      tests:
+      [
+        everyLifeFormArmAndTheUnregisteredSheet:
+        {
+          data:
+          [
+            test::crimsonthistle3::store::HerbariumDb:
+              Relational
+              #{
+                herbarium.label_sheet:
+              'sheet_id,label_text,specimen_code,life_form_code,conservation_code\n'+
+              '1,  rowan sheet ,SP-01,TR,CR\n'+
+              '2,hazel sheet,SP-02,SH,EN\n'+
+              '3,Ivy Sheet ,SP-03,CL,LC\n'+
+              '4, mint sheet,SP-04,HB,CR\n'+
+              '5,fescue sheet,SP-05,GR,EN\n'+
+              '6,bracken sheet,SP-06,FN,LC\n'+
+              '7,sedum sheet,SP-07,SC,LC\n'+
+              '8,lily sheet,SP-08,AQ,EN\n'+
+              '9,moss sheet,SP-09,MO,CR\n'+
+              '10,lichen sheet,SP-10,,\n';
+
+                herbarium.sheet_register:
+              'specimen_code,sheet_code\n'+
+              'SP-01,HS-101\n'+
+              'SP-02,HS-102\n'+
+              'SP-03,HS-103\n'+
+              'SP-04,HS-104\n'+
+              'SP-05,HS-105\n'+
+              'SP-06,HS-106\n'+
+              'SP-07,HS-107\n'+
+              'SP-08,HS-108\n'+
+              'SP-09,HS-109\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedSpecimens:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"labelText":"ROWAN SHEET","specimenCode":"SP-01","herbariumSheetCode":"HS-101","lifeFormClass":"tree","conservationClass":"critically endangered"},{"labelText":"HAZEL SHEET","specimenCode":"SP-02","herbariumSheetCode":"HS-102","lifeFormClass":"shrub","conservationClass":"endangered"},{"labelText":"IVY SHEET","specimenCode":"SP-03","herbariumSheetCode":"HS-103","lifeFormClass":"climber","conservationClass":"least concern"},{"labelText":"MINT SHEET","specimenCode":"SP-04","herbariumSheetCode":"HS-104","lifeFormClass":"herb","conservationClass":"critically endangered"},{"labelText":"FESCUE SHEET","specimenCode":"SP-05","herbariumSheetCode":"HS-105","lifeFormClass":"grass","conservationClass":"endangered"},{"labelText":"BRACKEN SHEET","specimenCode":"SP-06","herbariumSheetCode":"HS-106","lifeFormClass":"fern","conservationClass":"least concern"},{"labelText":"SEDUM SHEET","specimenCode":"SP-07","herbariumSheetCode":"HS-107","lifeFormClass":"succulent","conservationClass":"least concern"},{"labelText":"LILY SHEET","specimenCode":"SP-08","herbariumSheetCode":"HS-108","lifeFormClass":"aquatic","conservationClass":"endangered"},{"labelText":"MOSS SHEET","specimenCode":"SP-09","herbariumSheetCode":"HS-109","lifeFormClass":null,"conservationClass":"critically endangered"},{"labelText":"LICHEN SHEET","specimenCode":"SP-10","herbariumSheetCode":null,"lifeFormClass":null,"conservationClass":"least concern"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

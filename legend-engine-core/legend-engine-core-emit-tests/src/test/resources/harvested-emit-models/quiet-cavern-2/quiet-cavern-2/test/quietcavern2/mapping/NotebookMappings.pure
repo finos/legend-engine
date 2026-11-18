@@ -1,0 +1,204 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietcavern2::mapping::SurveyEntryMapping
+(
+  test::quietcavern2::domain::TrailCondition: EnumerationMapping TrailConditionMap
+  {
+    OPEN: ['OPEN'],
+    MUDDY: ['MUDDY'],
+    ROCKY: ['ROCKY']
+  }
+
+  *test::quietcavern2::domain::SurveyEntryCard[surveyEntrySet]: Pure
+  {
+    ~src test::quietcavern2::domain::SurveyEntryInput
+    entryCode: test::quietcavern2::function::cleanLabel($src.entryCode),
+    trailName: $src.trailName,
+    recorderName: $src.recorderName,
+    condition: EnumerationMapping TrailConditionMap: [$src.conditionCode]->toOne(),
+    firstMarker: $src.markerCodes->at(0)->toOne(),
+    surveyedOn: $src.surveyedOn
+  }
+
+  testSuites:
+  [
+    surveyEntrySuite:
+    {
+      function: |test::quietcavern2::domain::SurveyEntryCard.all()->graphFetch(
+        #{test::quietcavern2::domain::SurveyEntryCard{entryCode,trailName,recorderName,condition,firstMarker,surveyedOn}}#
+      )->serialize(
+        #{test::quietcavern2::domain::SurveyEntryCard{entryCode,trailName,recorderName,condition,firstMarker,surveyedOn}}#
+      );
+      tests:
+      [
+        mapsSurveyEntry:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietcavern2::domain::SurveyEntryInput:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"entryCode":"ENT-7","trailName":"Juniper Rise","recorderName":"Mira Vale","conditionCode":"ROCKY","markerCodes":["M-7","M-8"],"surveyedOn":"2032-04-12"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mappedSurveyEntry:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"entryCode":"ENT-7","trailName":"Juniper Rise","recorderName":"Mira Vale","condition":"ROCKY","firstMarker":"M-7","surveyedOn":"2032-04-12"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+###Mapping
+Mapping test::quietcavern2::mapping::RoostLogMapping
+(
+  test::quietcavern2::domain::WeatherBand: EnumerationMapping WeatherBandMap
+  {
+    CLEAR: ['CLEAR'],
+    DRIZZLE: ['DRIZZLE'],
+    WINDY: ['WINDY']
+  }
+
+  *test::quietcavern2::domain::RoostLogCard[roostLogSet]: Pure
+  {
+    ~src test::quietcavern2::domain::RoostLogInput
+    logCode: test::quietcavern2::function::cleanLabel($src.logCode),
+    roostName: $src.roostName,
+    keeperName: $src.keeperName,
+    weather: EnumerationMapping WeatherBandMap: [$src.weatherCode]->toOne(),
+    batCount: $src.batCount,
+    loggedOn: $src.loggedOn
+  }
+
+  testSuites:
+  [
+    roostLogSuite:
+    {
+      function: |test::quietcavern2::domain::RoostLogCard.all()->graphFetch(
+        #{test::quietcavern2::domain::RoostLogCard{logCode,roostName,keeperName,weather,batCount,loggedOn}}#
+      )->serialize(
+        #{test::quietcavern2::domain::RoostLogCard{logCode,roostName,keeperName,weather,batCount,loggedOn}}#
+      );
+      tests:
+      [
+        mapsRoostLog:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietcavern2::domain::RoostLogInput:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"logCode":"LOG-3","roostName":"Ash Hollow","keeperName":"Tavi Reed","weatherCode":"WINDY","batCount":18,"loggedOn":"2032-05-08"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mappedRoostLog:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"logCode":"LOG-3","roostName":"Ash Hollow","keeperName":"Tavi Reed","weather":"WINDY","batCount":18,"loggedOn":"2032-05-08"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+###Mapping
+Mapping test::quietcavern2::mapping::CanopyPassMapping
+(
+  *test::quietcavern2::domain::CanopyPassCard[canopyPassSet]: Pure
+  {
+    ~src test::quietcavern2::domain::CanopyPassInput
+    passCode: test::quietcavern2::function::cleanLabel($src.passCode),
+    canopyName: $src.canopyName,
+    rangerName: $src.rangerName,
+    condition: $src.conditionCode,
+    heightMetres: $src.heightMetres,
+    passedOn: $src.passedOn
+  }
+
+  testSuites:
+  [
+    canopyPassSuite:
+    {
+      function: |test::quietcavern2::domain::CanopyPassCard.all()->graphFetch(
+        #{test::quietcavern2::domain::CanopyPassCard{passCode,canopyName,rangerName,condition,heightMetres,passedOn}}#
+      )->serialize(
+        #{test::quietcavern2::domain::CanopyPassCard{passCode,canopyName,rangerName,condition,heightMetres,passedOn}}#
+      );
+      tests:
+      [
+        mapsCanopyPass:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietcavern2::domain::CanopyPassInput:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"passCode":"pass-4","canopyName":"Willow Crown","rangerName":"Nia Moss","conditionCode":"MUDDY","heightMetres":7.25,"passedOn":"2032-06-19"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mappedCanopyPass:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"passCode":"PASS-4","canopyName":"Willow Crown","rangerName":"Nia Moss","condition":"MUDDY","heightMetres":7.25,"passedOn":"2032-06-19"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::gildedprairie2::dataspace::PrairieSurveyDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'catalog';
+      description: 'Catalogue tier - stewards, regions, plots, soil profiles, surveys and stem counts assembled from the reference and survey mappings.';
+      mapping: test::gildedprairie2::mapping::PrairieCatalogMapping;
+      defaultRuntime: test::gildedprairie2::runtime::PrairieCatalogRuntime;
+    },
+    {
+      name: 'survey';
+      description: 'Survey tier - the survey and stem-count layer over the habitat mapping it includes.';
+      mapping: test::gildedprairie2::mapping::PrairieSurveyMapping;
+      defaultRuntime: test::gildedprairie2::runtime::PrairieSurveyRuntime;
+    },
+    {
+      name: 'reference';
+      description: 'Reference tier - the steward and region layer only.';
+      mapping: test::gildedprairie2::mapping::PrairieReferenceMapping;
+      defaultRuntime: test::gildedprairie2::runtime::PrairieReferenceRuntime;
+    }
+  ];
+  defaultExecutionContext: 'catalog';
+  title: 'Grassland Survey Catalogue';
+  description: 'A governed entry point over a grassland survey catalogue - the regions held by each steward, the plots demarcated inside them, the soil profile of each plot, and the surveys and species stem counts recorded against them.';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Plot Register As Of';
+      description: 'The bounded slice of the plot register at a caller instant.';
+      executable: test::gildedprairie2::service::PlotRegisterAsOf;
+    },
+    {
+      id: 2;
+      title: 'Species Count Register';
+      description: 'The de-duplicated stem-count projection over a caller species collection.';
+      executable: test::gildedprairie2::service::SpeciesCountRegister;
+    },
+    {
+      id: 3;
+      title: 'Survey Window Register';
+      description: 'The survey window whose lower bound is computed inside the query.';
+      executable: test::gildedprairie2::service::SurveyWindowRegister;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'prairie-survey-platform@example.invalid';
+  };
+}

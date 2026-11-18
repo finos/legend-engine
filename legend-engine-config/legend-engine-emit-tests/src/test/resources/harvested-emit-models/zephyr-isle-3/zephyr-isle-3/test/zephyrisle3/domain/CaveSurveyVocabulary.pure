@@ -1,0 +1,171 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::zephyrisle3::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Confidence grade assigned to a completed underground survey leg.'} test::zephyrisle3::domain::SurveyGrade
+{
+  RECONNAISSANCE,
+  SKETCH,
+  TAPE_AND_COMPASS,
+  THEODOLITE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Cross-sectional shape of a mapped passage.'} test::zephyrisle3::domain::PassageShape
+{
+  BEDDING_CRAWL,
+  BREAKDOWN,
+  KEYHOLE,
+  PHREATIC_TUBE,
+  RIFT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Host rock the passage is developed in.'} test::zephyrisle3::domain::HostRock
+{
+  BASALT,
+  DOLOMITE,
+  GYPSUM,
+  LIMESTONE,
+  MARBLE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Dominant mineral formation recorded in a segment.'} test::zephyrisle3::domain::FormationKind
+{
+  COLUMN,
+  FLOWSTONE,
+  HELICTITE,
+  RIMSTONE,
+  STRAW
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Water behaviour observed along a passage.'} test::zephyrisle3::domain::WaterRegime
+{
+  DRY,
+  PERENNIAL_STREAM,
+  SEASONAL_SUMP,
+  STANDING_POOL
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Permission under which a cave may be entered.'} test::zephyrisle3::domain::AccessPermit
+{
+  GATED_KEYHOLDER,
+  OPEN_ACCESS,
+  PERMIT_REQUIRED,
+  RESERVE_CLOSED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Category of kit a leg of the survey demands.'} test::zephyrisle3::domain::EquipmentClass
+{
+  DIVING,
+  DRY_WALKING,
+  SINGLE_ROPE,
+  WETSUIT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Hazard noted by the survey team at a station.'} test::zephyrisle3::domain::HazardKind
+{
+  FLOOD_PRONE,
+  LOOSE_CEILING,
+  NARROW_SQUEEZE,
+  UNSTABLE_FLOOR
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Air clarity band recorded at a station.'} test::zephyrisle3::domain::VisibilityBand
+{
+  CLEAR,
+  DUSTY,
+  MISTED,
+  OPAQUE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Role carried by a member of the survey team.'} test::zephyrisle3::domain::TeamRole
+{
+  BOOK_KEEPER,
+  INSTRUMENT_READER,
+  LEAD_SURVEYOR,
+  SKETCHER
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Lighting source used while reading instruments.'} test::zephyrisle3::domain::LampKind
+{
+  CARBIDE,
+  HANDHELD,
+  HELMET_LED,
+  TRIPOD_FLOOD
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Fixing used to anchor a rope or a survey marker.'} test::zephyrisle3::domain::AnchorKind
+{
+  BOLT,
+  NATURAL_THREAD,
+  SPIT,
+  SLING
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Breathable-air band measured underground.'} test::zephyrisle3::domain::AirQualityBand
+{
+  ELEVATED_CARBON,
+  FRESH,
+  RADON_WATCH,
+  STAGNANT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Form of the surface opening giving entry to the system.'} test::zephyrisle3::domain::EntranceKind
+{
+  DOLINE,
+  RESURGENCE,
+  SHAFT,
+  STREAM_SINK
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Projection the published survey drawing is plotted on.'} test::zephyrisle3::domain::MapProjection
+{
+  EXTENDED_ELEVATION,
+  PLAN,
+  PROJECTED_ELEVATION,
+  ROLLED_OUT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Roosting animal group counted during the survey.'} test::zephyrisle3::domain::RoostGroup
+{
+  ABSENT,
+  HORSESHOE_COLONY,
+  MIXED_COLONY,
+  SOLITARY
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Season the survey window falls in.'} test::zephyrisle3::domain::SeasonWindow
+{
+  AUTUMN,
+  SPRING,
+  SUMMER,
+  WINTER
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Technique used to capture the leg measurements.'} test::zephyrisle3::domain::SurveyMethod
+{
+  DISTO_X,
+  LASER_SCAN,
+  PACED,
+  TAPE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Vertical datum the recorded depths are referred to.'} test::zephyrisle3::domain::DatumReference
+{
+  ENTRANCE_LEVEL,
+  MEAN_SEA_LEVEL,
+  RESURGENCE_LEVEL,
+  STREAM_LEVEL
+}

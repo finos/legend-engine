@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::crimsonisle5::service::CensusRegisterService
+{
+  pattern: '/crimsonisle5/v1/census-register';
+  title: 'Crimson Isle 5 - Census Register';
+  ownership: UserList { users: ['isle-census-desk'] };
+  documentation: 'The register of census sweeps taken on the plots in a caller-supplied collection at or above a nest-count floor, published with the derived unfledged remainder, the doubled effort index and the plot label built from the join-reached plot name and habitat code.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {plotCodes: String[*], minNests: Integer[1]|test::crimsonisle5::domain::PlotCensus.all()->filter(
+      c|($c.plotCode->in($plotCodes)) && ($c.nestCount >= $minNests)
+    )->project(
+      [
+        c|$c.censusRef,
+        c|$c.plotCode,
+        c|$c.nestCount,
+        c|$c.unfledgedCount,
+        c|$c.effortIndex,
+        c|$c.plotLabel
+      ],
+      [
+        'Census',
+        'Plot',
+        'Nests',
+        'Unfledged',
+        'Effort',
+        'PlotLabel'
+      ]
+    )->sort([asc('Census')])};
+    mapping: test::crimsonisle5::mapping::IsleMapping;
+    runtime: test::crimsonisle5::runtime::IsleH2Runtime;
+  }
+  testSuites:
+  [
+    censusRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          isleConnection:
+            Reference
+            #{
+              test::crimsonisle5::data::IsleTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        sweepsAtOrAboveTheNestFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minNests = 8,
+            plotCodes = ['PL-1', 'PL-2']
+          ]
+          asserts:
+          [
+            threeSweepsWithDerivedCountsAndLabels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Census":"PC-001","Plot":"PL-1","Nests":12,"Unfledged":3,"Effort":42,"PlotLabel":"NORTH DUNE PLOT / dune"},{"Census":"PC-002","Plot":"PL-1","Nests":8,"Unfledged":3,"Effort":26,"PlotLabel":"NORTH DUNE PLOT / dune"},{"Census":"PC-003","Plot":"PL-2","Nests":20,"Unfledged":6,"Effort":68,"PlotLabel":"SOUTH CLIFF PLOT / cliff"}]';
+                  }#;
+              }#
+          ]
+        },
+        nestFloorAboveEverySweep:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minNests = 50,
+            plotCodes = ['PL-1', 'PL-2']
+          ]
+          asserts:
+          [
+            noSweepSurvivesTheFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

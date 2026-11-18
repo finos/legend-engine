@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::borealorchard3::store::TrailNetworkDb
+(
+  Schema trail
+  (
+    Table hut
+    (
+      hut_code VARCHAR(24) PRIMARY KEY,
+      hut_name VARCHAR(96) NOT NULL,
+      hut_class_code VARCHAR(16) NOT NULL,
+      region_code VARCHAR(24) NOT NULL,
+      bunk_count INTEGER NOT NULL,
+      warden_code VARCHAR(24) NOT NULL
+    )
+
+    Table trail_segment
+    (
+      segment_code VARCHAR(24) PRIMARY KEY,
+      segment_name VARCHAR(96) NOT NULL,
+      hut_code VARCHAR(24) NOT NULL,
+      surface_grade_code VARCHAR(16) NOT NULL,
+      length_metres INTEGER NOT NULL,
+      ascent_metres INTEGER NOT NULL
+    )
+
+    Table maintenance_job
+    (
+      job_code VARCHAR(24) PRIMARY KEY,
+      segment_code VARCHAR(24) NOT NULL,
+      priority_code VARCHAR(16) NOT NULL,
+      job_kind_code VARCHAR(16) NOT NULL,
+      raised_on DATE NOT NULL,
+      crew_size INTEGER NOT NULL
+    )
+
+    Table bridge_job
+    (
+      job_code VARCHAR(24) PRIMARY KEY,
+      span_metres DOUBLE NOT NULL,
+      deck_material VARCHAR(24) NOT NULL
+    )
+
+    Table culvert_job
+    (
+      job_code VARCHAR(24) PRIMARY KEY,
+      pipe_diameter_cm INTEGER NOT NULL,
+      blocked_flag BIT NOT NULL
+    )
+
+    Table segment_closure
+    (
+      closure_code VARCHAR(24) PRIMARY KEY,
+      segment_code VARCHAR(24) NOT NULL,
+      closed_from DATE NOT NULL,
+      closed_through DATE NOT NULL
+    )
+  )
+
+  Schema roster
+  (
+    Table warden
+    (
+      warden_code VARCHAR(24) PRIMARY KEY,
+      warden_name VARCHAR(96) NOT NULL,
+      base_region_code VARCHAR(24) NOT NULL
+    )
+
+    Table warden_shift
+    (
+      shift_code VARCHAR(24) PRIMARY KEY,
+      warden_code VARCHAR(24) NOT NULL,
+      shift_kind_code VARCHAR(16) NOT NULL,
+      shift_date DATE NOT NULL,
+      hours INTEGER NOT NULL
+    )
+
+    Table warden_certificate
+    (
+      certificate_code VARCHAR(24) PRIMARY KEY,
+      warden_code VARCHAR(24) NOT NULL,
+      skill_code VARCHAR(24) NOT NULL,
+      awarded_on DATE NOT NULL
+    )
+  )
+
+  Join Segment_Hut(trail.trail_segment.hut_code = trail.hut.hut_code)
+  Join Job_Segment(trail.maintenance_job.segment_code = trail.trail_segment.segment_code)
+  Join Job_Bridge(trail.maintenance_job.job_code = trail.bridge_job.job_code)
+  Join Job_Culvert(trail.maintenance_job.job_code = trail.culvert_job.job_code)
+  Join Closure_Segment(trail.segment_closure.segment_code = trail.trail_segment.segment_code)
+  Join Hut_Warden(trail.hut.warden_code = roster.warden.warden_code)
+  Join Shift_Warden(roster.warden_shift.warden_code = roster.warden.warden_code)
+  Join Certificate_Warden(roster.warden_certificate.warden_code = roster.warden.warden_code)
+
+  Filter BridgeJobFilter(trail.maintenance_job.job_kind_code = 'BRIDGE')
+  Filter CulvertJobFilter(trail.maintenance_job.job_kind_code = 'CULVERT')
+)

@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westerntundra::mapping::TundraArchiveMapping
+(
+  *test::westerntundra::domain::ArchivedPlot[archivedPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerntundra::store::TundraArchiveDB]archive.archived_plot.plot_id
+    )
+    ~mainTable [test::westerntundra::store::TundraArchiveDB]archive.archived_plot
+    plotCode: [test::westerntundra::store::TundraArchiveDB]archive.archived_plot.plot_code,
+    reserveCode: [test::westerntundra::store::TundraArchiveDB]archive.archived_plot.reserve_code,
+    digestReserveCode: [test::westerntundra::store::TundraArchiveDB]@ArchivedPlot_PlotDigest | [test::westerntundra::store::TundraArchiveDB]archive.plot_digest_vw.reserve_code
+  }
+
+  *test::westerntundra::domain::ArchivedCoverRecord[archivedCoverRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerntundra::store::TundraArchiveDB]archive.archived_cover_record.cover_record_id
+    )
+    ~mainTable [test::westerntundra::store::TundraArchiveDB]archive.archived_cover_record
+    coverPct: [test::westerntundra::store::TundraArchiveDB]archive.archived_cover_record.cover_pct,
+    seasonCode: [test::westerntundra::store::TundraArchiveDB]archive.archived_cover_record.season_code,
+    plotCode: [test::westerntundra::store::TundraArchiveDB]@ArchivedCoverRecord_ArchivedPlot | [test::westerntundra::store::TundraArchiveDB]archive.archived_plot.plot_code
+  }
+
+  *test::westerntundra::domain::PlotDigest[plotDigest]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerntundra::store::TundraArchiveDB]archive.plot_digest_vw.plot_id
+    )
+    ~mainTable [test::westerntundra::store::TundraArchiveDB]archive.plot_digest_vw
+    plotCode: [test::westerntundra::store::TundraArchiveDB]archive.plot_digest_vw.plot_code,
+    reserveCode: [test::westerntundra::store::TundraArchiveDB]archive.plot_digest_vw.reserve_code
+  }
+
+  testSuites:
+  [
+    archivedCoverRecordSuite:
+    {
+      function: |test::westerntundra::domain::ArchivedCoverRecord.all()->project([a|$a.plotCode, a|$a.seasonCode, a|$a.coverPct], ['Plot', 'Season', 'CoverPct']);
+      tests:
+      [
+        archivedJoinHit:
+        {
+          doc: 'The archived reading reaches its plot code through the archived-plot join, so the archive store reproduces the survey hierarchy one hop deep.';
+          data:
+          [
+            test::westerntundra::store::TundraArchiveDB:
+              Relational
+              #{
+                archive.archived_plot:
+                  'plot_id,plot_code,reserve_code\n'+
+                  '1,PLT-SCREE,RSV-ALDER\n';
+                archive.archived_cover_record:
+                  'cover_record_id,plot_id,cover_pct,season_code\n'+
+                  '1,1,17,SEA-2025\n';
+              }#
+          ];
+          asserts:
+          [
+            archivedPlotCodeResolves:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"PLT-SCREE","Season":"SEA-2025","CoverPct":17}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    plotDigestSuite:
+    {
+      function: |test::westerntundra::domain::PlotDigest.all()->project([p|$p.plotCode, p|$p.reserveCode], ['Plot', 'Reserve']);
+      tests:
+      [
+        digestViewProjection:
+        {
+          doc: 'The digest class is mapped directly onto the store view, so its projection is served from the nested sub-select rather than the base table.';
+          data:
+          [
+            test::westerntundra::store::TundraArchiveDB:
+              Relational
+              #{
+                archive.archived_plot:
+                  'plot_id,plot_code,reserve_code\n'+
+                  '1,PLT-TARN,RSV-BIRCH\n';
+              }#
+          ];
+          asserts:
+          [
+            digestRowIsPublished:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"PLT-TARN","Reserve":"RSV-BIRCH"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

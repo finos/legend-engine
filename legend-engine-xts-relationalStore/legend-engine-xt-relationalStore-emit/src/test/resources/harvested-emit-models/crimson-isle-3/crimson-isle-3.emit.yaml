@@ -1,0 +1,55 @@
+name: crimson-isle-3
+title: "Upper-Valley Trail-Shelter Network — Deep Conditional Derived Properties over Bi-Temporal, Business and Processing Milestoning"
+description: |
+  A mountain trail-shelter network whose published condition register is computed rather than
+  stored. The shelter class is business-temporal, its sleeping permit is bi-temporal and the warden
+  assignment is processing-temporal, and all three are wired together by milestoned associations, so
+  every traversal carries the temporal context of both ends. The grading itself lives in derived
+  properties: a thirteen-armed conditional chain over the service tier, roof material and access
+  route, a seven-armed chain over the route and the altitude band, a literal-defaulted sweep status
+  that has to survive an absent note, and three collection-op derivations that reach across the
+  to-many inspection end and count or collect the inspections matching an outcome and a checklist
+  tag. A separate inheritance hierarchy splits inspections into the scheduled and the storm-driven
+  kind, four enumerations close the tier, roof, route and outcome domains, and a stewardship profile
+  supplies the stereotypes and tagged values. The service test walks ten shelters at one as-of date,
+  each landing on a different conditional arm including the ungraded and unrouted fallbacks and the
+  missing-note default, and a second read at a historic as-of date proves the shelter whose business
+  range closed in 2024 is invisible to the current register.
+modelSources:
+  model:
+    root: crimson-isle-3
+    files:
+      - test/crimsonisle3/connection/ShelterConnections.pure
+      - test/crimsonisle3/domain/ShelterDomain.pure
+      - test/crimsonisle3/mapping/ShelterEnumMapping.pure
+      - test/crimsonisle3/mapping/ShelterNetworkMapping.pure
+      - test/crimsonisle3/profile/ShelterProfile.pure
+      - test/crimsonisle3/runtime/ShelterRuntimes.pure
+      - test/crimsonisle3/service/ShelterConditionRegister.pure
+      - test/crimsonisle3/store/ShelterNetworkDB.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - grammar:derived-property-collection-op
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores:
+  - relational
+complexity: basic
+tags:
+  - bi-temporal
+  - conditional-chain
+  - derived-property
+  - enumeration
+  - h2
+  - inspection-hierarchy
+  - milestoned-association
+  - processing-temporal
+  - profile
+  - trail-shelter

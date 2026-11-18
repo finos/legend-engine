@@ -1,0 +1,32 @@
+name: teal-otter-2
+title: "Teal Otter 2 - Width-Bounded Sighting Identifiers Over Two Closed Classification Sets"
+description: |
+  A store-agnostic estuary otter-survey type surface. A screened sighting carries a
+  mandatory flipper-tag identifier bounded from both sides by class-level constraints,
+  so an instance is valid only inside a closed width window, plus an optional observer
+  remark whose own constraint holds vacuously when the remark is absent. The same
+  instance carries two independent closed classification dimensions - the origin of the
+  raft it belongs to and the screening decision taken on the record - so constraint
+  evaluation and enumeration resolution compile and plan as one unit. Bankside holts and
+  walked transects supply the singular and to-many traversals the constrained class is
+  reached through. Parse, compile and generation only; the group declares no store,
+  mapping or runtime.
+modelSources:
+  model:
+    root: teal-otter-2
+    files:
+      - test/tealotter2/domain/Enumerations.pure
+      - test/tealotter2/domain/HoltSurvey.pure
+features:
+  - grammar:constraint
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-constraint
+  - closed-value-set
+  - domain-only
+  - enumeration
+  - optional-property
+  - to-many-property

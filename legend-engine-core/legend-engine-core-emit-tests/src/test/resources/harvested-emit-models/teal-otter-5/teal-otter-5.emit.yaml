@@ -1,0 +1,38 @@
+name: teal-otter-5
+title: "Municipal Street-Canopy Register - Mixed Temporality and Annotation-Dense Planting Graph"
+description: |
+  A municipal street-canopy register that combines a three-level planting inheritance
+  tree with business-temporal records, a bi-temporal inspection entry and a
+  processing-temporal maintenance log. Milestoned associations cross between the
+  business, processing and bi-temporal dimensions, while profiles, stereotypes and
+  tagged values densely annotate the canopy vocabulary without requiring a store.
+modelSources:
+  model:
+    root: teal-otter-5
+    files:
+      - test/tealotter5/domain/CanopyAssociations.pure
+      - test/tealotter5/domain/CanopyProfiles.pure
+      - test/tealotter5/domain/CanopyRecords.pure
+      - test/tealotter5/domain/CanopyVocabulary.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - bi-temporal
+  - business-temporal
+  - class-inheritance
+  - enumeration
+  - milestoned-association
+  - processing-temporal
+  - store-less
+  - street-canopy-register
+  - tagged-value

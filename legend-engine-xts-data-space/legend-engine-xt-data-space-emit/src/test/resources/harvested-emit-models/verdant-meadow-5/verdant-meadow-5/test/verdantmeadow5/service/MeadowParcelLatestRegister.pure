@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantmeadow5::service::MeadowParcelLatestRegister
+{
+  pattern: '/meadow/v1/parcels/latest';
+  title: 'Hay Meadow - Parcel Register, Latest Snapshot';
+  ownership: DID { identifier: 'meadow-registry' };
+  documentation: 'The latest-snapshot counterpart of the parcel register: the same labelled columns plus the snapshot tag each row was taken from, so the current picture can be read beside the full history.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::verdantmeadow5::domain::MeadowParcelLatest.all()->project(
+      [
+        p|$p.parcelCode,
+        p|$p.parcelName,
+        p|$p.quarterName,
+        p|$p.areaHectares,
+        p|$p.snapshotTag
+      ],
+      [
+        'Parcel Code',
+        'Parcel Name',
+        'Quarter Name',
+        'Area Hectares',
+        'Snapshot Tag'
+      ]
+    )->sort([asc('Parcel Code')]);
+    mapping: test::verdantmeadow5::mapping::MeadowMapping;
+    runtime: test::verdantmeadow5::runtime::MeadowRuntime;
+  }
+  testSuites:
+  [
+    meadowParcelLatestRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowCuratedConnection:
+            Relational
+            #{
+              meadow.meadow_parcel_latest:
+                'parcel_code,parcel_name,quarter_name,area_hectares,snapshot_tag\n'+
+                'MP-02,Brook Meadow,North Quarter,4.0,latest\n'+
+                'MP-01,Long Meadow,North Quarter,6.5,latest\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestSnapshotRowsCarryTheirTag:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoTaggedParcels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Parcel Code":"MP-01","Parcel Name":"Long Meadow","Quarter Name":"North Quarter","Area Hectares":6.5,"Snapshot Tag":"latest"},{"Parcel Code":"MP-02","Parcel Name":"Brook Meadow","Quarter Name":"North Quarter","Area Hectares":4.0,"Snapshot Tag":"latest"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::goldenthicket2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'Aggregate root of a wildlife intake request. Ten nested classes hang off it at mandatory-one, optional, one-or-more and zero-or-more cardinalities, so a valid instance is characterised by which optional branches are populated rather than by the type structure.'} test::goldenthicket2::domain::WildlifeIntakeRequest
+{
+  requestRef: String[1];
+  requestKind: String[1];
+  raisedOn: String[1];
+  raisedByRef: String[1];
+  channelName: String[0..1];
+  priorityLabel: String[0..1];
+  summaryText: String[0..1];
+  callbackNote: String[0..1];
+  registerRef: String[0..1];
+  licenceRef: String[0..1];
+  permitNote: String[0..1];
+  consentNote: String[0..1];
+  triageLabel: String[0..1];
+  triageNote: String[0..1];
+  weatherNote: String[0..1];
+  hazardNote: String[0..1];
+  releasePlanNote: String[0..1];
+  followUpNote: String[0..1];
+  closedOn: String[0..1];
+  closureNote: String[0..1];
+  archiveRef: String[0..1];
+  reporter: IntakeReporter[1];
+  site: IntakeSite[1];
+  specimen: IntakeSpecimen[1];
+  measurements: IntakeMeasurement[*];
+  carrier: IntakeCarrier[0..1];
+  handoff: IntakeHandoff[0..1];
+  attachments: IntakeAttachment[1..*];
+  notes: IntakeNote[*];
+  reviewers: IntakeReviewer[1..*];
+  status: IntakeStatusBlock[0..1];
+}

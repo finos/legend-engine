@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace demo::azurelighthouse2::dataspace::CoastBeaconDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'coastWatch';
+      description: 'Coast-watch tier binding the multi-table beacon store to the beacon mapping and the warehouse-backed engine runtime that serves every published endpoint.';
+      mapping: demo::azurelighthouse2::mapping::LighthouseMapping;
+      defaultRuntime: demo::azurelighthouse2::runtime::LighthouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'coastWatch';
+  title: 'Coast Beacon Network';
+  description: 'Catalogued entry point over a stretch of coast: beacon stations, their lamp rotations, keeper rosters, recorded conditions and supply runs, each projected as tabular results through one curated mapping.';
+  elements:
+  [
+    demo::azurelighthouse2::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Station classes by coast stretch';
+      description: 'The featured endpoint that classifies the beacon stations of one stretch of coast.';
+      executable: demo::azurelighthouse2::service::StationClassService;
+    },
+    {
+      id: 2;
+      title: 'Lamp rotation watch list';
+      description: 'The featured endpoint that turns recorded rotation periods into a flash-rate watch list.';
+      executable: demo::azurelighthouse2::service::RotationWatchService;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'coast-beacon-support@example.invalid';
+  };
+}

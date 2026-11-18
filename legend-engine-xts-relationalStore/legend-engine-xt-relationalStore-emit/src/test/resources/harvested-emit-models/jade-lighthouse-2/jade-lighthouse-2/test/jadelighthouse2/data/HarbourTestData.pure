@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::jadelighthouse2::data::HarbourTestData
+{
+  Relational
+  #{
+    reference.coast_district:
+      'district_code,district_name\n'+
+      'D1,North Shore\n'+
+      'D2,South Shore\n';
+
+    reference.keeper_post:
+      'keeper_name,post_name\n'+
+      'North keeper,Northern shore post\n'+
+      'South keeper,Southern shore post\n';
+
+    reference.district_keeper:
+      'district_code,keeper_name\n'+
+      'D1,North keeper\n'+
+      'D2,South keeper\n';
+
+    reference.coast_sector:
+      'sector_code,sector_name,district_code,exposure_flag\n'+
+      'S1,Bluff Sector,D1,HARBOUR\n'+
+      'S2,Cape Sector,D2,OPEN\n';
+
+    reference.optic_grade:
+      'grade_code,grade_label,sector_code\n'+
+      'G1,Dense optic,S1\n'+
+      'G2,Sparse optic,S2\n';
+
+    watch.watch_log:
+      'watch_id,watch_code,watch_hours,watch_kind,watch_date\n'+
+      '1,DUSKLIGHTWATCH,18.5,DUSK,2031-05-01\n'+
+      '2,RELIEFNIGHTRUN,3.5,RELIEF,2031-05-02\n';
+
+    survey.light_station:
+      'station_id,station_name,lamp_count,focal_height_m,band_code,state_code,glazing_code,grade_code,watch_id,note_text\n'+
+      '1,harbour bluff,4,90.0,A,LIT,sheltered,G1,1,bluff survey\n'+
+      '2,outer mole,2,45.0,B,DIMMED,sheltered,G1,1,mole survey\n'+
+      '3,tidal skerry,4,50.0,C,GUTTERED,weathered,G1,1,\n'+
+      '4,anchor quay,4,70.0,D,DECOMMISSIONED,weathered,G1,1,quay survey\n'+
+      '5,shingle spit,2,55.0,E,LIT,sheltered,G1,1,spit survey\n'+
+      '6,kelp shoal,4,30.0,F,DECOMMISSIONED,weathered,G1,1,\n'+
+      '7,granite head,4,110.0,G,SHUTTERED,sheltered,G1,1,head survey\n'+
+      '8,surge cove,4,26.0,H,GUTTERED,weathered,G1,1,cove survey\n'+
+      '9,quiet lagoon,2,35.0,,DIMMED,sheltered,G1,1,\n'+
+      '10,basalt cape,4,130.0,A,LIT,weathered,G2,1,cape survey\n'+
+      '11,uncharted reef,2,15.0,B,LANTERNLESS,sheltered,G1,2,\n';
+  }#
+}

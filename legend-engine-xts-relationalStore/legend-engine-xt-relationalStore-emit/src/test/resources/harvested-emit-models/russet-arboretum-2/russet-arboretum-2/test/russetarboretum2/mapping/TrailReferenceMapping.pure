@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::russetarboretum2::mapping::TrailReferenceMapping
+(
+  test::russetarboretum2::domain::TerrainClass: EnumerationMapping TerrainMapping
+  {
+    SCREE: ['SC'],
+    LOAM: ['LO'],
+    BOARDWALK: ['BW']
+  }
+
+  *test::russetarboretum2::domain::Steward[steward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetarboretum2::store::TrailDatabase]roster.steward.steward_code
+    )
+    ~mainTable [test::russetarboretum2::store::TrailDatabase]roster.steward
+    partyCode: [test::russetarboretum2::store::TrailDatabase]roster.steward.steward_code,
+    partyName: [test::russetarboretum2::store::TrailDatabase]roster.steward.steward_name,
+    radioCall: [test::russetarboretum2::store::TrailDatabase]roster.steward.radio_call
+  }
+
+  *test::russetarboretum2::domain::TrailSegment[trailSegment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetarboretum2::store::TrailDatabase]field.trail_segment.segment_code
+    )
+    ~mainTable [test::russetarboretum2::store::TrailDatabase]field.trail_segment
+    featureLabel: 'TRAIL SEGMENT',
+    segmentCode: [test::russetarboretum2::store::TrailDatabase]field.trail_segment.segment_code,
+    segmentName: [test::russetarboretum2::store::TrailDatabase]field.trail_segment.segment_name,
+    steward[steward]: [test::russetarboretum2::store::TrailDatabase]@Segment_Steward
+  }
+)

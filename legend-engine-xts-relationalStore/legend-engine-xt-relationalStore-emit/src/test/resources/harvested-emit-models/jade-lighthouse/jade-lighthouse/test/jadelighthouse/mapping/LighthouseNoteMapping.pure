@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadelighthouse::mapping::LighthouseNoteMapping
+(
+  include mapping test::jadelighthouse::mapping::LighthouseEnumMappings
+
+  *test::jadelighthouse::domain::AidNote[aidNote]: Pure
+  {
+    ~src test::jadelighthouse::domain::RawAidNote
+    noteCode: $src.noteCode->toUpper(),
+    stationCode: $src.stationCode,
+    noteLabel: $src.stationCode + '/' + $src.noteCode->toUpper(),
+    opticClass: EnumerationMapping OpticMapping: [if($src.opticText->toUpper()->startsWith('FRESNEL'), |'F', |if($src.opticText->toUpper()->startsWith('CATA'), |'C', |if($src.opticText->toUpper()->startsWith('REFLECT'), |'R', |'Z')))],
+    powerSource: EnumerationMapping PowerMapping: [if($src.powerText->toUpper() == 'SOLAR', |'S', |if($src.powerText->toUpper() == 'WIND', |'W', |if($src.powerText->toUpper() == 'MAINS', |'M', |'U')))]
+  }
+
+  testSuites:
+  [
+    aidNoteSuite:
+    {
+      function: |test::jadelighthouse::domain::AidNote.all()->graphFetch(
+        #{
+          test::jadelighthouse::domain::AidNote{
+            noteCode,
+            stationCode,
+            noteLabel,
+            opticClass,
+            powerSource
+          }
+        }#
+      )->serialize(
+        #{
+          test::jadelighthouse::domain::AidNote{
+            noteCode,
+            stationCode,
+            noteLabel,
+            opticClass,
+            powerSource
+          }
+        }#
+      );
+      tests:
+      [
+        noteVocabulary:
+        {
+          doc: 'Lifts free-text survey notes onto the shared enumerations through computed source expressions, including a note whose wording matches no known vocabulary and therefore lands on the catch-all values.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::jadelighthouse::domain::RawAidNote:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"noteCode":"n-1","stationCode":"JL-101","opticText":"fresnel first order","powerText":"solar"},{"noteCode":"n-2","stationCode":"JL-102","opticText":"catadioptric drum","powerText":"wind"},{"noteCode":"n-3","stationCode":"JL-103","opticText":"reflector array","powerText":"mains"},{"noteCode":"n-4","stationCode":"JL-104","opticText":"unreadable plate","powerText":"unrecorded"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            notes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"noteCode":"N-1","stationCode":"JL-101","noteLabel":"JL-101/N-1","opticClass":"Fresnel","powerSource":"Solar"},{"noteCode":"N-2","stationCode":"JL-102","noteLabel":"JL-102/N-2","opticClass":"Catadioptric","powerSource":"Wind"},{"noteCode":"N-3","stationCode":"JL-103","noteLabel":"JL-103/N-3","opticClass":"Reflector","powerSource":"Mains"},{"noteCode":"N-4","stationCode":"JL-104","noteLabel":"JL-104/N-4","opticClass":"Unclassed","powerSource":"Unknown"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

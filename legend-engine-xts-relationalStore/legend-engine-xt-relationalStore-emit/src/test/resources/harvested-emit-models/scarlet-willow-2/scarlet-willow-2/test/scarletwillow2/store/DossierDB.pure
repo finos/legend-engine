@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::scarletwillow2::store::DossierDB
+(
+  include test::scarletwillow2::store::ItemRefDB
+  include test::scarletwillow2::store::RecordRefDB
+
+  Schema dossier
+  (
+    Table treatment_dossier
+    (
+      milestoning
+      (
+        business(BUS_FROM = bus_from, BUS_THRU = bus_thru)
+      )
+
+      dossier_code VARCHAR(24) PRIMARY KEY,
+      record_no_text VARCHAR(16) NOT NULL,
+      item_code VARCHAR(16) NOT NULL,
+      entity_code VARCHAR(16) NOT NULL,
+      unit_code VARCHAR(16) NOT NULL,
+      opened_on DATE NOT NULL,
+      closed_on DATE,
+      sheet_count INTEGER,
+      folio_count INTEGER,
+      summary_text VARCHAR(192),
+      custodian_name VARCHAR(96),
+      workshop_name VARCHAR(96),
+      status_code CHAR(12),
+      memo_code CHAR(12),
+      intake_agent_code VARCHAR(16),
+      intake_agent_name VARCHAR(96),
+      intake_desk_name VARCHAR(48),
+      release_agent_code VARCHAR(16),
+      release_agent_name VARCHAR(96),
+      release_desk_name VARCHAR(48),
+      review_agent_code VARCHAR(16),
+      review_agent_name VARCHAR(96),
+      review_desk_name VARCHAR(48),
+      sheet_measure_text VARCHAR(48),
+      sheet_detail_code VARCHAR(16),
+      sheet_detail_note VARCHAR(96),
+      folio_measure_text VARCHAR(48),
+      folio_detail_code VARCHAR(16),
+      folio_detail_note VARCHAR(96),
+      bath_minutes INTEGER,
+      bath_measure_text VARCHAR(48),
+      bath_detail_code VARCHAR(16),
+      bath_detail_note VARCHAR(96),
+      shelf_label_text VARCHAR(48),
+      box_label_text VARCHAR(48),
+      bus_from DATE PRIMARY KEY,
+      bus_thru DATE
+    )
+  )
+
+  Filter FinalDossiers(dossier.treatment_dossier.status_code = 'FINAL')
+  Filter PreliminaryDossiers(dossier.treatment_dossier.status_code = 'PRELIM')
+
+  Join Dossier_Item(dossier.treatment_dossier.item_code = reference.item_ref.item_code)
+  Join Dossier_Entity(dossier.treatment_dossier.entity_code = registry.entity_ref.entity_code)
+  Join Dossier_Record(parseInteger(dossier.treatment_dossier.record_no_text) = registry.record_ref.record_no)
+)

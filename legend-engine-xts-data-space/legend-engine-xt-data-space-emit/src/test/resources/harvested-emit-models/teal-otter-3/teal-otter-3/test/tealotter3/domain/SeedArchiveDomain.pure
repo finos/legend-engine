@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::tealotter3::domain::SeedAccession
+{
+  accessionCode: String[1];
+  collectedOn: StrictDate[1];
+  seedCount: Integer[1];
+  viablePct: Float[0..1];
+  dried: Boolean[0..1];
+  curationLabel: String[1];
+  gradeLabel: String[1];
+}
+
+Class test::tealotter3::domain::SeedTaxon
+{
+  taxonCode: String[1];
+  taxonName: String[1];
+  familyCode: String[0..1];
+}
+
+Class test::tealotter3::domain::SeedVault
+{
+  vaultCode: String[1];
+  vaultName: String[1];
+  chillDegrees: Integer[0..1];
+}
+
+Class test::tealotter3::domain::GerminationTrial
+{
+  trialId: Integer[1];
+  germinatedPct: Integer[1];
+  testedOn: StrictDate[1];
+  taxonNameAtTrial: String[0..1];
+}
+
+Association test::tealotter3::domain::Accession_Taxon
+{
+  taxon: test::tealotter3::domain::SeedTaxon[0..1];
+  accessions: test::tealotter3::domain::SeedAccession[*];
+}
+
+Association test::tealotter3::domain::Accession_Vault
+{
+  vault: test::tealotter3::domain::SeedVault[0..1];
+  storedAccessions: test::tealotter3::domain::SeedAccession[*];
+}
+
+Association test::tealotter3::domain::Accession_Trial
+{
+  trials: test::tealotter3::domain::GerminationTrial[*];
+  trialledAccession: test::tealotter3::domain::SeedAccession[0..1];
+}

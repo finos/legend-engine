@@ -1,0 +1,186 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::opallantern3::mapping::LanternServicingMapping
+(
+  include mapping test::opallantern3::mapping::LanternStructureMapping
+
+  *test::opallantern3::domain::ServiceVisit[service_visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opallantern3::store::LanternDb]lantern.service_visit.visit_code,
+      [test::opallantern3::store::LanternDb]lantern.service_visit.in_z
+    )
+    ~mainTable [test::opallantern3::store::LanternDb]lantern.service_visit
+    visitCode: [test::opallantern3::store::LanternDb]lantern.service_visit.visit_code,
+    technicianName: [test::opallantern3::store::LanternDb]lantern.service_visit.technician_name,
+    outcomeCode: [test::opallantern3::store::LanternDb]lantern.service_visit.outcome_code,
+    durationHours: [test::opallantern3::store::LanternDb]lantern.service_visit.duration_hours,
+    visitedOn: [test::opallantern3::store::LanternDb]lantern.service_visit.visited_on,
+    windowIn: [test::opallantern3::store::LanternDb]lantern.service_visit.in_z,
+    windowOut: [test::opallantern3::store::LanternDb]lantern.service_visit.out_z
+  }
+
+  test::opallantern3::domain::Unit_Visit: Relational
+  {
+    AssociationMapping
+    (
+      servicedUnit[service_visit, lamp_unit]: [test::opallantern3::store::LanternDb]@Lantern_Unit_Visit,
+      visits[lamp_unit, service_visit]: [test::opallantern3::store::LanternDb]@Lantern_Unit_Visit
+    )
+  }
+
+  testSuites:
+  [
+    lampUnitPointInTimeSuite:
+    {
+      function: |test::opallantern3::domain::LampUnit.all(%2026-03-01)->project(
+        [
+          u|$u.unitCode,
+          u|$u.stationName,
+          u|$u.lensGrade,
+          u|$u.focalHeightMetres,
+          u|$u.commissionedOn,
+          u|$u.keeper(%2026-03-01).keeperName,
+          u|$u.keeper(%2026-03-01).districtName,
+          u|$u.stationName->toUpper()->trim(),
+          u|$u.stationName->length(),
+          u|$u.commissionedOn->year()
+        ],
+        [
+          'Unit Code',
+          'Station Name',
+          'Lens Grade',
+          'Focal Height',
+          'Commissioned On',
+          'Keeper Name',
+          'District Name',
+          'Station Tag',
+          'Name Width',
+          'Commissioned Year'
+        ]
+      )->distinct()->sort(
+        [
+          asc('Unit Code')
+        ]
+      );
+      tests:
+      [
+        keptUnitsLiveAtTheProcessingInstant:
+        {
+          doc: 'Reads the aliased lamp-unit table at one processing instant and hops onto the keeper table through the named join: the superseded draft version of a unit drops out, the unit whose processing window closed before the instant drops out as an out-of-range row, the unit with no keeper key survives with empty keeper columns because the traversal is emitted as an outer join, and the keeper key that carries two versions resolves to the single version live at the instant.';
+          data:
+          [
+            test::opallantern3::store::LanternDb:
+              Relational
+              #{
+                lantern.lamp_unit:
+                  'unit_code,station_name,lens_grade,keeper_code,focal_height_m,rated_candela,commissioned_on,surveyed_at,in_z,out_z\n'+
+                  'LU-01,Harbour Approach Light Draft,ALPHA,K-01,11.0,3900.00,2024-05-01,2026-01-02 07:00:00,2026-01-01,2026-02-01\n'+
+                  'LU-01, Harbour Approach Light ,ALPHA,K-01,12.5,4500.00,2024-05-01,2026-02-10 08:15:00,2026-02-01,9999-12-31\n'+
+                  'LU-02,Outer Mole Light,BETA,K-02,8.0,,,,2026-02-01,9999-12-31\n'+
+                  'LU-03,Retired Groyne Light,ALPHA,K-01,6.0,900.00,2019-04-01,2026-01-05 06:30:00,2026-01-01,2026-01-20\n'+
+                  'LU-04,Unkeyed Jetty Light,GAMMA,,4.0,,2022-08-01,,2026-02-01,9999-12-31\n';
+                lantern.lamp_keeper:
+                  'keeper_code,keeper_name,district_name,in_z,out_z\n'+
+                  'K-01,Iris Tidewell,North Harbour Watch,2026-01-01,2026-02-15\n'+
+                  'K-01,Iris Tidewell,North Harbour District,2026-02-15,9999-12-31\n'+
+                  'K-02,Bramble Quayle,South Harbour District,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            threeLiveUnits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Unit Code":"LU-01","Station Name":" Harbour Approach Light ","Lens Grade":"ALPHA","Focal Height":12.5,"Commissioned On":"2024-05-01","Keeper Name":"Iris Tidewell","District Name":"North Harbour District","Station Tag":"HARBOUR APPROACH LIGHT","Name Width":24,"Commissioned Year":2024},{"Unit Code":"LU-02","Station Name":"Outer Mole Light","Lens Grade":"BETA","Focal Height":8.0,"Commissioned On":null,"Keeper Name":"Bramble Quayle","District Name":"South Harbour District","Station Tag":"OUTER MOLE LIGHT","Name Width":16,"Commissioned Year":null},{"Unit Code":"LU-04","Station Name":"Unkeyed Jetty Light","Lens Grade":"GAMMA","Focal Height":4.0,"Commissioned On":"2022-08-01","Keeper Name":null,"District Name":null,"Station Tag":"UNKEYED JETTY LIGHT","Name Width":19,"Commissioned Year":2022}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    serviceVisitAllVersionsSuite:
+    {
+      function: |test::opallantern3::domain::ServiceVisit.allVersions()->filter(
+        v|($v.outcomeCode->in(['RELAMPED', 'CLEANED', 'ADJUSTED'])) && !$v.technicianName->isEmpty()
+      )->project(
+        [
+          v|$v.visitCode,
+          v|$v.technicianName,
+          v|$v.outcomeCode,
+          v|$v.durationHours,
+          v|$v.visitedOn,
+          v|$v.windowIn,
+          v|$v.windowOut,
+          v|$v.outcomeCode->toUpper()->startsWith('REL')
+        ],
+        [
+          'Visit Code',
+          'Technician Name',
+          'Outcome Code',
+          'Duration Hours',
+          'Visited On',
+          'Window In',
+          'Window Out',
+          'Relamped Flag'
+        ]
+      )->sort(
+        [
+          asc('Visit Code'),
+          asc('Window In')
+        ]
+      );
+      tests:
+      [
+        everyStoredVisitVersion:
+        {
+          doc: 'Scans every stored version of the visit table instead of one snapshot, so the closed and the still-open versions of one visit code both appear with their window columns projected, while the visit whose outcome code is outside the literal membership set is filtered out in the generated SQL.';
+          data:
+          [
+            test::opallantern3::store::LanternDb:
+              Relational
+              #{
+                lantern.service_visit:
+                  'visit_code,unit_code,technician_name,outcome_code,duration_hours,visited_on,in_z,out_z\n'+
+                  'SV-01,LU-01,Perry Cobble,CLEANED,1.5,2026-01-04,2026-01-04,2026-02-01\n'+
+                  'SV-01,LU-01,Perry Cobble,RELAMPED,2.25,2026-02-02,2026-02-01,9999-12-31\n'+
+                  'SV-02,LU-02,Wren Halyard,ADJUSTED,,2026-02-06,2026-02-06,9999-12-31\n'+
+                  'SV-03,LU-02,Wren Halyard,DEFERRED,0.5,2026-02-07,2026-02-07,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            threeStoredVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit Code":"SV-01","Technician Name":"Perry Cobble","Outcome Code":"CLEANED","Duration Hours":1.5,"Visited On":"2026-01-04","Window In":"2026-01-04","Window Out":"2026-02-01","Relamped Flag":false},{"Visit Code":"SV-01","Technician Name":"Perry Cobble","Outcome Code":"RELAMPED","Duration Hours":2.25,"Visited On":"2026-02-02","Window In":"2026-02-01","Window Out":"9999-12-31","Relamped Flag":true},{"Visit Code":"SV-02","Technician Name":"Wren Halyard","Outcome Code":"ADJUSTED","Duration Hours":null,"Visited On":"2026-02-06","Window In":"2026-02-06","Window Out":"9999-12-31","Relamped Flag":false}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

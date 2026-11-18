@@ -1,0 +1,406 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietorchard::mapping::OrchardBlockMapping
+(
+  test::quietorchard::domain::SoilTexture: EnumerationMapping SoilTextureCodes
+  {
+    LOAM: ['LM'],
+    CLAY: ['CL'],
+    SAND: ['SD'],
+    SILT: ['ST'],
+    UNCLASSIFIED: ['UC']
+  }
+
+  test::quietorchard::domain::IrrigationMethod: EnumerationMapping IrrigationCodes
+  {
+    DRIP: ['DR'],
+    SPRINKLER: ['SP'],
+    FURROW: ['FU'],
+    RAINFED: ['RF']
+  }
+
+  test::quietorchard::domain::SlopeAspect: EnumerationMapping AspectCodes
+  {
+    NORTH: ['N'],
+    SOUTH: ['S'],
+    EAST: ['E'],
+    WEST: ['W'],
+    LEVEL: ['L']
+  }
+
+  *test::quietorchard::domain::OrchardBlockProfile[orchardBlock]: Pure
+  {
+    ~src test::quietorchard::domain::BlockSurveyFeed
+    blockCode: $src.blockCode,
+    label: 'BLK-' + $src.blockCode->trim()->toUpper() + if($src.rowCount->isEmpty(), | '', | '/R' + $src.rowCount->toOne()->toString()),
+    vigourBand: if($src.canopyPct->isEmpty(),
+                   | [],
+                   | if($src.canopyPct->toOne() >= 90,
+                        | 'V8',
+                        | if($src.canopyPct->toOne() >= 75,
+                             | 'V7',
+                             | if($src.canopyPct->toOne() >= 60,
+                                  | 'V6',
+                                  | if($src.canopyPct->toOne() >= 45,
+                                       | 'V5',
+                                       | if($src.canopyPct->toOne() >= 30,
+                                            | 'V4',
+                                            | if($src.canopyPct->toOne() >= 20,
+                                                 | 'V3',
+                                                 | if($src.canopyPct->toOne() >= 10,
+                                                      | 'V2',
+                                                      | 'V1')))))))),
+    earlyBloom: if($src.bloomNote->isEmpty(), | false, | $src.bloomNote->toOne()->trim()->toLower()->startsWith('early')),
+    soil: EnumerationMapping SoilTextureCodes: [if($src.soilCode->isEmpty(), | 'UC', | if($src.soilCode->toOne()->trim()->toUpper()->in(['LM', 'CL', 'SD', 'ST']), | $src.soilCode->toOne()->trim()->toUpper(), | 'UC'))]->toOne(),
+    irrigation: EnumerationMapping IrrigationCodes: [if($src.irrigationCode->isEmpty(), | 'RF', | if(['DR', 'SP', 'FU']->contains($src.irrigationCode->toOne()->trim()->toUpper()), | $src.irrigationCode->toOne()->trim()->toUpper(), | 'RF'))]->toOne(),
+    aspect: EnumerationMapping AspectCodes: [if($src.aspectCode->isEmpty() || ($src.aspectCode->toOne()->trim()->length() != 1), | 'L', | if($src.aspectCode->toOne()->trim()->toUpper()->in(['N', 'S', 'E', 'W']), | $src.aspectCode->toOne()->trim()->toUpper(), | 'L'))]->toOne()
+  }
+
+  testSuites:
+  [
+    orchardBlockProfileSuite:
+    {
+      function: |test::quietorchard::domain::OrchardBlockProfile.all()->graphFetch(
+        #{
+          test::quietorchard::domain::OrchardBlockProfile{
+            blockCode,
+            label,
+            vigourBand,
+            earlyBloom,
+            soil,
+            irrigation,
+            aspect
+          }
+        }#
+      )->serialize(
+        #{
+          test::quietorchard::domain::OrchardBlockProfile{
+            blockCode,
+            label,
+            vigourBand,
+            earlyBloom,
+            soil,
+            irrigation,
+            aspect
+          }
+        }#
+      );
+      tests:
+      [
+        canopyArmEight:
+        {
+          doc: 'Closed canopy at or above ninety percent selects the top vigour arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietorchard::domain::BlockSurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-01","rowCount":24,"canopyPct":95,"soilCode":"lm","irrigationCode":"dr","aspectCode":"s","bloomNote":"Early petal fall"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            profiled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-01","label":"BLK-HB-01/R24","vigourBand":"V8","earlyBloom":true,"soil":"LOAM","irrigation":"DRIP","aspect":"SOUTH"}';
+                  }#;
+              }#
+          ];
+        },
+        canopyArmSeven:
+        {
+          doc: 'Canopy between seventy-five and ninety percent selects the seventh arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietorchard::domain::BlockSurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-02","rowCount":18,"canopyPct":80,"soilCode":"CL","irrigationCode":"SP","aspectCode":"N","bloomNote":"late bud swell"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            profiled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-02","label":"BLK-HB-02/R18","vigourBand":"V7","earlyBloom":false,"soil":"CLAY","irrigation":"SPRINKLER","aspect":"NORTH"}';
+                  }#;
+              }#
+          ];
+        },
+        canopyArmSix:
+        {
+          doc: 'Canopy between sixty and seventy-five percent selects the sixth arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietorchard::domain::BlockSurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-03","rowCount":30,"canopyPct":65,"soilCode":" sd ","irrigationCode":"fu","aspectCode":"e"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            profiled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-03","label":"BLK-HB-03/R30","vigourBand":"V6","earlyBloom":false,"soil":"SAND","irrigation":"FURROW","aspect":"EAST"}';
+                  }#;
+              }#
+          ];
+        },
+        canopyArmFive:
+        {
+          doc: 'Canopy between forty-five and sixty percent selects the fifth arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietorchard::domain::BlockSurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-04","canopyPct":50,"soilCode":"ST","irrigationCode":"DR","aspectCode":"W","bloomNote":"early"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            profiled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-04","label":"BLK-HB-04","vigourBand":"V5","earlyBloom":true,"soil":"SILT","irrigation":"DRIP","aspect":"WEST"}';
+                  }#;
+              }#
+          ];
+        },
+        canopyArmFour:
+        {
+          doc: 'Canopy between thirty and forty-five percent selects the fourth arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietorchard::domain::BlockSurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-05","rowCount":12,"canopyPct":35,"soilCode":"LM","aspectCode":"S"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            profiled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-05","label":"BLK-HB-05/R12","vigourBand":"V4","earlyBloom":false,"soil":"LOAM","irrigation":"RAINFED","aspect":"SOUTH"}';
+                  }#;
+              }#
+          ];
+        },
+        canopyArmThree:
+        {
+          doc: 'Canopy between twenty and thirty percent selects the third arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietorchard::domain::BlockSurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-06","rowCount":9,"canopyPct":25,"soilCode":"CL","irrigationCode":"SP","bloomNote":"mid season"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            profiled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-06","label":"BLK-HB-06/R9","vigourBand":"V3","earlyBloom":false,"soil":"CLAY","irrigation":"SPRINKLER","aspect":"LEVEL"}';
+                  }#;
+              }#
+          ];
+        },
+        canopyArmTwo:
+        {
+          doc: 'Canopy between ten and twenty percent selects the second arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietorchard::domain::BlockSurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-07","rowCount":6,"canopyPct":15,"irrigationCode":"RF","aspectCode":"N"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            profiled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-07","label":"BLK-HB-07/R6","vigourBand":"V2","earlyBloom":false,"soil":"UNCLASSIFIED","irrigation":"RAINFED","aspect":"NORTH"}';
+                  }#;
+              }#
+          ];
+        },
+        canopyArmOne:
+        {
+          doc: 'Sparse canopy below ten percent selects the lowest vigour arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietorchard::domain::BlockSurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-08","rowCount":4,"canopyPct":5,"soilCode":"SD","irrigationCode":"DR","aspectCode":"E","bloomNote":"Early blush"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            profiled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-08","label":"BLK-HB-08/R4","vigourBand":"V1","earlyBloom":true,"soil":"SAND","irrigation":"DRIP","aspect":"EAST"}';
+                  }#;
+              }#
+          ];
+        },
+        canopyUnrecorded:
+        {
+          doc: 'A block without a canopy reading falls through every arm and publishes no vigour band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietorchard::domain::BlockSurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-09","rowCount":20,"soilCode":"ST","irrigationCode":"FU","aspectCode":"W"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            profiled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-09","label":"BLK-HB-09/R20","vigourBand":null,"earlyBloom":false,"soil":"SILT","irrigation":"FURROW","aspect":"WEST"}';
+                  }#;
+              }#
+          ];
+        },
+        unmappedSiteCodes:
+        {
+          doc: 'Site codes outside the mapped sets resolve onto the unclassified soil, rain-fed watering and level aspect values.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietorchard::domain::BlockSurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-10","rowCount":14,"canopyPct":70,"soilCode":"PT","irrigationCode":"XX","aspectCode":"NE","bloomNote":"none"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            profiled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"hb-10","label":"BLK-HB-10/R14","vigourBand":"V6","earlyBloom":false,"soil":"UNCLASSIFIED","irrigation":"RAINFED","aspect":"LEVEL"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

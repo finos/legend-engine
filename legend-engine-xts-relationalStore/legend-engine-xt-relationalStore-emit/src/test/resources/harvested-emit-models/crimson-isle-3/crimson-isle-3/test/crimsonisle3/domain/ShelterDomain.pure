@@ -1,0 +1,149 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum {meta::pure::profiles::doc.doc = 'How much service a trail shelter offers to walkers who reach it.'} test::crimsonisle3::domain::ShelterTier
+{
+  BASIC,
+  SERVICED,
+  STAFFED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'What the shelter roof is built from, which drives the sweep interval.'} test::crimsonisle3::domain::RoofMaterial
+{
+  SHINGLE,
+  SHEET_METAL,
+  TURF,
+  CANVAS
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The way stores and inspectors reach the shelter.'} test::crimsonisle3::domain::AccessRoute
+{
+  FOOT_PATH,
+  MULE_TRACK,
+  CABLE_HOIST
+}
+
+Enum {meta::pure::profiles::doc.doc = 'What an inspection concluded about the shelter it visited.'} test::crimsonisle3::domain::InspectionOutcome
+{
+  PASS,
+  ADVISORY,
+  DEFECT,
+  CLOSURE
+}
+
+Class <<test::crimsonisle3::profile::ShelterStewardship.awaitingSurvey>> {meta::pure::profiles::doc.doc = 'The shared shape of every shelter inspection, whatever prompted the visit.', test::crimsonisle3::profile::ShelterStewardship.stewardshipTeam = 'upper-valley-wardens'} test::crimsonisle3::domain::InspectionRecord
+{
+  inspectionRef: String[1];
+  checklistTag: String[1];
+  outcome: test::crimsonisle3::domain::InspectionOutcome[1];
+  inspectedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A scheduled seasonal inspection, carried out against a numbered checklist.'} test::crimsonisle3::domain::RoutineInspection extends test::crimsonisle3::domain::InspectionRecord
+{
+  checklistVersion: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An inspection triggered by a storm rather than by the calendar.'} test::crimsonisle3::domain::StormInspection extends test::crimsonisle3::domain::InspectionRecord
+{
+  windSpeedKph: Integer[1];
+}
+
+Class <<temporal.businesstemporal, test::crimsonisle3::profile::ShelterStewardship.sweptEachSeason>> {meta::pure::profiles::doc.doc = 'A trail shelter in the upper-valley network, whose recorded fabric is effective over business time.', test::crimsonisle3::profile::ShelterStewardship.surveyCadence = 'seasonal', test::crimsonisle3::profile::ShelterStewardship.sensitivity = 'open-data'} test::crimsonisle3::domain::TrailShelter
+{
+  shelterCode: String[1];
+  shelterName: String[1];
+  tier: test::crimsonisle3::domain::ShelterTier[1];
+  roof: test::crimsonisle3::domain::RoofMaterial[1];
+  route: test::crimsonisle3::domain::AccessRoute[1];
+  bunkCount: Integer[1];
+  altitudeM: Integer[1];
+  waterSource: String[1];
+  sweepNote: String[0..1];
+  conditionGrade()
+  {
+    if(($this.tier == test::crimsonisle3::domain::ShelterTier.STAFFED) && ($this.roof == test::crimsonisle3::domain::RoofMaterial.SHINGLE), |'STAFFED-SHINGLE',
+      |if(($this.tier == test::crimsonisle3::domain::ShelterTier.STAFFED) && ($this.roof == test::crimsonisle3::domain::RoofMaterial.SHEET_METAL), |'STAFFED-SHEET',
+        |if(($this.tier == test::crimsonisle3::domain::ShelterTier.STAFFED) && ($this.roof == test::crimsonisle3::domain::RoofMaterial.TURF), |'STAFFED-TURF',
+          |if(($this.tier == test::crimsonisle3::domain::ShelterTier.STAFFED) && ($this.roof == test::crimsonisle3::domain::RoofMaterial.CANVAS), |'STAFFED-CANVAS',
+            |if(($this.tier == test::crimsonisle3::domain::ShelterTier.SERVICED) && ($this.roof == test::crimsonisle3::domain::RoofMaterial.SHINGLE), |'SERVICED-SHINGLE',
+              |if(($this.tier == test::crimsonisle3::domain::ShelterTier.SERVICED) && ($this.roof == test::crimsonisle3::domain::RoofMaterial.SHEET_METAL), |'SERVICED-SHEET',
+                |if(($this.tier == test::crimsonisle3::domain::ShelterTier.SERVICED) && ($this.roof == test::crimsonisle3::domain::RoofMaterial.TURF), |'SERVICED-TURF',
+                  |if(($this.tier == test::crimsonisle3::domain::ShelterTier.SERVICED) && ($this.roof == test::crimsonisle3::domain::RoofMaterial.CANVAS), |'SERVICED-CANVAS',
+                    |if(($this.tier == test::crimsonisle3::domain::ShelterTier.BASIC) && ($this.route == test::crimsonisle3::domain::AccessRoute.CABLE_HOIST), |'BASIC-HOIST',
+                      |if(($this.tier == test::crimsonisle3::domain::ShelterTier.BASIC) && ($this.route == test::crimsonisle3::domain::AccessRoute.MULE_TRACK), |'BASIC-MULE',
+                        |if(($this.roof == test::crimsonisle3::domain::RoofMaterial.CANVAS) && ($this.route == test::crimsonisle3::domain::AccessRoute.CABLE_HOIST), |'CANVAS-HOIST',
+                          |if(($this.roof == test::crimsonisle3::domain::RoofMaterial.SHINGLE) && ($this.route == test::crimsonisle3::domain::AccessRoute.FOOT_PATH), |'SHINGLE-FOOT',
+                            |if(($this.roof == test::crimsonisle3::domain::RoofMaterial.SHEET_METAL) && ($this.route == test::crimsonisle3::domain::AccessRoute.FOOT_PATH), |'SHEET-FOOT',
+                              |'UNGRADED')))))))))))))
+  }: String[1];
+  routeLabel()
+  {
+    if(($this.route == test::crimsonisle3::domain::AccessRoute.CABLE_HOIST) && ($this.altitudeM >= 2400), |'HOIST-HIGH',
+      |if(($this.route == test::crimsonisle3::domain::AccessRoute.CABLE_HOIST) && ($this.altitudeM >= 1800), |'HOIST-MID',
+        |if(($this.route == test::crimsonisle3::domain::AccessRoute.CABLE_HOIST) && ($this.altitudeM < 1800), |'HOIST-LOW',
+          |if(($this.route == test::crimsonisle3::domain::AccessRoute.MULE_TRACK) && ($this.altitudeM >= 2400), |'MULE-HIGH',
+            |if(($this.route == test::crimsonisle3::domain::AccessRoute.MULE_TRACK) && ($this.altitudeM >= 1800), |'MULE-MID',
+              |if(($this.route == test::crimsonisle3::domain::AccessRoute.FOOT_PATH) && ($this.altitudeM >= 2400), |'FOOT-HIGH',
+                |if(($this.route == test::crimsonisle3::domain::AccessRoute.FOOT_PATH) && ($this.altitudeM >= 1800), |'FOOT-MID',
+                  |'UNROUTED')))))))
+  }: String[1];
+  winterStatus()
+  {
+    if($this.waterSource->in(['SPRING', 'SNOWMELT', 'TANK']) && $this.sweepNote->isNotEmpty(), |$this.sweepNote->toOne(), |'NOT SWEPT')
+  }: String[1];
+  roofDefectCount()
+  {
+    $this.inspections->filter(i|($i.checklistTag == 'ROOF') && ($i.outcome == test::crimsonisle3::domain::InspectionOutcome.DEFECT))->size()
+  }: Integer[1];
+  accessAdvisoryCount()
+  {
+    $this.inspections->filter(i|($i.checklistTag == 'ACCESS') && ($i.outcome == test::crimsonisle3::domain::InspectionOutcome.ADVISORY))->size()
+  }: Integer[1];
+  stormClosureRefs()
+  {
+    $this.inspections->filter(i|$i.inspectionRef->startsWith('SI') && ($i.outcome == test::crimsonisle3::domain::InspectionOutcome.CLOSURE))->map(i|$i.inspectionRef)
+  }: String[*];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A permit that allows a shelter to sleep walkers, corrected over processing time and effective over business time.'} test::crimsonisle3::domain::AccessPermit
+{
+  permitRef: String[1];
+  bunkAllowance: Integer[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'The warden on record for a shelter, versioned by when the assignment was recorded.'} test::crimsonisle3::domain::WardenAssignment
+{
+  wardenName: String[1];
+  contactRadio: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'The inspections carried out on a shelter, reached from the shelter and back again.'} test::crimsonisle3::domain::Shelter_Inspection
+{
+  inspectedShelter: test::crimsonisle3::domain::TrailShelter[0..1];
+  inspections: test::crimsonisle3::domain::InspectionRecord[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'The sleeping permit held by a shelter; both ends are milestoned, so traversal carries the temporal context.'} test::crimsonisle3::domain::Shelter_Permit
+{
+  permittedShelter: test::crimsonisle3::domain::TrailShelter[0..1];
+  permit: test::crimsonisle3::domain::AccessPermit[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'The warden assigned to a shelter; the shelter is business-temporal and the assignment processing-temporal.'} test::crimsonisle3::domain::Shelter_Warden
+{
+  wardenedShelter: test::crimsonisle3::domain::TrailShelter[0..1];
+  warden: test::crimsonisle3::domain::WardenAssignment[0..1];
+}

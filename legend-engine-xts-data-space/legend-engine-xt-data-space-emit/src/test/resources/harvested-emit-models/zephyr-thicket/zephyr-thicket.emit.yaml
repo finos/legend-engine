@@ -1,0 +1,53 @@
+name: zephyr-thicket
+title: Parkland Parcel Registry
+description: >-
+  A relational parkland registry whose parcel hub navigates to wards, districts, canopy classes
+  and stewards through associations implemented over named inner joins, including one end resolved
+  through a two-link join chain. A profile-annotated data space groups the mapping and runtime and
+  advertises the two published tabular services as sample executables.
+modelSources:
+  model:
+    root: zephyr-thicket
+    files:
+      - test/zephyrthicket/connection/ThicketConnections.pure
+      - test/zephyrthicket/data/ThicketTestData.pure
+      - test/zephyrthicket/dataspace/ThicketDataSpace.pure
+      - test/zephyrthicket/domain/ThicketDomain.pure
+      - test/zephyrthicket/mapping/ThicketMapping.pure
+      - test/zephyrthicket/runtime/ThicketRuntimes.pure
+      - test/zephyrthicket/service/ParcelRosterService.pure
+      - test/zephyrthicket/service/WardCanopyService.pure
+      - test/zephyrthicket/store/ThicketRegistryStore.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:profile
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-hub
+  - canopy
+  - data-space
+  - h2
+  - parkland
+  - relational
+  - snowflake
+  - urban-planning

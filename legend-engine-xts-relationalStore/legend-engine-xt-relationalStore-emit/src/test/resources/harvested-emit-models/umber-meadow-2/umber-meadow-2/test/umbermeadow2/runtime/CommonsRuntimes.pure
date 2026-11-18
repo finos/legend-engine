@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Runtime
+Runtime test::umbermeadow2::runtime::CommonsRegisterRuntime
+{
+  mappings:
+  [
+    test::umbermeadow2::mapping::GrazingMapping
+  ];
+  connections:
+  [
+    test::umbermeadow2::store::CommonsDb:
+    [
+      commonsRegisterConnection: test::umbermeadow2::connection::CommonsRegisterConnection
+    ]
+  ];
+}
+
+Runtime test::umbermeadow2::runtime::CommonsMirrorRuntime
+{
+  mappings:
+  [
+    test::umbermeadow2::mapping::GrazingMirrorMapping
+  ];
+  connections:
+  [
+    test::umbermeadow2::store::CommonsDb:
+    [
+      commonsMirrorConnection: test::umbermeadow2::connection::CommonsMirrorConnection
+    ]
+  ];
+}

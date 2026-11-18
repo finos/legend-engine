@@ -1,0 +1,63 @@
+name: coral-prairie-2
+title: "Coral Prairie — sward-banded meadow plots over an aliased multi-table grassland store"
+description: |
+  A prairie grassland survey whose meadow plot class is pinned to one aliased
+  table under an explicit composite identifier-and-batch key, so row identity is
+  decided by the declared key columns rather than the table's own. Its sward
+  vocabulary comes from a nine-armed conditional over a nullable score column with
+  a null sentinel fallback, its region name is reached over one named join hop and
+  its rainfall norm over two, and a literal defaults the survey programme. Two
+  associations are implemented relationally onto the same joins, a data space names
+  the mapping and runtime pair, and a batch-parameterised service filters the
+  extent twice before projecting it tabularly over a delegated-Kerberos warehouse
+  connection.
+modelSources:
+  model:
+    root: coral-prairie-2
+    files:
+      - test/coralprairie2/connection/PrairieConnection.pure
+      - test/coralprairie2/data/PrairieFixture.pure
+      - test/coralprairie2/dataspace/PrairieDataSpace.pure
+      - test/coralprairie2/domain/PrairieDomain.pure
+      - test/coralprairie2/mapping/PrairieMapping.pure
+      - test/coralprairie2/runtime/PrairieRuntime.pure
+      - test/coralprairie2/service/PlotSwardRegister.pure
+      - test/coralprairie2/store/PrairieDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:test-data
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - test::coralprairie2::store::PrairieDb
+complexity: advanced
+tags:
+  - association-mapping
+  - composite-key
+  - conditional-transform
+  - data-space
+  - grassland-survey
+  - h2
+  - join-path
+  - main-table-alias
+  - null-sentinel
+  - service-test
+  - sybase

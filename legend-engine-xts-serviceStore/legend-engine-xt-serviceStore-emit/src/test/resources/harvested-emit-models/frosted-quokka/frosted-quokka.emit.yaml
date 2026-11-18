@@ -1,0 +1,57 @@
+name: frosted-quokka
+title: Frosted Quokka - Remote Sighting API with Parameterised Request Binding
+description: >
+  A remote reserve-tracking API is declared as a service store with one parameterless
+  read and one whose path template carries four typed path parameters, both decoding
+  their response into a wide optional-property class through a JSON binding. Two
+  service-store class mappings bind the same class to the two operations, the
+  parameterised one building its request from expressions over the mapped class's own
+  properties. A zone-keyed multi-execution service filters the extent on four equalities,
+  coerces to a single instance and serialises a three-property graph-fetch tree. A deployment-owned feed service refines the same documents into nested field cards through a model-to-model mapping, its two suites replaying JSON source documents of different shapes against JSON expectations.
+modelSources:
+  model:
+    root: frosted-quokka
+    files:
+      - test/frostedquokka/binding/QuokkaBindings.pure
+      - test/frostedquokka/connection/QuokkaConnections.pure
+      - test/frostedquokka/connection/SightingDocConnection.pure
+      - test/frostedquokka/domain/QuokkaCardDomain.pure
+      - test/frostedquokka/domain/QuokkaDomain.pure
+      - test/frostedquokka/mapping/SightingCardMapping.pure
+      - test/frostedquokka/mapping/SightingFeedMapping.pure
+      - test/frostedquokka/mapping/SightingLookupMapping.pure
+      - test/frostedquokka/runtime/QuokkaRuntimes.pure
+      - test/frostedquokka/runtime/SightingCardRuntime.pure
+      - test/frostedquokka/service/SightingCardFeed.pure
+      - test/frostedquokka/service/SightingProfile.pure
+      - test/frostedquokka/store/QuokkaTrackingApi.pure
+features:
+  - execution:external-format-binding
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-ownership-did
+  - execution:service-test
+  - execution:service-test-external-format-json
+  - mapping:service-store-mapping
+  - query:conditional-expression
+  - query:filter
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:model-connection
+  - scaffolding:runtime
+  - store:service-store
+stores:
+  - service
+complexity: intermediate
+tags:
+  - deployment-ownership
+  - external-format-binding
+  - graph-fetch
+  - json
+  - key-routed-execution
+  - model-to-model
+  - parameterised-request
+  - service-store
+  - service-test
+  - wildlife-tracking

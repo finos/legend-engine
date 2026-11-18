@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::meadowcanyon2::domain::*;
+import test::meadowcanyon2::vocabulary::*;
+
+Class <<SignageContract.published>> {SignageContract.description = 'The published signage contract for one trail network, holding an unbounded collection of segment records plus the stewarding party.', SignageContract.revision = '3'} test::meadowcanyon2::domain::TrailNetworkContract
+{
+  {SignageContract.keyField = 'true', SignageContract.description = 'Stable identifier of the trail network.', SignageContract.exampleSet = 'TN-UPPER-CANYON'} networkCode: String[1];
+  {SignageContract.requiredField = 'true', SignageContract.description = 'Human readable network title carried onto every printed panel.'} networkTitle: String[1];
+  {SignageContract.description = 'Every segment record published under the network, including the specialised guided and seasonal forms.'} segments: TrailSegmentRecord[*];
+  {SignageContract.description = 'The party answering for the signage, itself outside the segment hierarchy.'} steward: StewardParty[1];
+  {SignageContract.description = 'Panels installed across the whole network, each reached only through the network.'} panels: SignPanel[*];
+  <<NumericPinning.integral64>> {SignageContract.description = 'Cumulative visitor tally over the reporting season.', SignageContract.unitOfMeasure = 'visits'} seasonVisitorTally: Integer[1];
+  {SignageContract.description = 'Date the contract snapshot was published.', SignageContract.sortable = 'true'} publishedOn: StrictDate[1];
+}
+
+Class test::meadowcanyon2::domain::TrailSegmentRecord
+{
+  {SignageContract.keyField = 'true', SignageContract.indexHint = 'segment lookup', SignageContract.description = 'Identifier of the segment within its network.'} segmentCode: String[1];
+  <<NumericPinning.doublePrecision>> {SignageContract.description = 'Walked length of the segment.', SignageContract.unitOfMeasure = 'metres'} lengthMetres: Float[1];
+  <<NumericPinning.integral32>> {SignageContract.description = 'Number of waymarking posts standing on the segment.'} markerCount: Integer[1];
+  {SignageContract.description = 'The running surface of the segment, a small value type shared with the waypoint notes.'} surface: SurfaceNote[1];
+  {SignageContract.description = 'Waypoints recorded along the segment.'} waypoints: WaypointNote[*];
+  {SignageContract.metadata = 'optional free-text kept for the survey crews.'} surveyNote: String[0..1];
+}
+
+Class <<SignageContract.published>> test::meadowcanyon2::domain::GuidedTrailSegment extends TrailSegmentRecord
+{
+  {SignageContract.requiredField = 'true', SignageContract.description = 'Badge of the guide who leads the segment.'} guideBadge: String[1];
+  <<NumericPinning.integral32>> {SignageContract.description = 'Maximum escorted party size.'} escortLimit: Integer[1];
+}
+
+Class <<SignageContract.internalDraft>> test::meadowcanyon2::domain::SeasonalTrailSegment extends TrailSegmentRecord
+{
+  {SignageContract.description = 'First day of the season in which the segment may be walked.'} opensOn: StrictDate[1];
+  {SignageContract.description = 'Last day of that season.'} closesOn: StrictDate[1];
+  {SignageContract.description = 'Closure notices raised against the segment.'} closureNotices: ClosureNotice[*];
+}
+
+Class test::meadowcanyon2::domain::WaypointNote
+{
+  {SignageContract.keyField = 'true', SignageContract.description = 'Identifier of the waypoint.'} waypointCode: String[1];
+  <<NumericPinning.doublePrecision>> {SignageContract.description = 'Height of the waypoint above sea level.', SignageContract.unitOfMeasure = 'metres'} elevationMetres: Float[1];
+  {SignageContract.description = 'Surface underfoot at the waypoint, the same shared value type the segment carries.'} surface: SurfaceNote[1];
+  {SignageContract.description = 'Hazard flags recorded at the waypoint.'} hazards: HazardFlag[*];
+}
+
+Class test::meadowcanyon2::domain::SurfaceNote
+{
+  {SignageContract.description = 'Coded running surface.', SignageContract.exampleSet = 'GRAVEL, BOARDWALK, ROCK', SignageContract.valueSemantics = 'closed code list'} surfaceCode: String[1];
+  {SignageContract.description = 'Optional note on the condition of that surface.'} conditionNote: String[0..1];
+}
+
+Class test::meadowcanyon2::domain::HazardFlag
+{
+  {SignageContract.description = 'Coded hazard.'} hazardCode: String[1];
+  <<NumericPinning.integral32>> {SignageContract.description = 'Severity band from one to five.'} severityBand: Integer[1];
+}
+
+Class test::meadowcanyon2::domain::ClosureNotice
+{
+  {SignageContract.description = 'Reference of the closure notice.'} noticeReference: String[1];
+  {SignageContract.description = 'Day the closure takes effect.'} effectiveOn: StrictDate[1];
+  {SignageContract.description = 'Reason recorded for the closure.'} reasonText: String[0..1];
+}
+
+Class test::meadowcanyon2::domain::SignPanel
+{
+  {SignageContract.description = 'Identifier of the physical panel.'} panelCode: String[1];
+  {SignageContract.description = 'Waypoint the panel stands at.'} standsAt: WaypointNote[1];
+  <<NumericPinning.integral64>> {SignageContract.description = 'Cumulative count of panel scans reported by the visitor application.'} scanTally: Integer[1];
+  {SignageContract.description = 'Surface the panel post is founded on, again the shared value type.'} postFooting: SurfaceNote[1];
+}
+
+Class test::meadowcanyon2::domain::StewardParty
+{
+  {SignageContract.keyField = 'true', SignageContract.description = 'Identifier of the stewarding party.'} partyCode: String[1];
+  {SignageContract.description = 'Display name of the stewarding party.'} displayName: String[1];
+  {SignageContract.description = 'Contact route published for enquiries.'} contactRoute: String[0..1];
+}

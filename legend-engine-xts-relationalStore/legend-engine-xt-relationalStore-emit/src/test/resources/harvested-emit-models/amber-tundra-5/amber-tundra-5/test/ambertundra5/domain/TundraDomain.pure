@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A tundra region grouping field sites of one biome.'} test::ambertundra5::domain::Region
+{
+  regionCode: String[1];
+  regionName: String[1];
+  biome: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A field site; sub-sites point at the site they were split from.'} test::ambertundra5::domain::FieldSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  region: test::ambertundra5::domain::Region[0..1];
+  parent: test::ambertundra5::domain::FieldSite[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A permafrost borehole drilled at a field site.'} test::ambertundra5::domain::Borehole
+{
+  boreCode: String[1];
+  tagSerial: Integer[0..1];
+  depthCm: Integer[1];
+  network: String[1];
+  site: test::ambertundra5::domain::FieldSite[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Per-site borehole tally kept by a grouped store view.'} test::ambertundra5::domain::SiteBoreTally
+{
+  siteCode: String[1];
+  boreCount: Integer[1];
+  maxDepthCm: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Where in the borehole string a probe sits, read from the same reading row.'} test::ambertundra5::domain::ProbePlacement
+{
+  slotCode: String[1];
+  offsetCm: Integer[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A ground temperature reading from a borehole probe, corrected over processing time.'} test::ambertundra5::domain::ThawReading
+{
+  readingId: Integer[1];
+  readingRef: String[1];
+  kindLabel: String[1];
+  thawClass: String[0..1];
+  netDepthCm: Integer[0..1];
+  siteName: String[0..1];
+  regionName: String[0..1];
+  source: String[1];
+  placement: test::ambertundra5::domain::ProbePlacement[0..1];
+  bore: test::ambertundra5::domain::Borehole[0..1];
+}

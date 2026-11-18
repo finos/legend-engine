@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::goldenotter9::domain::RiverReach
+{
+  reachCode: String[1];
+  reachName: String[1];
+  catchmentName: String[0..1];
+  reachTag: String[0..1];
+  flowBand: String[0..1];
+}
+
+Class test::goldenotter9::domain::Habitat
+{
+  habitatCode: String[1];
+  habitatLabel: String[0..1];
+}
+
+Class test::goldenotter9::domain::Holt
+{
+  holtCode: String[1];
+  holtName: String[1];
+  isProtected: Boolean[0..1];
+  entranceCount: Integer[0..1];
+  sizeBand: String[0..1];
+}
+
+Class test::goldenotter9::domain::Sighting
+{
+  sightingCode: String[1];
+  periodMonth: Integer[0..1];
+  periodYear: Integer[0..1];
+  periodKey: String[0..1];
+  headCount: Integer[0..1];
+  statusCode: String[0..1];
+  isLatest: Boolean[0..1];
+}
+
+Class test::goldenotter9::domain::Observer
+{
+  observerCode: String[1];
+  observerName: String[1];
+  teamName: String[0..1];
+  gradeLabel: String[0..1];
+}
+
+Association test::goldenotter9::domain::ReachHabitat
+{
+  habitat: test::goldenotter9::domain::Habitat[0..1];
+  reaches: test::goldenotter9::domain::RiverReach[*];
+}
+
+Association test::goldenotter9::domain::ReachHolts
+{
+  reach: test::goldenotter9::domain::RiverReach[0..1];
+  holts: test::goldenotter9::domain::Holt[*];
+}
+
+Association test::goldenotter9::domain::HoltKeeper
+{
+  keeper: test::goldenotter9::domain::Observer[0..1];
+  keptHolts: test::goldenotter9::domain::Holt[*];
+}
+
+Association test::goldenotter9::domain::HoltSightings
+{
+  holt: test::goldenotter9::domain::Holt[0..1];
+  sightings: test::goldenotter9::domain::Sighting[*];
+}
+
+Association test::goldenotter9::domain::ObserverSightings
+{
+  observer: test::goldenotter9::domain::Observer[0..1];
+  sightings: test::goldenotter9::domain::Sighting[*];
+}

@@ -1,0 +1,70 @@
+name: crimson-ridge
+title: "City Greening Catalogue — Data Space over Associated Domain, Two Mappings and Seven Endpoints"
+description: |
+  An urban-planning green-space catalogue whose six associated classes are bound
+  to a six-table relational store through two mappings, the composing one
+  including the neighborhood mapping and rewiring its class bindings, and whose
+  associations are implemented end-by-end over the declared inner joins. Seven
+  single-execution endpoints project through those joins at up to three hops and
+  narrow their extent with conjunctions over navigated, numeric, boolean and
+  enumeration comparisons. A curated data space groups the mapping, the
+  in-process and warehouse runtimes, an overview layout element and the featured
+  endpoints into one consumable unit with a support address.
+modelSources:
+  model:
+    root: crimson-ridge
+    files:
+      - test/crimsonridge/connection/CityH2Connection.pure
+      - test/crimsonridge/connection/CityWarehouseConnection.pure
+      - test/crimsonridge/data/CityFixture.pure
+      - test/crimsonridge/dataspace/CityGreeningDataSpace.pure
+      - test/crimsonridge/diagram/CityGreeningDiagram.pure
+      - test/crimsonridge/domain/CityDomain.pure
+      - test/crimsonridge/mapping/CityMapping.pure
+      - test/crimsonridge/mapping/NeighborhoodMapping.pure
+      - test/crimsonridge/runtime/CityRuntime.pure
+      - test/crimsonridge/runtime/CityWarehouseRuntime.pure
+      - test/crimsonridge/service/CityServices.pure
+      - test/crimsonridge/store/CityDatabase.pure
+features:
+  - execution:data-element
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:diagram
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - data-space
+  - diagram
+  - enumeration-mapping
+  - h2
+  - inner-join
+  - mapping-include
+  - mapping-test
+  - multi-table
+  - relational
+  - service-test
+  - snowflake
+  - tabular-data-set
+  - urban-planning

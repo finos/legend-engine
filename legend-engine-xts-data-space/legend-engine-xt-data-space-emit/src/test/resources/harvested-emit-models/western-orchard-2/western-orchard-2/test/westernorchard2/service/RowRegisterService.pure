@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernorchard2::service::RowRegisterService
+{
+  pattern: '/western-orchard/v1/rows';
+  title: 'Western Orchard - Row Register';
+  owners:
+  [
+    'orchard-register-desk',
+    'grove-agronomy-ops'
+  ];
+  documentation: 'Publishes the planted row register: cultivar, training geometry and the stamps of the last pruning and scouting visit, projected column-per-property off the row main table.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::westernorchard2::domain::TreeRow.all()->project(
+      [
+        r|$r.rowCode,
+        r|$r.blockCode,
+        r|$r.cultivar,
+        r|$r.trellisType,
+        r|$r.orientation,
+        r|$r.spacingM,
+        r|$r.canopyWidthM,
+        r|$r.establishedOn,
+        r|$r.lastPrunedAt,
+        r|$r.lastScoutedAt
+      ],
+      [
+        'Row',
+        'Block',
+        'Cultivar',
+        'Trellis',
+        'Orientation',
+        'SpacingM',
+        'CanopyWidthM',
+        'EstablishedOn',
+        'LastPrunedAt',
+        'LastScoutedAt'
+      ]
+    )->sort(
+      [
+        asc('Row')
+      ]
+    );
+    mapping: test::westernorchard2::mapping::OrchardMapping;
+    runtime: test::westernorchard2::runtime::OrchardRuntime;
+  }
+  testSuites:
+  [
+    rowRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          orchardConnection:
+            Relational
+            #{
+              grove.tree_row:
+                'row_code,block_code,cultivar,trellis_type,orientation,spacing_m,canopy_width_m,established_on,last_pruned_at,last_scouted_at\n'+
+                'WR-01,WB-01,Bramley Seedling,Spindle,north-south,3.5,2.4,2019-04-10,2026-01-20 08:00:00,2026-02-14 09:15:00\n'+
+                'WR-02,WB-02,Egremont Russet,,east-west,4.0,,2021-03-25,,2026-02-15 10:45:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            everyMappedRowColumn:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Row":"WR-01","Block":"WB-01","Cultivar":"Bramley Seedling","Trellis":"Spindle","Orientation":"north-south","SpacingM":3.5,"CanopyWidthM":2.4,"EstablishedOn":"2019-04-10","LastPrunedAt":"2026-01-20T08:00:00.000000000+0000","LastScoutedAt":"2026-02-14T09:15:00.000000000+0000"},{"Row":"WR-02","Block":"WB-02","Cultivar":"Egremont Russet","Trellis":null,"Orientation":"east-west","SpacingM":4.0,"CanopyWidthM":null,"EstablishedOn":"2021-03-25","LastPrunedAt":null,"LastScoutedAt":"2026-02-15T10:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

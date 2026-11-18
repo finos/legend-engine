@@ -1,0 +1,192 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westerncavern::service::GradedLegsInGallery
+{
+  pattern: '/westerncavern/v1/graded-legs-in-gallery';
+  title: 'Western Cavern - Graded Legs In One Gallery';
+  owners:
+  [
+    'cavern-survey-register'
+  ];
+  documentation: 'Reduces the survey leg extent to the legs recorded in one named gallery outside an excluded run, projects the graded columns and then narrows the tabular result to a single conditional grade band.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {excludedRun: String[1], gradeLabel: String[1]|test::westerncavern::domain::SurveyLeg.all()->filter(
+      l|and($l.registerName == 'Western Cavern Survey Register', and($l.surveyedPassageName == 'Cathedral Gallery', not($l.runCode == $excludedRun)))
+    )->project(
+      [
+        l|$l.legCode,
+        l|$l.runCode,
+        l|$l.legLengthMetres,
+        l|$l.depthChangeMetres,
+        l|$l.gradeLabel,
+        l|$l.surveyedPassageName
+      ],
+      [
+        'Leg Code',
+        'Run Code',
+        'Leg Length',
+        'Depth Change',
+        'Grade Label',
+        'Passage Name'
+      ]
+    )->filter(
+      r|$r.getString('Grade Label') == $gradeLabel
+    )};
+    mapping: test::westerncavern::mapping::CavernSurveyMapping;
+    runtime: test::westerncavern::runtime::CavernSurveyRuntime;
+  }
+  testSuites:
+  [
+    gradedLegsInGallerySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernSurvey: Reference
+            #{
+              test::westerncavern::data::CavernSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        oneGradeBandSurvivesBothPredicates:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            excludedRun = 'SR-02',
+            gradeLabel = 'ROUGH_TAPE'
+          ]
+          asserts:
+          [
+            singleGradedLeg:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Leg Code":"SL-02","Run Code":"SR-01","Leg Length":55.0,"Depth Change":2.5,"Grade Label":"ROUGH_TAPE","Passage Name":"Cathedral Gallery"}]';
+                  }#;
+              }#
+          ]
+        },
+        excludedRunAndUnmatchedGradeReturnNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            excludedRun = 'SR-01',
+            gradeLabel = 'SKETCH_ONLY'
+          ]
+          asserts:
+          [
+            noLegSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::westerncavern::service::LongLegRegister
+{
+  pattern: '/westerncavern/v1/long-leg-register';
+  title: 'Western Cavern - Long Leg Register';
+  owners:
+  [
+    'cavern-survey-register'
+  ];
+  documentation: 'Projects the graded and join-reached columns of every survey leg longer than a fixed length, leaving the optional depth column free to come back null.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::westerncavern::domain::SurveyLeg.all()->filter(
+      l|$l.legLengthMetres > 30.0
+    )->project(
+      [
+        l|$l.legCode,
+        l|$l.legLengthMetres,
+        l|$l.depthChangeMetres,
+        l|$l.gradeLabel,
+        l|$l.surveyedPassageName
+      ],
+      [
+        'Leg Code',
+        'Leg Length',
+        'Depth Change',
+        'Grade Label',
+        'Passage Name'
+      ]
+    )->sort(
+      [
+        asc('Leg Code')
+      ]
+    )};
+    mapping: test::westerncavern::mapping::CavernSurveyMapping;
+    runtime: test::westerncavern::runtime::CavernSurveyRuntime;
+  }
+  testSuites:
+  [
+    longLegRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernSurvey: Reference
+            #{
+              test::westerncavern::data::CavernSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyLegsOverTheLengthThresholdProject:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            longLegsProject:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Leg Code":"SL-01","Leg Length":40.5,"Depth Change":-3.25,"Grade Label":"SKETCH_ONLY","Passage Name":"Cathedral Gallery"},{"Leg Code":"SL-02","Leg Length":55.0,"Depth Change":2.5,"Grade Label":"ROUGH_TAPE","Passage Name":"Cathedral Gallery"},{"Leg Code":"SL-03","Leg Length":61.75,"Depth Change":-1.5,"Grade Label":"COMPASS_TAPE","Passage Name":"Cathedral Gallery"},{"Leg Code":"SL-05","Leg Length":72.5,"Depth Change":-6.0,"Grade Label":"PRECISE_COMPASS","Passage Name":"Cathedral Gallery"},{"Leg Code":"SL-06","Leg Length":33.0,"Depth Change":1.25,"Grade Label":"THEODOLITE","Passage Name":"Cathedral Gallery"},{"Leg Code":"SL-07","Leg Length":49.5,"Depth Change":-2.0,"Grade Label":"LASER_SCAN","Passage Name":"Whisper Crawl"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

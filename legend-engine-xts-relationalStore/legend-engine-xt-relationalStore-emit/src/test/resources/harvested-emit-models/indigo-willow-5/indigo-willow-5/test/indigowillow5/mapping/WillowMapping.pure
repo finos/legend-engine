@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigowillow5::mapping::WillowMapping
+(
+  *test::indigowillow5::domain::WillowHabitat: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigowillow5::store::WillowDatabase]willow.willow_habitat.habitat_id
+    )
+    ~mainTable [test::indigowillow5::store::WillowDatabase]willow.willow_habitat
+    habitatCode: [test::indigowillow5::store::WillowDatabase]willow.willow_habitat.habitat_code,
+    reedArea: [test::indigowillow5::store::WillowDatabase]willow.willow_habitat.reed_area,
+    lastCheckOn: [test::indigowillow5::store::WillowDatabase]willow.willow_habitat.last_check_on,
+    programCode: concat('WILLOW-GROVE-', [test::indigowillow5::store::WillowDatabase]willow.willow_habitat.habitat_code),
+    observer: [test::indigowillow5::store::WillowDatabase]@Habitat_Observer
+  }
+
+  *test::indigowillow5::domain::TrailObserver: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigowillow5::store::WillowDatabase]willow.trail_observer.observer_id
+    )
+    ~mainTable [test::indigowillow5::store::WillowDatabase]willow.trail_observer
+    observerCode: [test::indigowillow5::store::WillowDatabase]willow.trail_observer.observer_code,
+    permitTag: [test::indigowillow5::store::WillowDatabase]willow.trail_observer.permit_tag
+  }
+)

@@ -1,0 +1,131 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::silvercavern2::domain::*;
+import test::silvercavern2::function::*;
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'Shape shared by every entry written into the cave-survey register: the reference the entry was filed under and the club member who filed it.'} test::silvercavern2::domain::CavernRecord
+[
+  recordReferenceWellFormed
+  (
+    ~function: isLegReference($this.recordReference)
+    ~enforcementLevel: Error
+    ~message: 'A cave-survey reference must be eight characters long and open with the cavern prefix.'
+  ),
+  filerNamed
+  (
+    ~function: isNamedFiler($this.filedBy)
+    ~enforcementLevel: Error
+    ~message: 'Every cave-survey entry must name the club member who filed it.'
+  )
+]
+{
+  recordReference: String[1];
+  filedBy: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One surveyed passage leg of the cavern, inheriting the register header and adding the grade, the tape length, the depth below the entrance and the chamber tags the leg touches.'} test::silvercavern2::domain::SurveyLeg extends CavernRecord
+[
+  gradeTagRecognised
+  (
+    ~function: isSurveyGradeTag($this.gradeTag)
+    ~enforcementLevel: Error
+    ~message: 'A survey leg must carry one of the recognised club survey grades.'
+  ),
+  tapeLengthPositive
+  (
+    ~function: $this.tapeLengthM > 0.0
+    ~enforcementLevel: Error
+    ~message: 'A survey leg must record a positive tape length.'
+  ),
+  chamberTagsPresent
+  (
+    ~function: $this.chamberTags->size() > 0
+    ~enforcementLevel: Error
+    ~message: 'A survey leg must tag at least one chamber it passes through.'
+  )
+]
+{
+  legCode: String[1];
+  gradeTag: String[1];
+  tapeLengthM: Float[1];
+  depthM: Float[1];
+  chamberTags: String[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A chamber digest built from a raw chamber note, inheriting the register header and adding the resolved label, the ceiling band and the draught note.'} test::silvercavern2::domain::ChamberDigest extends CavernRecord
+[
+  chamberLabelUsable
+  (
+    ~function: isChamberLabel($this.chamberLabel)
+    ~enforcementLevel: Error
+    ~message: 'A chamber digest must carry a usable chamber label of at least three characters.'
+  )
+]
+{
+  chamberLabel: String[1];
+  ceilingBand: String[1];
+  draughtNote: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A trip summary over a set of survey legs, inheriting the register header and adding the trip title, the leg tally, the lead leg reference and the deepest-point band.'} test::silvercavern2::domain::TripSummary extends CavernRecord
+[
+  tripTitled
+  (
+    ~function: isNamedFiler($this.tripTitle)
+    ~enforcementLevel: Error
+    ~message: 'A trip summary must carry a title of more than two characters.'
+  ),
+  legTallyPositive
+  (
+    ~function: $this.legTally > 0
+    ~enforcementLevel: Error
+    ~message: 'A trip summary must cover at least one survey leg.'
+  )
+]
+{
+  tripTitle: String[1];
+  legTally: Integer[1];
+  leadLegReference: String[1];
+  deepestBand: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A raw survey-leg note as it arrives from the club logbook, the source shape of the leg digest transform.'} test::silvercavern2::domain::LegNote
+{
+  noteReference: String[1];
+  clerk: String[1];
+  grade: String[1];
+  tapeMetres: Float[1];
+  depth: Float[0..1];
+  tags: String[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A raw chamber note as it arrives from the club logbook, the source shape of the chamber digest transform.'} test::silvercavern2::domain::ChamberNote
+{
+  noteReference: String[1];
+  clerk: String[1];
+  label: String[1];
+  ceilingMetres: Float[0..1];
+  draught: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A raw trip note as it arrives from the club logbook, the source shape of the trip summary transform.'} test::silvercavern2::domain::TripNote
+{
+  noteReference: String[1];
+  clerk: String[1];
+  title: String[1];
+  legReferences: String[*];
+  deepestMetres: Float[0..1];
+}

@@ -1,0 +1,147 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigoaviary::mapping::AviaryBaseMapping
+(
+  include mapping test::indigoaviary::mapping::AviaryEnumMappings
+
+  *test::indigoaviary::domain::WindUnit[unit]: Relational
+  {
+    ~filter [test::indigoaviary::store::WindFarmDatabase]ActiveUnit
+    ~primaryKey
+    (
+      [test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.unit_code
+    )
+    ~mainTable [test::indigoaviary::store::WindFarmDatabase]ops.unit_registry
+    unitCode: toUpper(trim([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.unit_code)),
+    unitName: [test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.unit_name,
+    sectorCode: toUpper(trim([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.sector_code)),
+    turbineKind: EnumerationMapping TurbineKindMapping: case(
+      equal([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.turbine_kind, 'LAND'),
+      'LAND',
+      case(
+        equal([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.turbine_kind, 'SEA'),
+        'SEA',
+        case(
+          equal([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.turbine_kind, 'PROTOTYPE'),
+          'PROTOTYPE',
+          toUpper(trim([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.turbine_kind))
+        )
+      )
+    ),
+    healthLabel: case(
+      greaterThanEqual([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.blade_span_metres, 120.0),
+      'LONG-BLADE',
+      case(
+        greaterThanEqual([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.blade_span_metres, 110.0),
+        'WIDE-BLADE',
+        case(
+          greaterThanEqual([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.blade_span_metres, 100.0),
+          'MEDIUM-BLADE',
+          case(
+            greaterThanEqual([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.water_depth_metres, 50.0),
+            'DEEP-WATER',
+            case(
+              greaterThanEqual([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.water_depth_metres, 40.0),
+              'MID-WATER',
+              case(
+                equal([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.turbine_kind, 'SEA'),
+                'SHALLOW-WATER',
+                case(
+                  equal([test::indigoaviary::store::WindFarmDatabase]ops.unit_registry.foundation_type, 'GRAVITY'),
+                  'GRAVITY-BASE',
+                  sqlNull()
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    nacelleModels: [test::indigoaviary::store::WindFarmDatabase]@Unit_Nacelle | [test::indigoaviary::store::WindFarmDatabase]ops.nacelle_registry.model_name,
+    readingSensors: [test::indigoaviary::store::WindFarmDatabase]@Unit_Reading | [test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.sensor_code,
+    inspectionNotes: [test::indigoaviary::store::WindFarmDatabase]@Unit_Inspection | [test::indigoaviary::store::WindFarmDatabase]ops.inspection_visit.visit_note,
+    workStates: [test::indigoaviary::store::WindFarmDatabase]@Unit_Work | [test::indigoaviary::store::WindFarmDatabase]ops.work_item.work_state,
+    downtimeKinds: [test::indigoaviary::store::WindFarmDatabase]@Unit_Downtime | [test::indigoaviary::store::WindFarmDatabase]ops.downtime_event.downtime_kind,
+    sectorNames: [test::indigoaviary::store::WindFarmDatabase]@Unit_Sector | [test::indigoaviary::store::WindFarmDatabase]ref.site_sector.sector_name,
+    weatherSpeeds: [test::indigoaviary::store::WindFarmDatabase]@Unit_Sector > @Sector_Weather | [test::indigoaviary::store::WindFarmDatabase]ref.weather_snapshot.wind_speed_metres
+  }
+
+  *test::indigoaviary::domain::Nacelle[nacelle]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigoaviary::store::WindFarmDatabase]ops.nacelle_registry.nacelle_code
+    )
+    ~mainTable [test::indigoaviary::store::WindFarmDatabase]ops.nacelle_registry
+    nacelleCode: [test::indigoaviary::store::WindFarmDatabase]ops.nacelle_registry.nacelle_code,
+    unitCode: [test::indigoaviary::store::WindFarmDatabase]ops.nacelle_registry.unit_code,
+    modelName: [test::indigoaviary::store::WindFarmDatabase]ops.nacelle_registry.model_name,
+    conditionBand: EnumerationMapping ConditionBandMapping: toUpper(trim([test::indigoaviary::store::WindFarmDatabase]ops.nacelle_registry.condition_code))
+  }
+
+  *test::indigoaviary::domain::SensorReading[currentReading]: Relational
+  {
+    ~filter [test::indigoaviary::store::WindFarmDatabase]CurrentReading
+    ~primaryKey
+    (
+      [test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.reading_code
+    )
+    ~mainTable [test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading
+    readingCode: [test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.reading_code,
+    unitCode: [test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.unit_code,
+    sensorKind: EnumerationMapping SensorKindMapping: case(
+      equal([test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.sensor_code, 'VIB'),
+      'VIBRATION',
+      case(
+        equal([test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.sensor_code, 'TMP'),
+        'TEMPERATURE',
+        case(
+          equal([test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.sensor_code, 'PRS'),
+          'OIL_PRESSURE',
+          'ROTOR_SPEED'
+        )
+      )
+    ),
+    readingValue: [test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.reading_value,
+    capturedOn: [test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.captured_on,
+    conditionBand: EnumerationMapping ConditionBandMapping: case(
+      greaterThanEqual([test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.reading_value, 40.0),
+      'CRITICAL',
+      case(
+        greaterThanEqual([test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.reading_value, 25.0),
+        'ALERT',
+      case(
+        greaterThanEqual([test::indigoaviary::store::WindFarmDatabase]telemetry.sensor_reading.reading_value, 15.0),
+        'WATCH',
+        'CLEAR'
+      )
+    )
+    )
+  }
+
+  *test::indigoaviary::domain::SiteSector[sector]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigoaviary::store::WindFarmDatabase]ref.site_sector.sector_code
+    )
+    ~mainTable [test::indigoaviary::store::WindFarmDatabase]ref.site_sector
+    sectorCode: [test::indigoaviary::store::WindFarmDatabase]ref.site_sector.sector_code,
+    sectorName: [test::indigoaviary::store::WindFarmDatabase]ref.site_sector.sector_name,
+    regionName: [test::indigoaviary::store::WindFarmDatabase]ref.site_sector.region_name,
+    summaryCount: [test::indigoaviary::store::WindFarmDatabase]@Sector_Summary | [test::indigoaviary::store::WindFarmDatabase]ref.sector_reading_summary.reading_count
+  }
+)

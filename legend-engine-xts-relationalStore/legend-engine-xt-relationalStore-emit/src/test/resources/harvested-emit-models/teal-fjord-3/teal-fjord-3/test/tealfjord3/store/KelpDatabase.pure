@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::tealfjord3::store::KelpDatabase
+(
+  Schema kelp
+  (
+    Table kelp_bed
+    (
+      milestoning
+      (
+        business(BUS_FROM=from_z, BUS_THRU=thru_z)
+      )
+      bed_id INTEGER PRIMARY KEY,
+      bed_code VARCHAR(20) NOT NULL,
+      canopy_area INTEGER NOT NULL,
+      last_survey_on DATE NOT NULL,
+      recorder_id INTEGER,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table survey_recorder
+    (
+      recorder_id INTEGER PRIMARY KEY,
+      recorder_code VARCHAR(20) NOT NULL,
+      permit_tag VARCHAR(20)
+    )
+  )
+
+  Join Bed_Recorder(kelp.kelp_bed.recorder_id = kelp.survey_recorder.recorder_id)
+)

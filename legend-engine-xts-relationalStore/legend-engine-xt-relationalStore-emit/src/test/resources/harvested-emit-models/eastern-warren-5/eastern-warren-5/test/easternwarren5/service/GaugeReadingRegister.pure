@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easternwarren5::service::GaugeReadingRegister
+{
+  pattern: '/easternwarren5/v1/gauge-reading-register/{asOf}';
+  title: 'Eastern Warren 5 - Gauge Reading Register';
+  ownership: UserList { users: ['catchment-hydrometry-desk'] };
+  documentation: 'Publishes every gauge reading recorded up to a cut-off date with its derived flow band and advisory note, so each arm of the stage cascade and the null fall-through of both derivations is observable as a projected column rather than as an aggregate.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], currentDate: StrictDate[1]|test::easternwarren5::domain::GaugeReading.all()->filter(
+      r|($r.recordedOn <= $asOf) && (($r.stageMetres >= 0.0) && ($r.recordedOn > $currentDate->adjust(-7300, meta::pure::functions::date::DurationUnit.DAYS)))
+    )->project(
+      [
+        r|$r.readingCode,
+        r|$r.zoneName,
+        r|$r.stationName,
+        r|$r.flowBand,
+        r|$r.advisoryNote,
+        r|$r.stageMetres,
+        r|$r.dischargeCumecs
+      ],
+      [
+        'ReadingCode',
+        'Zone',
+        'Station',
+        'FlowBand',
+        'AdvisoryNote',
+        'StageMetres',
+        'DischargeCumecs'
+      ]
+    )->sort(
+      [
+        asc('ReadingCode')
+      ]
+    )};
+    mapping: test::easternwarren5::mapping::GaugeMapping;
+    runtime: test::easternwarren5::runtime::GaugeLiveRuntime;
+  }
+  testSuites:
+  [
+    readingRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gaugeLive:
+            Relational
+            #{
+              catchment.catchment_zone:
+                'zone_code,zone_name,upland_flag\n'+
+                'CZ-1,Upper Fell,Y\n'+
+                'CZ-2,Lower Vale,N\n';
+
+              catchment.gauge_station:
+                'station_code,station_name,zone_code,sensor_grade\n'+
+                'GS-1,Fell Head,CZ-1,primary\n'+
+                'GS-2,Vale Bridge,CZ-2,backup\n';
+
+              catchment.gauge_reading:
+                'reading_code,station_code,recorded_on,review_state,stage_metres,discharge_cumecs,rainfall_mm,turbidity_ntu\n'+
+                'GR-01,GS-1,2026-03-01,ACCEPTED,4.5,12.5,6.0,10.0\n'+
+                'GR-02,GS-1,2026-03-02,ACCEPTED,3.5,9.0,4.0,12.0\n'+
+                'GR-03,GS-1,2026-03-03,PROVISIONAL,2.5,7.5,3.0,14.0\n'+
+                'GR-04,GS-2,2026-03-04,ACCEPTED,1.8,6.0,2.0,60.0\n'+
+                'GR-05,GS-2,2026-03-05,ACCEPTED,1.2,4.5,1.5,20.0\n'+
+                'GR-06,GS-2,2026-03-06,ACCEPTED,0.8,3.0,1.0,22.0\n'+
+                'GR-07,GS-1,2026-03-07,ACCEPTED,0.4,1.5,0.5,8.0\n'+
+                'GR-08,GS-2,2026-03-08,ACCEPTED,0.2,0.5,2.5,6.0\n'+
+                'GR-09,GS-1,2026-03-09,ACCEPTED,0.1,0.5,0.0,4.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyFlowBandArm:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-01,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            allArmsAndBothNullFallThroughs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingCode":"GR-01","Zone":"Upper Fell","Station":"Fell Head","FlowBand":"SPATE","AdvisoryNote":null,"StageMetres":4.5,"DischargeCumecs":12.5},{"ReadingCode":"GR-02","Zone":"Upper Fell","Station":"Fell Head","FlowBand":"HIGH-FLOW","AdvisoryNote":null,"StageMetres":3.5,"DischargeCumecs":9.0},{"ReadingCode":"GR-03","Zone":"Upper Fell","Station":"Fell Head","FlowBand":"ABOVE-MEAN","AdvisoryNote":"REVIEW-PRIMARY","StageMetres":2.5,"DischargeCumecs":7.5},{"ReadingCode":"GR-04","Zone":"Lower Vale","Station":"Vale Bridge","FlowBand":"MEAN-FLOW","AdvisoryNote":"SILT-WATCH","StageMetres":1.8,"DischargeCumecs":6.0},{"ReadingCode":"GR-05","Zone":"Lower Vale","Station":"Vale Bridge","FlowBand":"BELOW-MEAN","AdvisoryNote":null,"StageMetres":1.2,"DischargeCumecs":4.5},{"ReadingCode":"GR-06","Zone":"Lower Vale","Station":"Vale Bridge","FlowBand":"LOW-FLOW","AdvisoryNote":null,"StageMetres":0.8,"DischargeCumecs":3.0},{"ReadingCode":"GR-07","Zone":"Upper Fell","Station":"Fell Head","FlowBand":"RECESSION","AdvisoryNote":null,"StageMetres":0.4,"DischargeCumecs":1.5},{"ReadingCode":"GR-08","Zone":"Lower Vale","Station":"Vale Bridge","FlowBand":"RAIN-TRICKLE","AdvisoryNote":null,"StageMetres":0.2,"DischargeCumecs":0.5},{"ReadingCode":"GR-09","Zone":"Upper Fell","Station":"Fell Head","FlowBand":null,"AdvisoryNote":null,"StageMetres":0.1,"DischargeCumecs":0.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

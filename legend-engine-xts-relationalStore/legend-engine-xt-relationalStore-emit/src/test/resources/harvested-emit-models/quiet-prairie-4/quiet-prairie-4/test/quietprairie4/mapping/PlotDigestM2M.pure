@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietprairie4::mapping::PlotDigestM2M
+(
+  test::quietprairie4::domain::BurnState: EnumerationMapping DigestBurnStateMapping
+  {
+    RECENT: ['RECENT'],
+    RESTED: ['RESTED'],
+    UNBURNT: ['UNBURNT']
+  }
+
+  *test::quietprairie4::domain::PlotDigest[plotDigestSet]: Pure
+  {
+    ~src test::quietprairie4::domain::PlotReturn
+    digestCode: $src.plotCode->toOne(),
+    digestLabel: 'PLOT/' + $src.plotName->toOne()->toUpper()->trim() + '/' + if($src.collectorCode->isEmpty(),
+                                                                                | 'UNCOLLECTED',
+                                                                                | $src.collectorCode->toOne()->toUpper()->trim()),
+    seedGrams: if($src.seedKg->isEmpty(),
+                  | 0.0,
+                  | $src.seedKg->toOne() * 1000.0),
+    burnState: EnumerationMapping DigestBurnStateMapping: [if($src.burnCode->isEmpty(),
+                                                              | 'UNBURNT',
+                                                              | $src.burnCode->toOne()->toUpper()->trim())]->toOne()
+  }
+
+  testSuites:
+  [
+    plotDigestSuite:
+    {
+      function: |test::quietprairie4::domain::PlotDigest.all()->graphFetch(
+        #{
+          test::quietprairie4::domain::PlotDigest
+          {
+            digestCode,
+            digestLabel,
+            seedGrams,
+            burnState
+          }
+        }#
+      )->serialize(
+        #{
+          test::quietprairie4::domain::PlotDigest
+          {
+            digestCode,
+            digestLabel,
+            seedGrams,
+            burnState
+          }
+        }#
+      );
+      tests:
+      [
+        submittedPlotReturns:
+        {
+          doc: 'Three submitted seed returns: a fully filled one, one naming no collector so the label falls back, and one carrying neither a seed weight nor a burn code so both the zero weight and the sentinel-substituted burn state are exercised.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietprairie4::domain::PlotReturn:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"plotCode":"GP-01","plotName":"bluestem rise","seedKg":4.5,"burnCode":"rested","collectorCode":"cl-1"},{"plotCode":"GP-02","plotName":"sandhill flat","seedKg":3.0,"burnCode":"recent"},{"plotCode":"GP-03","plotName":"coneflower dip"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            threeDigestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"digestCode":"GP-01","digestLabel":"PLOT/BLUESTEM RISE/CL-1","seedGrams":4500.0,"burnState":"RESTED"},{"digestCode":"GP-02","digestLabel":"PLOT/SANDHILL FLAT/UNCOLLECTED","seedGrams":3000.0,"burnState":"RECENT"},{"digestCode":"GP-03","digestLabel":"PLOT/CONEFLOWER DIP/UNCOLLECTED","seedGrams":0.0,"burnState":"UNBURNT"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

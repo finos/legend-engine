@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlylighthouse2::mapping::ObservatoryBaseMapping
+(
+  test::kindlylighthouse2::domain::ScheduleEntry[entry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot.slot_code
+    )
+    ~mainTable [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot
+    slotCode: [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot.slot_code,
+    telescopeCode: [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot.telescope_code,
+    observatoryCode: [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot.observatory_code,
+    targetName: [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope_slot.target_name
+  }
+
+  test::kindlylighthouse2::domain::Telescope: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope.telescope_code
+    )
+    ~mainTable [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope
+    telescopeCode: [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope.telescope_code,
+    telescopeName: toUpper(trim([test::kindlylighthouse2::store::ObservatoryDb]sky.telescope.telescope_name)),
+    observatoryCode: [test::kindlylighthouse2::store::ObservatoryDb]sky.telescope.observatory_code
+  }
+
+  test::kindlylighthouse2::domain::Observatory: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlylighthouse2::store::ObservatoryDb]sky.observatory.observatory_code
+    )
+    ~mainTable [test::kindlylighthouse2::store::ObservatoryDb]sky.observatory
+    observatoryCode: [test::kindlylighthouse2::store::ObservatoryDb]sky.observatory.observatory_code,
+    observatoryName: [test::kindlylighthouse2::store::ObservatoryDb]sky.observatory.observatory_name,
+    campusCode: [test::kindlylighthouse2::store::ObservatoryDb]sky.observatory.campus_code
+  }
+
+  test::kindlylighthouse2::domain::Campus: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlylighthouse2::store::ObservatoryDb]ground.campus.campus_code
+    )
+    ~mainTable [test::kindlylighthouse2::store::ObservatoryDb]ground.campus
+    campusCode: [test::kindlylighthouse2::store::ObservatoryDb]ground.campus.campus_code,
+    campusName: [test::kindlylighthouse2::store::ObservatoryDb]ground.campus.campus_name,
+    regionCode: [test::kindlylighthouse2::store::ObservatoryDb]ground.campus.region_code
+  }
+
+  test::kindlylighthouse2::domain::Region: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlylighthouse2::store::ObservatoryDb]ground.region.region_code
+    )
+    ~mainTable [test::kindlylighthouse2::store::ObservatoryDb]ground.region
+    regionCode: [test::kindlylighthouse2::store::ObservatoryDb]ground.region.region_code,
+    regionName: [test::kindlylighthouse2::store::ObservatoryDb]ground.region.region_name
+  }
+)

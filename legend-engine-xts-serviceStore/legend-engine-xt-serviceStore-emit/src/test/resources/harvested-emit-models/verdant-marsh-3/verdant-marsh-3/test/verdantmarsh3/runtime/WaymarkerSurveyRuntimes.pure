@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Runtime
+Runtime test::verdantmarsh3::runtime::WaymarkerFieldRuntime
+{
+  mappings:
+  [
+    test::verdantmarsh3::mapping::WaymarkerSurveyMapping
+  ];
+  connections:
+  [
+    test::verdantmarsh3::store::WaymarkerDetailApi:
+    [
+      waymarkerDetailApiField: test::verdantmarsh3::connection::WaymarkerDetailApiFieldConnection
+    ],
+    test::verdantmarsh3::store::RamblerSurveyApi:
+    [
+      ramblerSurveyApiField: test::verdantmarsh3::connection::RamblerSurveyApiFieldConnection
+    ],
+    test::verdantmarsh3::store::WardenSurveyApi:
+    [
+      wardenSurveyApiField: test::verdantmarsh3::connection::WardenSurveyApiFieldConnection
+    ],
+    test::verdantmarsh3::store::VolunteerSurveyApi:
+    [
+      volunteerSurveyApiField: test::verdantmarsh3::connection::VolunteerSurveyApiFieldConnection
+    ],
+    test::verdantmarsh3::store::ContractorSurveyApi:
+    [
+      contractorSurveyApiField: test::verdantmarsh3::connection::ContractorSurveyApiFieldConnection
+    ],
+    ModelStore:
+    [
+      waymarkerRefineChainField: test::verdantmarsh3::connection::WaymarkerRefineChainConnection
+    ]
+  ];
+}
+
+Runtime test::verdantmarsh3::runtime::WaymarkerArchiveRuntime
+{
+  mappings:
+  [
+    test::verdantmarsh3::mapping::WaymarkerSurveyMapping
+  ];
+  connections:
+  [
+    test::verdantmarsh3::store::WaymarkerDetailApi:
+    [
+      waymarkerDetailApiArchive: test::verdantmarsh3::connection::WaymarkerDetailApiArchiveConnection
+    ],
+    test::verdantmarsh3::store::RamblerSurveyApi:
+    [
+      ramblerSurveyApiArchive: test::verdantmarsh3::connection::RamblerSurveyApiArchiveConnection
+    ],
+    test::verdantmarsh3::store::WardenSurveyApi:
+    [
+      wardenSurveyApiArchive: test::verdantmarsh3::connection::WardenSurveyApiArchiveConnection
+    ],
+    test::verdantmarsh3::store::VolunteerSurveyApi:
+    [
+      volunteerSurveyApiArchive: test::verdantmarsh3::connection::VolunteerSurveyApiArchiveConnection
+    ],
+    test::verdantmarsh3::store::ContractorSurveyApi:
+    [
+      contractorSurveyApiArchive: test::verdantmarsh3::connection::ContractorSurveyApiArchiveConnection
+    ],
+    ModelStore:
+    [
+      waymarkerRefineChainArchive: test::verdantmarsh3::connection::WaymarkerRefineChainConnection
+    ]
+  ];
+}

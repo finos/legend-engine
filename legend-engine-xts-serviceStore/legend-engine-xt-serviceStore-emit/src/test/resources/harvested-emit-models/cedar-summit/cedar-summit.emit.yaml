@@ -1,0 +1,54 @@
+name: cedar-summit
+title: "Cedar Summit — Greenhouse Propagation Network (Remote Endpoint Reads, Schema-less Document Binding, Explicit Serialisation)"
+description: |
+  A greenhouse propagation network published as a set of remote lookup
+  endpoints rather than a warehouse. One schema-less document binding governs
+  serialisation on both sides of every call and includes ten model elements,
+  among them three envelope classes, a nested identity class and a criteria
+  pair used only as a nested payload. Three remote endpoints return a seedling
+  record, a propagation tray and a propagation lot; the tray request parameter
+  is composed by the mapping from a literal prefix and a mapped property, the
+  seedling request defaults an absent propagation lot to a placeholder, and the
+  lot request renders an optional sowing date into its query parameter.
+  Three single-execution services filter on equality against their parameters,
+  fetch a graph — one of them one level deep through the nested lot identity —
+  and re-serialise under one explicit configuration that suppresses type keys
+  and enumeration types, leaves type paths unqualified and removes both absent
+  values and empty collections, so a caller cannot tell a missing attribute
+  from one the endpoint did not populate. Three runtimes bind the one endpoint
+  store to three separate base locations, and every suite pairs a fully
+  populated reply with one whose optional attributes are absent so the removal
+  behaviour is observable.
+
+modelSources:
+  model:
+    root: cedar-summit
+    files:
+      - test/cedarsummit/binding/NurseryBindings.pure
+      - test/cedarsummit/connection/NurseryConnections.pure
+      - test/cedarsummit/domain/NurseryDomain.pure
+      - test/cedarsummit/mapping/LotLookupMapping.pure
+      - test/cedarsummit/mapping/SeedlingLookupMapping.pure
+      - test/cedarsummit/runtime/NurseryRuntimes.pure
+      - test/cedarsummit/service/PropagationLotLookupService.pure
+      - test/cedarsummit/service/SeedlingLookupService.pure
+      - test/cedarsummit/service/TrayLookupService.pure
+      - test/cedarsummit/store/NurseryApi.pure
+
+features:
+  - execution:external-format-binding
+  - execution:plan-generation
+  - execution:service
+  - query:filter
+  - scaffolding:class
+  - scaffolding:runtime
+stores:
+  - service-store
+complexity: basic
+tags:
+  - external-format-binding
+  - graph-fetch
+  - horticulture
+  - serialization-config
+  - service-store
+  - service-test

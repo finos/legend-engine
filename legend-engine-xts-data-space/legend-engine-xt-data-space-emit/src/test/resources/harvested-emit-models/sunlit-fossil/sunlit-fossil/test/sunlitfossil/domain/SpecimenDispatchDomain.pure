@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::sunlitfossil::domain::*;
+
+Class <<temporal.businesstemporal>> test::sunlitfossil::domain::DispatchTerms
+{
+  termsCode: String[1];
+  hostMuseum: String[1];
+  courierNote: String[0..1];
+  maxCrateWeight: Decimal[1];
+  reviewCycleDays: Integer[1];
+  agreedAt: DateTime[1];
+}
+
+Class <<temporal.businesstemporal>> test::sunlitfossil::domain::Dispatch
+{
+  dispatchCode: String[1];
+  termsCode: String[1];
+  destinationHall: String[1];
+  curatorNote: String[0..1];
+  declaredWeight: Decimal[1];
+  crateCount: Integer[1];
+  shippedAt: DateTime[1];
+  items: DispatchItem[*];
+}
+
+Class <<temporal.businesstemporal>> test::sunlitfossil::domain::DispatchItem
+{
+  dispatchCode: String[1];
+  lineOrdinal: Integer[1];
+  specimenLabel: String[1];
+  packingNote: String[0..1];
+  itemWeight: Decimal[1];
+  fragmentCount: Integer[1];
+  packedAt: DateTime[1];
+  portions: ItemPortion[*];
+}
+
+Class <<temporal.businesstemporal>> test::sunlitfossil::domain::ItemPortion
+{
+  dispatchCode: String[1];
+  lineOrdinal: Integer[1];
+  portionCode: String[1];
+  portionLabel: String[1];
+  portionWeight: Decimal[1];
+  trayCount: Integer[1];
+  loggedAt: DateTime[1];
+}

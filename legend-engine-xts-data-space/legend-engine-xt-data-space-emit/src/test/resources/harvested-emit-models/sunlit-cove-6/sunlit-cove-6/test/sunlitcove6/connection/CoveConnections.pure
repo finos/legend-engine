@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection demo::sunlitcove6::connection::CoveWarehouseConnection
+{
+  store: demo::sunlitcove6::store::CoveSurveyDB;
+  type: Snowflake;
+  timezone: 'UTC';
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'SUNLIT_COVE_SURVEY';
+    account: 'sunlit_cove_account';
+    warehouse: 'SUNLIT_COVE_SURVEY_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    role: 'COVE_SURVEY_READER';
+  };
+  auth: OAuth
+  {
+    scopeName: 'session:role-cove-survey-reader';
+    oauthKey: 'sunlitCoveOauthKey';
+  };
+}
+
+RelationalDatabaseConnection demo::sunlitcove6::connection::CoveRetainedConnection
+{
+  store: demo::sunlitcove6::store::CoveSurveyDB;
+  type: SqlServer;
+  timezone: 'UTC';
+  specification: Static
+  {
+    name: 'cove_retained';
+    host: 'example-cove-retained-host';
+    port: 1433;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'coveretainedprincipal';
+  };
+}

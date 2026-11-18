@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::emeraldquarry::domain::*;
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A worked quarry face, versioned over system time and re-validated per version by a defensive constraint block.'} test::emeraldquarry::domain::ExtractionFace
+[
+  faceCodePresent: $this.FACE_CODE->isNotEmpty(),
+  faceCodeWidth: $this.FACE_CODE->length() < 41,
+  divisionCodeWidth: $this.DIVISION_CODE->length() < 17,
+  extractedTonnesPresent: $this.EXTRACTED_TONNES->isNotEmpty(),
+  surveyNoteWidthWhenPresent: $this.SURVEY_NOTE->isEmpty() || ($this.SURVEY_NOTE->toOne()->length() < 4001)
+]
+{
+  FACE_CODE: String[1];
+  DIVISION_CODE: String[1];
+  EXTRACTED_TONNES: Integer[1];
+  SURVEY_NOTE: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One measured reading taken at a quarry face, carrying the same presence-and-width discipline as the face itself.'} test::emeraldquarry::domain::FaceMeasurement
+[
+  measurementCodePresent: $this.MEASUREMENT_CODE->isNotEmpty(),
+  measurementCodeWidth: $this.MEASUREMENT_CODE->length() < 33,
+  instrumentNameWidth: $this.INSTRUMENT_NAME->length() < 65,
+  readingPresent: $this.READING_VALUE->isNotEmpty()
+]
+{
+  MEASUREMENT_CODE: String[1];
+  INSTRUMENT_NAME: String[1];
+  READING_VALUE: Integer[1];
+  TAKEN_AT: DateTime[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A pre-joined projection of a quarry face and the face it was cut from, versioned over system time.'} test::emeraldquarry::domain::SourceFaceView
+[
+  viewCodePresent: $this.FACE_CODE->isNotEmpty(),
+  viewCodeWidth: $this.FACE_CODE->length() < 41,
+  exposureClassWidth: $this.EXPOSURE_CLASS->length() < 25
+]
+{
+  FACE_CODE: String[1];
+  EXPOSURE_CLASS: String[1];
+  SOURCE_FACE_ID: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An append-only extraction log entry recorded by the small deployment tier.'} test::emeraldquarry::domain::AppendLogEntry
+[
+  entryKindPresent: $this.ENTRY_KIND->isNotEmpty(),
+  entryKindWidth: $this.ENTRY_KIND->length() < 21,
+  operatorNoteWidth: $this.faceCode->length() < 41
+]
+{
+  ENTRY_KIND: String[1];
+  RECORDED_TONNES: Integer[1];
+  faceCode: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'The divisional code a face is booked under, corrected over system time.'} test::emeraldquarry::domain::DivisionCode
+{
+  DIVISION_CODE: String[1];
+  DIVISION_NAME: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A haul route between a face and the stone yard.'} test::emeraldquarry::domain::HaulRoute
+{
+  ROUTE_CODE: String[1];
+  ROUTE_LENGTH_M: Integer[1];
+  surfaceKind: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A quality grade a block of dimension stone can be sorted into.'} test::emeraldquarry::domain::StoneGrade
+{
+  GRADE_CODE: String[1];
+  GRADE_LABEL: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A working shift at the quarry; the third-shift headcount property name begins with a digit and must therefore be quoted.'} test::emeraldquarry::domain::QuarryShift
+{
+  SHIFT_CODE: String[1];
+  '3rdShiftHeadcount': Integer[1];
+  startedAt: DateTime[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A controlled rock-breaking event at a face.'} test::emeraldquarry::domain::BlastRecord
+{
+  BLAST_CODE: String[1];
+  CHARGE_COUNT: Integer[1];
+  FIRED_AT: DateTime[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A fixed survey mark used to reference face geometry.'} test::emeraldquarry::domain::SurveyMark
+{
+  MARK_CODE: String[1];
+  ELEVATION_MM: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A lot of cut blocks staged in the stone yard.'} test::emeraldquarry::domain::YardLot
+{
+  LOT_CODE: String[1];
+  BLOCK_COUNT: Integer[1];
+  lotNote: String[0..1];
+}

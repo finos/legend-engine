@@ -1,0 +1,259 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletapiary2::mapping::CultivationMapping
+(
+  test::scarletapiary2::domain::StrainType: EnumerationMapping StrainKindMapping
+  {
+    OYSTER: ['OY'],
+    LIONS_MANE: ['LI'],
+    SHIITAKE: ['SH']
+  }
+
+  test::scarletapiary2::domain::BlockStatus: EnumerationMapping BlockStatusMapping
+  {
+    FRUITING: ['FR'],
+    INCUBATING: ['IN'],
+    CONTAMINATED: ['CO']
+  }
+
+  test::scarletapiary2::domain::SubstrateBlock: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletapiary2::store::CultivationDb]lab.substrate_block.block_code
+    )
+    ~mainTable [test::scarletapiary2::store::CultivationDb]lab.substrate_block
+    blockCode: [test::scarletapiary2::store::CultivationDb]lab.substrate_block.block_code,
+    inoculatedOn: coalesce([test::scarletapiary2::store::CultivationDb]lab.substrate_block.inoculated_date, [test::scarletapiary2::store::CultivationDb]lab.substrate_block.received_date),
+    roomName: [test::scarletapiary2::store::CultivationDb]@Block_Room | lab.fruiting_room.room_name,
+    strainLabel: [test::scarletapiary2::store::CultivationDb]@Block_Strain | lab.strain_ref.strain_label,
+    flushClass: case(
+                  greaterThanEqual([test::scarletapiary2::store::CultivationDb]lab.substrate_block.yield_grams, 2000),
+                  'ARM-8-PEAK',
+                  case(
+                    greaterThanEqual([test::scarletapiary2::store::CultivationDb]lab.substrate_block.yield_grams, 1800),
+                    'ARM-7-HIGH',
+                    case(
+                      greaterThanEqual([test::scarletapiary2::store::CultivationDb]lab.substrate_block.yield_grams, 1600),
+                      'ARM-6-STRONG',
+                      case(
+                        greaterThanEqual([test::scarletapiary2::store::CultivationDb]lab.substrate_block.yield_grams, 1400),
+                        'ARM-5-STEADY',
+                        case(
+                          greaterThanEqual([test::scarletapiary2::store::CultivationDb]lab.substrate_block.yield_grams, 1200),
+                          'ARM-4-MODERATE',
+                          case(
+                            greaterThanEqual([test::scarletapiary2::store::CultivationDb]lab.substrate_block.yield_grams, 900),
+                            'ARM-3-LIGHT',
+                            case(
+                              greaterThanEqual([test::scarletapiary2::store::CultivationDb]lab.substrate_block.yield_grams, 600),
+                              'ARM-2-SPARSE',
+                              case(
+                                greaterThanEqual([test::scarletapiary2::store::CultivationDb]lab.substrate_block.yield_grams, 250),
+                                'ARM-1-TRACE',
+                                sqlNull()
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                ),
+    humidityBand: case(
+                    or(
+                      isNull([test::scarletapiary2::store::CultivationDb]lab.substrate_block.humidity_pct),
+                      lessThanEqual(coalesce([test::scarletapiary2::store::CultivationDb]lab.substrate_block.humidity_pct, 0), 60)
+                    ),
+                    'BAND-LOW',
+                    case(
+                      lessThanEqual(coalesce([test::scarletapiary2::store::CultivationDb]lab.substrate_block.humidity_pct, 0), 75),
+                      'BAND-MID',
+                      case(
+                        lessThanEqual(coalesce([test::scarletapiary2::store::CultivationDb]lab.substrate_block.humidity_pct, 0), 90),
+                        'BAND-HIGH',
+                        'BAND-SATURATED'
+                      )
+                    )
+                  ),
+    contaminationFlag: case(
+                         and(
+                           isNotNull([test::scarletapiary2::store::CultivationDb]lab.substrate_block.contam_code),
+                           notEqual([test::scarletapiary2::store::CultivationDb]lab.substrate_block.contam_code, 'NONE')
+                         ),
+                         'FLAGGED',
+                         'CLEAR'
+                       ),
+    gradeLabel: case(
+                  isNotNull([test::scarletapiary2::store::CultivationDb]lab.substrate_block.grade_code),
+                  concat('GRADE-', [test::scarletapiary2::store::CultivationDb]lab.substrate_block.grade_code),
+                  'GRADE-UNSET'
+                ),
+    yieldPerKg: round(divide(coalesce([test::scarletapiary2::store::CultivationDb]lab.substrate_block.yield_grams, 0), plus([test::scarletapiary2::store::CultivationDb]lab.substrate_block.block_mass_kg, 0)), 2),
+    blockNote: [test::scarletapiary2::store::CultivationDb]lab.substrate_block.block_note,
+    strainType: EnumerationMapping StrainKindMapping: [test::scarletapiary2::store::CultivationDb]lab.substrate_block.strain_kind,
+    blockStatus: EnumerationMapping BlockStatusMapping: [test::scarletapiary2::store::CultivationDb]lab.substrate_block.status_code
+  }
+
+  test::scarletapiary2::domain::FruitingRoom: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletapiary2::store::CultivationDb]lab.fruiting_room.room_code
+    )
+    ~mainTable [test::scarletapiary2::store::CultivationDb]lab.fruiting_room
+    roomCode: [test::scarletapiary2::store::CultivationDb]lab.fruiting_room.room_code,
+    roomName: [test::scarletapiary2::store::CultivationDb]lab.fruiting_room.room_name,
+    tempSetpointC: [test::scarletapiary2::store::CultivationDb]lab.fruiting_room.temp_setpoint_c
+  }
+
+  test::scarletapiary2::domain::MushroomStrain: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletapiary2::store::CultivationDb]lab.strain_ref.strain_code
+    )
+    ~mainTable [test::scarletapiary2::store::CultivationDb]lab.strain_ref
+    strainCode: [test::scarletapiary2::store::CultivationDb]lab.strain_ref.strain_code,
+    strainLabel: [test::scarletapiary2::store::CultivationDb]lab.strain_ref.strain_label
+  }
+
+  test::scarletapiary2::domain::FlushHarvest: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletapiary2::store::CultivationDb]lab.flush_record.flush_code
+    )
+    ~mainTable [test::scarletapiary2::store::CultivationDb]lab.flush_record
+    flushCode: [test::scarletapiary2::store::CultivationDb]lab.flush_record.flush_code,
+    blockCode: [test::scarletapiary2::store::CultivationDb]lab.flush_record.block_code,
+    pickedOn: [test::scarletapiary2::store::CultivationDb]lab.flush_record.picked_on,
+    pickedGrams: [test::scarletapiary2::store::CultivationDb]lab.flush_record.picked_grams,
+    blockRoomCode: [test::scarletapiary2::store::CultivationDb]@Block_Flush | lab.substrate_block.room_code
+  }
+
+  testSuites:
+  [
+    blockDerivationSuite:
+    {
+      function: |test::scarletapiary2::domain::SubstrateBlock.all()->project(~[blockCode: b|$b.blockCode, inoculatedOn: b|$b.inoculatedOn, roomName: b|$b.roomName, strainLabel: b|$b.strainLabel, flushClass: b|$b.flushClass, humidityBand: b|$b.humidityBand, contaminationFlag: b|$b.contaminationFlag, gradeLabel: b|$b.gradeLabel, strainType: b|$b.strainType, blockStatus: b|$b.blockStatus]);
+      tests:
+      [
+        everyFlushArmTheFallbackAndBothJoinMisses:
+        {
+          doc: 'Covers all eight arms of the flush-yield conditional and the fallback that resolves to no value, every humidity band including the null-humidity path, both contamination outcomes, the grade default, the date fallback that reaches the received date when no inoculation date was recorded, both enumeration translations, and the one-hop room and strain columns that miss when the referenced row is absent.';
+          data:
+          [
+            test::scarletapiary2::store::CultivationDb:
+              Relational
+              #{
+                lab.fruiting_room:
+                  'room_code,room_name,temp_setpoint_c\n'+
+                  'RM-1,North Fruiting Room,18.0\n'+
+                  'RM-2,South Fruiting Room,17.0\n'+
+                  'RM-3,Annex Fruiting Room,16.0\n';
+
+                lab.strain_ref:
+                  'strain_code,strain_label\n'+
+                  'ST-1,Golden Oyster\n'+
+                  'ST-2,Lions Mane\n'+
+                  'ST-3,Wide Range Shiitake\n';
+
+                lab.substrate_block:
+                  'block_code,room_code,strain_code,inoculated_date,received_date,block_mass_kg,moisture_pct,yield_grams,humidity_pct,contam_code,grade_code,strain_kind,status_code,block_note\n'+
+                  'SB-01,RM-1,ST-1,2026-02-01,2026-01-28,2.0,62.0,2100,92.0,NONE,A,OY,FR,first flush strong\n'+
+                  'SB-02,RM-1,ST-1,2026-02-02,2026-01-29,2.0,60.0,1900,88.0,NONE,B,OY,FR,\n'+
+                  'SB-03,RM-1,ST-2,2026-02-03,2026-01-30,2.5,58.0,1700,84.0,TRICH,C,LI,IN,edge contamination\n'+
+                  'SB-04,RM-2,ST-2,2026-02-04,2026-01-31,2.5,57.0,1500,80.0,NONE,,LI,IN,\n'+
+                  'SB-05,RM-2,ST-2,2026-02-05,2026-02-01,2.0,55.0,1300,76.0,NONE,A,SH,FR,\n'+
+                  'SB-06,RM-2,ST-3,2026-02-06,2026-02-02,2.0,54.0,1000,70.0,COBWEB,B,SH,CO,cobweb spotted\n'+
+                  'SB-07,RM-3,ST-3,2026-02-07,2026-02-03,1.5,52.0,700,64.0,NONE,C,SH,FR,\n'+
+                  'SB-08,RM-3,ST-9,2026-02-08,2026-02-04,1.5,50.0,300,58.0,NONE,A,SH,FR,unknown strain reference\n'+
+                  'SB-09,RM-9,ST-1,,2026-02-05,1.0,48.0,,,,,OY,FR,\n';
+              }#
+          ];
+          asserts:
+          [
+            bandedBlocks:
+              Relation
+              #{
+                blockCode,inoculatedOn,roomName,strainLabel,flushClass,humidityBand,contaminationFlag,gradeLabel,strainType,blockStatus
+                SB-01,2026-02-01,North Fruiting Room,Golden Oyster,ARM-8-PEAK,BAND-SATURATED,CLEAR,GRADE-A,OYSTER,FRUITING
+                SB-02,2026-02-02,North Fruiting Room,Golden Oyster,ARM-7-HIGH,BAND-HIGH,CLEAR,GRADE-B,OYSTER,FRUITING
+                SB-03,2026-02-03,North Fruiting Room,Lions Mane,ARM-6-STRONG,BAND-HIGH,FLAGGED,GRADE-C,LIONS_MANE,INCUBATING
+                SB-04,2026-02-04,South Fruiting Room,Lions Mane,ARM-5-STEADY,BAND-HIGH,CLEAR,GRADE-UNSET,LIONS_MANE,INCUBATING
+                SB-05,2026-02-05,South Fruiting Room,Lions Mane,ARM-4-MODERATE,BAND-HIGH,CLEAR,GRADE-A,SHIITAKE,FRUITING
+                SB-06,2026-02-06,South Fruiting Room,Wide Range Shiitake,ARM-3-LIGHT,BAND-MID,FLAGGED,GRADE-B,SHIITAKE,CONTAMINATED
+                SB-07,2026-02-07,Annex Fruiting Room,Wide Range Shiitake,ARM-2-SPARSE,BAND-MID,CLEAR,GRADE-C,SHIITAKE,FRUITING
+                SB-08,2026-02-08,Annex Fruiting Room,,ARM-1-TRACE,BAND-LOW,CLEAR,GRADE-A,SHIITAKE,FRUITING
+                SB-09,2026-02-05,,Golden Oyster,,BAND-LOW,CLEAR,GRADE-UNSET,OYSTER,FRUITING;
+              }#
+          ];
+        }
+      ];
+    },
+    derivedReadinessSuite:
+    {
+      function: |test::scarletapiary2::domain::SubstrateBlock.all()->project(~[blockCode: b|$b.blockCode, readiness: b|$b.readinessLabel, flagged: b|$b.flagged]);
+      tests:
+      [
+        everyReadinessBranchOnTheBuiltInstance:
+        {
+          doc: 'Evaluates the two derived properties on the built instance: the readiness label walks the nested conditional over the mapped flush, grade, humidity and contamination labels including the empty-flush and unset-grade paths, and the flag reduces the contamination label to a boolean.';
+          data:
+          [
+            test::scarletapiary2::store::CultivationDb:
+              Relational
+              #{
+                lab.fruiting_room:
+                  'room_code,room_name,temp_setpoint_c\n'+
+                  'RM-1,North Fruiting Room,18.0\n'+
+                  'RM-2,South Fruiting Room,17.0\n'+
+                  'RM-3,Annex Fruiting Room,16.0\n';
+
+                lab.strain_ref:
+                  'strain_code,strain_label\n'+
+                  'ST-1,Golden Oyster\n'+
+                  'ST-2,Lions Mane\n'+
+                  'ST-3,Wide Range Shiitake\n';
+
+                lab.substrate_block:
+                  'block_code,room_code,strain_code,inoculated_date,received_date,block_mass_kg,moisture_pct,yield_grams,humidity_pct,contam_code,grade_code,strain_kind,status_code,block_note\n'+
+                  'SB-01,RM-1,ST-1,2026-02-01,2026-01-28,2.0,62.0,2100,92.0,NONE,A,OY,FR,first flush strong\n'+
+                  'SB-03,RM-1,ST-2,2026-02-03,2026-01-30,2.5,58.0,1700,84.0,TRICH,C,LI,IN,edge contamination\n'+
+                  'SB-04,RM-2,ST-2,2026-02-04,2026-01-31,2.5,57.0,1500,80.0,NONE,,LI,IN,\n'+
+                  'SB-08,RM-3,ST-9,2026-02-08,2026-02-04,1.5,50.0,300,58.0,NONE,A,SH,FR,unknown strain reference\n'+
+                  'SB-09,RM-9,ST-1,,2026-02-05,1.0,48.0,,,,,OY,FR,\n';
+              }#
+          ];
+          asserts:
+          [
+            derivedReadiness:
+              Relation
+              #{
+                blockCode,readiness,flagged
+                SB-01,READY-H,false
+                SB-03,HOLD-I,true
+                SB-04,HOLD-E,false
+                SB-08,HOLD-B,false
+                SB-09,HOLD-A,false;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

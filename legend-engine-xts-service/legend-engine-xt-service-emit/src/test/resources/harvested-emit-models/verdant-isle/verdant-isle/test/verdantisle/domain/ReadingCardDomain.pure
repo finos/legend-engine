@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::verdantisle::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A reading-room reservation card with clean property names and a mandatory edition block.'} test::verdantisle::domain::ReadingCard
+{
+  cardId: String[1];
+  shelfMark: String[1];
+  givenName: String[1];
+  familyName: String[1];
+  note: String[0..1];
+  edition: CardEdition[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The edition a reading-room card is issued against.'} test::verdantisle::domain::CardEdition
+{
+  code: String[1];
+  language: String[1];
+}

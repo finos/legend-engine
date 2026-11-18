@@ -1,0 +1,313 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::nobleotter::mapping::TrialMapping
+(
+  include mapping test::nobleotter::mapping::SampleDraftMapping[test::nobleotter::store::SampleBase -> test::nobleotter::store::TrialStagingDB]
+  include mapping test::nobleotter::mapping::SampleFinalMapping[test::nobleotter::store::SampleBase -> test::nobleotter::store::TrialStagingDB]
+  include mapping test::nobleotter::mapping::StationRefMapping[test::nobleotter::store::RefBase -> test::nobleotter::store::TrialStagingDB]
+
+  *test::nobleotter::domain::PlotObservation[allPlots]: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_(cerealPlots,legumePlots)
+  }
+
+  *test::nobleotter::domain::NutrientLine[allLines]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(draftLine,finalLine)
+  }
+
+  *test::nobleotter::domain::CerealObservation[cerealPlots]: Relational
+  {
+    ~filter [test::nobleotter::store::TrialStagingDB]CerealPlots
+    ~primaryKey
+    (
+      [test::nobleotter::store::TrialStagingDB]field.plot_record.plot_code,
+      [test::nobleotter::store::TrialStagingDB]field.plot_record.bus_from
+    )
+    ~mainTable [test::nobleotter::store::TrialStagingDB]field.plot_record
+    plotCode: [test::nobleotter::store::TrialStagingDB]field.plot_record.plot_code,
+    soilClass: EnumerationMapping SoilClassMapping: rtrim([test::nobleotter::store::TrialStagingDB]field.plot_record.soil_class_code),
+    cropForm: EnumerationMapping CropFormMapping: rtrim([test::nobleotter::store::TrialStagingDB]field.plot_record.crop_code),
+    surveyRound: EnumerationMapping SurveyRoundMapping: 'SPR',
+    soilLabel: case(
+                 equal(rtrim([test::nobleotter::store::TrialStagingDB]field.plot_record.soil_class_code), 'LOAM'),
+                 'LOAM SOIL',
+                 'MIXED SOIL'
+               ),
+    moistureFlag: case(
+                    greaterThan([test::nobleotter::store::TrialStagingDB]field.plot_record.canopy_score, 5),
+                    'MOIST',
+                    'DRY'
+                  ),
+    nutrientBand: case(
+                    isNull([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total),
+                    sqlNull(),
+                    case(
+                      greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 399),
+                      'PEAK',
+                      case(
+                        greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 299),
+                        'VERY HIGH',
+                        case(
+                          greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 249),
+                          'HIGH',
+                          case(
+                            greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 199),
+                            'UPPER MID',
+                            case(
+                              greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 149),
+                              'MID',
+                              case(
+                                greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 99),
+                                'LOWER MID',
+                                case(
+                                  greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 49),
+                                  'LOW',
+                                  'TRACE'
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+    nitrateTotal: [test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total,
+    loadTotal: [test::nobleotter::store::TrialStagingDB]@Plot_Load | [test::nobleotter::store::TrialStagingDB]stage.plot_load_view.load_total,
+    regionName: [test::nobleotter::store::TrialStagingDB]@Plot_Trial > @Trial_Station | [test::nobleotter::store::TrialStagingDB]ref.station.region_name,
+    blockFlag: [test::nobleotter::store::TrialStagingDB]@Plot_Trial > @Trial_Region | [test::nobleotter::store::TrialStagingDB]stage.trial_region_view.region_flag,
+    grainScore: [test::nobleotter::store::TrialStagingDB]field.plot_record.canopy_score
+  }
+
+  *test::nobleotter::domain::LegumeObservation[legumePlots]: Relational
+  {
+    ~filter [test::nobleotter::store::TrialStagingDB]LegumePlots
+    ~primaryKey
+    (
+      [test::nobleotter::store::TrialStagingDB]field.plot_record.plot_code,
+      [test::nobleotter::store::TrialStagingDB]field.plot_record.bus_from
+    )
+    ~mainTable [test::nobleotter::store::TrialStagingDB]field.plot_record
+    plotCode: [test::nobleotter::store::TrialStagingDB]field.plot_record.plot_code,
+    soilClass: EnumerationMapping SoilClassMapping: rtrim([test::nobleotter::store::TrialStagingDB]field.plot_record.soil_class_code),
+    cropForm: EnumerationMapping CropFormMapping: rtrim([test::nobleotter::store::TrialStagingDB]field.plot_record.crop_code),
+    surveyRound: EnumerationMapping SurveyRoundMapping: 'AUT',
+    soilLabel: case(
+                 equal(rtrim([test::nobleotter::store::TrialStagingDB]field.plot_record.soil_class_code), 'LOAM'),
+                 'LOAM SOIL',
+                 'MIXED SOIL'
+               ),
+    moistureFlag: case(
+                    greaterThan([test::nobleotter::store::TrialStagingDB]field.plot_record.canopy_score, 5),
+                    'MOIST',
+                    'DRY'
+                  ),
+    nutrientBand: case(
+                    isNull([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total),
+                    sqlNull(),
+                    case(
+                      greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 399),
+                      'PEAK',
+                      case(
+                        greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 299),
+                        'VERY HIGH',
+                        case(
+                          greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 249),
+                          'HIGH',
+                          case(
+                            greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 199),
+                            'UPPER MID',
+                            case(
+                              greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 149),
+                              'MID',
+                              case(
+                                greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 99),
+                                'LOWER MID',
+                                case(
+                                  greaterThan([test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total, 49),
+                                  'LOW',
+                                  'TRACE'
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+    nitrateTotal: [test::nobleotter::store::TrialStagingDB]@Plot_Nutrient | [test::nobleotter::store::TrialStagingDB]stage.plot_nutrient_view.nitrate_total,
+    loadTotal: [test::nobleotter::store::TrialStagingDB]@Plot_Load | [test::nobleotter::store::TrialStagingDB]stage.plot_load_view.load_total,
+    regionName: [test::nobleotter::store::TrialStagingDB]@Plot_Trial > @Trial_Station | [test::nobleotter::store::TrialStagingDB]ref.station.region_name,
+    blockFlag: [test::nobleotter::store::TrialStagingDB]@Plot_Trial > @Trial_Region | [test::nobleotter::store::TrialStagingDB]stage.trial_region_view.region_flag,
+    noduleScore: [test::nobleotter::store::TrialStagingDB]field.plot_record.canopy_score
+  }
+
+  testSuites:
+  [
+    plotBandSuite:
+    {
+      function: |test::nobleotter::domain::PlotObservation.all(%2026-01-01)->project(
+  [
+    p|$p.plotCode,
+    p|$p.cropForm,
+    p|$p.surveyRound,
+    p|$p.soilLabel,
+    p|$p.moistureFlag,
+    p|$p.nutrientBand,
+    p|$p.nitrateTotal,
+    p|$p.loadTotal,
+    p|$p.regionName,
+    p|$p.blockFlag
+  ],
+  [
+    'Plot',
+    'Crop',
+    'Round',
+    'SoilLabel',
+    'Moisture',
+    'Band',
+    'Nitrate',
+    'Load',
+    'Region',
+    'BlockFlag'
+  ]
+)->sort(
+  [
+    asc('Plot')
+  ]
+);
+      tests:
+      [
+        bandedPlotsAcrossBothCropForms:
+        {
+          doc: 'Resolves the polymorphic plot read across both crop-form implementations, hits every band arm of the nested conditional plus its unrecorded fallback, reaches the station region over a two-hop path, and drops a plot whose business window has closed.';
+          data:
+          [
+            test::nobleotter::store::TrialStagingDB:
+              Relational
+              #{
+                field.plot_record:
+                  'plot_code,trial_code,soil_class_code,crop_code,canopy_score,bus_from,bus_thru\n'+
+                  'P-01,T-1,LOAM,CER,8,2025-01-01,9999-12-31\n'+
+                  'P-02,T-1,CLAY,CER,3,2025-01-01,9999-12-31\n'+
+                  'P-03,T-1,SILT,CER,7,2025-01-01,9999-12-31\n'+
+                  'P-04,T-2,LOAM,CER,2,2025-01-01,9999-12-31\n'+
+                  'P-05,T-2,CLAY,CER,9,2025-01-01,9999-12-31\n'+
+                  'P-06,T-2,SILT,CER,4,2025-01-01,9999-12-31\n'+
+                  'P-07,T-3,LOAM,CER,6,2025-01-01,9999-12-31\n'+
+                  'P-08,T-3,CLAY,CER,1,2025-01-01,9999-12-31\n'+
+                  'P-09,T-3,SILT,CER,5,2025-01-01,9999-12-31\n'+
+                  'P-10,T-1,LOAM,LEG,7,2025-01-01,9999-12-31\n'+
+                  'P-11,T-2,CLAY,LEG,2,2025-01-01,9999-12-31\n'+
+                  'P-12,T-3,LOAM,CER,5,2019-01-01,2020-01-01\n';
+                field.sample_value:
+                  'sample_id,plot_code,value_name,amount_a,amount_b\n'+
+                  '1,P-01,NITRATE,400,20\n'+
+                  '2,P-02,NITRATE,300,20\n'+
+                  '3,P-03,NITRATE,250,10\n'+
+                  '4,P-04,NITRATE,200,10\n'+
+                  '5,P-05,NITRATE,150,10\n'+
+                  '6,P-06,NITRATE,110,10\n'+
+                  '7,P-07,NITRATE,60,10\n'+
+                  '8,P-08,NITRATE,10,10\n'+
+                  '9,P-10,NITRATE,290,10\n'+
+                  '10,P-11,NITRATE,80,10\n'+
+                  '11,P-01,PHOSPHATE,30,5\n'+
+                  '12,P-02,POTASH,5,5\n';
+                ref.trial_block:
+                  'trial_code,block_name,station_code\n'+
+                  'T-1,Upper Terrace,S-1\n'+
+                  'T-2,Lower Meadow,S-2\n'+
+                  'T-3,Long Furlong,S-1\n';
+                ref.station:
+                  'station_code,station_name,region_name\n'+
+                  'S-1,Ridge Station,Northern Uplands\n'+
+                  'S-2,Vale Station,Southern Lowlands\n';
+              }#
+          ];
+          asserts:
+          [
+            elevenBandedPlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"P-01","Crop":"CEREAL","Round":"SPRING","SoilLabel":"LOAM SOIL","Moisture":"MOIST","Band":"PEAK","Nitrate":420,"Load":455,"Region":"Northern Uplands","BlockFlag":"UPLAND"},{"Plot":"P-02","Crop":"CEREAL","Round":"SPRING","SoilLabel":"MIXED SOIL","Moisture":"DRY","Band":"VERY HIGH","Nitrate":320,"Load":320,"Region":"Northern Uplands","BlockFlag":"UPLAND"},{"Plot":"P-03","Crop":"CEREAL","Round":"SPRING","SoilLabel":"MIXED SOIL","Moisture":"MOIST","Band":"HIGH","Nitrate":260,"Load":260,"Region":"Northern Uplands","BlockFlag":"UPLAND"},{"Plot":"P-04","Crop":"CEREAL","Round":"SPRING","SoilLabel":"LOAM SOIL","Moisture":"DRY","Band":"UPPER MID","Nitrate":210,"Load":210,"Region":"Southern Lowlands","BlockFlag":"LOWLAND"},{"Plot":"P-05","Crop":"CEREAL","Round":"SPRING","SoilLabel":"MIXED SOIL","Moisture":"MOIST","Band":"MID","Nitrate":160,"Load":160,"Region":"Southern Lowlands","BlockFlag":"LOWLAND"},{"Plot":"P-06","Crop":"CEREAL","Round":"SPRING","SoilLabel":"MIXED SOIL","Moisture":"DRY","Band":"LOWER MID","Nitrate":120,"Load":120,"Region":"Southern Lowlands","BlockFlag":"LOWLAND"},{"Plot":"P-07","Crop":"CEREAL","Round":"SPRING","SoilLabel":"LOAM SOIL","Moisture":"MOIST","Band":"LOW","Nitrate":70,"Load":70,"Region":"Northern Uplands","BlockFlag":"UPLAND"},{"Plot":"P-08","Crop":"CEREAL","Round":"SPRING","SoilLabel":"MIXED SOIL","Moisture":"DRY","Band":"TRACE","Nitrate":20,"Load":20,"Region":"Northern Uplands","BlockFlag":"UPLAND"},{"Plot":"P-09","Crop":"CEREAL","Round":"SPRING","SoilLabel":"MIXED SOIL","Moisture":"DRY","Band":null,"Nitrate":null,"Load":null,"Region":"Northern Uplands","BlockFlag":"UPLAND"},{"Plot":"P-10","Crop":"LEGUME","Round":"AUTUMN","SoilLabel":"LOAM SOIL","Moisture":"MOIST","Band":"VERY HIGH","Nitrate":300,"Load":300,"Region":"Northern Uplands","BlockFlag":"UPLAND"},{"Plot":"P-11","Crop":"LEGUME","Round":"AUTUMN","SoilLabel":"MIXED SOIL","Moisture":"DRY","Band":"LOW","Nitrate":90,"Load":90,"Region":"Southern Lowlands","BlockFlag":"LOWLAND"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    nutrientLineSuite:
+    {
+      function: |test::nobleotter::domain::NutrientLine.all()->project(
+  [
+    l|$l.sampleId,
+    l|$l.valueName,
+    l|$l.reportForm,
+    l|$l.lineTotal
+  ],
+  [
+    'Sample',
+    'Value',
+    'Form',
+    'Total'
+  ]
+)->sort(
+  [
+    asc('Sample'),
+    asc('Form')
+  ]
+);
+      tests:
+      [
+        unionOfDraftAndFinalForms:
+        {
+          doc: 'Unions the magnitude-filtered draft lines with the nitrate-only final lines, so a reading with magnitude on both forms appears twice, a zero-magnitude nitrate reading appears only as a final line and a zero-magnitude non-nitrate reading is absent.';
+          data:
+          [
+            test::nobleotter::store::TrialStagingDB:
+              Relational
+              #{
+                field.sample_value:
+                  'sample_id,plot_code,value_name,amount_a,amount_b\n'+
+                  '101,P-01,NITRATE,10,5\n'+
+                  '102,P-01,PHOSPHATE,0,0\n'+
+                  '103,P-02,NITRATE,0,0\n'+
+                  '104,P-02,POTASH,3,4\n';
+              }#
+          ];
+          asserts:
+          [
+            fourUnionedLines:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":101,"Value":"NITRATE","Form":"DRAFT","Total":15},{"Sample":101,"Value":"NITRATE","Form":"FINAL","Total":15},{"Sample":103,"Value":"NITRATE","Form":"FINAL","Total":0},{"Sample":104,"Value":"POTASH","Form":"DRAFT","Total":7}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

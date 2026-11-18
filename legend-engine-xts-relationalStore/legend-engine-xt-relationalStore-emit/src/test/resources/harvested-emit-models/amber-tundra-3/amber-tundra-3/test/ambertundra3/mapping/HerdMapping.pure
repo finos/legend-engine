@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ambertundra3::mapping::HerdMapping
+(
+  *test::ambertundra3::domain::Caribou[caribou]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambertundra3::store::TundraDB]tundra.caribou.animal_code
+    )
+    ~mainTable [test::ambertundra3::store::TundraDB]tundra.caribou
+    animalCode: [test::ambertundra3::store::TundraDB]tundra.caribou.animal_code,
+    herdName: [test::ambertundra3::store::TundraDB]tundra.caribou.herd_name,
+    collarStatus: [test::ambertundra3::store::TundraDB]tundra.caribou.collar_status,
+    firstSeen: [test::ambertundra3::store::TundraDB]tundra.caribou.first_seen,
+    lastSeen: [test::ambertundra3::store::TundraDB]tundra.caribou.last_seen,
+    collarAgeMonths: [test::ambertundra3::store::TundraDB]tundra.caribou.collar_age_months,
+    statusLabel: toUpper(case(
+      and(not(isEmpty([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status)), equal(trim([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status), 'A')),
+      'ALPHA',
+      case(
+        and(not(isEmpty([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status)), equal(trim([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status), 'B')),
+        'BETA',
+        case(
+          and(not(isEmpty([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status)), equal(trim([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status), 'C')),
+          'GAMMA',
+          sqlNull()
+        )
+      )
+    )),
+    travelLabel: case(
+      and(not(isEmpty([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status)), equal(trim([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status), 'D')),
+      'DELTA',
+      case(
+        and(not(isEmpty([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status)), equal(trim([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status), 'E')),
+        'EPSILON',
+        case(
+          and(not(isEmpty([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status)), equal(trim([test::ambertundra3::store::TundraDB]tundra.caribou.collar_status), 'F')),
+          'PHI',
+          sqlNull()
+        )
+      )
+    )
+  }
+
+  *test::ambertundra3::domain::HerdRange[range]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambertundra3::store::TundraDB]tundra.herd_range.range_code
+    )
+    ~mainTable [test::ambertundra3::store::TundraDB]tundra.herd_range
+    rangeCode: [test::ambertundra3::store::TundraDB]tundra.herd_range.range_code,
+    rangeName: [test::ambertundra3::store::TundraDB]tundra.herd_range.range_name,
+    seasonName: [test::ambertundra3::store::TundraDB]tundra.herd_range.season_name,
+    latitudeBand: [test::ambertundra3::store::TundraDB]tundra.herd_range.latitude_band
+  }
+
+  test::ambertundra3::domain::CaribouRange: Relational
+  {
+    AssociationMapping
+    (
+      ranges[caribou, range]: [test::ambertundra3::store::TundraDB]@Caribou_Range,
+      caribou[range, caribou]: [test::ambertundra3::store::TundraDB]@Caribou_Range
+    )
+  }
+)

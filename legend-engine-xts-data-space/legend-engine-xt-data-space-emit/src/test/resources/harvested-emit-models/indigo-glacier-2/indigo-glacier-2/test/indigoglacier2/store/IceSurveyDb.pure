@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::indigoglacier2::store::IceSurveyDb
+(
+  include test::indigoglacier2::store::IceRegistryDb
+
+  Schema field
+  (
+    Table stake_reading
+    (
+      reading_code VARCHAR(12) PRIMARY KEY,
+      stake_code VARCHAR(12),
+      read_at TIMESTAMP,
+      exposed_cm INTEGER,
+      snow_density DOUBLE,
+      reading_state VARCHAR(8)
+    )
+    Table snow_pit
+    (
+      pit_code VARCHAR(12) PRIMARY KEY,
+      site_code VARCHAR(12),
+      dug_on DATE,
+      depth_cm INTEGER,
+      layer_count INTEGER,
+      pit_state VARCHAR(8)
+    )
+    Table melt_pond
+    (
+      pond_code VARCHAR(12) PRIMARY KEY,
+      site_code VARCHAR(12),
+      seen_on DATE,
+      area_sq_m DOUBLE,
+      pond_state VARCHAR(8)
+    )
+  )
+
+  Schema lab
+  (
+    Table ice_core
+    (
+      core_code VARCHAR(12) PRIMARY KEY,
+      site_code VARCHAR(12),
+      drilled_on DATE,
+      core_length_m DOUBLE,
+      bubble_ratio DOUBLE,
+      core_state VARCHAR(8)
+    )
+    Table isotope_sample
+    (
+      sample_code VARCHAR(12) PRIMARY KEY,
+      core_code VARCHAR(12) PRIMARY KEY,
+      depth_m DOUBLE,
+      delta_value DOUBLE,
+      run_at TIMESTAMP
+    )
+  )
+
+  Filter AcceptedReadingFilter(field.stake_reading.reading_state = 'OK' and field.stake_reading.exposed_cm >= 0)
+  Filter DeepPitFilter(field.snow_pit.pit_state = 'LOGGED' and (field.snow_pit.depth_cm >= 100 or field.snow_pit.layer_count >= 5))
+  Filter WidePondFilter(field.melt_pond.pond_state != 'DRY' and field.melt_pond.area_sq_m >= 10.0)
+  Filter IntactCoreFilter(lab.ice_core.core_state = 'INTACT' and lab.ice_core.core_length_m > 0.0)
+  Filter DepletedSampleFilter(lab.isotope_sample.delta_value < 0.0 and lab.isotope_sample.run_at is not null)
+)

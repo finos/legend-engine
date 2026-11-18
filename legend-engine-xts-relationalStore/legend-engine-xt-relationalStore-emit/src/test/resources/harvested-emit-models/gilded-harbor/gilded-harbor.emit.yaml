@@ -1,0 +1,61 @@
+name: gilded-harbor
+title: "Gilded Harbor — Cycle-Share Fleet Derivations over a Cross-Schema Store with Grouped Views and Three-Hop Join Paths"
+description: |
+  A municipal bicycle-share corpus whose store spans two schemas: the street
+  network keeps dock stations and service zones behind an open-station filter
+  with a grouped inline view of zone capacity, while the fleet schema keeps
+  cycle units, cycle models and workshop visits behind a roadworthiness filter
+  with a labelling inline view. A unit resolves its station one hop away, its
+  zone and borough two hops away and its zone station count three hops away on
+  the grouped view, so property resolution forces the plan to traverse the whole
+  chain and the view definition. Model labels fall back to a literal when no
+  model row exists, assist notes decode through two arms to a null sentinel,
+  condition notes are normalized by relational string functions, and rotation
+  bands are decoded by a four-arm conditional. Two further class mappings
+  aggregate at bind time: stations collapse to one row per zone and workshop
+  visits to one row per unit. Three mapping test suites exercise every
+  conditional arm, the multi-hop view-backed property, the extent filters and
+  both grouped extents.
+modelSources:
+  model:
+    root: gilded-harbor
+    files:
+      - test/gildedharbor/connection/CycleShareConnections.pure
+      - test/gildedharbor/domain/CycleShareDomain.pure
+      - test/gildedharbor/mapping/CycleShareMapping.pure
+      - test/gildedharbor/runtime/CycleShareRuntimes.pure
+      - test/gildedharbor/store/CycleShareDb.pure
+features:
+  - execution:mapping-test
+  - mapping:relational-group-by
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-derivation
+  - cross-schema
+  - cycle-share
+  - grouped-view
+  - h2
+  - mapping-test
+  - multi-hop-join
+  - null-sentinel
+  - relational
+  - store-filter
+  - view-backed-property

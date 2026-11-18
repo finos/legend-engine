@@ -1,0 +1,291 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::embercanyon3::mapping::VaultMapping
+(
+  demo::embercanyon3::domain::Accession[primary]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.accession_id
+    )
+    ~mainTable [demo::embercanyon3::store::VaultDatabase]registry.seed_accession
+    accessionCode: [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.accession_code,
+    taxonName: [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.taxon_name,
+    vaultCode: [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.vault_code,
+    collectedOn: [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.collected_on,
+    seedCount: [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.seed_count,
+    viabilityRate: [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.viability_rate,
+    provenance
+    (
+      collector: [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.collector_name,
+      region: [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.region_name
+    ),
+    registrySource: 'EMBER-REGISTRY',
+    taxonLabel: toUpper([demo::embercanyon3::store::VaultDatabase]registry.seed_accession.taxon_name),
+    adjustedSeedCount: plus([demo::embercanyon3::store::VaultDatabase]registry.seed_accession.seed_count, 1)
+  }
+
+  demo::embercanyon3::domain::Accession[archive]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::embercanyon3::store::VaultDatabase]registry.accession_archive.archive_id
+    )
+    ~mainTable [demo::embercanyon3::store::VaultDatabase]registry.accession_archive
+    accessionCode: [demo::embercanyon3::store::VaultDatabase]registry.accession_archive.accession_code,
+    taxonName: [demo::embercanyon3::store::VaultDatabase]registry.accession_archive.taxon_name,
+    vaultCode: [demo::embercanyon3::store::VaultDatabase]registry.accession_archive.vault_code,
+    collectedOn: [demo::embercanyon3::store::VaultDatabase]registry.accession_archive.collected_on,
+    seedCount: [demo::embercanyon3::store::VaultDatabase]registry.accession_archive.seed_count,
+    viabilityRate: [demo::embercanyon3::store::VaultDatabase]registry.accession_archive.viability_rate,
+    provenance
+    (
+      collector: [demo::embercanyon3::store::VaultDatabase]registry.accession_archive.collector_name,
+      region: [demo::embercanyon3::store::VaultDatabase]registry.accession_archive.region_name
+    ),
+    registrySource: 'EMBER-ARCHIVE',
+    taxonLabel: toUpper([demo::embercanyon3::store::VaultDatabase]registry.accession_archive.taxon_name),
+    adjustedSeedCount: plus([demo::embercanyon3::store::VaultDatabase]registry.accession_archive.seed_count, 1)
+  }
+
+  *demo::embercanyon3::domain::Accession: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(primary, archive)
+  }
+
+  *demo::embercanyon3::domain::WildAccession[wild] extends [primary]: Relational
+  {
+    ~filter [demo::embercanyon3::store::VaultDatabase]WildAccessionFilter
+    ~primaryKey
+    (
+      [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.accession_id
+    )
+    ~mainTable [demo::embercanyon3::store::VaultDatabase]registry.seed_accession
+    habitatCode: [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.habitat_code
+  }
+
+  *demo::embercanyon3::domain::GerminationTrial[trial]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::embercanyon3::store::VaultDatabase]trials.germination_trial.trial_id
+    )
+    ~mainTable [demo::embercanyon3::store::VaultDatabase]trials.germination_trial
+    trialCode: [demo::embercanyon3::store::VaultDatabase]trials.germination_trial.trial_code,
+    accessionCode: [demo::embercanyon3::store::VaultDatabase]trials.germination_trial.accession_code,
+    emergedCount: [demo::embercanyon3::store::VaultDatabase]trials.germination_trial.emerged_count,
+    trayLabel: [demo::embercanyon3::store::VaultDatabase]trials.germination_trial.tray_label
+  }
+
+  *demo::embercanyon3::domain::VaultYield[yield]: Relational
+  {
+    ~groupBy
+    (
+      [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.vault_code
+    )
+    ~primaryKey
+    (
+      [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.vault_code
+    )
+    ~mainTable [demo::embercanyon3::store::VaultDatabase]registry.seed_accession
+    vaultCode: [demo::embercanyon3::store::VaultDatabase]registry.seed_accession.vault_code,
+    accessionTotal: count([demo::embercanyon3::store::VaultDatabase]registry.seed_accession.accession_code),
+    seedTotal: sum([demo::embercanyon3::store::VaultDatabase]registry.seed_accession.seed_count)
+  }
+
+  *demo::embercanyon3::domain::Vault[view]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::embercanyon3::store::VaultDatabase]registry.accession_yield_view.vault_code
+    )
+    ~mainTable [demo::embercanyon3::store::VaultDatabase]registry.accession_yield_view
+    vaultCode: [demo::embercanyon3::store::VaultDatabase]registry.accession_yield_view.vault_code,
+    accessionTotal: [demo::embercanyon3::store::VaultDatabase]registry.accession_yield_view.accession_total,
+    seedTotal: [demo::embercanyon3::store::VaultDatabase]registry.accession_yield_view.seed_total,
+    viewLabel: 'ACCESSION-YIELD-VIEW'
+  }
+
+  *demo::embercanyon3::domain::TrialSummary[summary]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::embercanyon3::store::VaultDatabase]trials.trial_summary_view.accession_code
+    )
+    ~mainTable [demo::embercanyon3::store::VaultDatabase]trials.trial_summary_view
+    accessionCode: [demo::embercanyon3::store::VaultDatabase]trials.trial_summary_view.accession_code,
+    emergedTotal: [demo::embercanyon3::store::VaultDatabase]trials.trial_summary_view.emerged_total
+  }
+
+  testSuites:
+  [
+    relationalTransformsSuite:
+    {
+      function: |demo::embercanyon3::domain::Accession.all()->project(
+        [
+          a|$a.accessionCode,
+          a|$a.registrySource,
+          a|$a.taxonLabel,
+          a|$a.adjustedSeedCount
+        ],
+        ['Accession', 'Source', 'Taxon', 'Adjusted']
+      )->sort([asc('Accession')]);
+      tests:
+      [
+        transformedAccessions:
+        {
+          data:
+          [
+            demo::embercanyon3::store::VaultDatabase:
+              Relational
+              #{
+                registry.seed_accession:
+                  'accession_id,accession_code,taxon_name,vault_code,collected_on,seed_count,viability_rate,collector_name,region_name,habitat_code\n'+
+                  '1,AC-01,Silene emberii,V-01,2025-09-01,20,0.8,Mira Vale,North Slope,DRY-01';
+                registry.accession_archive:
+                  'archive_id,accession_code,taxon_name,vault_code,collected_on,seed_count,viability_rate,collector_name,region_name,habitat_code\n'+
+                  '11,AC-11,Artemisia glow,V-02,2024-08-03,15,0.7,Lea Moss,Red Shelf,COOL-01';
+              }#
+          ];
+          asserts:
+          [
+            transformedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"AC-01","Source":"EMBER-REGISTRY","Taxon":"SILENE EMBERII","Adjusted":21},{"Accession":"AC-11","Source":"EMBER-ARCHIVE","Taxon":"ARTEMISIA GLOW","Adjusted":16}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    groupedAndViewedSuite:
+    {
+      function: |demo::embercanyon3::domain::VaultYield.all()->project(
+        [v|$v.vaultCode, v|$v.accessionTotal, v|$v.seedTotal],
+        ['Vault', 'Accessions', 'Seeds']
+      )->sort([asc('Vault')]);
+      tests:
+      [
+        groupedVaultRows:
+        {
+          data:
+          [
+            demo::embercanyon3::store::VaultDatabase:
+              Relational
+              #{
+                registry.seed_accession:
+                  'accession_id,accession_code,taxon_name,vault_code,collected_on,seed_count,viability_rate,collector_name,region_name,habitat_code\n'+
+                  '1,AC-01,Silene emberii,V-01,2025-09-01,20,0.8,Mira Vale,North Slope,DRY-01\n'+
+                  '2,AC-02,Salvia cineria,V-01,2025-09-02,30,0.9,Oren Pike,Stone Basin,DRY-02';
+              }#
+          ];
+          asserts:
+          [
+            groupedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Vault":"V-01","Accessions":2,"Seeds":50}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    polymorphicAndInlineViewSuite:
+    {
+      function: |demo::embercanyon3::domain::Accession.all()->subType(@demo::embercanyon3::domain::WildAccession)->project(
+        [a|$a.accessionCode, a|$a.taxonLabel],
+        ['Accession', 'Taxon']
+      )->sort([asc('Accession')]);
+      tests:
+      [
+        wildRows:
+        {
+          data:
+          [
+            demo::embercanyon3::store::VaultDatabase:
+              Relational
+              #{
+                registry.seed_accession:
+                  'accession_id,accession_code,taxon_name,vault_code,collected_on,seed_count,viability_rate,collector_name,region_name,habitat_code\n'+
+                  '1,AC-01,Silene emberii,V-01,2025-09-01,20,0.8,Mira Vale,North Slope,DRY-01\n'+
+                  '2,AC-02,Salvia cineria,V-01,2025-09-02,30,0.9,Oren Pike,Stone Basin,DRY-02';
+              }#
+          ];
+          asserts:
+          [
+            wildRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"AC-01","Taxon":"SILENE EMBERII"},{"Accession":"AC-02","Taxon":"SALVIA CINERIA"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    inlineSummarySuite:
+    {
+      function: |demo::embercanyon3::domain::TrialSummary.all()->project(
+        [s|$s.accessionCode, s|$s.emergedTotal],
+        ['Accession', 'Emerged']
+      )->sort([asc('Accession')]);
+      tests:
+      [
+        summaryRows:
+        {
+          data:
+          [
+            demo::embercanyon3::store::VaultDatabase:
+              Relational
+              #{
+                trials.germination_trial:
+                  'trial_id,trial_code,accession_code,emerged_count,tray_label\n'+
+                  '101,TR-01,AC-01,16,ALPHA\n'+
+                  '102,TR-02,AC-02,27,BETA';
+              }#
+          ];
+          asserts:
+          [
+            summaryRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"AC-01","Emerged":16},{"Accession":"AC-02","Emerged":27}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

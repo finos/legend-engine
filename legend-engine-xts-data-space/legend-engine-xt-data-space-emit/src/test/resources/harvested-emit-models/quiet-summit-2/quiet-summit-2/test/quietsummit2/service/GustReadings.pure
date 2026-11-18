@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietsummit2::service::GustReadings
+{
+  pattern: '/alpine/v1/gusts/{stationCode}/{minGustSpeed}';
+  title: 'Alpine - Gust Readings';
+  owners:
+  [
+    'alpine-observation-network',
+    'ridge-instrumentation'
+  ];
+  documentation: 'Returns the peak wind gusts recorded at one weather post above a threshold speed, projected flat and ordered by observation date.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {stationCode: String[1], minGustSpeed: Float[1]|test::quietsummit2::domain::GustReading.all()->filter(
+      g|($g.stationCode == $stationCode) && ($g.gustSpeed >= $minGustSpeed)
+    )->project(
+      [
+        g|$g.readingCode,
+        g|$g.gustSpeed,
+        g|$g.observedOn
+      ],
+      [
+        'Code',
+        'GustSpeed',
+        'Observed'
+      ]
+    )->sort(
+      [
+        asc('Observed')
+      ]
+    )};
+    mapping: test::quietsummit2::mapping::SummitMapping;
+    runtime: test::quietsummit2::runtime::SummitH2Runtime;
+  }
+  testSuites:
+  [
+    gustReadingsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              alpine.gust_reading:
+                'reading_code,station_code,gust_speed,observed_on\n'+
+                'GUSTA,NRDG,96.5,2026-01-04\n'+
+                'GUSTB,NRDG,58.25,2026-01-09\n'+
+                'GUSTC,NRDG,112.75,2026-01-17\n'+
+                'GUSTD,SCOL,101.5,2026-01-21\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        strongNorthRidgeGusts:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            stationCode = 'NRDG',
+            minGustSpeed = 90.0
+          ]
+          asserts:
+          [
+            twoStrongGusts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"GUSTA","GustSpeed":96.5,"Observed":"2026-01-04"},{"Code":"GUSTC","GustSpeed":112.75,"Observed":"2026-01-17"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

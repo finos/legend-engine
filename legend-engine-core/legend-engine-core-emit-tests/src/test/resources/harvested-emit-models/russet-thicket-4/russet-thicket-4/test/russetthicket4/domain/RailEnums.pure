@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::russetthicket4::domain::TrackGauge
+{
+  TWO_FOOT,
+  METRE,
+  STANDARD,
+  BROAD
+}
+
+Enum test::russetthicket4::domain::LiveryScheme
+{
+  LINED_GREEN,
+  CRIMSON_LAKE,
+  VARNISHED_TEAK,
+  WORKS_GREY
+}
+
+Enum test::russetthicket4::domain::HaulageDuty
+{
+  PASSENGER_TURN,
+  GOODS_TURN,
+  PERMANENT_WAY,
+  SHUNTING_TURN
+}
+
+Enum test::russetthicket4::domain::ShedCondition
+{
+  OPERATIONAL,
+  STOPPED_FOR_REPAIR,
+  AWAITING_OVERHAUL,
+  WITHDRAWN
+}

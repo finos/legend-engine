@@ -1,0 +1,146 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::sunlitlighthouse::service::MarkerRegisterFeed
+{
+  pattern: '/sunlitlighthouse/v1/markers/{asOf}';
+  title: 'Sunlit Lighthouse - Waymarker Register As Of A Processing Date';
+  owners:
+  [
+    'trail-network-register',
+    'trail-upkeep-eng'
+  ];
+  documentation: 'Projects the waymarker register as it stood at a requested processing date, keeping only the posts whose surface class is one of the hard-surface classes the upkeep crews plan against, and returning the wide primitive column surface the register publishes.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|demo::sunlitlighthouse::domain::TrailMarker.all($asOf)->filter(
+      m|$m.surfaceClass->toOne()->in(['GRAVEL', 'BOARDWALK', 'STONE'])
+    )->project(
+      [
+        m|$m.markerCode,
+        m|$m.markerName,
+        m|$m.routeCode,
+        m|$m.surfaceClass,
+        m|$m.elevationM,
+        m|$m.postHeightM,
+        m|$m.installedOn
+      ],
+      [
+        'MARKER_CODE',
+        'MARKER_NAME',
+        'ROUTE_CODE',
+        'SURFACE_CLASS',
+        'ELEVATION_M',
+        'POST_HEIGHT_M',
+        'INSTALLED_ON'
+      ]
+    )->sort(
+      [
+        asc('MARKER_CODE')
+      ]
+    )->take(50)};
+    mapping: demo::sunlitlighthouse::mapping::TrailRegisterMapping;
+    runtime: demo::sunlitlighthouse::runtime::MarkerRuntime;
+  }
+  testSuites:
+  [
+    markerFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          markerWarehouseConnection:
+            Relational
+            #{
+              trail.marker_register:
+                'marker_code,marker_name,route_code,surface_class,elevation_m,post_height_m,installed_on,checked_at,in_z,out_z\n'+
+                'MK-01,Fell Gate Post,RT-NORTH,GRAVEL,412.5,1.85,2024-04-11,2026-05-02 07:30:00,2026-01-01,9999-12-31\n'+
+                'MK-01,Fell Gate Post,RT-NORTH,STONE,410.0,1.8,2024-04-11,2025-11-02 07:30:00,2025-01-01,2026-01-01\n'+
+                'MK-02,Beck Crossing Post,RT-NORTH,BOARDWALK,188.25,2.05,2025-03-20,2026-05-03 08:15:00,2026-08-01,9999-12-31\n'+
+                'MK-03,Quarry Rim Post,RT-WEST,TARMAC,255.75,1.95,2023-09-08,2026-05-04 09:00:00,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        openWindowAndSurfaceMember:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            singleSurfacedMarker:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"MARKER_CODE":"MK-01","MARKER_NAME":"Fell Gate Post","ROUTE_CODE":"RT-NORTH","SURFACE_CLASS":"GRAVEL","ELEVATION_M":412.5,"POST_HEIGHT_M":1.85,"INSTALLED_ON":"2024-04-11"}]';
+                  }#;
+              }#
+          ]
+        },
+        laterProcessingDateSeesNewMarker:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-09-01
+          ]
+          asserts:
+          [
+            newlyLoadedMarkerAppears:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"MARKER_CODE":"MK-01","MARKER_NAME":"Fell Gate Post","ROUTE_CODE":"RT-NORTH","SURFACE_CLASS":"GRAVEL","ELEVATION_M":412.5,"POST_HEIGHT_M":1.85,"INSTALLED_ON":"2024-04-11"},{"MARKER_CODE":"MK-02","MARKER_NAME":"Beck Crossing Post","ROUTE_CODE":"RT-NORTH","SURFACE_CLASS":"BOARDWALK","ELEVATION_M":188.25,"POST_HEIGHT_M":2.05,"INSTALLED_ON":"2025-03-20"}]';
+                  }#;
+              }#
+          ]
+        },
+        processingDateBeforeAnyLoad:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-01-01
+          ]
+          asserts:
+          [
+            noVersionLoadedYet:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

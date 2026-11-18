@@ -1,0 +1,171 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedvineyard7::mapping::VineyardMapping
+(
+  *test::gildedvineyard7::domain::BlockHarvest[blockHarvest]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedvineyard7::store::VineyardDb]vineyard.block_harvest.harvest_id
+    )
+    ~mainTable [test::gildedvineyard7::store::VineyardDb]vineyard.block_harvest
+    harvestId: [test::gildedvineyard7::store::VineyardDb]vineyard.block_harvest.harvest_id,
+    blockCode: [test::gildedvineyard7::store::VineyardDb]vineyard.block_harvest.block_code,
+    parcelCode: [test::gildedvineyard7::store::VineyardDb]vineyard.block_harvest.parcel_code,
+    harvestStatus: [test::gildedvineyard7::store::VineyardDb]vineyard.block_harvest.harvest_status,
+    clusterCount: [test::gildedvineyard7::store::VineyardDb]vineyard.block_harvest.cluster_count,
+    basketWeightKg: [test::gildedvineyard7::store::VineyardDb]vineyard.block_harvest.basket_weight_kg,
+    pickCrew: [test::gildedvineyard7::store::VineyardDb]vineyard.block_harvest.pick_crew
+  }
+
+  *test::gildedvineyard7::domain::PruningPass[pruningPass]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedvineyard7::store::VineyardDb]vineyard.pruning_pass.pass_id
+    )
+    ~mainTable [test::gildedvineyard7::store::VineyardDb]vineyard.pruning_pass
+    passId: [test::gildedvineyard7::store::VineyardDb]vineyard.pruning_pass.pass_id,
+    blockCode: [test::gildedvineyard7::store::VineyardDb]vineyard.pruning_pass.block_code,
+    parcelCode: [test::gildedvineyard7::store::VineyardDb]vineyard.pruning_pass.parcel_code,
+    passStatus: [test::gildedvineyard7::store::VineyardDb]vineyard.pruning_pass.pass_status,
+    caneCount: [test::gildedvineyard7::store::VineyardDb]vineyard.pruning_pass.cane_count,
+    hoursLogged: [test::gildedvineyard7::store::VineyardDb]vineyard.pruning_pass.hours_logged,
+    crewLead: [test::gildedvineyard7::store::VineyardDb]vineyard.pruning_pass.crew_lead
+  }
+
+  testSuites:
+  [
+    blockHarvestSuite:
+    {
+      function: |test::gildedvineyard7::domain::BlockHarvest.all()->filter(
+        h|($h.clusterCount > 0) && ($h.harvestStatus->in(['PICKED', 'SORTING']))
+      )->project(
+        [
+          h|$h.harvestId,
+          h|$h.blockCode,
+          h|$h.parcelCode,
+          h|$h.harvestStatus,
+          h|$h.clusterCount,
+          h|$h.basketWeightKg,
+          h|$h.pickCrew
+        ],
+        [
+          'Harvest',
+          'Block',
+          'Parcel',
+          'Status',
+          'Clusters',
+          'Basket Kg',
+          'Crew'
+        ]
+      )->sort(
+        [
+          asc('Harvest')
+        ]
+      );
+      tests:
+      [
+        pickedAndSortingBlocksBindThroughTheHarvestAnchor:
+        {
+          doc: 'Every column of the harvest anchor resolves through its primary-key rooted set implementation; the skipped block is dropped by the cluster floor and by the state set alike.';
+          data:
+          [
+            test::gildedvineyard7::store::VineyardDb:
+              Relational
+              #{
+                vineyard.block_harvest:
+                  'harvest_id,block_code,parcel_code,harvest_status,cluster_count,basket_weight_kg,pick_crew\n'+
+                  '1,BLK-01,PAR-NORTH,PICKED,320,480,CREW-SUNRISE\n'+
+                  '2,BLK-02,PAR-NORTH,PICKED,280,410,CREW-SUNRISE\n'+
+                  '3,BLK-03,PAR-NORTH,SKIPPED,0,0,CREW-SUNRISE\n'+
+                  '4,BLK-04,PAR-SOUTH,PICKED,500,760,CREW-RIDGE\n'+
+                  '5,BLK-05,PAR-NORTH,SORTING,150,220,CREW-RIDGE\n';
+              }#
+          ];
+          asserts:
+          [
+            fourHarvestedBlocksProject: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Harvest":1,"Block":"BLK-01","Parcel":"PAR-NORTH","Status":"PICKED","Clusters":320,"Basket Kg":480,"Crew":"CREW-SUNRISE"},{"Harvest":2,"Block":"BLK-02","Parcel":"PAR-NORTH","Status":"PICKED","Clusters":280,"Basket Kg":410,"Crew":"CREW-SUNRISE"},{"Harvest":4,"Block":"BLK-04","Parcel":"PAR-SOUTH","Status":"PICKED","Clusters":500,"Basket Kg":760,"Crew":"CREW-RIDGE"},{"Harvest":5,"Block":"BLK-05","Parcel":"PAR-NORTH","Status":"SORTING","Clusters":150,"Basket Kg":220,"Crew":"CREW-RIDGE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    pruningPassSuite:
+    {
+      function: |test::gildedvineyard7::domain::PruningPass.all()->project(
+        [
+          p|$p.passId,
+          p|$p.blockCode,
+          p|$p.parcelCode,
+          p|$p.passStatus,
+          p|$p.caneCount,
+          p|$p.hoursLogged,
+          p|$p.crewLead
+        ],
+        [
+          'Pass',
+          'Block',
+          'Parcel',
+          'Status',
+          'Canes',
+          'Hours',
+          'Lead'
+        ]
+      )->sort(
+        [
+          asc('Pass')
+        ]
+      );
+      tests:
+      [
+        everyPruningPassBindsThroughItsOwnAnchor:
+        {
+          doc: 'The second anchored table of the same store binds through its own set implementation, so the two anchors coexist in one mapping without sharing a physical footprint.';
+          data:
+          [
+            test::gildedvineyard7::store::VineyardDb:
+              Relational
+              #{
+                vineyard.pruning_pass:
+                  'pass_id,block_code,parcel_code,pass_status,cane_count,hours_logged,crew_lead\n'+
+                  '1,BLK-01,PAR-NORTH,OPEN,120,6,LEAD-ASH\n'+
+                  '2,BLK-02,PAR-NORTH,ACTIVE,90,4,LEAD-ASH\n'+
+                  '3,BLK-03,PAR-NORTH,CLOSED,0,0,LEAD-ASH\n';
+              }#
+          ];
+          asserts:
+          [
+            allThreePassesProject: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Pass":1,"Block":"BLK-01","Parcel":"PAR-NORTH","Status":"OPEN","Canes":120,"Hours":6,"Lead":"LEAD-ASH"},{"Pass":2,"Block":"BLK-02","Parcel":"PAR-NORTH","Status":"ACTIVE","Canes":90,"Hours":4,"Lead":"LEAD-ASH"},{"Pass":3,"Block":"BLK-03","Parcel":"PAR-NORTH","Status":"CLOSED","Canes":0,"Hours":0,"Lead":"LEAD-ASH"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

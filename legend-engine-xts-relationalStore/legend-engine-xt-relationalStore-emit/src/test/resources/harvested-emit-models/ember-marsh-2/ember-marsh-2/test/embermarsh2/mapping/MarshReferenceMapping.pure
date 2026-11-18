@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::embermarsh2::mapping::MarshReferenceMapping
+(
+  include mapping test::embermarsh2::mapping::MarshEnumMappings
+
+  *test::embermarsh2::domain::Zone[zone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]reserve.zone.zone_code
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]reserve.zone
+    zoneCode: [test::embermarsh2::store::MarshCoreDb]reserve.zone.zone_code,
+    zoneName: [test::embermarsh2::store::MarshCoreDb]reserve.zone.zone_name
+  }
+
+  *test::embermarsh2::domain::Region[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]reserve.region.region_code
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]reserve.region
+    regionCode: [test::embermarsh2::store::MarshCoreDb]reserve.region.region_code,
+    regionName: [test::embermarsh2::store::MarshCoreDb]reserve.region.region_name
+  }
+
+  *test::embermarsh2::domain::Programme[programme]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]reserve.programme.programme_code
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]reserve.programme
+    programmeCode: [test::embermarsh2::store::MarshCoreDb]reserve.programme.programme_code,
+    programmeName: [test::embermarsh2::store::MarshCoreDb]reserve.programme.programme_name
+  }
+
+  *test::embermarsh2::domain::Team[team]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]survey.team.team_code
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]survey.team
+    teamCode: [test::embermarsh2::store::MarshCoreDb]survey.team.team_code,
+    teamName: [test::embermarsh2::store::MarshCoreDb]survey.team.team_name
+  }
+
+  *test::embermarsh2::domain::Guild[guild]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]species.guild.guild_code
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]species.guild
+    guildCode: [test::embermarsh2::store::MarshCoreDb]species.guild.guild_code,
+    guildName: [test::embermarsh2::store::MarshCoreDb]species.guild.guild_name
+  }
+
+  *test::embermarsh2::domain::WaterRegime[regime]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]habitat.water_regime.regime_code
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]habitat.water_regime
+    regimeCode: [test::embermarsh2::store::MarshCoreDb]habitat.water_regime.regime_code,
+    regimeName: [test::embermarsh2::store::MarshCoreDb]habitat.water_regime.regime_name,
+    meanDepthCm: [test::embermarsh2::store::MarshCoreDb]habitat.water_regime.mean_depth_cm
+  }
+
+  *test::embermarsh2::domain::VegetationSurvey[vegetation]: Relational
+  {
+    ~filter [test::embermarsh2::store::MarshCoreDb]RecentVegetationFilter
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]habitat.vegetation.veg_id
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]habitat.vegetation
+    vegId: [test::embermarsh2::store::MarshCoreDb]habitat.vegetation.veg_id,
+    unitCode: [test::embermarsh2::store::MarshCoreDb]habitat.vegetation.unit_code,
+    coverPct: [test::embermarsh2::store::MarshCoreDb]habitat.vegetation.cover_pct,
+    swardHeightCm: [test::embermarsh2::store::MarshCoreDb]habitat.vegetation.sward_height_cm,
+    surveyYear: [test::embermarsh2::store::MarshCoreDb]habitat.vegetation.survey_year,
+    unitName: [test::embermarsh2::store::MarshCoreDb]@Unit_Vegetation | [test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.unit_name
+  }
+
+  *test::embermarsh2::domain::Taxon[taxon]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]species.taxon.taxon_code
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]species.taxon
+    taxonCode: [test::embermarsh2::store::MarshCoreDb]species.taxon.taxon_code,
+    taxonName: [test::embermarsh2::store::MarshCoreDb]species.taxon.taxon_name,
+    guildName: [test::embermarsh2::store::MarshCoreDb]@Taxon_Guild | [test::embermarsh2::store::MarshCoreDb]species.guild.guild_name
+  }
+
+  *test::embermarsh2::domain::Observer[observer]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]survey.observer.observer_code
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]survey.observer
+    observerCode: [test::embermarsh2::store::MarshCoreDb]survey.observer.observer_code,
+    observerAlias: [test::embermarsh2::store::MarshCoreDb]survey.observer.observer_alias,
+    teamName: [test::embermarsh2::store::MarshCoreDb]@Observer_Team | [test::embermarsh2::store::MarshCoreDb]survey.team.team_name
+  }
+)

@@ -1,0 +1,153 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coppergecko3::mapping::HiveInspectionMapping
+(
+  include mapping test::coppergecko3::mapping::ApiaryRegisterMapping
+
+  *test::coppergecko3::domain::HiveInspection[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coppergecko3::store::ApiaryDb]apiary.hive_inspection.inspection_ref
+    )
+    ~mainTable [test::coppergecko3::store::ApiaryDb]apiary.hive_inspection
+    inspectionRef: [test::coppergecko3::store::ApiaryDb]apiary.hive_inspection.inspection_ref,
+    hiveCode: [test::coppergecko3::store::ApiaryDb]apiary.hive_inspection.hive_code,
+    inspectedOn: [test::coppergecko3::store::ApiaryDb]apiary.hive_inspection.inspected_on,
+    framesOfBrood: [test::coppergecko3::store::ApiaryDb]apiary.hive_inspection.frames_of_brood,
+    miteCount: [test::coppergecko3::store::ApiaryDb]apiary.hive_inspection.mite_count,
+    siteName: [test::coppergecko3::store::ApiaryDb]@Inspection_Hive > (INNER) @Hive_Site | [test::coppergecko3::store::ApiaryDb]apiary.apiary_site.site_name,
+    districtName: [test::coppergecko3::store::ApiaryDb]@Inspection_Hive > (INNER) @Hive_Site > (INNER) @Site_District | [test::coppergecko3::store::ApiaryDb]apiary.district.district_name,
+    context
+    (
+      inspectorName: [test::coppergecko3::store::ApiaryDb]apiary.hive_inspection.inspector_name,
+      siteNote: [test::coppergecko3::store::ApiaryDb]apiary.hive_inspection.site_note,
+      queenLine: [test::coppergecko3::store::ApiaryDb]@Inspection_Hive | [test::coppergecko3::store::ApiaryDb]apiary.hive.queen_line
+    )
+  }
+
+  testSuites:
+  [
+    hiveInspectionSuite:
+    {
+      function: |test::coppergecko3::domain::HiveInspection.all()->project(
+  [
+    col(i|$i.inspectionRef, 'InspectionRef'),
+    col(i|$i.hiveCode, 'HiveCode'),
+    col(i|$i.framesOfBrood, 'FramesOfBrood'),
+    col(i|$i.miteCount, 'MiteCount'),
+    col(i|$i.siteName, 'SiteName'),
+    col(i|$i.districtName, 'DistrictName'),
+    col(i|$i.context.inspectorName, 'Inspector'),
+    col(i|$i.context.siteNote, 'SiteNote'),
+    col(i|$i.context.queenLine, 'QueenLine')
+  ]
+)->sort([asc('InspectionRef')]);
+      tests:
+      [
+        multiHopJoinHitAndOrphanHive:
+        {
+          doc: 'Projects the inspections through the embedded context block, the one-hop queen line and the two- and three-hop join paths onto the apiary site and its district. Two inspections hit the whole path, one carries no note at all, and the third names a hive the register does not hold so its hopped columns have nothing to reach.';
+          data:
+          [
+            test::coppergecko3::store::ApiaryDb:
+              Relational
+              #{
+                apiary.hive_inspection:
+                  'inspection_ref,hive_code,inspected_on,frames_of_brood,mite_count,inspector_name,site_note\n'+
+                  'IN-01,HV-01,2031-05-01,8,12,A. Marsh,shade cloth up\n'+
+                  'IN-02,HV-02,2031-05-02,5,40,B. Lowe,\n'+
+                  'IN-03,HV-99,2031-05-03,0,0,C. Reed,hive removed\n';
+                apiary.hive:
+                  'hive_code,apiary_code,queen_line,install_year\n'+
+                  'HV-01,AP-01,QL-CARNICA,2029\n'+
+                  'HV-02,AP-02,QL-BUCKFAST,2030\n';
+                apiary.apiary_site:
+                  'apiary_code,site_name,district_code\n'+
+                  'AP-01,Ridge Meadow Apiary,D-01\n'+
+                  'AP-02,Sedge Hollow Apiary,D-02\n';
+                apiary.district:
+                  'district_code,district_name,region_name\n'+
+                  'D-01,Upper Ridge,North Region\n'+
+                  'D-02,Willow Vale,North Region\n';
+              }#
+          ];
+          asserts:
+          [
+            inspectionRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"InspectionRef":"IN-01","HiveCode":"HV-01","FramesOfBrood":8,"MiteCount":12,"SiteName":"Ridge Meadow Apiary","DistrictName":"Upper Ridge","Inspector":"A. Marsh","SiteNote":"shade cloth up","QueenLine":"QL-CARNICA"},{"InspectionRef":"IN-02","HiveCode":"HV-02","FramesOfBrood":5,"MiteCount":40,"SiteName":"Sedge Hollow Apiary","DistrictName":"Willow Vale","Inspector":"B. Lowe","SiteNote":null,"QueenLine":"QL-BUCKFAST"},{"InspectionRef":"IN-03","HiveCode":"HV-99","FramesOfBrood":0,"MiteCount":0,"SiteName":null,"DistrictName":null,"Inspector":"C. Reed","SiteNote":"hive removed","QueenLine":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    apiarySiteSummarySuite:
+    {
+      function: |test::coppergecko3::domain::ApiarySite.all()->project(
+  [
+    col(s|$s.apiaryCode, 'ApiaryCode'),
+    col(s|$s.siteName, 'SiteName'),
+    col(s|$s.districtCode, 'DistrictCode'),
+    col(s|$s.summary.hiveCount, 'HiveCount'),
+    col(s|$s.summary.latestInstallYear, 'LatestInstallYear')
+  ]
+)->sort([asc('ApiaryCode')]);
+      tests:
+      [
+        viewBackedSummaryPerSite:
+        {
+          doc: 'Reads the site register through the property backed by the grouped view, so each site carries the hive count and the latest installation year the view aggregates for it.';
+          data:
+          [
+            test::coppergecko3::store::ApiaryDb:
+              Relational
+              #{
+                apiary.apiary_site:
+                  'apiary_code,site_name,district_code\n'+
+                  'AP-01,Ridge Meadow Apiary,D-01\n'+
+                  'AP-02,Sedge Hollow Apiary,D-02\n';
+                apiary.hive:
+                  'hive_code,apiary_code,queen_line,install_year\n'+
+                  'HV-01,AP-01,QL-CARNICA,2029\n'+
+                  'HV-03,AP-01,QL-ITALIAN,2031\n'+
+                  'HV-02,AP-02,QL-BUCKFAST,2030\n';
+              }#
+          ];
+          asserts:
+          [
+            siteRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ApiaryCode":"AP-01","SiteName":"Ridge Meadow Apiary","DistrictCode":"D-01","HiveCount":2,"LatestInstallYear":2031},{"ApiaryCode":"AP-02","SiteName":"Sedge Hollow Apiary","DistrictCode":"D-02","HiveCount":1,"LatestInstallYear":2030}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

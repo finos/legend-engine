@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivoryridge2::service::StationTotals
+{
+  pattern: '/ivoryridge/v1/stations/totals';
+  title: 'Station Totals';
+  owners:
+  [
+    'airtime-scheduling'
+  ];
+  documentation: 'Aggregates the slots above a requested listener floor into per-station listener and airtime totals, grouping through the programme join and sorting the grouped result by station label.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minListeners: Integer[1]|test::ivoryridge2::domain::BroadcastSlot.all()->filter(
+      s|$s.listeners >= $minListeners
+    )->groupBy(
+      [
+        s|$s.programme.station.stationName
+      ],
+      [
+        agg(s|$s.listeners, y|$y->sum()),
+        agg(s|$s.durationMinutes, y|$y->sum())
+      ],
+      [
+        'Station',
+        'TotalListeners',
+        'TotalMinutes'
+      ]
+    )->sort(
+      [
+        asc('Station')
+      ]
+    )};
+    mapping: test::ivoryridge2::mapping::BroadcastMapping;
+    runtime: test::ivoryridge2::runtime::BroadcastH2Runtime;
+  }
+  testSuites:
+  [
+    totalsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              airtime.radio_station:
+                'station_code,station_name,transmitter_kw\n'+
+                'S-1,Ridgeway Community Radio,2.5\n'+
+                'S-2,Harbour Voice FM,0.8\n'+
+                'S-3,Fell Top Relay,1.2\n';
+              airtime.presenter:
+                'presenter_code,presenter_name,studio_city\n'+
+                'P-1,Marta Lindqvist,Ridgeway\n'+
+                'P-2,Owen Baptiste,Harbour\n'+
+                'P-3,Nadia Okonjo,\n'+
+                'P-4,Tomas Ferreira,Fell Top\n';
+              airtime.programme:
+                'programme_code,station_code,programme_name,genre_code\n'+
+                'PG-1,S-1,Morning Ridge,TALK\n'+
+                'PG-2,S-1,Ridge Folk Hour,MUSIC\n'+
+                'PG-3,S-2,Harbour Notes,MUSIC\n'+
+                'PG-4,,Late Static,MUSIC\n';
+              airtime.broadcast_slot:
+                'slot_code,aired_on,slot_seq,programme_code,presenter_code,listeners,duration_minutes,live_flag\n'+
+                'BS-1,2026-04-01,1,PG-1,P-1,1200,60,true\n'+
+                'BS-2,2026-04-02,1,PG-2,P-2,1200,45,false\n'+
+                'BS-3,2026-04-03,2,PG-1,P-1,900,60,true\n'+
+                'BS-4,2026-04-01,1,PG-3,P-3,400,30,true\n'+
+                'BS-5,2026-04-05,1,PG-4,,150,15,false\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        totalsAboveFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minListeners = 400
+          ]
+          asserts:
+          [
+            twoStationTotals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"Harbour Voice FM","TotalListeners":400,"TotalMinutes":30},{"Station":"Ridgeway Community Radio","TotalListeners":3300,"TotalMinutes":165}]';
+                  }#;
+              }#
+          ]
+        },
+        floorAboveEveryRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minListeners = 5000
+          ]
+          asserts:
+          [
+            noStationTotals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

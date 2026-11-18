@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::scarletwillow3::connection::ReserveWarehouseH2Connection
+{
+  store: test::scarletwillow3::store::ReserveWarehouseDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists reserve_core;',
+      'create schema reserve_core;',
+      'drop schema if exists survey_core;',
+      'create schema survey_core;',
+      'create table reserve_core.reserve_site (site_id varchar(24) primary key, site_name varchar(120) not null, region_code varchar(24) not null, status_code varchar(16) not null, deactivated_on date);',
+      'create table reserve_core.region (region_code varchar(24) primary key, region_name varchar(120) not null, warden_code varchar(24) not null);',
+      'create table reserve_core.warden (warden_code varchar(24) primary key, warden_name varchar(120) not null, contact_kind varchar(24) not null);',
+      'create table reserve_core.site_link (child_site_id varchar(24), parent_site_id varchar(24));',
+      'create table reserve_core.habitat_patch (patch_id varchar(24), patch_code varchar(24) not null, site_id varchar(24) not null, habitat_code varchar(24) not null, scrub_code varchar(24), area_hectares double not null, wetness_pct integer not null, peat_depth_cm integer, in_z date not null, out_z date not null);',
+      'create table survey_core.survey_visit (visit_id varchar(24), visit_code varchar(24) not null, patch_id varchar(24) not null, observer_id varchar(24) not null, visit_code_kind varchar(24) not null, species_count integer not null, remark_text varchar(120), in_z date not null, out_z date not null);',
+      'create table survey_core.observer (observer_id varchar(24) primary key, observer_name varchar(120) not null, role_code varchar(24) not null, team_code varchar(24) not null);',
+      'create table survey_core.observer_team (team_code varchar(24) primary key, team_name varchar(120) not null, region_code varchar(24) not null);',
+      'create table survey_core.patch_attribute (patch_id varchar(24), attribute_id integer, attribute_value varchar(120));'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+###Connection
+RelationalDatabaseConnection test::scarletwillow3::connection::ReserveLakeH2Connection
+{
+  store: test::scarletwillow3::store::ReserveLakeDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists reserve_core;',
+      'create schema reserve_core;',
+      'drop schema if exists survey_core;',
+      'create schema survey_core;',
+      'create table reserve_core.reserve_site (site_id varchar(24) primary key, site_name varchar(120) not null, region_code varchar(24) not null, status_code varchar(16) not null, deactivated_on date);',
+      'create table reserve_core.region (region_code varchar(24) primary key, region_name varchar(120) not null, warden_code varchar(24) not null);',
+      'create table reserve_core.warden (warden_code varchar(24) primary key, warden_name varchar(120) not null, contact_kind varchar(24) not null);',
+      'create table reserve_core.site_link (child_site_id varchar(24), parent_site_id varchar(24));',
+      'create table reserve_core.habitat_patch (patch_id varchar(24), patch_code varchar(24) not null, site_id varchar(24) not null, habitat_code varchar(24) not null, scrub_code varchar(24), area_hectares double not null, wetness_pct integer not null, peat_depth_cm integer, in_z date not null, out_z date not null);',
+      'create table survey_core.survey_visit (visit_id varchar(24), visit_code varchar(24) not null, patch_id varchar(24) not null, observer_id varchar(24) not null, visit_code_kind varchar(24) not null, species_count integer not null, remark_text varchar(120), in_z date not null, out_z date not null);',
+      'create table survey_core.observer (observer_id varchar(24) primary key, observer_name varchar(120) not null, role_code varchar(24) not null, team_code varchar(24) not null);',
+      'create table survey_core.observer_team (team_code varchar(24) primary key, team_name varchar(120) not null, region_code varchar(24) not null);',
+      'create table survey_core.patch_attribute (patch_id varchar(24), attribute_id integer, attribute_value varchar(120));'
+      ];
+  };
+  auth: DefaultH2;
+}

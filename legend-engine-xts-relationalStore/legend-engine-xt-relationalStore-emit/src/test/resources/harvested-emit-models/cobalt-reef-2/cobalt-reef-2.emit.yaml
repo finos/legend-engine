@@ -1,0 +1,46 @@
+name: cobalt-reef-2
+title: "Municipal Street-Tree Canopy Survey with Processing Windows and Deep Depot Joins"
+description: |
+  A municipal canopy survey combines processing-temporal plots and inspections with
+  inner joins through crews, maintenance depots, and depot regions. Two tabular services
+  filter and project the versioned survey rows with string predicates, duplicate removal,
+  deterministic ordering, and a row limit.
+modelSources:
+  model:
+    root: cobalt-reef-2
+    files:
+      - test/cobaltreef2/connection/CanopyConnection.pure
+      - test/cobaltreef2/domain/CanopyDomain.pure
+      - test/cobaltreef2/mapping/CanopyMapping.pure
+      - test/cobaltreef2/runtime/CanopyRuntime.pure
+      - test/cobaltreef2/service/CanopyServices.pure
+      - test/cobaltreef2/store/CanopyDatabase.pure
+features:
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - canopy-survey
+  - h2
+  - inner-join
+  - mapping-test
+  - processing-temporal
+  - service-test
+  - street-trees

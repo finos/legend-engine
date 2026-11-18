@@ -1,0 +1,33 @@
+name: silver-apiary-3
+title: "Silver Apiary 3 - pollinator sample mapping"
+description: |
+  A relational pollinator sample mapping that joins each sample to its zone,
+  decodes a compact condition enumeration, and assigns one of eight inspection
+  bands plus a fallback label through a real conditional transform.
+modelSources:
+  model:
+    root: silver-apiary-3
+    files:
+      - test/silverapiary3/connection/ApiaryConnection.pure
+      - test/silverapiary3/domain/ApiaryDomain.pure
+      - test/silverapiary3/mapping/ApiaryMapping.pure
+      - test/silverapiary3/runtime/ApiaryRuntime.pure
+      - test/silverapiary3/store/ApiaryDatabase.pure
+features:
+  - mapping:enumeration-mapping
+  - mapping:relational-conditional-transform
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - conditional-bands
+  - enumeration-mapping
+  - h2
+  - joined-zone-label
+  - pollinator-samples
+  - relational-mapping

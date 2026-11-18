@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlythicket::mapping::ThicketMapping
+(
+  *test::kindlythicket::domain::TreeRecord[tree]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlythicket::store::ThicketDB]civic.street_tree.tree_id
+    )
+    ~mainTable [test::kindlythicket::store::ThicketDB]civic.street_tree
+    tagCode: [test::kindlythicket::store::ThicketDB]civic.street_tree.tag_code,
+    speciesCode: [test::kindlythicket::store::ThicketDB]civic.street_tree.species_code,
+    protectedSpecimen: [test::kindlythicket::store::ThicketDB]civic.street_tree.protected_specimen
+  }
+
+  *test::kindlythicket::domain::PlantingBed[bed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlythicket::store::ThicketDB]civic.planting_bed.bed_id
+    )
+    ~mainTable [test::kindlythicket::store::ThicketDB]civic.planting_bed
+    bedCode: [test::kindlythicket::store::ThicketDB]civic.planting_bed.bed_code,
+    surfaceType: [test::kindlythicket::store::ThicketDB]civic.planting_bed.surface_type
+  }
+
+  *test::kindlythicket::domain::CivicDistrict[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlythicket::store::ThicketDB]civic.civic_district.district_id
+    )
+    ~mainTable [test::kindlythicket::store::ThicketDB]civic.civic_district
+    districtName: [test::kindlythicket::store::ThicketDB]civic.civic_district.district_name
+  }
+
+  *test::kindlythicket::domain::MaintenanceCrew[crew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlythicket::store::ThicketDB]civic.maintenance_crew.crew_id
+    )
+    ~mainTable [test::kindlythicket::store::ThicketDB]civic.maintenance_crew
+    crewCode: [test::kindlythicket::store::ThicketDB]civic.maintenance_crew.crew_code,
+    contactZone: [test::kindlythicket::store::ThicketDB]civic.maintenance_crew.contact_zone
+  }
+
+  test::kindlythicket::domain::Tree_Bed: Relational
+  {
+    AssociationMapping
+    (
+      bed[tree, bed]: [test::kindlythicket::store::ThicketDB]@Tree_Bed,
+      trees[bed, tree]: [test::kindlythicket::store::ThicketDB]@Tree_Bed
+    )
+  }
+
+  test::kindlythicket::domain::Bed_District: Relational
+  {
+    AssociationMapping
+    (
+      district[bed, district]: [test::kindlythicket::store::ThicketDB]@Bed_District,
+      beds[district, bed]: [test::kindlythicket::store::ThicketDB]@Bed_District
+    )
+  }
+
+  test::kindlythicket::domain::Tree_InspectionCrew: Relational
+  {
+    AssociationMapping
+    (
+      inspectionCrew[tree, crew]: [test::kindlythicket::store::ThicketDB]@Tree_InspectionCrew,
+      inspectedTrees[crew, tree]: [test::kindlythicket::store::ThicketDB]@Tree_InspectionCrew
+    )
+  }
+
+  test::kindlythicket::domain::Tree_PruningCrew: Relational
+  {
+    AssociationMapping
+    (
+      pruningCrew[tree, crew]: [test::kindlythicket::store::ThicketDB]@Tree_PruningCrew,
+      prunedTrees[crew, tree]: [test::kindlythicket::store::ThicketDB]@Tree_PruningCrew
+    )
+  }
+
+  test::kindlythicket::domain::Tree_WateringCrew: Relational
+  {
+    AssociationMapping
+    (
+      wateringCrew[tree, crew]: [test::kindlythicket::store::ThicketDB]@Tree_WateringCrew,
+      wateredTrees[crew, tree]: [test::kindlythicket::store::ThicketDB]@Tree_WateringCrew
+    )
+  }
+)

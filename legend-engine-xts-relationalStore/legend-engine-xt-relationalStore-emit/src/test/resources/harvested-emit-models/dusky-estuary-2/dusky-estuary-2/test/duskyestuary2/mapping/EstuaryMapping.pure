@@ -1,0 +1,155 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskyestuary2::mapping::EstuaryMapping
+(
+  *test::duskyestuary2::domain::WaderCount[countSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyestuary2::store::EstuaryDB]survey.wader_count.count_code
+    )
+    ~mainTable [test::duskyestuary2::store::EstuaryDB]survey.wader_count
+    countCode: [test::duskyestuary2::store::EstuaryDB]survey.wader_count.count_code,
+    flatCode: [test::duskyestuary2::store::EstuaryDB]survey.wader_count.flat_code,
+    countedOn: [test::duskyestuary2::store::EstuaryDB]survey.wader_count.counted_on,
+    birdTotal: [test::duskyestuary2::store::EstuaryDB]survey.wader_count.bird_total,
+    waterCm: [test::duskyestuary2::store::EstuaryDB]survey.wader_count.water_cm,
+    weatherState: [test::duskyestuary2::store::EstuaryDB]survey.wader_count.weather_state,
+    skyState: [test::duskyestuary2::store::EstuaryDB]survey.wader_count.sky_state,
+    gradeBand: case(
+                 and(
+                   equal([test::duskyestuary2::store::EstuaryDB]survey.wader_count.weather_state, 'C'),
+                   greaterThan([test::duskyestuary2::store::EstuaryDB]survey.wader_count.bird_total, 500)
+                 ),
+                 'CALM-FLOCK',
+                 case(
+                   equal([test::duskyestuary2::store::EstuaryDB]survey.wader_count.weather_state, 'C'),
+                   'CALM-SCATTER',
+                   case(
+                     and(
+                       equal([test::duskyestuary2::store::EstuaryDB]survey.wader_count.weather_state, 'B'),
+                       greaterThan([test::duskyestuary2::store::EstuaryDB]survey.wader_count.bird_total, 500)
+                     ),
+                     'BREEZY-FLOCK',
+                     case(
+                       equal([test::duskyestuary2::store::EstuaryDB]survey.wader_count.weather_state, 'B'),
+                       'BREEZY-SCATTER',
+                       case(
+                         and(
+                           equal([test::duskyestuary2::store::EstuaryDB]survey.wader_count.weather_state, 'G'),
+                           greaterThan([test::duskyestuary2::store::EstuaryDB]survey.wader_count.water_cm, 300)
+                         ),
+                         'GALE-HIGH',
+                         case(
+                           equal([test::duskyestuary2::store::EstuaryDB]survey.wader_count.weather_state, 'G'),
+                           'GALE-LOW',
+                           case(
+                             equal([test::duskyestuary2::store::EstuaryDB]survey.wader_count.weather_state, 'F'),
+                             'FOG-HOLD',
+                             case(
+                               equal([test::duskyestuary2::store::EstuaryDB]survey.wader_count.weather_state, 'R'),
+                               'RAIN-HOLD',
+                               sqlNull()
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 )
+               ),
+    flatLabel: [test::duskyestuary2::store::EstuaryDB]@Count_Reach | [test::duskyestuary2::store::EstuaryDB]survey.count_reach_vw.flat_label,
+    bandSpan: [test::duskyestuary2::store::EstuaryDB]@Count_Reach | [test::duskyestuary2::store::EstuaryDB]survey.count_reach_vw.band_span,
+    checkedState: [test::duskyestuary2::store::EstuaryDB]@Count_Reach | [test::duskyestuary2::store::EstuaryDB]survey.count_reach_vw.checked_state
+  }
+
+  testSuites:
+  [
+    gradeBandSuite:
+    {
+      function: |test::duskyestuary2::domain::WaderCount.all()->project(
+  [
+    c|$c.countCode,
+    c|$c.gradeBand,
+    c|$c.flatLabel,
+    c|$c.bandSpan,
+    c|$c.checkedState
+  ],
+  [
+    'CountCode',
+    'GradeBand',
+    'FlatLabel',
+    'BandSpan',
+    'CheckedState'
+  ]
+)->sort(
+  [
+    asc('CountCode')
+  ]
+);
+      tests:
+      [
+        everyGradeArm:
+        {
+          doc: 'Walks one sheet through every arm of the nested weather grade, ending on the sheet whose weather state matches no arm and falls to the null sentinel; each row also reads the label, tide span and check state back through the included reference store and the inline view.';
+          data:
+          [
+            test::duskyestuary2::store::EstuaryDB:
+              Relational
+              #{
+                ref.mudflat:
+                  'flat_code,flat_name,estuary_name,area_ha\n'+
+                  'FL-1,North Flat,Dusky Water,50\n'+
+                  'FL-2,South Flat,Dusky Water,25\n';
+                ref.tide_band:
+                  'band_code,band_name,low_cm,high_cm\n'+
+                  'TB-1,Low Band,0,200\n'+
+                  'TB-2,High Band,100,400\n';
+                survey.wader_count:
+                  'count_code,flat_code,band_code,counted_on,bird_total,water_cm,weather_state,sky_state,note_text\n'+
+                  'DE-01,FL-1,TB-1,2026-02-02,600,120,C,S,full flat walked\n'+
+                  'DE-02,FL-1,TB-1,2026-02-03,300,90,C,S,partial cover\n'+
+                  'DE-03,FL-2,TB-2,2026-02-04,800,250,B,O,roost count\n'+
+                  'DE-04,FL-2,TB-2,2026-02-05,200,150,B,O,short visit\n'+
+                  'DE-05,FL-1,TB-2,2026-02-06,400,350,G,O,spring tide\n'+
+                  'DE-06,FL-1,TB-2,2026-02-07,400,200,G,S,wind eased\n'+
+                  'DE-07,FL-2,TB-1,2026-02-08,150,80,F,O,visibility poor\n'+
+                  'DE-08,FL-2,TB-1,2026-02-09,100,60,R,O,rain through\n'+
+                  'DE-09,FL-1,TB-1,2026-02-10,50,40,X,S,state not on the sheet\n';
+                survey.count_check:
+                  'count_code,checker_name,check_kind,passed_flag\n'+
+                  'DE-01,North Checker,FULL,Y\n'+
+                  'DE-03,South Checker,SPOT,N\n';
+              }#
+          ];
+          asserts:
+          [
+            nineGradedSheets:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CountCode":"DE-01","GradeBand":"CALM-FLOCK","FlatLabel":"NORTH FLAT/FL-1","BandSpan":200,"CheckedState":"Y"},{"CountCode":"DE-02","GradeBand":"CALM-SCATTER","FlatLabel":"NORTH FLAT/FL-1","BandSpan":200,"CheckedState":"U"},{"CountCode":"DE-03","GradeBand":"BREEZY-FLOCK","FlatLabel":"SOUTH FLAT/FL-2","BandSpan":300,"CheckedState":"N"},{"CountCode":"DE-04","GradeBand":"BREEZY-SCATTER","FlatLabel":"SOUTH FLAT/FL-2","BandSpan":300,"CheckedState":"U"},{"CountCode":"DE-05","GradeBand":"GALE-HIGH","FlatLabel":"NORTH FLAT/FL-1","BandSpan":300,"CheckedState":"U"},{"CountCode":"DE-06","GradeBand":"GALE-LOW","FlatLabel":"NORTH FLAT/FL-1","BandSpan":300,"CheckedState":"U"},{"CountCode":"DE-07","GradeBand":"FOG-HOLD","FlatLabel":"SOUTH FLAT/FL-2","BandSpan":200,"CheckedState":"U"},{"CountCode":"DE-08","GradeBand":"RAIN-HOLD","FlatLabel":"SOUTH FLAT/FL-2","BandSpan":200,"CheckedState":"U"},{"CountCode":"DE-09","GradeBand":null,"FlatLabel":"NORTH FLAT/FL-1","BandSpan":200,"CheckedState":"U"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

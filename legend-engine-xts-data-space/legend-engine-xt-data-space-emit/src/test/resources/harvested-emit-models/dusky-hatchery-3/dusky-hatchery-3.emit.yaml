@@ -1,0 +1,61 @@
+name: dusky-hatchery-3
+title: "Dusky Hatchery Rearing Register — Association-Backed Object Trees, Pagination and Text Documentation"
+description: |
+  A hatchery rearing register whose brood batches, tanks and facility sites are
+  joined across two schemas and traversed through two relational association
+  implementations. Batch labels are folded by nested string transforms, three
+  single-execution endpoints publish a filtered object-tree fetch, a paginated
+  window and a nested tank collection, and markdown text elements document the
+  register beside a governed data space.
+modelSources:
+  model:
+    root: dusky-hatchery-3
+    files:
+      - test/duskyhatchery3/connection/HatcheryConnections.pure
+      - test/duskyhatchery3/dataspace/HatcheryDataSpace.pure
+      - test/duskyhatchery3/doc/HatcheryNotes.pure
+      - test/duskyhatchery3/domain/HatcheryDomain.pure
+      - test/duskyhatchery3/mapping/HatcheryMapping.pure
+      - test/duskyhatchery3/runtime/HatcheryRuntimes.pure
+      - test/duskyhatchery3/service/HatcheryServices.pure
+      - test/duskyhatchery3/store/HatcheryDb.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service-single-execution
+  - execution:service-test
+  - grammar:association
+  - grammar:derived-property
+  - grammar:qualified-property
+  - grammar:text-element
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:filter
+  - execution:graph-fetch
+  - query:slice
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - execution:service
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - cross-schema
+  - graph-fetch
+  - h2
+  - hatchery-register
+  - pagination
+  - relational
+  - service-test
+  - text-element

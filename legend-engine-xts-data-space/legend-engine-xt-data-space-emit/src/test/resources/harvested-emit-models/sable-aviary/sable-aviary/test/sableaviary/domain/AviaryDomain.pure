@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::sableaviary::domain::*;
+
+Class <<temporal.processingtemporal>> {doc.doc = 'One ringed bird held in the aviary, resolved at a processing date so a superseded correction row falls out of range. Carries the measured wing span and mass behind the condition banding, the ringing date behind the register-age arithmetic, the optional keeper note folded onto a sentinel, the register provenance pinned on by a literal transform and the enclosure name reached one join hop out.'} test::sableaviary::domain::RingedBird
+{
+  ringCode: String[1];
+  wingSpanCm: Integer[1];
+  massGrams: Integer[1];
+  ringedOn: StrictDate[1];
+  keeperNote: String[0..1];
+  registerSource: String[1];
+  enclosureLabel: String[0..1];
+  conditionBand() {test::sableaviary::function::conditionBand($this.wingSpanCm, $this.massGrams)}: String[1];
+  ringLabel() {$this.ringCode->toUpper()->trim()}: String[1];
+  keeperLabel() {if($this.keeperNote->isEmpty(), | 'UNVISITED', | $this.keeperNote->toOne()->trim()->toUpper())}: String[1];
+  birdDigest() {test::sableaviary::function::conditionBand($this.wingSpanCm, $this.massGrams) + ' / ' + if($this.wingSpanCm >= 30, | $this.ringCode->substring(0, 6)->toUpper(), | 'SHORT WING ' + $this.ringCode)}: String[1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A flight enclosure of the aviary, resolved at a processing date, holding ringed birds and delivered feed batches and staffed by one keeper shift.'} test::sableaviary::domain::Enclosure
+{
+  enclosureCode: String[1];
+  enclosureName: String[1];
+  perchCount: Integer[1];
+  coverNote: String[0..1];
+  roomyEnclosure() {$this.perchCount >= 12}: Boolean[1];
+  coverLabel() {if($this.coverNote->isEmpty(), | 'OPEN COVER', | $this.coverNote->toOne()->trim()->toUpper())}: String[1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A feed batch delivered into one enclosure, resolved at a processing date so a restated delivery falls out of range.'} test::sableaviary::domain::FeedBatch
+{
+  batchCode: String[1];
+  feedKind: String[1];
+  kilograms: Integer[1];
+  deliveredOn: StrictDate[1];
+}
+
+Class {doc.doc = 'The species guide entry behind a ringed bird: not itself milestoned, so it is reachable from a milestoned extent across a single join hop.'} test::sableaviary::domain::SpeciesGuide
+{
+  speciesCode: String[1];
+  speciesName: String[1];
+  dietLabel: String[1];
+  flightClass: String[1];
+}
+
+Class {doc.doc = 'The keeper shift accountable for an enclosure.'} test::sableaviary::domain::KeeperShift
+{
+  shiftCode: String[1];
+  shiftName: String[1];
+  keeperName: String[1];
+}
+
+Association test::sableaviary::domain::Bird_Enclosure
+{
+  birds: RingedBird[*];
+  enclosure: Enclosure[1];
+}
+
+Association test::sableaviary::domain::Bird_Species
+{
+  speciesBirds: RingedBird[*];
+  species: SpeciesGuide[1];
+}
+
+Association test::sableaviary::domain::Enclosure_Shift
+{
+  enclosures: Enclosure[*];
+  shift: KeeperShift[1];
+}
+
+Association test::sableaviary::domain::Feed_Enclosure
+{
+  feedBatches: FeedBatch[*];
+  fedEnclosure: Enclosure[1];
+}

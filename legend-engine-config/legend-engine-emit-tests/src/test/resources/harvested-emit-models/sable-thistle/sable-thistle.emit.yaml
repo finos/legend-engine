@@ -1,0 +1,32 @@
+name: sable-thistle
+title: "Herbarium Read and Write Surfaces — Externally Stereotyped Query Contracts"
+description: |
+  A store-less herbarium collection domain in which one flat sheet class holds an
+  identifier, an accession date, two curator contact strings and five mandatory
+  handling flags, and two stateless surface classes declare no properties of their
+  own. Each surface carries a stereotype from an external query-binding profile —
+  one marking the read surface, the other the write surface — and hosts a single
+  parameterised property over the sheet class. The read contract takes one
+  mandatory key and returns a to-many collection with no implementation, while the
+  write contract accepts exactly one sheet, filters it on a non-empty code and
+  narrows the result to exactly one, so the two surfaces impose different result
+  shapes over the same row shape.
+
+modelSources:
+  model:
+    root: sable-thistle
+    files:
+      - test/sablethistle/domain/HerbariumSurfaces.pure
+
+features:
+  - grammar:profile
+  - grammar:qualified-property
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - herbarium
+  - parameterised-property
+  - profile-stereotype
+  - query-binding
+  - store-less

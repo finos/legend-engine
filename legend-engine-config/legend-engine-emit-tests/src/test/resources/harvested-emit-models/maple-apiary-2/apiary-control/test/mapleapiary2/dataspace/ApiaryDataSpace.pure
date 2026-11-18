@@ -1,0 +1,36 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace demo::mapleapiary2::dataspace::ApiaryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'production';
+      description: 'Production apiary control reporting tier.';
+      mapping: demo::mapleapiary2::mapping::ApiaryMapping;
+      defaultRuntime: demo::mapleapiary2::runtime::ApiaryProductionRuntime;
+    },
+    {
+      name: 'acceptance';
+      description: 'Acceptance tier sharing the mapping and differing only in the rewritten physical names.';
+      mapping: demo::mapleapiary2::mapping::ApiaryMapping;
+      defaultRuntime: demo::mapleapiary2::runtime::ApiaryAcceptanceRuntime;
+    }
+  ];
+  defaultExecutionContext: 'production';
+  title: 'Apiary Control Reporting';
+  description: 'A governed entry point over colony inspection events, their work items and keeper presentation views, wiring the shared relational mapping to one warehouse binding per environment.';
+}

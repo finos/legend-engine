@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::westerncavern::data::CavernSurveyData
+{
+  Relational
+  #{
+    speleo.cave_system:
+      'system_code,batch_id,system_name,region_name,discovered_on,mapped_length_metres,system_note\n'+
+      'CS-01,1,Western Cavern System,Western Uplands,2026-01-05,4210.5,First register entry\n'+
+      'CS-01,2,Western Cavern System,Western Uplands,2026-01-05,4325.0,\n'+
+      'CS-02,1,Lantern Hollow System,Northern Downs,2026-02-11,880.25,Shallow phreatic maze\n';
+
+    speleo.passage:
+      'passage_code,batch_id,system_code,passage_name,passage_length_metres,passage_width_metres,hazard_note\n'+
+      'PG-01,1,CS-01,Cathedral Gallery,410.5,12.5,Loose boulder slope\n'+
+      'PG-02,1,CS-01,Whisper Crawl,120.0,0.8,\n'+
+      'PG-03,1,CS-02,Lantern Rift,75.25,3.0,\n';
+
+    speleo.survey_run:
+      'run_code,batch_id,system_code,run_name,run_date,lead_surveyor,instrument_note\n'+
+      'SR-01,1,CS-01,Spring Traverse,2026-03-01,Fenwick Party,Laser set A\n'+
+      'SR-02,1,CS-01,Autumn Traverse,2026-09-14,Ollerton Party,\n'+
+      'SR-03,1,CS-02,Lantern Recon,2026-04-02,Marsden Party,\n'+
+      'SR-04,1,CS-02,Sump Probe,2026-05-05,Ferris Party,\n';
+
+    speleo.survey_leg:
+      'leg_code,batch_id,run_code,passage_code,leg_length_metres,depth_change_metres,grade_code\n'+
+      'SL-01,1,SR-01,PG-01,40.5,-3.25,1\n'+
+      'SL-02,1,SR-01,PG-01,55.0,2.5,2\n'+
+      'SL-03,1,SR-01,PG-01,61.75,-1.5,3\n'+
+      'SL-04,1,SR-01,PG-02,18.25,0.75,4\n'+
+      'SL-05,1,SR-02,PG-01,72.5,-6.0,5\n'+
+      'SL-06,1,SR-02,PG-01,33.0,1.25,6\n'+
+      'SL-07,1,SR-02,PG-02,49.5,-2.0,7\n'+
+      'SL-08,1,SR-03,PG-03,25.75,4.5,8\n'+
+      'SL-09,1,SR-03,PG-03,12.5,,\n';
+
+    speleo.climate_station:
+      'station_code,batch_id,passage_code,station_name,installed_on,sensor_note\n'+
+      'CT-01,1,PG-01,Cathedral Drip Post,2026-01-20,Thermistor pair\n'+
+      'CT-02,1,PG-02,Crawl Air Post,2026-02-02,\n';
+
+    speleo.climate_reading:
+      'reading_code,batch_id,station_code,reading_date,air_temperature_celsius,humidity_percent,drip_rate_per_minute\n'+
+      'CR-01,1,CT-01,2026-03-02,8.5,92.5,14\n'+
+      'CR-02,1,CT-01,2026-03-03,9.25,,18\n'+
+      'CR-03,1,CT-01,2026-03-04,7.75,88.0,\n'+
+      'CR-04,1,CT-02,2026-03-02,6.5,95.25,4\n'+
+      'CR-05,2,CT-02,2026-03-03,6.75,94.0,6\n';
+  }#
+}

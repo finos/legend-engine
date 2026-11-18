@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedlighthouse4::service::LotStageMembershipFeed
+{
+  pattern: '/frostedlighthouse/v1/lotStages';
+  title: 'Frosted Lighthouse - Lot Stage Membership';
+  owners:
+  [
+    'nursery-propagation-desk'
+  ];
+  documentation: 'Tests membership of a caller-supplied collection of grading stages, requires a populated batch note and folds the species code through an element-wise collection mapping before testing it against a literal set, so collection traversal drives the predicate rather than a join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {stages: String[*]|test::frostedlighthouse4::domain::SeedLot.all()->filter(x|($x.statusCode->in($stages)) && (($x.batchNote->isNotEmpty()) && ($x.speciesCode->map(c|$c->toUpper())->in(['SP-ACER', 'SP-CORY', 'SP-QUER']))))->project([x|$x.lotId, x|$x.statusCode, x|$x.batchNote, x|$x.speciesCode], ['LotId', 'StatusCode', 'BatchNote', 'SpeciesCode'])->sort([asc('LotId')])};
+    mapping: test::frostedlighthouse4::mapping::NurseryLotMapping;
+    runtime: test::frostedlighthouse4::runtime::NurseryLotRuntime;
+  }
+  testSuites:
+  [
+    lotStageSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryLotConnection:
+            Relational
+            #{
+              nursery.seed_lot:
+                'lot_id,lot_code,species_code,house_code,status_code,tray_count,germination_pct,sown_on,graded_at,batch_note\n'+
+                '1,LT-0001,SP-ACER,GH-01,GRADED,48,92.5,2026-01-05,2026-02-01 09:15:00,first flush strong\n'+
+                '2,LT-0002,SP-BETU,GH-01,GRADED,36,78.25,2026-01-12,2026-02-02 09:30:00,\n'+
+                '3,LT-0003,SP-CORY,GH-02,SOWN,24,,2026-01-19,,awaiting first count\n'+
+                '4,LT-0004,SP-ACER,GH-02,GRADED,60,64.0,2026-01-26,2026-02-05 10:00:00,thinned tray\n'+
+                '5,LT-0005,SP-QUER,GH-03,DISCARDED,12,4.5,2026-02-02,2026-02-09 11:45:00,damping off\n'+
+                '6,LT-0006,SP-TILI,GH-03,GRADED,30,88.75,2026-02-09,2026-02-16 08:20:00,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        plannedAndExecuted:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            stages = ['GRADED', 'SOWN', 'DISCARDED']
+          ]
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LotId":1,"StatusCode":"GRADED","BatchNote":"first flush strong","SpeciesCode":"SP-ACER"},{"LotId":3,"StatusCode":"SOWN","BatchNote":"awaiting first count","SpeciesCode":"SP-CORY"},{"LotId":4,"StatusCode":"GRADED","BatchNote":"thinned tray","SpeciesCode":"SP-ACER"},{"LotId":5,"StatusCode":"DISCARDED","BatchNote":"damping off","SpeciesCode":"SP-QUER"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

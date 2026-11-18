@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silverdelta::service::StationEffortSummary
+{
+  pattern: '/delta/v1/stations/mass-summary/{observationDate}';
+  title: 'Delta - Station Mass Summary As Of';
+  owners:
+  [
+    'delta-ringing-scheme',
+    'wetland-monitoring'
+  ];
+  documentation: 'Aggregating shape over the same point-in-time read: birds in force at the observation instant are projected with their station, grouped by station and delta arm, summed on recorded mass and ordered so the heaviest cohort leads.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {observationDate: StrictDate[1]|test::silverdelta::domain::RingedBird.all($observationDate)->project(
+      [
+        b|$b.station.stationName,
+        b|$b.station.deltaArm,
+        b|$b.massGrams
+      ],
+      [
+        'Station/Name',
+        'Station/Arm',
+        'Bird/MassGrams'
+      ]
+    )->groupBy(
+      [
+        'Station/Name',
+        'Station/Arm'
+      ],
+      [
+        agg('Station/MassGramsTotal', x|$x.getFloat('Bird/MassGrams'), y|$y->sum())
+      ]
+    )->sort(
+      [
+        desc('Station/MassGramsTotal')
+      ]
+    )->take(5);};
+    mapping: test::silverdelta::mapping::DeltaMapping;
+    runtime: test::silverdelta::runtime::DeltaRuntime;
+  }
+}

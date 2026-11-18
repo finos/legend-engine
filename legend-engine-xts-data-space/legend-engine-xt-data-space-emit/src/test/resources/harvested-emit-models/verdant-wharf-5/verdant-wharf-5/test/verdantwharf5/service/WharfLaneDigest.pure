@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantwharf5::service::WharfLaneDigest
+{
+  pattern: '/verdantwharf5/digest/{cargoClasses}';
+  title: 'Wharf Lane Digest';
+  owners:
+  [
+    'harbour-operations'
+  ];
+  documentation: 'Groups the call legs of the requested cargo classes by class and berth, summing the pallet totals and counting the legs so a multi-leg group, a single-leg group and a group whose summed column stays absent are all visible.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {cargoClasses: String[*]|test::verdantwharf5::domain::VesselCall.all()->filter(
+      x|$x.cargoClass->in($cargoClasses)
+    )->groupBy(
+      [
+        x|$x.cargoClass,
+        x|$x.berthName
+      ],
+      [
+        agg(
+          x|$x.palletTotal,
+          y|$y->sum()
+        ),
+        agg(
+          x|$x.callCode,
+          y|$y->count()
+        )
+      ],
+      [
+        'CargoClass',
+        'BerthName',
+        'TotalPallets',
+        'Legs'
+      ]
+    )->sort(
+      [
+        asc('CargoClass'),
+        asc('BerthName')
+      ]
+    )};
+    mapping: test::verdantwharf5::mapping::WharfMapping;
+    runtime: test::verdantwharf5::runtime::WharfRuntime;
+  }
+  testSuites:
+  [
+    laneDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          wharfConnection: Reference
+            #{
+              test::verdantwharf5::data::WharfTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        selectingParameters:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cargoClasses = ['CONTAINER', 'REEFER', 'LIGHT']
+          ]
+          asserts:
+          [
+            fiveGroups:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CargoClass":"CONTAINER","BerthName":"East Basin","TotalPallets":null,"Legs":1},{"CargoClass":"CONTAINER","BerthName":"North Quay","TotalPallets":65,"Legs":2},{"CargoClass":"CONTAINER","BerthName":"South Quay","TotalPallets":33,"Legs":1},{"CargoClass":"LIGHT","BerthName":null,"TotalPallets":5,"Legs":1},{"CargoClass":"REEFER","BerthName":"South Quay","TotalPallets":18,"Legs":1}]';
+                  }#;
+              }#
+          ]
+        },
+        nonSelectingParameters:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cargoClasses = ['LIVESTOCK']
+          ]
+          asserts:
+          [
+            noGroups:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+name: ember-lantern-2
+title: "Lantern Workshop Production Record — Processing-Temporal Services, Cross-Schema Stores and Data Space Contexts"
+description: |
+  An advanced processing-temporal relational model over a lantern workshop
+  production record. Every mapped class carries the processing-temporal stereotype
+  and every table a matching milestoning block with an infinity sentinel, so each
+  service query enters through the milestoned accessor with a single instant
+  parameter and the compiler rewrites the read into a window predicate. Two stores,
+  one of them cross-schema and multi-table, are bound by four relational mappings
+  that each name an explicit main-table alias and primary-key clause; three
+  associations are backed by joins so the collection ends fan out at the requested
+  instant. Two data spaces publish the mapping and runtime pairs as named execution
+  contexts with default contexts, listed executables and support contacts, and three
+  runtimes resolve the stores to an in-process pair and a key-pair authenticated
+  cloud-warehouse connection.
+modelSources:
+  model:
+    root: ember-lantern-2
+    files:
+      - test/emberlantern2/connection/LanternConnections.pure
+      - test/emberlantern2/dataspace/LanternDataSpaces.pure
+      - test/emberlantern2/domain/LanternDomain.pure
+      - test/emberlantern2/mapping/ArchiveNoteMapping.pure
+      - test/emberlantern2/mapping/CatalogueGlazeMapping.pure
+      - test/emberlantern2/mapping/KilnRunMapping.pure
+      - test/emberlantern2/mapping/LanternWorkshopMapping.pure
+      - test/emberlantern2/runtime/LanternRuntimes.pure
+      - test/emberlantern2/service/BatchRosterServices.pure
+      - test/emberlantern2/service/GlazeRecipeServices.pure
+      - test/emberlantern2/service/KilnRunServices.pure
+      - test/emberlantern2/store/LanternStores.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - cross-schema
+  - data-space
+  - h2
+  - mapping-test
+  - multi-table
+  - point-in-time
+  - processing-temporal
+  - relational
+  - service
+  - snowflake

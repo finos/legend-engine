@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::solarcove3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A published bike-share dock row on the network roster, rebuilt in memory from an inbound street-cabinet reading.'} test::solarcove3::domain::Dock
+{
+  dockId: String[1];
+  stationCode: String[1];
+  zone: String[1];
+  capacity: Integer[1];
+  bikesAvailable: Integer[1];
+  statusCode: String[1];
+  operatorName: String[1];
+  tier: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A docking station card carried by the external JSON payload, grouping the docks of one station under its zone and operator.'} test::solarcove3::domain::Station
+{
+  stationCode: String[1];
+  capacity: Integer[1];
+  operator: Operator[1];
+  zoneInfo: Zone[1];
+  notes: DockNote[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The operator that services a docking station.'} test::solarcove3::domain::Operator
+{
+  name: String[1];
+  region: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The planning zone a docking station sits in.'} test::solarcove3::domain::Zone
+{
+  code: String[1];
+  borough: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A maintenance note attached to a docking station card.'} test::solarcove3::domain::DockNote
+{
+  text: String[1];
+  author: String[1];
+}

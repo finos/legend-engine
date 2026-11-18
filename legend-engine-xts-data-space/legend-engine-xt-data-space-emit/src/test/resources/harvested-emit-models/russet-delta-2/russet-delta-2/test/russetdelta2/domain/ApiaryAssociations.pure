@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::russetdelta2::domain::*;
+
+Association test::russetdelta2::domain::Yard_Hives
+{
+  hiveYard: Yard[1];
+  hives: Hive[*];
+}
+
+Association test::russetdelta2::domain::Hive_Inspections
+{
+  inspectedHive: Hive[1];
+  inspections: Inspection[*];
+}
+
+Association test::russetdelta2::domain::Yard_Patches
+{
+  patchYard: Yard[1];
+  patches: ForagePatch[*];
+}
+
+Association test::russetdelta2::domain::Lot_Runs
+{
+  runLot: HoneyLot[1];
+  runs: ExtractionRun[*];
+}

@@ -1,0 +1,25 @@
+name: azure-quarry
+title: "Azure Quarry - Store-less business-temporal feature graph with milestoned associations"
+modelSources:
+  model:
+    root: azure-quarry
+    files:
+      - test/azurequarry/domain/TrailDomain.pure
+      - test/azurequarry/profile/TrailProfiles.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - business-temporal
+  - class-inheritance
+  - custom-profile
+  - enumeration
+  - milestoned-association
+  - model-only
+  - optional-association-end

@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskybeacon6::service::LampWatchRegister
+{
+  pattern: '/duskybeacon6/lamp-watch-register';
+  title: 'Dusky Beacon - Lamp Watch Register';
+  documentation: 'Publishes the standing watches over one beacon lamp, keeping only the watches that were kept and that burned for longer than the supplied minimum, with the burn hours and sighted distance defaulted in the mapping.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'lamp-watch-register',
+    'coast-beacon-keepers'
+  ];
+  execution: Single
+  {
+    query: {lampCode: String[1], minBurnHours: Integer[1]|test::duskybeacon6::domain::LampWatch.all()->filter(
+      w|($w.lampCode == $lampCode) && (($w.watchState == 'KEPT') && ($w.burnHours > $minBurnHours))
+    )->project(
+      [
+        w|$w.watchCode,
+        w|$w.keeperName,
+        w|$w.burnHours,
+        w|$w.sightedKm
+      ],
+      [
+        'WatchCode',
+        'Keeper',
+        'BurnHours',
+        'SightedKm'
+      ]
+    )->sort(
+      [
+        asc('WatchCode')
+      ]
+    )};
+    mapping: test::duskybeacon6::mapping::BeaconMapping;
+    runtime: test::duskybeacon6::runtime::BeaconCoastRuntime;
+  }
+  testSuites:
+  [
+    lampWatchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconCoastConnection:
+            Relational
+            #{
+              beacon.lamp_watch:
+                'watch_id,watch_code,lamp_code,keeper_name,watch_state,burn_hours,sighted_km,logged_on\n'+
+                '1,WT-01,LP-NORTH,Ada Fathom,KEPT,9,28.5,2026-03-01\n'+
+                '2,WT-02,LP-NORTH,Bram Shoal,KEPT,4,17.25,2026-03-02\n'+
+                '3,WT-03,LP-NORTH,Cai Larkin,STOOD DOWN,11,30.0,2026-03-03\n'+
+                '4,WT-04,LP-SOUTH,Dara Reef,KEPT,12,33.75,2026-03-04\n'+
+                '5,WT-05,LP-NORTH,Esk Marrow,KEPT,,,2026-03-05\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyKeptWatchesOverTheBurnFloorOnTheRequestedLamp:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            lampCode = 'LP-NORTH',
+            minBurnHours = 5
+          ]
+          asserts:
+          [
+            oneKeptWatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"WatchCode":"WT-01","Keeper":"Ada Fathom","BurnHours":9,"SightedKm":28.5}]';
+                  }#;
+              }#
+          ]
+        },
+        theDefaultedNullBurnHoursFallsUnderEveryPositiveFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            lampCode = 'LP-NORTH',
+            minBurnHours = 1
+          ]
+          asserts:
+          [
+            twoKeptWatches:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"WatchCode":"WT-01","Keeper":"Ada Fathom","BurnHours":9,"SightedKm":28.5},{"WatchCode":"WT-02","Keeper":"Bram Shoal","BurnHours":4,"SightedKm":17.25}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

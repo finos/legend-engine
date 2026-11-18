@@ -1,0 +1,48 @@
+name: wistful-aviary-2
+title: "Wistful Aviary Herbarium Seed Vault"
+description: |
+  Botanical garden herbarium model for accession records, seed lots, and vault
+  visibility. It combines included relational mappings, joined-table inheritance,
+  association implementation, enumeration labels, nested joins, and processing-temporal
+  visibility in a deterministic mapping test. The accession class mapping carries a store filter
+  that keeps only open rows, and the seed-lot mapping extends the accession implementation so it
+  inherits its identity and property bindings.
+modelSources:
+  model:
+    root: wistful-aviary-2
+    files:
+      - test/wistfulaviary2/domain/HerbariumDomain.pure
+      - test/wistfulaviary2/mapping/HerbariumBaseMapping.pure
+      - test/wistfulaviary2/mapping/HerbariumMapping.pure
+      - test/wistfulaviary2/profile/GardenProfile.pure
+      - test/wistfulaviary2/store/HerbariumDb.pure
+features:
+  - execution:mapping-test
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - store:relational-filter
+  - mapping:relational-joined-table-inheritance
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-subtype-extends
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - botanical-garden
+  - h2
+  - herbarium
+  - inheritance
+  - processing-temporal
+  - seed-vault

@@ -1,0 +1,29 @@
+name: cedar-estuary-generation
+title: "Cedar Estuary — Basic EMIT model (constrained classes, JSON-schema file generation & generation specification)"
+description: |
+  A basic non-financial EMIT model in an estuary navigation domain. It materialises two
+  domain classes (a channel with positive-dimension constraints and a reach), a JSON-schema
+  file generation over the domain package (constraints included), and its generation
+  specification. The model has no testable elements; it is validated by compiling the model
+  and running the JSON-schema file-generation artifact task.
+modelSources:
+  model:
+    root: cedar-estuary-generation
+    files:
+      - test/cedarestuary/domain/Estuary.pure
+      - test/cedarestuary/generation/EstuaryGenerationSpecification.pure
+      - test/cedarestuary/generation/EstuaryJsonSchema.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:constraint
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - cedar
+  - constraint
+  - estuary
+  - file-generation
+  - generation-specification
+  - json-schema

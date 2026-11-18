@@ -1,0 +1,51 @@
+name: kindly-vineyard-2
+title: "Kindly Vineyard Transit Network"
+description: |
+  An urban transit planning model connecting stops, corridors, hubs and vehicle
+  runs through a relational registry. The mapped stop view reaches a district
+  label over a two-hop join and the including mapping adds route summaries for
+  a grouped planning service.
+modelSources:
+  model:
+    root: kindly-vineyard-2
+    files:
+      - test/kindlyvineyard2/connection/TransitConnections.pure
+      - test/kindlyvineyard2/dataspace/TransitDataSpace.pure
+      - test/kindlyvineyard2/domain/TransitDomain.pure
+      - test/kindlyvineyard2/mapping/TransitMapping.pure
+      - test/kindlyvineyard2/relational/TransitDatabase.pure
+      - test/kindlyvineyard2/runtime/TransitRuntime.pure
+      - test/kindlyvineyard2/service/TransitService.pure
+stores:
+  - relational
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-multi-table
+complexity: advanced
+tags:
+  - data-space
+  - h2
+  - inner-join
+  - mapping-include
+  - multi-hop-transit
+  - relational-planning
+  - service-query
+  - transit-registry

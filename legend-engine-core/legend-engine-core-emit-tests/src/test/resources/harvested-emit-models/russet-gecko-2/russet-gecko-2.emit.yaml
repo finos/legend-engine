@@ -1,0 +1,44 @@
+name: russet-gecko-2
+title: "Russet Gecko 2 - Store-less reptile survey register mixing a bi-temporal colony family with a business-temporal observation hierarchy"
+description: |
+  A reserve's reptile survey register held as model grammar only: an abstract business-temporal
+  observation row refined by eight stratum siblings that add nothing of their own, two barrier
+  kinds refining two different abstract parents, a permit reach adding seven properties to a
+  concrete permit, and a tract grouping that re-declares its own type at unbounded cardinality
+  so the grouping nests to any depth.
+  A second family carries both a calendar and a processing window: an abstract bi-temporal
+  colony assertion and its census subclass, so a corrected count leaves two rows distinguishable
+  only by processing window and a traversal from a tract bridges a one-instant extent to a
+  two-instant one.
+  Four closed vocabularies type the properties - a nine-value habitat stratum the association
+  fan-out mirrors one pair per stratum, a two-value barrier kind, a permit action set and a
+  reach-derivation basis. Two profiles carry stereotypes and documentation tags on nearly every
+  class, property, association and enumeration, and one association is left undocumented so both
+  the annotated and the bare declaration are exercised.
+modelSources:
+  model:
+    root: russet-gecko-2
+    files:
+      - test/russetgecko2/domain/SurveyDomain.pure
+      - test/russetgecko2/profile/SurveyProfiles.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - bi-temporal
+  - business-temporal
+  - class-inheritance
+  - custom-profile
+  - enumeration
+  - milestoned-association
+  - model-only
+  - optional-association-end
+  - recursive-grouping
+  - reptile-survey

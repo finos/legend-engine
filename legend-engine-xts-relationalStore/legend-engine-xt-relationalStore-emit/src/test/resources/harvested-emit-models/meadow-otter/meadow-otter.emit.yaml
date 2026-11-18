@@ -1,0 +1,45 @@
+name: meadow-otter
+title: "Meadow Otter — Multi-Execution Service over a Filtered Relational Projection"
+description: |
+  A wetland-meadow otter-tracking corpus over an H2 store. A keyed
+  multi-execution service filters recently seen otters by a supplied habitat
+  set and status, conjoining a membership test with a current-instant lower
+  bound before projecting a column list. A single-execution counterpart and a
+  mapping testSuite assert the projection over the relational primary-key
+  mapping, driving EMIT test execution and execution-plan generation.
+modelSources:
+  model:
+    root: meadow-otter
+    files:
+      - test/meadowotter/connection/MeadowConnection.pure
+      - test/meadowotter/domain/OtterDomain.pure
+      - test/meadowotter/mapping/OtterMapping.pure
+      - test/meadowotter/runtime/MeadowRuntime.pure
+      - test/meadowotter/service/OtterServices.pure
+      - test/meadowotter/store/MeadowDatabase.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - multi-execution
+  - otter
+  - plan-generation
+  - relational
+  - service-test
+  - wildlife-tracking

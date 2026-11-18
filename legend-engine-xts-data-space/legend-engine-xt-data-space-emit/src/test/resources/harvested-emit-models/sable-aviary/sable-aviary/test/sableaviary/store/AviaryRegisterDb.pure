@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::sableaviary::store::AviaryRegisterDb
+(
+  Schema aviary
+  (
+    Table ringed_bird
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      bird_id INTEGER PRIMARY KEY,
+      ring_code VARCHAR(24),
+      species_code VARCHAR(8),
+      enclosure_code VARCHAR(8),
+      wing_span_cm INTEGER,
+      mass_grams INTEGER,
+      ringed_on DATE,
+      keeper_note VARCHAR(256),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+    Table enclosure
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      enclosure_code VARCHAR(8) PRIMARY KEY,
+      enclosure_name VARCHAR(128),
+      shift_code VARCHAR(8),
+      perch_count INTEGER,
+      cover_note VARCHAR(256),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+    Table feed_batch
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      batch_id INTEGER PRIMARY KEY,
+      batch_code VARCHAR(16),
+      enclosure_code VARCHAR(8),
+      feed_kind VARCHAR(16),
+      kilograms INTEGER,
+      delivered_on DATE,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+    Table species_guide
+    (
+      species_code VARCHAR(8) PRIMARY KEY,
+      species_name VARCHAR(128),
+      diet_code VARCHAR(8),
+      flight_class VARCHAR(16)
+    )
+    Table keeper_shift
+    (
+      shift_code VARCHAR(8) PRIMARY KEY,
+      shift_name VARCHAR(64),
+      keeper_name VARCHAR(128)
+    )
+  )
+
+  Join Bird_Enclosure(aviary.ringed_bird.enclosure_code = aviary.enclosure.enclosure_code)
+  Join Bird_Species(aviary.ringed_bird.species_code = aviary.species_guide.species_code)
+  Join Enclosure_Shift(aviary.enclosure.shift_code = aviary.keeper_shift.shift_code)
+  Join Feed_Enclosure(aviary.feed_batch.enclosure_code = aviary.enclosure.enclosure_code)
+)

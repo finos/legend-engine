@@ -1,0 +1,159 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::crimsonfossil4::domain::*;
+import test::crimsonfossil4::profile::*;
+
+Class <<DigVocabulary.publishedSurface, DigGovernance.curatorReviewed>> {DigGovernance.reviewCycle = 'seasonal'} test::crimsonfossil4::domain::SpecimenRecord
+[
+  catalogCodeShape
+  (
+    ~function: ($this.catalogCode->length() == 8) &&
+               ($this.catalogCode->substring(0, 3) == 'FSL') &&
+               ($this.catalogCode->substring(3, 4) == '-') &&
+               ($this.catalogCode->toUpper() == $this.catalogCode) &&
+               !$this.catalogCode->endsWith('-')
+    ~enforcementLevel: Error
+    ~message: 'Catalog code ' + $this.catalogCode + ' must be an eight-character quarry code of the form FSL-nnnn in upper case'
+  ),
+  specimenLabelCarriesWord
+  (
+    ~function: ($this.specimenLabel->trim()->length() > 3) &&
+               ($this.specimenLabel->toLower()->substring(0, 1) >= 'a') &&
+               ($this.specimenLabel->toLower()->substring(0, 1) <= 'z')
+    ~enforcementLevel: Error
+    ~message: 'Specimen ' + $this.catalogCode + ' must carry a label of more than three trimmed characters beginning with a letter'
+  ),
+  collectedNoLaterThanLogged
+  (
+    ~function: $this.collectedOn->isEmpty() || $this.loggedOn->isEmpty() || ($this.collectedOn->toOne() <= $this.loggedOn->toOne())
+    ~enforcementLevel: Error
+    ~message: 'Specimen ' + $this.catalogCode + ' cannot be collected after the day it was logged into the register'
+  ),
+  reviewedSpecimenNamesPreparator
+  (
+    ~function: if($this.reviewRequired->isEmpty(),
+                  | true,
+                  | if(!$this.reviewRequired->toOne(),
+                       | true,
+                       | $this.preparators->exists(p | $this.preparatorRole->isNotEmpty() && ($p.preparatorCode->trim()->length() > 0))))
+    ~enforcementLevel: Error
+    ~message: 'Specimen ' + $this.catalogCode + ' is flagged for review, so it must name a preparator role and a coded preparator'
+  ),
+  referenceGradeSpecimenIsTallied
+  (
+    ~function: $this.visits->filter(v | $v.surveyMethod == SurveyMethod.TRENCH)->isEmpty() ||
+               ($this.visits->filter(v | $v.surveyMethod == SurveyMethod.TRENCH)->map(v | $v.tallies)->filter(t | $t.countedItems->isNotEmpty())->size() > 0)
+    ~enforcementLevel: Warn
+    ~message: 'Specimen ' + $this.catalogCode + ' was recovered on a trench survey, so at least one tally of that visit must record counted items'
+  ),
+  massAgreesWithFragmentCount
+  (
+    ~function: $this.massGrams->isEmpty() || $this.fragmentCount->isEmpty() || (($this.massGrams->toOne() > 0.0) == ($this.fragmentCount->toOne() > 0))
+    ~enforcementLevel: Warn
+    ~message: 'Specimen ' + $this.catalogCode + ' records a mass and a fragment count that disagree on whether anything was recovered at all'
+  )
+]
+{
+  {DigVocabulary.displayName = 'Catalog Code', DigVocabulary.targetName = 'catalog_code'} catalogCode: String[1];
+  {DigVocabulary.displayName = 'Specimen Label', DigVocabulary.targetName = 'specimen_label'} specimenLabel: String[1];
+  {DigVocabulary.description = 'The rock matrix the specimen was cut out of.'} matrix: MatrixType[1];
+  preservation: PreservationMode[1];
+  collectedOn: StrictDate[0..1];
+  loggedOn: StrictDate[0..1];
+  reviewRequired: Boolean[0..1];
+  preparatorRole: String[0..1];
+  massGrams: Float[0..1];
+  fragmentCount: Integer[0..1];
+  specimenTag() {$this.catalogCode->toUpper() + '/' + $this.specimenLabel->trim()}: String[1];
+  custodianRole() {if($this.preparatorRole->isEmpty(), | 'UNASSIGNED', | $this.preparatorRole->toOne())}: String[1];
+  talliedTaxaOnRecord()
+  {
+    ($this.visits->map(v | $v.tallies)->filter(t | $t.countedItems->isNotEmpty())->map(t | $t.taxonCode)->count() > 1) ||
+    ($this.visits->map(v | $v.tallies)->filter(t | $t.plateCount->isNotEmpty())->map(t | $t.taxonCode)->count() > 0)
+  }: Boolean[1];
+}
+
+Class <<DigVocabulary.publishedSurface>> test::crimsonfossil4::domain::BoneSpecimen extends SpecimenRecord
+{
+  boneCount: Integer[0..1];
+  longestBoneMm: Float[0..1];
+  averageBoneLengthMm() {if($this.boneCount->toOne() > 0, | $this.longestBoneMm->toOne() / $this.boneCount->toOne()->toFloat(), | 0.0)}: Float[1];
+}
+
+Class <<DigVocabulary.publishedSurface>> test::crimsonfossil4::domain::ImprintSpecimen extends SpecimenRecord
+{
+  plateAreaCm2: Float[1];
+  impressionCount: Integer[0..1];
+  impressionsPerHundredCm2() {if($this.plateAreaCm2 > 0.0, | ($this.impressionCount->toOne()->toFloat() / $this.plateAreaCm2) * 100.0, | 0.0)}: Float[1];
+}
+
+Class <<DigVocabulary.publishedSurface>> test::crimsonfossil4::domain::DigVisit
+[
+  plannedNoLaterThanWalked
+  (
+    ~function: $this.plannedOn->isEmpty() || ($this.plannedOn->toOne() <= $this.visitedOn)
+    ~enforcementLevel: Error
+    ~message: 'Visit ' + $this.visitCode + ' cannot be planned for a date after the day the quarry face was worked'
+  ),
+  sieveVisitCarriesNoTallies
+  (
+    ~function: !($this.surveyMethod == SurveyMethod.SIEVE) || $this.tallies->filter(t | $t.countedItems->isNotEmpty() || $t.plateCount->isNotEmpty())->isEmpty()
+    ~enforcementLevel: Error
+    ~message: 'Visit ' + $this.visitCode + ' was a spoil-heap sieve pass, so it must not carry tallied taxa'
+  )
+]
+{
+  {DigVocabulary.displayName = 'Visit Code', DigVocabulary.targetName = 'visit_code'} visitCode: String[1];
+  visitedOn: StrictDate[1];
+  plannedOn: StrictDate[0..1];
+  band: StratumBand[1];
+  surveyMethod: SurveyMethod[1];
+  effectiveOn() {if($this.plannedOn->isNotEmpty(), | $this.plannedOn->toOne(), | $this.visitedOn)}: StrictDate[1];
+  talliedItems() {$this.tallies->map(t | $t.countedItems)->filter(i | $i > 0)->sum()}: Integer[1];
+}
+
+Class <<DigVocabulary.internalSurface>> test::crimsonfossil4::domain::SpecimenTally
+[
+  talliedPresenceAgrees
+  (
+    ~function: $this.countedItems->isEmpty() || $this.plateCount->isEmpty() || (($this.countedItems->toOne() > 0) == ($this.plateCount->toOne() > 0))
+    ~enforcementLevel: Warn
+    ~message: 'Tally of ' + $this.taxonCode + ' records counted items and plates that disagree on whether the taxon was present at all'
+  )
+]
+{
+  taxonCode: String[1];
+  countedItems: Integer[0..1];
+  plateCount: Integer[0..1];
+  anyTallyRecorded() {$this.countedItems->isNotEmpty() || $this.plateCount->isNotEmpty()}: Boolean[1];
+}
+
+Class <<DigVocabulary.internalSurface>> test::crimsonfossil4::domain::SpecimenPreparator
+{
+  preparatorCode: String[1];
+  preparatorName: String[1];
+}
+
+Class <<DigVocabulary.internalSurface>> test::crimsonfossil4::domain::QuarryObserver
+{
+  observerCode: String[1];
+  observerName: String[1];
+  trainedTaxonCodes: String[*];
+  recognisedTalliedTaxa()
+  {
+    $this.visits->map(v | $v.tallies)->filter(t | $t.taxonCode->in($this.trainedTaxonCodes))->size()
+  }: Integer[1];
+}

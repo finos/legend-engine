@@ -1,0 +1,47 @@
+name: sable-lighthouse-2
+title: "Sable Lighthouse 2 - Museum Conservation Cases Split by Store Filters and Chained Joins"
+description: |
+  A museum conservation workshop whose case table holds treatment and survey rows
+  together. Store filters split it into two classes, one excluding cancelled cases and
+  the other requiring a minimum priority. The workshop store includes a separate
+  conservator store and joins across it, so a treatment case reaches its conservator by a
+  cross-store join and a workshop note reaches the same conservator by chaining a
+  note-to-case join, which also rejects voided notes by a literal condition, with the
+  case-to-conservator join. Mapping tests cover filtered splits, unmatched keys and both
+  complete and broken join chains.
+modelSources:
+  model:
+    root: sable-lighthouse-2
+    files:
+      - test/sable-lighthouse-2/connection/WorkshopConnection.pure
+      - test/sable-lighthouse-2/domain/WorkshopDomain.pure
+      - test/sable-lighthouse-2/mapping/WorkshopMapping.pure
+      - test/sable-lighthouse-2/runtime/WorkshopRuntime.pure
+      - test/sable-lighthouse-2/store/WorkshopStores.pure
+features:
+  - store:relational-filter
+  - mapping:relational-join-path
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-store-join
+  - store:relational-join
+  - store:relational-join-literal-condition
+  - store:relational-store-include
+stores:
+  - relational
+complexity: basic
+tags:
+  - class-mapping-filter
+  - conservation-workshop
+  - cross-store-join
+  - h2
+  - multi-hop-join
+  - relational
+  - store-include
+  - tabular-data-set

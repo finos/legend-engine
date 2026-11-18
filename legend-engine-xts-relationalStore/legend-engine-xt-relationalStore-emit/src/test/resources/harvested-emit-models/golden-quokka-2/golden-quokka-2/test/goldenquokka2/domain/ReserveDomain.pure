@@ -1,0 +1,137 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::goldenquokka2::domain::BurrowCondition
+{
+  SOUND,
+  SETTLING,
+  MINOR_COLLAPSE,
+  MAJOR_COLLAPSE,
+  FLOODED,
+  SILTED,
+  ABANDONED,
+  REOCCUPIED
+}
+
+Enum test::goldenquokka2::domain::HabitatKind
+{
+  HEATH,
+  DUNE,
+  RIPARIAN,
+  WOODLAND
+}
+
+Enum test::goldenquokka2::domain::ForageQuality
+{
+  RICH,
+  ADEQUATE,
+  SPARSE
+}
+
+Enum test::goldenquokka2::domain::WardenGrade
+{
+  SENIOR,
+  JUNIOR,
+  HONORARY
+}
+
+Class test::goldenquokka2::domain::Burrow
+{
+  burrowCode: String[1];
+  burrowName: String[1];
+  zoneCode: String[1];
+  entranceCount: Integer[1];
+  condition: test::goldenquokka2::domain::BurrowCondition[0..1];
+  conditionNote: String[0..1];
+  siltNote: String[0..1];
+  labelText: String[1];
+  speciesCommonName: String[0..1];
+}
+
+Class test::goldenquokka2::domain::HabitatZone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+  hectares: Float[1];
+  kind: test::goldenquokka2::domain::HabitatKind[0..1];
+}
+
+Class test::goldenquokka2::domain::BurrowInspection
+{
+  inspectionCode: String[1];
+  burrowCode: String[1];
+  inspectedOn: StrictDate[1];
+  depthCm: Float[1];
+  wardenGrade: test::goldenquokka2::domain::WardenGrade[0..1];
+}
+
+Class test::goldenquokka2::domain::ForageRecord
+{
+  recordCode: String[1];
+  burrowCode: String[1];
+  grams: Float[1];
+  quality: test::goldenquokka2::domain::ForageQuality[0..1];
+}
+
+Class test::goldenquokka2::domain::Warden
+{
+  wardenCode: String[1];
+  wardenName: String[1];
+}
+
+Class test::goldenquokka2::domain::SpeciesReference
+{
+  speciesCode: String[1];
+  commonName: String[1];
+  familyName: String[1];
+}
+
+Class test::goldenquokka2::domain::ReserveSector
+{
+  sectorCode: String[1];
+  sectorName: String[1];
+  regionName: String[1];
+}
+
+Class test::goldenquokka2::domain::ReserveGate
+{
+  gateCode: String[1];
+  sectorCode: String[1];
+  gateName: String[1];
+}
+
+Association test::goldenquokka2::domain::Burrow_Inspections
+{
+  inspections: test::goldenquokka2::domain::BurrowInspection[*];
+  burrow: test::goldenquokka2::domain::Burrow[1];
+}
+
+Association test::goldenquokka2::domain::Burrow_Species
+{
+  burrows: test::goldenquokka2::domain::Burrow[*];
+  species: test::goldenquokka2::domain::SpeciesReference[1];
+}
+
+Association test::goldenquokka2::domain::Inspection_Warden
+{
+  wardenInspections: test::goldenquokka2::domain::BurrowInspection[*];
+  warden: test::goldenquokka2::domain::Warden[1];
+}
+
+Association test::goldenquokka2::domain::Forage_Species
+{
+  forageRecords: test::goldenquokka2::domain::ForageRecord[*];
+  forageSpecies: test::goldenquokka2::domain::SpeciesReference[1];
+}

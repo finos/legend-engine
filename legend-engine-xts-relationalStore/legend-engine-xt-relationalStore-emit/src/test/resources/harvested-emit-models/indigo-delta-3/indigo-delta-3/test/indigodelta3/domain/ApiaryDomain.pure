@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::indigodelta3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'One recorded visit to a beehive, carrying the stewardship, shelter and forage verdicts derived for the yard the hive stands in.'} test::indigodelta3::domain::HiveInspection
+{
+  hiveTag: String[1];
+  yardCode: String[1];
+  broodPattern: String[1];
+  miteWashCount: Integer[1];
+  superCount: Integer[1];
+  hiveLabel: String[1];
+  registerSource: String[1];
+  stewardStatus: String[1];
+  shelterStatus: String[1];
+  forageZoneStatus: String[1];
+  yardNameStatus: String[1];
+  yardLinkStatus: String[1];
+  sampleStatus: String[1];
+  yieldStatus: String[1];
+  topSourceStatus: String[1];
+  forageLinkStatus: String[1];
+  surveyStatus: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A standing ground the hives are placed on, with the steward who works it and the shelter note recorded for it.'} test::indigodelta3::domain::HiveYard
+{
+  yardCode: String[1];
+  yardName: String[0..1];
+  forageZone: String[0..1];
+  stewardName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Aggregated forage sampling for one yard, read from a grouped inline view over the sample table.'} test::indigodelta3::domain::YardForage
+{
+  yardCode: String[1];
+  sampleCount: Integer[1];
+  totalGramYield: Integer[1];
+  topSource: String[1];
+}

@@ -1,0 +1,50 @@
+name: golden-isle-3
+title: "Golden Isle 3 - Observatory Queue Vocabulary With A Four-Level Record Hierarchy And One Laid-Out View"
+description: |
+  A store-less mountain-observatory queue vocabulary: the whole model is a class and enumeration
+  domain plus one visual layout over it, so the exercised surface is compile-time referential
+  integrity and protocol round-tripping rather than execution.
+
+  A four-level record hierarchy carries the domain. A shared observatory record fixes the record
+  identity, the night it belongs to and the site it was logged at; an observing programme extends
+  it with the approved telescope, the requested band, the review state and the investigator list;
+  a scheduled block extends that with the slot, the instrument and the recorded sky grade; and two
+  leaf types extend the block in turn, one pointing at a catalogued target through a named filter
+  and one exposing the detector against a lamp or the twilight sky. Properties and derived
+  properties are therefore bound several levels above the concrete type that declares them.
+
+  Three closed enumerations fix the vocabularies the hierarchy depends on: the wavelength regime a
+  programme requests, the review state a submitted programme moves through, and the sky-quality
+  grade the night assistant records. Eight small reference and inbound shapes complete the domain
+  as identifier and label pairs, two flat monitor rows and one rolled-up night summary of counts
+  and hours.
+
+  One diagram lays the domain out. Four generalization views draw the hierarchy edge by edge and
+  seven property views connect the records to their reference shapes, including two views that
+  resolve onto the same investigator view through a to-one and a to-many property, so every class
+  view and property view has to resolve against a class and a property that actually exist.
+
+modelSources:
+  model:
+    root: golden-isle-3
+    files:
+      - test/goldenisle3/diagram/ObservatoryDiagram.pure
+      - test/goldenisle3/domain/ObservatoryDomain.pure
+      - test/goldenisle3/domain/ObservatoryReference.pure
+
+features:
+  - grammar:class-inheritance
+  - grammar:diagram
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-view
+  - deep-inheritance-chain
+  - diagram
+  - enumeration
+  - generalization-view
+  - observatory-queue
+  - property-view
+  - store-less

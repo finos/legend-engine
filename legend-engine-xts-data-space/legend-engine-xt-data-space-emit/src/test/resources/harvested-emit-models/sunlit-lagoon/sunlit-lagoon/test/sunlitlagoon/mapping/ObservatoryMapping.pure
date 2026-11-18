@@ -1,0 +1,240 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitlagoon::mapping::ObservatoryMapping
+(
+  include test::sunlitlagoon::mapping::ObservatoryBaseMapping
+
+  *test::sunlitlagoon::domain::Observation[observation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitlagoon::store::ObservatoryDb]sky.observation.observation_id
+    )
+    ~mainTable [test::sunlitlagoon::store::ObservatoryDb]sky.observation
+    obsRef: concat('OBS-', toUpper(trim([test::sunlitlagoon::store::ObservatoryDb]sky.observation.obs_ref))),
+    targetName: toUpper(trim(replace(coalesce([test::sunlitlagoon::store::ObservatoryDb]sky.observation.target_name, 'unknown target'), '_', ' '))),
+    capturedOn: [test::sunlitlagoon::store::ObservatoryDb]sky.observation.captured_on,
+    seeingArcsec: [test::sunlitlagoon::store::ObservatoryDb]sky.observation.seeing_arcsec,
+    exposureSeconds: [test::sunlitlagoon::store::ObservatoryDb]sky.observation.exposure_seconds,
+    programCode: toUpper(trim(coalesce([test::sunlitlagoon::store::ObservatoryDb]sky.observation.program_code, 'unassigned')))
+  }
+
+  test::sunlitlagoon::domain::Telescope[telescope]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitlagoon::store::ObservatoryDb]sky.telescope.telescope_code
+    )
+    ~mainTable [test::sunlitlagoon::store::ObservatoryDb]sky.telescope
+    telescopeCode: [test::sunlitlagoon::store::ObservatoryDb]sky.telescope.telescope_code,
+    telescopeName: toUpper(trim([test::sunlitlagoon::store::ObservatoryDb]sky.telescope.telescope_name)),
+    apertureMm: [test::sunlitlagoon::store::ObservatoryDb]sky.telescope.aperture_mm
+  }
+
+  test::sunlitlagoon::domain::ServiceVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitlagoon::store::ObservatoryDb]ops.service_visit.visit_id
+    )
+    ~mainTable [test::sunlitlagoon::store::ObservatoryDb]ops.service_visit
+    visitRef: [test::sunlitlagoon::store::ObservatoryDb]ops.service_visit.visit_ref,
+    visitKind: toUpper([test::sunlitlagoon::store::ObservatoryDb]ops.service_visit.visit_kind),
+    durationMinutes: [test::sunlitlagoon::store::ObservatoryDb]ops.service_visit.duration_minutes
+  }
+
+  test::sunlitlagoon::domain::Observation_Telescope: Relational
+  {
+    AssociationMapping
+    (
+      observationsOfTelescope[telescope, observation]: [test::sunlitlagoon::store::ObservatoryDb]@Observation_Telescope,
+      telescopeOfObservation[observation, telescope]: [test::sunlitlagoon::store::ObservatoryDb]@Observation_Telescope
+    )
+  }
+
+  test::sunlitlagoon::domain::Telescope_Site: Relational
+  {
+    AssociationMapping
+    (
+      telescopesOfSite[site, telescope]: [test::sunlitlagoon::store::ObservatoryDb]@Telescope_Site,
+      siteOfTelescope[telescope, site]: [test::sunlitlagoon::store::ObservatoryDb]@Telescope_Site
+    )
+  }
+
+  test::sunlitlagoon::domain::Visit_Site: Relational
+  {
+    AssociationMapping
+    (
+      visitsOfSite[site, visit]: [test::sunlitlagoon::store::ObservatoryDb]@Visit_Site,
+      siteOfVisit[visit, site]: [test::sunlitlagoon::store::ObservatoryDb]@Visit_Site
+    )
+  }
+
+  testSuites:
+  [
+    observationRegisterSuite:
+    {
+      function: |test::sunlitlagoon::domain::Observation.all()->project(
+        [
+          o|$o.obsRef,
+          o|$o.targetName,
+          o|$o.capturedOn,
+          o|$o.seeingArcsec,
+          o|$o.programCode,
+          o|$o.qualityBand(),
+          o|$o.longExposure(),
+          o|$o.exposureBand(600),
+          o|$o.displayLabel(),
+          o|$o.telescopeOfObservation.telescopeName,
+          o|$o.telescopeOfObservation.apertureClass(),
+          o|$o.telescopeOfObservation.siteOfTelescope.siteName,
+          o|$o.telescopeOfObservation.siteOfTelescope.altitudeBand(),
+          o|$o.telescopeOfObservation.siteOfTelescope.stewardOfSite.stewardName
+        ],
+        [
+          'ObsRef',
+          'TargetName',
+          'CapturedOn',
+          'SeeingArcsec',
+          'ProgramCode',
+          'QualityBand',
+          'LongExposure',
+          'ExposureBand',
+          'DisplayLabel',
+          'TelescopeName',
+          'ApertureClass',
+          'SiteName',
+          'AltitudeBand',
+          'StewardName'
+        ]
+      )->sort(
+        [
+          asc('ObsRef')
+        ]
+      );
+      tests:
+      [
+        eachObservationBandsItsOwnAttributesAndReachesItsSiteAcrossTheTwoNamespaces:
+        {
+          doc: 'Four observations: three reach a telescope, one of them a site whose steward row is missing, one names a telescope code no telescope row carries so every stored attribute reached through the path is absent while the derivations over those absent attributes still evaluate and fall to their final branch, and one carries no seeing measure and no target text so the banding and the defaulted label take their absent paths.';
+          data:
+          [
+            test::sunlitlagoon::store::ObservatoryDb:
+              Relational
+              #{
+                sky.observation:
+                  'observation_id,obs_ref,target_name,captured_on,seeing_arcsec,exposure_seconds,program_code,telescope_code\n'+
+                  '1,o-1, vega ,2026-04-02,0.8,900,deep,T1\n'+
+                  '2,o-2,altair,2026-04-03,1.4,300,survey,T1\n'+
+                  '3,o-3,rigel_b,2026-04-04,2.7,1200,deep,T2\n'+
+                  '4,o-4,,2026-04-05,,600,,T9\n';
+                sky.telescope:
+                  'telescope_code,telescope_name,aperture_mm,site_code\n'+
+                  'T1,Ridge Reflector,1200,S1\n'+
+                  'T2,Basin Refractor,600,S2\n';
+                ops.site:
+                  'site_code,site_name,altitude_m,status_code,steward_id\n'+
+                  'S1,Lagoon Ridge,2400,open,1\n'+
+                  'S2,Sunlit Basin,1200,open,9\n'+
+                  'S3,Closed Annex,900,CLOSED,1\n';
+                ops.steward:
+                  'steward_id,steward_name,contact_code\n'+
+                  '1,ada north,c1\n';
+              }#
+          ];
+          asserts:
+          [
+            registerRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ObsRef":"OBS-O-1","TargetName":"VEGA","CapturedOn":"2026-04-02","SeeingArcsec":0.8,"ProgramCode":"DEEP","QualityBand":"PRISTINE","LongExposure":true,"ExposureBand":"DEEP","DisplayLabel":"OBS-O-1 / VEGA","TelescopeName":"RIDGE REFLECTOR","ApertureClass":"LARGE","SiteName":"LAGOON RIDGE","AltitudeBand":"HIGH","StewardName":"ADA NORTH"},{"ObsRef":"OBS-O-2","TargetName":"ALTAIR","CapturedOn":"2026-04-03","SeeingArcsec":1.4,"ProgramCode":"SURVEY","QualityBand":"GOOD","LongExposure":false,"ExposureBand":"SHALLOW","DisplayLabel":"OBS-O-2 / ALTAIR","TelescopeName":"RIDGE REFLECTOR","ApertureClass":"LARGE","SiteName":"LAGOON RIDGE","AltitudeBand":"HIGH","StewardName":"ADA NORTH"},{"ObsRef":"OBS-O-3","TargetName":"RIGEL B","CapturedOn":"2026-04-04","SeeingArcsec":2.7,"ProgramCode":"DEEP","QualityBand":"POOR","LongExposure":true,"ExposureBand":"DEEP","DisplayLabel":"OBS-O-3 / RIGEL B","TelescopeName":"BASIN REFRACTOR","ApertureClass":"MEDIUM","SiteName":"SUNLIT BASIN","AltitudeBand":"MID","StewardName":null},{"ObsRef":"OBS-O-4","TargetName":"UNKNOWN TARGET","CapturedOn":"2026-04-05","SeeingArcsec":null,"ProgramCode":"UNASSIGNED","QualityBand":"UNKNOWN","LongExposure":true,"ExposureBand":"DEEP","DisplayLabel":"OBS-O-4 / UNKNOWN TARGET","TelescopeName":null,"ApertureClass":"SMALL","SiteName":null,"AltitudeBand":"LOW","StewardName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    siteVisitSuite:
+    {
+      function: |test::sunlitlagoon::domain::ServiceVisit.all()->project(
+        [
+          v|$v.visitRef,
+          v|$v.visitKind,
+          v|$v.durationMinutes,
+          v|$v.siteOfVisit.siteName,
+          v|$v.siteOfVisit.statusCode,
+          v|$v.siteOfVisit.stewardOfSite.contactCode
+        ],
+        [
+          'VisitRef',
+          'VisitKind',
+          'DurationMinutes',
+          'SiteName',
+          'StatusCode',
+          'ContactCode'
+        ]
+      )->sort(
+        [
+          asc('VisitRef')
+        ]
+      );
+      tests:
+      [
+        aVisitAtAClosedSiteLosesEveryTraversedAttributeToTheStoreFilter:
+        {
+          doc: 'Three visits: one at an open site with a steward, one at an open site whose steward row is missing, and one at a closed site the named store filter removes, so its traversed stored attributes are absent even though the visit row survives, while the prefixing transform over an absent contact code yields the prefix alone.';
+          data:
+          [
+            test::sunlitlagoon::store::ObservatoryDb:
+              Relational
+              #{
+                ops.service_visit:
+                  'visit_id,visit_ref,visit_kind,duration_minutes,site_code\n'+
+                  '1,SV-01,mirror wash,90,S1\n'+
+                  '2,SV-02,dome seal,45,S2\n'+
+                  '3,SV-03,decommission,240,S3\n';
+                ops.site:
+                  'site_code,site_name,altitude_m,status_code,steward_id\n'+
+                  'S1,Lagoon Ridge,2400,open,1\n'+
+                  'S2,Sunlit Basin,1200,open,9\n'+
+                  'S3,Closed Annex,900,CLOSED,1\n';
+                ops.steward:
+                  'steward_id,steward_name,contact_code\n'+
+                  '1,ada north,c1\n';
+              }#
+          ];
+          asserts:
+          [
+            visitRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VisitRef":"SV-01","VisitKind":"MIRROR WASH","DurationMinutes":90,"SiteName":"LAGOON RIDGE","StatusCode":"OPEN","ContactCode":"C-C1"},{"VisitRef":"SV-02","VisitKind":"DOME SEAL","DurationMinutes":45,"SiteName":"SUNLIT BASIN","StatusCode":"OPEN","ContactCode":"C-"},{"VisitRef":"SV-03","VisitKind":"DECOMMISSION","DurationMinutes":240,"SiteName":null,"StatusCode":null,"ContactCode":"C-"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralprairie::service::ZoneRegisterService
+{
+  pattern: '/prairie/v1/zones';
+  title: 'Coral Prairie - Management zone register';
+  owners:
+  [
+    'prairie-restoration',
+    'burn-desk'
+  ];
+  documentation: 'Publishes the management zone register as a tabular projection, restricting the zone type to its own column list and reaching the burn unit through the implemented zone association.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralprairie::domain::ManagementZone.all()->project(
+      [
+        z|$z.zoneCode,
+        z|$z.zoneName,
+        z|$z.burnUnit.burnName,
+        z|$z.burnUnit.rotationYears
+      ],
+      [
+        'ZoneCode',
+        'Zone',
+        'BurnUnit',
+        'RotationYears'
+      ]
+    )->sort(
+      [
+        asc('ZoneCode')
+      ]
+    );
+    mapping: test::coralprairie::mapping::PrairieMapping;
+    runtime: test::coralprairie::runtime::PrairieRuntime;
+  }
+  testSuites:
+  [
+    zoneRegisterServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection: Reference
+            #{
+              test::coralprairie::data::PrairieTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        allZones:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            zoneRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ZoneCode":"Z1","Zone":"NORTH TERRACE","BurnUnit":"Spring Rotation","RotationYears":3},{"ZoneCode":"Z2","Zone":"SOUTH TERRACE","BurnUnit":"Spring Rotation","RotationYears":3},{"ZoneCode":"Z3","Zone":"CREEK MARGIN","BurnUnit":"Autumn Rotation","RotationYears":5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

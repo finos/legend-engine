@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::westernthistle::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A signed cycling corridor maintained by the city network team.'} test::westernthistle::domain::CycleCorridor
+{
+  corridorCode: String[1];
+  corridorName: String[1];
+  surfaceGrade: String[1];
+  lengthKm: Float[1];
+  lit: Boolean[1];
+  openedOn: StrictDate[1];
+  lastAuditedAt: DateTime[0..1];
+  gradeLabel() {$this.surfaceGrade + '/' + $this.corridorCode}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A waiting shelter placed beside a corridor.'} test::westernthistle::domain::StopShelter
+{
+  shelterCode: String[1];
+  corridorCode: String[1];
+  seatCount: Integer[1];
+  sheltered: Boolean[1];
+  installedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An automatic counter recording daily cycle movements on a corridor.'} test::westernthistle::domain::CountStation
+{
+  stationCode: String[1];
+  corridorCode: String[1];
+  dailyAverage: Integer[1];
+  lastReadingAt: DateTime[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A maintenance crew based at a depot and rostered against corridors.'} test::westernthistle::domain::MaintenanceCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  depotName: String[1];
+  headcount: Integer[1];
+  onCall: Boolean[1];
+  commissionedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A surface grade classification and the interval at which it is resurfaced.'} test::westernthistle::domain::SurfaceType
+{
+  gradeCode: String[1];
+  gradeDescription: String[1];
+  resurfaceIntervalYears: Integer[1];
+  reviewedOn: StrictDate[1];
+}

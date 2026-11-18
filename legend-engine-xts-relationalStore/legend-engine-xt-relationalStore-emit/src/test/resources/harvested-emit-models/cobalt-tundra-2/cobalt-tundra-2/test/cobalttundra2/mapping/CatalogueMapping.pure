@@ -1,0 +1,395 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cobalttundra2::mapping::CatalogueMapping
+(
+  *test::cobalttundra2::domain::District[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobalttundra2::store::CatalogueDB]catalogue.district.district_id
+    )
+    ~mainTable [test::cobalttundra2::store::CatalogueDB]catalogue.district
+    districtCode: [test::cobalttundra2::store::CatalogueDB]catalogue.district.district_code,
+    districtName: [test::cobalttundra2::store::CatalogueDB]catalogue.district.district_name,
+    stewardHandle: toLower([test::cobalttundra2::store::CatalogueDB]catalogue.district.steward)
+  }
+
+  *test::cobalttundra2::domain::Branch[branch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobalttundra2::store::CatalogueDB]catalogue.branch.branch_id
+    )
+    ~mainTable [test::cobalttundra2::store::CatalogueDB]catalogue.branch
+    branchCode: [test::cobalttundra2::store::CatalogueDB]catalogue.branch.branch_code,
+    branchName: [test::cobalttundra2::store::CatalogueDB]catalogue.branch.branch_name,
+    branchLabel: concat(concat([test::cobalttundra2::store::CatalogueDB]catalogue.branch.branch_code, ' '),
+                        trim([test::cobalttundra2::store::CatalogueDB]catalogue.branch.branch_name)),
+    openedYear: [test::cobalttundra2::store::CatalogueDB]catalogue.branch.opened_year
+  }
+
+  *test::cobalttundra2::domain::ShelfSection[shelfSection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobalttundra2::store::CatalogueDB]catalogue.shelf_section.section_id
+    )
+    ~mainTable [test::cobalttundra2::store::CatalogueDB]catalogue.shelf_section
+    sectionCode: [test::cobalttundra2::store::CatalogueDB]catalogue.shelf_section.section_code,
+    sectionLabel: [test::cobalttundra2::store::CatalogueDB]catalogue.shelf_section.section_label,
+    capacityCount: [test::cobalttundra2::store::CatalogueDB]catalogue.shelf_section.capacity_count,
+    spareShelves: minus([test::cobalttundra2::store::CatalogueDB]catalogue.shelf_section.capacity_count,
+                        [test::cobalttundra2::store::CatalogueDB]catalogue.shelf_section.reserved_count),
+    branchName: [test::cobalttundra2::store::CatalogueDB]@Section_Branch | [test::cobalttundra2::store::CatalogueDB]catalogue.branch.branch_name,
+    districtName: [test::cobalttundra2::store::CatalogueDB]@Section_Branch > (INNER) @Branch_District | [test::cobalttundra2::store::CatalogueDB]catalogue.district.district_name
+  }
+
+  *test::cobalttundra2::domain::CatalogueItem[catalogueItem]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.item_id
+    )
+    ~mainTable [test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item
+    itemCode: [test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.item_code,
+    itemTitle: [test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.item_title,
+    titleTag: concat(concat(toUpper(substring([test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.item_title, 1, 4)), '/'),
+                     [test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.item_code),
+    titleLength: length([test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.item_title),
+    pageCount: [test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.page_count,
+    editionYear: [test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.edition_year,
+    languageCode: [test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.language_code,
+    conditionBand: case(
+                     equal([test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.condition_code, 'GOOD'),
+                     'shelf-ready',
+                     case(
+                       equal([test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.condition_code, 'FAIR'),
+                       'monitored',
+                       case(
+                         equal([test::cobalttundra2::store::CatalogueDB]catalogue.catalogue_item.condition_code, 'WORN'),
+                         'bindery',
+                         sqlNull()
+                       )
+                     )
+                   ),
+    sectionLabel: [test::cobalttundra2::store::CatalogueDB]@Item_Section | [test::cobalttundra2::store::CatalogueDB]catalogue.shelf_section.section_label,
+    branchName: [test::cobalttundra2::store::CatalogueDB]@Item_Section > (INNER) @Section_Branch | [test::cobalttundra2::store::CatalogueDB]catalogue.branch.branch_name,
+    districtName: [test::cobalttundra2::store::CatalogueDB]@Item_Section > (INNER) @Section_Branch > (INNER) @Branch_District | [test::cobalttundra2::store::CatalogueDB]catalogue.district.district_name
+  }
+
+  *test::cobalttundra2::domain::ReadingSession[readingSession]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobalttundra2::store::CatalogueDB]catalogue.reading_session.session_id
+    )
+    ~mainTable [test::cobalttundra2::store::CatalogueDB]catalogue.reading_session
+    sessionCode: [test::cobalttundra2::store::CatalogueDB]catalogue.reading_session.session_code,
+    minutesSpent: [test::cobalttundra2::store::CatalogueDB]catalogue.reading_session.minutes_spent,
+    readerGroup: [test::cobalttundra2::store::CatalogueDB]catalogue.reading_session.reader_group,
+    engagementTier: case(
+                      greaterThan([test::cobalttundra2::store::CatalogueDB]catalogue.reading_session.minutes_spent, 60),
+                      'deep',
+                      case(
+                        greaterThanEqual([test::cobalttundra2::store::CatalogueDB]catalogue.reading_session.minutes_spent, 30),
+                        'steady',
+                        'brief'
+                      )
+                    ),
+    branchName: [test::cobalttundra2::store::CatalogueDB]@Session_Branch | [test::cobalttundra2::store::CatalogueDB]catalogue.branch.branch_name
+  }
+
+  test::cobalttundra2::domain::Item_Session: Relational
+  {
+    AssociationMapping
+    (
+      readItem[readingSession, catalogueItem]: [test::cobalttundra2::store::CatalogueDB]@Session_Item,
+      itemSessions[catalogueItem, readingSession]: [test::cobalttundra2::store::CatalogueDB]@Session_Item
+    )
+  }
+
+  test::cobalttundra2::domain::Branch_District: Relational
+  {
+    AssociationMapping
+    (
+      homeDistrict[branch, district]: [test::cobalttundra2::store::CatalogueDB]@Branch_District,
+      districtBranches[district, branch]: [test::cobalttundra2::store::CatalogueDB]@Branch_District
+    )
+  }
+
+  testSuites:
+  [
+    itemJoinPathSuite:
+    {
+      function: |test::cobalttundra2::domain::CatalogueItem.all()->project(
+  [
+    i|$i.itemCode,
+    i|$i.titleTag,
+    i|$i.titleLength,
+    i|$i.conditionBand,
+    i|$i.sectionLabel,
+    i|$i.branchName,
+    i|$i.districtName
+  ],
+  [
+    'ItemCode',
+    'TitleTag',
+    'TitleLength',
+    'ConditionBand',
+    'SectionLabel',
+    'BranchName',
+    'DistrictName'
+  ]
+)->sort([asc('ItemCode')]);
+      tests:
+      [
+        everyHopAndConditionArm:
+        {
+          doc: 'One catalogue item per condition arm, including an unrecognised condition that falls through to the null sentinel, projected across the one-hop, two-hop and three-hop join paths so the assembled title tag is observable next to the columns each hop reaches.';
+          data:
+          [
+            test::cobalttundra2::store::CatalogueDB:
+              Relational
+              #{
+                catalogue.district:
+                  'district_id,district_code,district_name,steward\n'+
+                  '1,DIS-N,Northern Reach,NORTH-CATALOGUE-DESK\n'+
+                  '2,DIS-S,Southern Reach,South-Catalogue-Desk\n';
+
+                catalogue.branch:
+                  'branch_id,branch_code,branch_name,district_id,opened_year\n'+
+                  '1,BR-01,Fernbank Reading Room,1,1974\n'+
+                  '2,BR-02,Saltmarsh Reading Room,2,1998\n';
+
+                catalogue.shelf_section:
+                  'section_id,section_code,section_label,branch_id,capacity_count,reserved_count\n'+
+                  '1,SEC-A,Field Guides,1,120,15\n'+
+                  '2,SEC-B,Sky Atlases,2,80,5\n';
+
+                catalogue.catalogue_item:
+                  'item_id,item_code,item_title,section_id,page_count,edition_year,language_code,condition_code\n'+
+                  '1,IT-001,Moss And Lichen Guide,1,240,2019,en,GOOD\n'+
+                  '2,IT-002,Tundra Bird Atlas,1,520,2021,en,FAIR\n'+
+                  '3,IT-003,Night Sky Almanac,2,180,2015,fr,WORN\n'+
+                  '4,IT-004,Reindeer Track Handbook,2,96,2023,se,UNSET\n';
+
+                catalogue.reading_session:
+                  'session_id,session_code,item_id,branch_id,minutes_spent,reader_group\n'+
+                  '1,RS-001,1,1,45,school\n';
+              }#
+          ];
+          asserts:
+          [
+            joinPathsAndArms:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ItemCode":"IT-001","TitleTag":"MOSS/IT-001","TitleLength":21,"ConditionBand":"shelf-ready","SectionLabel":"Field Guides","BranchName":"Fernbank Reading Room","DistrictName":"Northern Reach"},{"ItemCode":"IT-002","TitleTag":"TUND/IT-002","TitleLength":17,"ConditionBand":"monitored","SectionLabel":"Field Guides","BranchName":"Fernbank Reading Room","DistrictName":"Northern Reach"},{"ItemCode":"IT-003","TitleTag":"NIGH/IT-003","TitleLength":17,"ConditionBand":"bindery","SectionLabel":"Sky Atlases","BranchName":"Saltmarsh Reading Room","DistrictName":"Southern Reach"},{"ItemCode":"IT-004","TitleTag":"REIN/IT-004","TitleLength":23,"ConditionBand":null,"SectionLabel":"Sky Atlases","BranchName":"Saltmarsh Reading Room","DistrictName":"Southern Reach"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sessionAssociationSuite:
+    {
+      function: |test::cobalttundra2::domain::ReadingSession.all()->project(
+  [
+    s|$s.sessionCode,
+    s|$s.engagementTier,
+    s|$s.branchName,
+    s|$s.readItem.itemCode,
+    s|$s.readItem.districtName
+  ],
+  [
+    'SessionCode',
+    'EngagementTier',
+    'BranchName',
+    'ItemCode',
+    'ItemDistrict'
+  ]
+)->sort([asc('SessionCode')]);
+      tests:
+      [
+        everyEngagementTierAcrossTheAssociation:
+        {
+          doc: 'One reading session per engagement arm, each traversing the association from the session to its catalogue item and on through the item own join path, so the association implementation and the arm boundaries are asserted together.';
+          data:
+          [
+            test::cobalttundra2::store::CatalogueDB:
+              Relational
+              #{
+                catalogue.district:
+                  'district_id,district_code,district_name,steward\n'+
+                  '1,DIS-N,Northern Reach,NORTH-CATALOGUE-DESK\n'+
+                  '2,DIS-S,Southern Reach,South-Catalogue-Desk\n';
+
+                catalogue.branch:
+                  'branch_id,branch_code,branch_name,district_id,opened_year\n'+
+                  '1,BR-01,Fernbank Reading Room,1,1974\n'+
+                  '2,BR-02,Saltmarsh Reading Room,2,1998\n';
+
+                catalogue.shelf_section:
+                  'section_id,section_code,section_label,branch_id,capacity_count,reserved_count\n'+
+                  '1,SEC-A,Field Guides,1,120,15\n'+
+                  '2,SEC-B,Sky Atlases,2,80,5\n';
+
+                catalogue.catalogue_item:
+                  'item_id,item_code,item_title,section_id,page_count,edition_year,language_code,condition_code\n'+
+                  '1,IT-001,Moss And Lichen Guide,1,240,2019,en,GOOD\n'+
+                  '3,IT-003,Night Sky Almanac,2,180,2015,fr,WORN\n';
+
+                catalogue.reading_session:
+                  'session_id,session_code,item_id,branch_id,minutes_spent,reader_group\n'+
+                  '1,RS-001,1,1,45,school\n'+
+                  '2,RS-002,1,1,90,research\n'+
+                  '3,RS-003,3,2,20,public\n';
+              }#
+          ];
+          asserts:
+          [
+            tiersAcrossTheAssociation:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SessionCode":"RS-001","EngagementTier":"steady","BranchName":"Fernbank Reading Room","ItemCode":"IT-001","ItemDistrict":"Northern Reach"},{"SessionCode":"RS-002","EngagementTier":"deep","BranchName":"Fernbank Reading Room","ItemCode":"IT-001","ItemDistrict":"Northern Reach"},{"SessionCode":"RS-003","EngagementTier":"brief","BranchName":"Saltmarsh Reading Room","ItemCode":"IT-003","ItemDistrict":"Southern Reach"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    branchDistrictSuite:
+    {
+      function: |test::cobalttundra2::domain::Branch.all()->project(
+  [
+    b|$b.branchLabel,
+    b|$b.openedYear,
+    b|$b.homeDistrict.districtCode,
+    b|$b.homeDistrict.stewardHandle
+  ],
+  [
+    'BranchLabel',
+    'OpenedYear',
+    'DistrictCode',
+    'StewardHandle'
+  ]
+)->sort([asc('BranchLabel')]);
+      tests:
+      [
+        assembledLabelAcrossTheDistrictAssociation:
+        {
+          doc: 'Both branches with their assembled label and the lower-cased steward handle reached through the district association, so the concatenation, the trim and the case-folding transform are asserted over the mapped association rather than over the raw table.';
+          data:
+          [
+            test::cobalttundra2::store::CatalogueDB:
+              Relational
+              #{
+                catalogue.district:
+                  'district_id,district_code,district_name,steward\n'+
+                  '1,DIS-N,Northern Reach,NORTH-CATALOGUE-DESK\n'+
+                  '2,DIS-S,Southern Reach,South-Catalogue-Desk\n';
+
+                catalogue.branch:
+                  'branch_id,branch_code,branch_name,district_id,opened_year\n'+
+                  '1,BR-01,Fernbank Reading Room,1,1974\n'+
+                  '2,BR-02,Saltmarsh Reading Room,2,1998\n';
+              }#
+          ];
+          asserts:
+          [
+            labelsAndHandles:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BranchLabel":"BR-01 Fernbank Reading Room","OpenedYear":1974,"DistrictCode":"DIS-N","StewardHandle":"north-catalogue-desk"},{"BranchLabel":"BR-02 Saltmarsh Reading Room","OpenedYear":1998,"DistrictCode":"DIS-S","StewardHandle":"south-catalogue-desk"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    shelfSectionSuite:
+    {
+      function: |test::cobalttundra2::domain::ShelfSection.all()->project(
+  [
+    s|$s.sectionCode,
+    s|$s.capacityCount,
+    s|$s.spareShelves,
+    s|$s.branchName,
+    s|$s.districtName
+  ],
+  [
+    'SectionCode',
+    'CapacityCount',
+    'SpareShelves',
+    'BranchName',
+    'DistrictName'
+  ]
+)->sort([asc('SectionCode')]);
+      tests:
+      [
+        headroomAcrossTheInnerHop:
+        {
+          doc: 'Both shelf sections with the shelf headroom left by subtracting the reserved count from the capacity, alongside the branch reached in one hop and the district reached over the forced inner second hop.';
+          data:
+          [
+            test::cobalttundra2::store::CatalogueDB:
+              Relational
+              #{
+                catalogue.district:
+                  'district_id,district_code,district_name,steward\n'+
+                  '1,DIS-N,Northern Reach,NORTH-CATALOGUE-DESK\n'+
+                  '2,DIS-S,Southern Reach,South-Catalogue-Desk\n';
+
+                catalogue.branch:
+                  'branch_id,branch_code,branch_name,district_id,opened_year\n'+
+                  '1,BR-01,Fernbank Reading Room,1,1974\n'+
+                  '2,BR-02,Saltmarsh Reading Room,2,1998\n';
+
+                catalogue.shelf_section:
+                  'section_id,section_code,section_label,branch_id,capacity_count,reserved_count\n'+
+                  '1,SEC-A,Field Guides,1,120,15\n'+
+                  '2,SEC-B,Sky Atlases,2,80,5\n';
+              }#
+          ];
+          asserts:
+          [
+            headroomAndHops:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SectionCode":"SEC-A","CapacityCount":120,"SpareShelves":105,"BranchName":"Fernbank Reading Room","DistrictName":"Northern Reach"},{"SectionCode":"SEC-B","CapacityCount":80,"SpareShelves":75,"BranchName":"Saltmarsh Reading Room","DistrictName":"Southern Reach"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::sunlitcove6::store::CoveSurveyDB
+(
+  Schema survey
+  (
+    Table kelp_patch
+    (
+      patch_id VARCHAR(24) PRIMARY KEY,
+      station_id VARCHAR(24) NOT NULL,
+      patch_label VARCHAR(64) NOT NULL,
+      holdfast_code VARCHAR(16) NOT NULL,
+      flow_regime VARCHAR(16) NOT NULL,
+      frond_tally INTEGER NOT NULL,
+      cover_index INTEGER NOT NULL,
+      mapped_on DATE,
+      last_dived_at TIMESTAMP NOT NULL,
+      patch_note VARCHAR(200)
+    )
+    Table dive_log
+    (
+      dive_id VARCHAR(24) PRIMARY KEY,
+      patch_id VARCHAR(24) NOT NULL,
+      dived_at TIMESTAMP NOT NULL,
+      diver_code VARCHAR(24) NOT NULL,
+      clarity_score INTEGER NOT NULL,
+      hazard_code VARCHAR(24)
+    )
+    Table cove_station
+    (
+      station_id VARCHAR(24) PRIMARY KEY,
+      station_name VARCHAR(64) NOT NULL,
+      reach_code VARCHAR(16) NOT NULL,
+      tract_code VARCHAR(16) NOT NULL,
+      hectares DOUBLE NOT NULL
+    )
+    Table shore_tract
+    (
+      tract_code VARCHAR(16) PRIMARY KEY,
+      tract_name VARCHAR(64) NOT NULL,
+      warden_code VARCHAR(16) NOT NULL
+    )
+    Table holdfast_reference
+    (
+      holdfast_code VARCHAR(16) PRIMARY KEY,
+      holdfast_name VARCHAR(64) NOT NULL,
+      growth_form VARCHAR(24) NOT NULL
+    )
+  )
+
+  Join Patch_Station(survey.kelp_patch.station_id = survey.cove_station.station_id)
+  Join Patch_Holdfast(survey.kelp_patch.holdfast_code = survey.holdfast_reference.holdfast_code)
+  Join Patch_Dive(survey.kelp_patch.patch_id = survey.dive_log.patch_id)
+  Join Diver_Station(toUpper(survey.dive_log.diver_code) = concat('DIV-', survey.cove_station.tract_code))
+  Join Station_Tract(survey.cove_station.tract_code = survey.shore_tract.tract_code)
+)

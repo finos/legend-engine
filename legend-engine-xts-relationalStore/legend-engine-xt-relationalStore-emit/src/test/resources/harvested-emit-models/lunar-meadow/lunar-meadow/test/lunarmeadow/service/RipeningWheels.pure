@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::lunarmeadow::service::RipeningWheels
+{
+  pattern: '/lunarmeadow/v1/ripening-wheels/{env}/{chamberPrefix}/{minAgeDays}';
+  title: 'Lunar Meadow - Ripening Wheels By Chamber (keyed environments)';
+  owners:
+  [
+    'cave-cellar-registry',
+    'creamery-eng'
+  ];
+  documentation: 'Keyed execution returning the wheels that are ripe enough to be graded: the query keeps wheels formed at least the requested number of days ago, made from one of the accepted milk types, and either sited in a chamber whose name starts with the requested prefix or racked above the second tier, with a minimum brined mass. It projects the wheel, its milk type, the chamber reached over the two-hop rack-to-cellar join and the cheesemaker reached over the two-hop rack-to-roster join. The keyed executions bind the shared mapping to a primary and a standby runtime.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {chamberPrefix: String[1], minAgeDays: Integer[1], currentDate: StrictDate[1]|test::lunarmeadow::domain::CheeseWheel.all()->filter(
+      w|((($w.formedOn->dateDiff($currentDate, meta::pure::functions::date::DurationUnit.DAYS) >= $minAgeDays) && ($w.milkType->in(['GOAT', 'SHEEP', 'COW']))) && ((($w.chamberName->toUpper()->startsWith($chamberPrefix)) || ($w.rack.rackTier > 2)) && ((($w.weightGrams + 500) / 1000) >= 1)))
+    )->project(
+      [
+        w|$w.wheelCode,
+        w|$w.milkType->toLower(),
+        w|$w.chamberName,
+        w|$w.makerName,
+        w|$w.wheelCode->length()
+      ],
+      [
+        'WheelCode',
+        'MilkType',
+        'Chamber',
+        'Maker',
+        'CodeLen'
+      ]
+    )->distinct()->sort([asc('WheelCode')])->take(50)};
+    key: 'env';
+    executions['primary']:
+    {
+      mapping: test::lunarmeadow::mapping::CellarMapping;
+      runtime: test::lunarmeadow::runtime::CellarPrimaryRuntime;
+    }
+    executions['standby']:
+    {
+      mapping: test::lunarmeadow::mapping::CellarMapping;
+      runtime: test::lunarmeadow::runtime::CellarStandbyRuntime;
+    }
+  }
+}

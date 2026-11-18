@@ -1,0 +1,165 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westerngecko::service::GeckoSiteSearch
+{
+  pattern: '/westerngecko/v1/site-search/{searchTerm}';
+  title: 'Western Gecko - Rocky Site Search';
+  owners:
+  [
+    'gecko-monitoring-platform',
+    'field-survey-registry-eng'
+  ];
+  documentation: 'Single query that pins the sighting register to a fixed survey day, narrows it with a four-way predicate over navigated site properties, an enumerated habit group, a negated tail condition and a tag existence test, projects two labelled site columns, then applies the caller-supplied search term to the concatenated labels and de-duplicates what is left.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {searchTerm: String[1]|
+      let surveyDay = test::westerngecko::function::surveyAsOfDate();
+      test::westerngecko::domain::GeckoRecord.all($surveyDay)->filter(
+      r|($r.site.habitatKind == 'ROCKY') && ((($r.site.protectedSite == true) && (($r.species->in([test::westerngecko::domain::SpeciesGroup.rockDwelling, test::westerngecko::domain::SpeciesGroup.arboreal])) && ($r.tailIntact == false))) && ((($r.site.siteName->contains('Ridge')) || ($r.site.siteName->contains('Gorge'))) && ($r.tags->exists(t|$t.tagLabel->contains('night')))))
+    )->project(
+      [
+        r|$r.site.siteName,
+        r|$r.site.habitatKind
+      ],
+      [
+        'Site/Name',
+        'Site/Habitat'
+      ]
+    )->filter(
+      x|($x.getString('Site/Name') + ' / ' + $x.getString('Site/Habitat'))->contains($searchTerm->toOne())
+    )->distinct();
+    };
+    mapping: test::westerngecko::mapping::GeckoMapping;
+    runtime: test::westerngecko::runtime::GeckoSurveyRuntime;
+  }
+  testSuites:
+  [
+    siteSearchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          geckoConnection:
+            Relational
+            #{
+              field.survey_site:
+                'site_id,site_name,habitat_kind,protection_flag\n'+
+                '1,Boulder Ridge,ROCKY,Y\n'+
+                '2,Fern Gorge,ROCKY,Y\n'+
+                '3,Palm Flats,SANDY,Y\n'+
+                '4,Shadow Gorge,ROCKY,N\n'+
+                '5,Stone Barrens,ROCKY,Y\n'+
+                '6,Ridge Hollow,ROCKY,Y\n';
+
+              field.gecko_record:
+                'record_id,record_code,site_id,species_group,tail_flag,observer_name,from_z,thru_z\n'+
+                '1,GR-01,1,ROCK,N,Ada Vance,2026-01-01,9999-12-31\n'+
+                '2,GR-02,2,ARBO,N,Ben Iver,2026-01-01,9999-12-31\n'+
+                '3,GR-03,3,ROCK,N,Cleo Park,2026-01-01,9999-12-31\n'+
+                '4,GR-04,4,ROCK,N,Dara Oke,2026-01-01,9999-12-31\n'+
+                '5,GR-05,1,TERR,N,Eli Ward,2026-01-01,9999-12-31\n'+
+                '6,GR-06,1,ROCK,Y,Fay Lund,2026-01-01,9999-12-31\n'+
+                '7,GR-07,6,ROCK,N,Gus Reed,2026-01-01,2026-03-01\n'+
+                '8,GR-08,1,ARBO,N,Hana Cole,2026-01-01,9999-12-31\n'+
+                '9,GR-09,1,ROCK,N,Iris Bell,2026-01-01,9999-12-31\n'+
+                '10,GR-10,5,ROCK,N,Jae Moss,2026-01-01,9999-12-31\n';
+
+              field.observation_tag:
+                'tag_id,record_id,tag_label\n'+
+                '1,1,night transect\n'+
+                '2,2,night transect\n'+
+                '3,3,night transect\n'+
+                '4,4,night transect\n'+
+                '5,5,night transect\n'+
+                '6,6,night transect\n'+
+                '7,7,night transect\n'+
+                '8,8,night transect\n'+
+                '9,9,daylight count\n'+
+                '10,10,night transect\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        ridgeSitesOnSurveyDay:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            searchTerm = 'Ridge'
+          ]
+          asserts:
+          [
+            singleDeduplicatedRidgeRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site/Name":"Boulder Ridge","Site/Habitat":"ROCKY"}]';
+                  }#;
+              }#
+          ]
+        },
+        gorgeSitesOnSurveyDay:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            searchTerm = 'Gorge'
+          ]
+          asserts:
+          [
+            singleProtectedGorgeRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site/Name":"Fern Gorge","Site/Habitat":"ROCKY"}]';
+                  }#;
+              }#
+          ]
+        },
+        searchTermMatchesNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            searchTerm = 'Estuary'
+          ]
+          asserts:
+          [
+            noRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

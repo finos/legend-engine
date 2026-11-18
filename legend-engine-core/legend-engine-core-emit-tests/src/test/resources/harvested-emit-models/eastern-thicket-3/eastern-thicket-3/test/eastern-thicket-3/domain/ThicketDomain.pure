@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::easternthicket3::domain::*;
+
+Profile test::easternthicket3::domain::ThicketMeta
+{
+  stereotypes: [surveyed, provisional, sensitive];
+  tags: [warden, surveyRound, retention];
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Vertical layer of an arboretum thicket that a stand occupies.'} test::easternthicket3::domain::CanopyStratum
+{
+  GROUND_COVER,
+  SHRUB_LAYER,
+  UNDERSTOREY,
+  CANOPY,
+  EMERGENT
+}
+
+Enum {test::easternthicket3::domain::ThicketMeta.surveyRound = 'soil-round'} test::easternthicket3::domain::SoilTexture
+{
+  SAND,
+  LOAM,
+  SILT,
+  CLAY,
+  PEAT,
+  GRAVEL
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Reason a stand was cut back during a warden visit.'} test::easternthicket3::domain::PruningReason
+{
+  STORM_DAMAGE,
+  DISEASE,
+  TRAIL_CLEARANCE,
+  THINNING,
+  SEED_HARVEST
+}
+
+Class {meta::pure::profiles::doc.doc = 'Shared identity of every arboretum thicket record.'} test::easternthicket3::domain::ThicketRecord
+{
+  recordCode: String[1];
+}
+
+Class <<test::easternthicket3::domain::ThicketMeta.surveyed, temporal.processingtemporal>> {test::easternthicket3::domain::ThicketMeta.warden = 'Eastern Arboretum Board', test::easternthicket3::domain::ThicketMeta.retention = 'ten-seasons'} test::easternthicket3::domain::ThicketPlot extends ThicketRecord
+{
+  plotLabel: String[1];
+  hectares: Float[1];
+  stratum: CanopyStratum[1];
+  soil: SoilTexture[1];
+  trailAccess: Boolean[1];
+  plotNote: String[0..1];
+}
+
+Class <<test::easternthicket3::domain::ThicketMeta.surveyed, temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A woody stand growing inside a thicket plot, versioned by the round that recorded it.'} test::easternthicket3::domain::ShrubStand extends ThicketRecord
+{
+  speciesLabel: String[1];
+  stemCount: Integer[1];
+  meanHeightM: Float[1];
+  stratum: CanopyStratum[1];
+  stemNote: String[0..1];
+}
+
+Class <<test::easternthicket3::domain::ThicketMeta.provisional, temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A canopy observation attached to a stand, versioned by the round that recorded it.'} test::easternthicket3::domain::CanopyNote extends ThicketRecord
+{
+  observedText: String[1];
+  closurePercent: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A crew of wardens walking the arboretum trails.'} test::easternthicket3::domain::WardenCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  headcount: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A walkable segment of arboretum trail.'} test::easternthicket3::domain::TrailSegment
+{
+  segmentCode: String[1];
+  lengthM: Float[1];
+  surfaced: Boolean[1];
+}
+
+Class <<test::easternthicket3::domain::ThicketMeta.sensitive>> {test::easternthicket3::domain::ThicketMeta.retention = 'three-seasons'} test::easternthicket3::domain::SoilProbe
+{
+  probeCode: String[1];
+  depthCm: Integer[1];
+  texture: SoilTexture[1];
+  moisturePercent: Float[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A recorded warden visit that cut a stand back.'} test::easternthicket3::domain::PruningVisit
+{
+  visitCode: String[1];
+  visitedOn: StrictDate[1];
+  reason: PruningReason[1];
+  crewNote: String[0..1];
+}

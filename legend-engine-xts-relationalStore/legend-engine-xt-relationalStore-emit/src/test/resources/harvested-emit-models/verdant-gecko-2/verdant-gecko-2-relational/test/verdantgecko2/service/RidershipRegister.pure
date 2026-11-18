@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantgecko2::service::RidershipRegister
+{
+  pattern: '/tramnet/v1/ridership-register';
+  title: 'Tram Network Registry - Ridership Register';
+  ownership: DID { identifier: 'tram-network-registry-office' };
+  documentation: 'Publishes the currently valid staged passenger counts as a wide flat table, mixing the local paired boarding and alighting measures with the stop, line, depot, sector and timetable attributes reached through chained association ends.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::verdantgecko2::domain::RidershipCount.all()->project(
+      [
+        c|$c.countId,
+        c|$c.countedStop.stopName,
+        c|$c.countedStop.platformLengthM,
+        c|$c.countedStop.line.lineCode,
+        c|$c.countedStop.line.lineName,
+        c|$c.countedStop.line.nightService,
+        c|$c.countedStop.line.depot.depotName,
+        c|$c.countedStop.line.depot.boroughName,
+        c|$c.countedStop.sector.sectorName,
+        c|$c.countedStop.sector.sectorGroup.groupName,
+        c|$c.countedStop.sector.sectorGroup.parentGroupName,
+        c|$c.countedPeriod.periodName,
+        c|$c.boardings,
+        c|$c.alightings,
+        c|$c.meanDwellSeconds,
+        c|$c.boardings - $c.alightings,
+        c|$c.meanDwellSeconds->round(),
+        c|$c.countedOn,
+        c|$c.recordedBy
+      ],
+      [
+        'CountId',
+        'StopName',
+        'PlatformLengthM',
+        'LineCode',
+        'LineName',
+        'NightService',
+        'DepotName',
+        'BoroughName',
+        'SectorName',
+        'GroupName',
+        'ParentGroupName',
+        'PeriodName',
+        'Boardings',
+        'Alightings',
+        'MeanDwellSeconds',
+        'NetPassengerFlow',
+        'DwellSecondsWhole',
+        'CountedOn',
+        'RecordedBy'
+      ]
+    );
+    mapping: test::verdantgecko2::mapping::TramNetworkMapping;
+    runtime: test::verdantgecko2::runtime::TramNetworkRuntime;
+  }
+  testSuites:
+  [
+    ridershipRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          registryConnection:
+            Relational
+            #{
+              network.depot:
+                'depot_id,depot_name,borough_name,bay_count,amended_by,valid_from,valid_thru\n'+
+                '1,Willowbank Depot,Northgate,14,planner.a,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+              network.tram_line:
+                'line_id,depot_id,line_code,line_name,night_service,amended_by,valid_from,valid_thru\n'+
+                '10,1,L4,Willowbank Loop,YES,planner.a,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+              network.sector_group:
+                'group_id,group_name,parent_group_name,amended_by,valid_from,valid_thru\n'+
+                '30,Inner Ring,City Network,planner.c,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+              network.stop_sector:
+                'sector_id,group_id,sector_name,amended_by,valid_from,valid_thru\n'+
+                '20,30,Northgate Quarter,planner.c,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+              network.tram_stop:
+                'stop_id,line_id,sector_id,stop_name,platform_length_m,opened_on,amended_by,valid_from,valid_thru\n'+
+                '40,10,20,Willowbank Gardens,32.5,1996-04-02,planner.a,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+              network.service_period:
+                'period_id,period_name,opens_on,closes_on,amended_by,valid_from,valid_thru\n'+
+                '50,Spring Timetable,2026-03-01,2026-05-31,planner.d,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+              network.ridership_count:
+                'count_id,stop_id,period_id,boardings,alightings,mean_dwell_seconds,counted_on,recorded_by,amended_by,valid_from,valid_thru\n'+
+                '60,40,50,842,795,24.4,2026-04-15,counter.e,counter.e,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '61,40,50,410,398,21.0,2025-04-15,counter.f,counter.f,2019-01-01 00:00:00,2021-01-01 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentRegisterRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            oneCurrentCount:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CountId":60,"StopName":"Willowbank Gardens","PlatformLengthM":32.5,"LineCode":"L4","LineName":"Willowbank Loop","NightService":"YES","DepotName":"Willowbank Depot","BoroughName":"Northgate","SectorName":"Northgate Quarter","GroupName":"Inner Ring","ParentGroupName":"City Network","PeriodName":"Spring Timetable","Boardings":842,"Alightings":795,"MeanDwellSeconds":24.4,"NetPassengerFlow":47,"DwellSecondsWhole":24,"CountedOn":"2026-04-15","RecordedBy":"counter.e"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

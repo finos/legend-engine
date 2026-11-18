@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitridge5::mapping::NurseryMapping
+(
+  *test::sunlitridge5::domain::SeedlingTray[tray]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitridge5::store::NurseryDb]greenhouse.seedling_tray.tray_code
+    )
+    ~mainTable [test::sunlitridge5::store::NurseryDb]greenhouse.seedling_tray
+    trayCode: [test::sunlitridge5::store::NurseryDb]greenhouse.seedling_tray.tray_code,
+    speciesCode: [test::sunlitridge5::store::NurseryDb]greenhouse.seedling_tray.species_code,
+    benchCode: [test::sunlitridge5::store::NurseryDb]greenhouse.seedling_tray.bench_code,
+    cellCount: [test::sunlitridge5::store::NurseryDb]greenhouse.seedling_tray.cell_count,
+    germinationPct: [test::sunlitridge5::store::NurseryDb]greenhouse.seedling_tray.germination_pct,
+    sownOn: [test::sunlitridge5::store::NurseryDb]greenhouse.seedling_tray.sown_on
+  }
+
+  *test::sunlitridge5::domain::PlantingBed[bed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitridge5::store::NurseryDb]field.planting_bed.bed_code
+    )
+    ~mainTable [test::sunlitridge5::store::NurseryDb]field.planting_bed
+    bedCode: [test::sunlitridge5::store::NurseryDb]field.planting_bed.bed_code,
+    soilKind: [test::sunlitridge5::store::NurseryDb]field.planting_bed.soil_kind,
+    bedLengthM: [test::sunlitridge5::store::NurseryDb]field.planting_bed.bed_length_m,
+    plantCount: [test::sunlitridge5::store::NurseryDb]field.planting_bed.plant_count,
+    lastMulched: [test::sunlitridge5::store::NurseryDb]field.planting_bed.last_mulched
+  }
+
+  *test::sunlitridge5::domain::Cultivar[cultivar]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitridge5::store::NurseryDb]catalogue.cultivar.cultivar_code
+    )
+    ~mainTable [test::sunlitridge5::store::NurseryDb]catalogue.cultivar
+    cultivarCode: [test::sunlitridge5::store::NurseryDb]catalogue.cultivar.cultivar_code,
+    commonName: [test::sunlitridge5::store::NurseryDb]catalogue.cultivar.common_name,
+    flowerColour: [test::sunlitridge5::store::NurseryDb]catalogue.cultivar.flower_colour,
+    hardinessZone: [test::sunlitridge5::store::NurseryDb]catalogue.cultivar.hardiness_zone
+  }
+)

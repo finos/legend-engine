@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<test::emeraldestuary2::profile::SurveyProfile.governed>> {test::emeraldestuary2::profile::SurveyProfile.steward = 'estuary-reed-survey', test::emeraldestuary2::profile::SurveyProfile.reviewCadence = 'seasonal'} test::emeraldestuary2::domain::ReedPlot
+{
+  plotCode: String[1];
+  plotSeq: Integer[1];
+  habitatName: String[1];
+  <<test::emeraldestuary2::profile::CoverageProfile.derived>> {test::emeraldestuary2::profile::CoverageProfile.unit = 'percent'} reedCoverPct: Integer[1];
+  <<test::emeraldestuary2::profile::CoverageProfile.derived>> {test::emeraldestuary2::profile::CoverageProfile.banding = 'eight-band'} statusLabel: String[0..1];
+  <<test::emeraldestuary2::profile::CoverageProfile.derived>> {test::emeraldestuary2::profile::CoverageProfile.banding = 'wet-threshold'} coverBand: String[0..1];
+  plotTag: String[0..1];
+  nameLength: Integer[0..1];
+  <<test::emeraldestuary2::profile::ReferenceProfile.borrowed>> {test::emeraldestuary2::profile::ReferenceProfile.origin = 'synonym-reference'} acceptedName: String[0..1];
+}
+
+Class <<test::emeraldestuary2::profile::ReferenceProfile.borrowed>> {test::emeraldestuary2::profile::ReferenceProfile.custodian = 'estuary-site-reference'} test::emeraldestuary2::domain::SurveySite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  <<test::emeraldestuary2::profile::ReferenceProfile.local>> {test::emeraldestuary2::profile::ReferenceProfile.origin = 'site-reference'} regionName: String[1];
+}
+
+Association <<test::emeraldestuary2::profile::SurveyProfile.governed>> {test::emeraldestuary2::profile::SurveyProfile.steward = 'estuary-reed-survey'} test::emeraldestuary2::domain::Plot_PrimarySite
+{
+  primarySite: test::emeraldestuary2::domain::SurveySite[0..1];
+  primaryPlots: test::emeraldestuary2::domain::ReedPlot[*];
+}
+
+Association <<test::emeraldestuary2::profile::SurveyProfile.provisional>> {test::emeraldestuary2::profile::SurveyProfile.reviewCadence = 'annual'} test::emeraldestuary2::domain::Plot_FallbackSite
+{
+  fallbackSite: test::emeraldestuary2::domain::SurveySite[0..1];
+  fallbackPlots: test::emeraldestuary2::domain::ReedPlot[*];
+}
+
+Association <<test::emeraldestuary2::profile::SurveyProfile.provisional>> {test::emeraldestuary2::profile::SurveyProfile.steward = 'estuary-audit-walk'} test::emeraldestuary2::domain::Plot_AuditSite
+{
+  auditSite: test::emeraldestuary2::domain::SurveySite[0..1];
+  auditPlots: test::emeraldestuary2::domain::ReedPlot[*];
+}

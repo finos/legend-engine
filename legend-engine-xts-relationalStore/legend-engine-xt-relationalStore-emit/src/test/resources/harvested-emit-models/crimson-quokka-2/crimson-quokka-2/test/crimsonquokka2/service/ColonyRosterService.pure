@@ -1,0 +1,117 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::crimsonquokka2::service::ColonyRosterService
+{
+  pattern: '/crimsonquokka2/colonyRoster/{observedOn}';
+  title: 'Island Sanctuary - Tagged Riverine Colony Roster As Of A Date';
+  owners:
+  [
+    'sanctuary-field-desk',
+    'burrow-survey-eng'
+  ];
+  documentation: 'Opens the burrow-colony extent as of the requested date, keeps the colonies whose habitat band is riverine and whose steward carries a radio tag, and projects the colony code beside that tag.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {observedOn: StrictDate[1]|test::crimsonquokka2::domain::BurrowColony.all($observedOn)->filter(
+      c|(($c.zone == test::crimsonquokka2::domain::HabitatZone.RIVERINE) && ($c.steward.radioTag->isEmpty()->not()))
+    )->project(
+      [
+        c|$c.colonyCode,
+        c|$c.steward.radioTag
+      ],
+      [
+        'Colony',
+        'Steward Tag'
+      ]
+    )};
+    mapping: test::crimsonquokka2::mapping::SanctuaryMapping;
+    runtime: test::crimsonquokka2::runtime::SanctuaryRuntime;
+  }
+  testSuites:
+  [
+    colonyRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sanctuaryH2Connection:
+            Relational
+            #{
+              sanctuary.burrow_colony:
+                'colony_id,colony_code,habitat_zone,steward_id,from_z,thru_z\n'+
+                '1,COL-A,RIV,100,2026-01-01,9999-12-31\n'+
+                '2,COL-B,RIV,200,2026-01-01,9999-12-31\n'+
+                '3,COL-C,HEA,100,2026-01-01,9999-12-31\n'+
+                '4,COL-D,RIV,100,2024-01-01,2026-01-01\n'+
+                '5,COL-E,RIV,,2026-01-01,9999-12-31\n';
+
+              sanctuary.field_steward:
+                'steward_id,steward_code,radio_tag\n'+
+                '100,STW-A,tag-alpha\n'+
+                '200,STW-B,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        taggedRiverineColoniesInWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observedOn = %2026-06-01
+          ]
+          asserts:
+          [
+            onlyTheTaggedRiverineColony:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Colony":"COL-A","Steward Tag":"tag-alpha"}]';
+                  }#;
+              }#
+          ]
+        },
+        dateBeforeEveryColonyWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observedOn = %2019-06-01
+          ]
+          asserts:
+          [
+            noColonyStandsAtThatDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

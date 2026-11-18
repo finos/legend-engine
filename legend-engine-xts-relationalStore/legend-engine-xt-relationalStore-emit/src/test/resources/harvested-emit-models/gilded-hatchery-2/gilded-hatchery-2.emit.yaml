@@ -1,0 +1,49 @@
+name: gilded-hatchery-2
+title: "Gilded Hatchery — Fry Rearing Tanks & Keeper Roster"
+description: |
+  An invented freshwater hatchery model covering fry rearing lots, rearing
+  tanks, hatch bays and the facility keeper roster in a single relational
+  database with two schemas. The mapping exercises an explicit main-table
+  alias, a primary key, a distinct class mapping over duplicated source rows,
+  a literal register value, one-hop, two-hop and three-hop join paths, and an
+  otherwise-embedded keeper that falls back to the standalone keeper class
+  mapping. A cross-schema join is normalised by a store dyna function so a
+  lower-cased keeper code still resolves.
+
+modelSources:
+  model:
+    root: gilded-hatchery-2
+    files:
+      - test/gildedhatchery2/domain/HatcheryDomain.pure
+      - test/gildedhatchery2/mapping/HatcheryLotMapping.pure
+      - test/gildedhatchery2/store/HatcheryDB.pure
+
+features:
+  - mapping:relational-distinct
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-otherwise-embedded
+  - mapping:relational-primary-key
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+
+stores:
+  - relational
+complexity: basic
+tags:
+  - cross-schema-join
+  - distinct-mapping
+  - fry-rearing
+  - h2
+  - hatch-bay
+  - keeper-roster
+  - literal-register
+  - multi-hop-join
+  - otherwise-embedded
+  - rearing-tank

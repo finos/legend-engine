@@ -1,0 +1,70 @@
+name: eastern-prairie-2
+title: "Eastern Prairie 2 — Prairie Restoration Survey Effort Rolled Up Over Half-Open Day Ranges"
+description: |
+  A tallgrass prairie restoration survey. Two timeline tables log run effort
+  and plot stem counts, a run table records each field survey run and a tally
+  table holds the paper sheets filled in during a run, linked to its run by a
+  single-column join that implements a to-many association. Every class mapping
+  names its main table and primary key and binds columns one to one, and three
+  classes add a week-of-year qualified property over their timestamp. Four
+  user-list-owned services take a start and end day, or a recorder name and a
+  start day, filter timestamps over a half-open day range alongside negated
+  contains, emptiness and non-emptiness tests, group by year, month number and a
+  code prefix substring with distinct counts and sums, extend rounded ratio
+  columns and restrict them, or traverse the association with contains matches
+  and project distinct rows. A data space exposes the three mappings through
+  four execution contexts over the shared runtime.
+
+modelSources:
+  model:
+    root: eastern-prairie-2
+    files:
+      - test/easternprairie2/connection/PrairieConnections.pure
+      - test/easternprairie2/dataspace/PrairieDataSpace.pure
+      - test/easternprairie2/domain/PrairieDomain.pure
+      - test/easternprairie2/mapping/FieldRunMapping.pure
+      - test/easternprairie2/mapping/PlotTimelineMapping.pure
+      - test/easternprairie2/mapping/RunTimelineMapping.pure
+      - test/easternprairie2/runtime/PrairieRuntime.pure
+      - test/easternprairie2/service/PrairieServices.pure
+      - test/easternprairie2/store/PrairieSurveyDb.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-path-parameter
+  - execution:service-test
+  - execution:service-user-ownership
+  - grammar:association
+  - grammar:qualified-property
+  - mapping:relational-association-implementation
+  - scaffolding:relational-mapping
+  - mapping:relational-join-path
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:date-part-extraction
+  - query:distinct
+  - query:filter
+  - query:group-by
+  - execution:service-parameter
+  - query:string-function
+  - query:tds-extend
+  - scaffolding:class
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - date-range
+  - group-by
+  - h2
+  - prairie-restoration
+  - relational-mapping
+  - service
+  - snowflake
+  - user-list-ownership

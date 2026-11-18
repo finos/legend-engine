@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::lunarlagoon3::service::GaugeDistrictDigest
+{
+  pattern: '/lunarlagoon/v1/district-digest/{asOf}/{stationKinds}';
+  title: 'Tidewatch - District Gauge Digest';
+  documentation: 'Counts the gauges of the requested kinds that both carry an accepted reading from a working sensor and were read at all inside the week closing on the requested day, aggregated on the district, so the generated plan carries two collection tests beneath a single key aggregation.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['tidewatch-survey-desk', 'lagoon-monitoring'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], stationKinds: String[*]|test::lunarlagoon3::domain::GaugeStation.all()->filter(
+      s|($s.stationKind->in($stationKinds)) && (($s.readings->exists(r|($r.readingState == 'ACCEPTED') && ($r.sensorCode->in(['SN-1', 'SN-2', 'SN-3'])))) && ($s.readings->exists(r|($r.takenOn >= $asOf->adjust(-7, meta::pure::functions::date::DurationUnit.DAYS)) && ($r.takenOn <= $asOf))))
+    )->groupBy(
+      [
+        s|$s.districtCode
+      ],
+      [
+        agg(
+          s|$s.stationCode,
+          y|$y->count()
+        )
+      ],
+      [
+        'District',
+        'Stations'
+      ]
+    )->distinct()->sort(
+      [
+        asc('District')
+      ]
+    )};
+    mapping: test::lunarlagoon3::mapping::GaugeMapping;
+    runtime: test::lunarlagoon3::runtime::GaugeH2Runtime;
+  }
+  testSuites:
+  [
+    districtDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection: Reference
+            #{
+              test::lunarlagoon3::data::GaugeTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyTidalGaugesWithARecentAcceptedReadingCount:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-07-05,
+            stationKinds = ['TIDAL']
+          ]
+          asserts:
+          [
+            eachTidalDistrictContributesOneGauge:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"District":"DC-N","Stations":1},{"District":"DC-S","Stations":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

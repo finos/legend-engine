@@ -1,0 +1,91 @@
+name: scarlet-willow-2
+title: "Scarlet Willow - A Very Wide Milestoned Conservation Dossier Read Beside An Algebraically Assembled Holding Chronicle"
+description: >-
+  A paper-conservation registry whose weight sits entirely in the mapping layer. One very wide
+  business-versioned dossier relation carries a long run of scalar columns followed by repeated
+  single-valued complex panels: three conservator panels, three measure panels each holding a
+  further nested detail object, and two labels delegated to separately named set implementations
+  rather than expanded in place. Every panel is read from the same wide row, so no traversal
+  happens; the reference relations are reached instead through named store joins, one of which
+  compares a numeric reference key against a text column that has to be parsed first, and another
+  of which is declared once and consumed from both sides through an association. A parallel chronicle
+  assembles one holding-line shape algebraically from two independent relations, so a line's
+  classification is a constant that only its own relation assigns, and a supertype extent that is
+  never mapped directly resolves instead to the three implementations beneath it. Codes translate
+  to states through enumeration mappings, several of them over trimmed rather than raw columns,
+  and two published columns have no physical source at all and are supplied as literals. Reference
+  relations are pulled into two separate stores through mapping includes with the store rewritten
+  on the way in. Reads are taken at an explicit business date, one of them before every validity
+  window so that nothing is contributed, and one query publishes an explicit attribute subset as a
+  serialised document rather than a tabular result.
+modelSources:
+  model:
+    root: scarlet-willow-2
+    files:
+      - test/scarletwillow2/domain/ChronicleDomain.pure
+      - test/scarletwillow2/domain/DigestDomain.pure
+      - test/scarletwillow2/domain/DossierDomain.pure
+      - test/scarletwillow2/mapping/ChronicleMapping.pure
+      - test/scarletwillow2/mapping/ConservationEnumMapping.pure
+      - test/scarletwillow2/mapping/DossierDigestM2M.pure
+      - test/scarletwillow2/mapping/DossierMapping.pure
+      - test/scarletwillow2/mapping/ItemRefMapping.pure
+      - test/scarletwillow2/mapping/RecordRefMapping.pure
+      - test/scarletwillow2/profile/ConservationProfile.pure
+      - test/scarletwillow2/store/ChronicleDB.pure
+      - test/scarletwillow2/store/DossierDB.pure
+      - test/scarletwillow2/store/ItemRefDB.pure
+      - test/scarletwillow2/store/RecordRefDB.pure
+features:
+  - execution:mapping-test
+  - execution:test-data-branch-coverage
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-embedded
+  - mapping:relational-enum-of-expression
+  - mapping:relational-inline-embedded
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:router-union
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:filter
+  - execution:graph-fetch
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - conservation-dossier
+  - enum-of-expression
+  - enumeration-mapping
+  - graph-fetch-serialize
+  - h2
+  - inline-embedded
+  - m2m-transform
+  - mapping-include-store-substitution
+  - mapping-test
+  - operation-mapping
+  - paper-treatment-chronicle
+  - point-in-time-query
+  - relational
+  - relational-association
+  - relational-embedded
+  - tabular-data-set
+  - wide-relation

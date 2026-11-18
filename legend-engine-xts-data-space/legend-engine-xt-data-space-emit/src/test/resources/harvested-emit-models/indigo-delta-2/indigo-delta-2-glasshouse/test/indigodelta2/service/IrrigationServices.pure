@@ -1,0 +1,218 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+
+Service test::indigodelta2::service::GlasshouseCycleSummary
+{
+  pattern: '/indigodelta2/v1/glasshouse-cycle-summary';
+  title: 'Indigo Delta - Glasshouse Cycle Summary';
+  ownership: UserList { users: ['glasshouse-operations'] };
+  documentation: 'Groups active irrigation cycles by their joined glasshouse and reports total water and cycle count for the requested business date.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], minimumLitres: Integer[1]|test::indigodelta2::domain::IrrigationCycle.all($asOf)->filter(
+      c|(($c.waterLitres >= $minimumLitres) && ($c.minutesRun <= 30)) && (($c.wateringMode->toUpper()->trim()->in(['MIST', 'DRIP'])) || ($c.cycleCode->toUpper()->trim()->startsWith('IR-')))
+    )->groupBy(
+      [
+        c|$c.house.houseCode,
+        c|$c.house.houseName,
+        c|$c.moistureBand()
+      ],
+      [
+        agg(c|$c.waterLitres, y|$y->sum()),
+        agg(c|$c.cycleCode, y|$y->count())
+      ],
+      [
+        'House',
+        'Glasshouse',
+        'Moisture',
+        'Litres',
+        'Cycles'
+      ]
+    )};
+    mapping: test::indigodelta2::mapping::GlasshouseMapping;
+    runtime: test::indigodelta2::runtime::GardenEastRuntime;
+  }
+  testSuites:
+  [
+    summarySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gardenConnection:
+            Relational
+            #{
+              garden.glasshouse:
+                'house_id,house_code,house_name,climate_lane\n'+
+                'GH-1,ORCH-1,Cloud Fern House,Cool Lane\n'+
+                'GH-2,ORCH-2,Sun Bell House,Warm Lane\n';
+              garden.irrigation_cycle:
+                'cycle_id,cycle_code,house_id,watering_mode,water_litres,minutes_run,moisture_target,started_on,from_z,thru_z\n'+
+                'IC-1,IR-101,GH-1,MIST,120,18,62.5,2026-05-10,2026-01-01,9999-12-31\n'+
+                'IC-2,IR-102,GH-1,DRIP,80,10,48.0,2026-05-12,2026-01-01,9999-12-31\n'+
+                'IC-3,IR-103,GH-2,SOAK,40,30,30.0,2026-05-14,2026-01-01,9999-12-31\n'+
+                'IC-4,IR-104,GH-2,DRIP,90,12,52.0,2025-03-10,2024-01-01,2025-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentHouseTotals:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            minimumLitres = 50
+          ]
+          asserts:
+          [
+            groupedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"House":"ORCH-1","Glasshouse":"Cloud Fern House","Moisture":"STEADY","Litres":200,"Cycles":2}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigodelta2::service::GlasshouseCycleRegister
+{
+  pattern: '/indigodelta2/v1/glasshouse-cycle-register/{region}';
+  title: 'Indigo Delta - Glasshouse Cycle Register';
+  ownership: UserList { users: ['glasshouse-operations'] };
+  documentation: 'Resolves one of two garden execution contexts by region, then projects active cycles with joined house labels and normalized operational measures.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {asOf: StrictDate[1], regionCode: String[1], minimumMoisture: Float[1]|test::indigodelta2::domain::IrrigationCycle.all($asOf)->filter(
+      c|(($c.house.houseCode == $regionCode) && (($c.moistureTarget >= $minimumMoisture) && ($c.minutesRun <= 35))) && (($c.cycleCode->toUpper()->trim()->startsWith('IR-')) || ($c.wateringMode->toUpper()->trim() == 'DRIP'))
+    )->project(
+      [
+        c|$c.cycleCode->toUpper()->trim(),
+        c|$c.house.houseName->toUpper()->trim(),
+        c|$c.cycleLabel(),
+        c|$c.waterLitres->toFloat()->abs(),
+        c|$c.moistureTarget->toString()->trim()
+      ],
+      [
+        'Cycle',
+        'Glasshouse',
+        'Label',
+        'Litres',
+        'Moisture'
+      ]
+    )};
+    key: 'region';
+    executions['east']:
+    {
+      mapping: test::indigodelta2::mapping::GlasshouseMapping;
+      runtime: test::indigodelta2::runtime::GardenEastRuntime;
+    }
+    executions['west']:
+    {
+      mapping: test::indigodelta2::mapping::GlasshouseMapping;
+      runtime: test::indigodelta2::runtime::GardenWestRuntime;
+    }
+  }
+  testSuites:
+  [
+    registerSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gardenConnection:
+            Relational
+            #{
+              garden.glasshouse:
+                'house_id,house_code,house_name,climate_lane\n'+
+                'GH-1,ORCH-1,Cloud Fern House,Cool Lane\n'+
+                'GH-2,ORCH-2,Sun Bell House,Warm Lane\n';
+              garden.irrigation_cycle:
+                'cycle_id,cycle_code,house_id,watering_mode,water_litres,minutes_run,moisture_target,started_on,from_z,thru_z\n'+
+                'IC-1,IR-101,GH-1,MIST,120,18,62.5,2026-05-10,2026-01-01,9999-12-31\n'+
+                'IC-2,IR-102,GH-1,DRIP,80,10,48.0,2026-05-12,2026-01-01,9999-12-31\n'+
+                'IC-3,IR-103,GH-2,SOAK,40,30,30.0,2026-05-14,2026-01-01,9999-12-31\n'+
+                'IC-4,IR-104,GH-2,DRIP,90,12,52.0,2025-03-10,2024-01-01,2025-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        eastRegionRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['east'];
+          parameters:
+          [
+            asOf = %2026-06-01,
+            regionCode = 'ORCH-1',
+            minimumMoisture = 45.0
+          ]
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cycle":"IR-101","Glasshouse":"CLOUD FERN HOUSE","Label":"IR-101","Litres":120.0,"Moisture":"62.5"},{"Cycle":"IR-102","Glasshouse":"CLOUD FERN HOUSE","Label":"IR-102","Litres":80.0,"Moisture":"48.0"}]';
+                  }#;
+              }#
+          ]
+        },
+        westRegionRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['west'];
+          parameters:
+          [
+            asOf = %2026-06-01,
+            regionCode = 'ORCH-2',
+            minimumMoisture = 25.0
+          ]
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cycle":"IR-103","Glasshouse":"SUN BELL HOUSE","Label":"IR-103","Litres":40.0,"Moisture":"30.0"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

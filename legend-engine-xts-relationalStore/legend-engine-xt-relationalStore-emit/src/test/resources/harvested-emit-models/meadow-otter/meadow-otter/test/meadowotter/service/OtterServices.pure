@@ -1,0 +1,140 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowotter::service::OtterSightings
+{
+  pattern: '/meadow/v1/sightings';
+  title: 'Otter Sightings by Habitat';
+  owners:
+  [
+    'meadow-survey',
+    'wildlife-ops'
+  ];
+  documentation: 'Filters recently seen otters in a supplied set of habitats and status, projecting tag and name. A multi-execution service keyed by survey region, each region pointing at the in-process H2 MeadowRuntime.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {status: String[1], habitats: String[*], currentDate: StrictDate[1]|test::meadowotter::domain::Otter.all()->filter(
+      o|($o.lastSeenOn >= adjust($currentDate, -365, DurationUnit.DAYS)) && ($o.habitat->in($habitats)) && ($o.status == $status)
+    )->project(
+      [
+        o|$o.tagCode,
+        o|$o.name
+      ],
+      [
+        'TagCode',
+        'Name'
+      ]
+    )->sort(
+      [
+        asc('TagCode')
+      ]
+    )};
+    key: 'region';
+    executions['east']:
+    {
+      mapping: test::meadowotter::mapping::OtterMapping;
+      runtime: test::meadowotter::runtime::MeadowRuntime;
+    }
+    executions['west']:
+    {
+      mapping: test::meadowotter::mapping::OtterMapping;
+      runtime: test::meadowotter::runtime::MeadowRuntime;
+    }
+  }
+}
+
+Service test::meadowotter::service::ActiveOtters
+{
+  pattern: '/meadow/v1/active/{status}';
+  title: 'Active Otters by Status';
+  owners:
+  [
+    'meadow-survey',
+    'wildlife-ops'
+  ];
+  documentation: 'Single-execution counterpart returning otters with a given status by tag, name, last-seen year and rendered weight over the in-process H2 MeadowRuntime. Carries the tested service testSuite.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {status: String[1]|test::meadowotter::domain::Otter.all()->filter(
+      o|$o.status == $status
+    )->project(
+      [
+        o|$o.tagCode,
+        o|$o.name,
+        o|$o.lastSeenOn->year(),
+        o|$o.weightKg->toString()
+      ],
+      [
+        'TagCode',
+        'Name',
+        'LastYear',
+        'WeightText'
+      ]
+    )->distinct()->sort(
+      [
+        asc('TagCode')
+      ]
+    )};
+    mapping: test::meadowotter::mapping::OtterMapping;
+    runtime: test::meadowotter::runtime::MeadowRuntime;
+  }
+  testSuites:
+  [
+    activeOttersSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              meadow.otter:
+                'otter_id,tag_code,otter_name,status,habitat,last_seen_on,weight_kg\n'+
+                '1,OT-100,Willow,ACTIVE,MEADOW,2024-05-01,7.5\n'+
+                '2,OT-200,Reed,RELEASED,MARSH,2024-04-11,6.2\n'+
+                '3,OT-300,Rush,ACTIVE,MEADOW,2024-05-09,8.1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        activeStatus:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            status = 'ACTIVE'
+          ]
+          asserts:
+          [
+            twoActive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TagCode":"OT-100","Name":"Willow","LastYear":2024,"WeightText":"7.5"},{"TagCode":"OT-300","Name":"Rush","LastYear":2024,"WeightText":"8.1"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

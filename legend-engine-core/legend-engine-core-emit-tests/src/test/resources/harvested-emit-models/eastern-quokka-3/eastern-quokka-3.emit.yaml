@@ -1,0 +1,36 @@
+name: eastern-quokka-3
+title: "Community Seed Vault Register — Accession Hierarchies, Associations, Enumerations and Curation Constraints"
+description: |
+  A community seed vault's accession register held entirely in the model layer: no store, no mapping
+  and no runtime. Two inheritance hierarchies (vault record -> plant accession -> seed lot / herbarium
+  sheet / living cutting, and custodian -> staff botanist / visiting researcher) are wired to collection
+  trips, germination trials, storage chambers, taxon names and study consignments by ten bidirectional
+  associations, several of which bind on an abstract supertype so the qualified ends resolve through
+  inheritance. Four enumerations carry the seed form, the viability grade found at the last sweep, the
+  chamber climate and the confidence attached to a taxon determination. Two constraints reach optional
+  properties over several classes and must handle emptiness, and a curation profile supplies the
+  stereotypes and tagged values the vault annotates its classes and properties with.
+modelSources:
+  model:
+    root: eastern-quokka-3
+    files:
+      - test/easternquokka3/domain/SeedVaultDomain.pure
+      - test/easternquokka3/profile/SeedVaultProfile.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:enumeration
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - accession-register
+  - association
+  - class-inheritance
+  - constraint
+  - enumeration
+  - germination-trial
+  - profile
+  - seed-vault

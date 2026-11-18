@@ -1,0 +1,28 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::goldenotter9::store::OtterSanctuaryDb
+(
+  include test::goldenotter9::store::RiverAtlasDb
+  include test::goldenotter9::store::HoltRegisterDb
+  include test::goldenotter9::store::SurveyDb
+  include test::goldenotter9::store::KeeperDb
+
+  Join Reach_Habitat(atlas.river_reach.habitat_code = holt.habitat.habitat_code)
+  Join Holt_Reach(holt.holt.reach_code = atlas.river_reach.reach_code)
+  Join Holt_Warden(holt.holt.warden_code = staff.observer.observer_code)
+  Join Sighting_Holt(survey.sighting.holt_code = holt.holt.holt_code)
+  Join Sighting_Observer(survey.sighting.observer_code = staff.observer.observer_code)
+)

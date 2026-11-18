@@ -1,0 +1,63 @@
+name: cedar-hatchery
+title: "Cedar Hatchery — Model-to-Model Measure Grain, Conditional Transforms & Reconciling Services"
+description: |
+  A non-financial hatchery model with no store of its own: four upstream rearing
+  registers arrive as foreign fact classes and one model-to-model mapping absorbs
+  all four into a single measure grain through four set implementations, each
+  reading a differently named source. A base measure class carries the whole
+  monthly grain and thin subclasses specialise it per rearing unit without adding
+  properties, so the mapping is the entire local integration contract and a
+  source rename breaks one set implementation only. Almost every target property
+  is required, which is why the transforms carry conditional fallbacks: keeper
+  attribution falls through the lead, relief and unassigned arms, the stock count
+  sums a collection of counts and defaults to zero when every optional count is
+  absent, the release count floors at zero and the loss band walks three
+  thresholds plus an unknown arm. Mapping test suites drive fixtures that differ
+  only in which optional field is empty so every arm is reached, and four
+  unparameterized single-execution services split into one that graph-fetches the
+  mapped grain behind a band filter and three legacy ones that aggregate the
+  rearing register directly - grouping by period and rearing unit while summing the
+  stock and release measures behind membership and threshold filters - and one of
+  those legacy aggregations runs over the very fixture the mapped service
+  transforms so the raw and transformed columns can be compared. Two engine
+  runtimes, one per organisation unit, bind both mappings to a different upstream
+  model connection beside the shared register estate.
+
+modelSources:
+  model:
+    root: cedar-hatchery
+    files:
+      - test/cedarhatchery/connection/UpstreamConnections.pure
+      - test/cedarhatchery/domain/HatcheryDomain.pure
+      - test/cedarhatchery/domain/UpstreamFacts.pure
+      - test/cedarhatchery/mapping/HatcheryMeasureMapping.pure
+      - test/cedarhatchery/mapping/RegisterMapping.pure
+      - test/cedarhatchery/runtime/HatcheryRuntimes.pure
+      - test/cedarhatchery/service/LakeUnitServices.pure
+      - test/cedarhatchery/service/RiverUnitServices.pure
+      - test/cedarhatchery/store/HatcheryRegister.pure
+
+features:
+  - execution:service
+  - execution:test-data-branch-coverage
+  - grammar:class-inheritance
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - branch-coverage
+  - class-inheritance
+  - conditional-transform
+  - group-by
+  - h2
+  - m2m
+  - model-store
+  - service
+  - tds

@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::silvergecko::domain::*;
+
+Class {doc.doc = 'Standalone identifier object that keys one sampling unit inside a grid.'} test::silvergecko::domain::UnitIdentifier
+{
+  identifierValue: String[1];
+  issuedOn: StrictDate[1];
+}
+
+Class {doc.doc = 'Measurement unit citation used when a sampling unit reports its extent.'} test::silvergecko::domain::MeasurementUnitRef
+{
+  unitCode: String[1];
+  unitLabel: String[1];
+}
+
+Class {doc.doc = 'One sampling unit, reached through a complex-typed property rather than an association.'} test::silvergecko::domain::SamplingUnit
+{
+  unitLabel: String[1];
+  extent: Float[1];
+  identifier: UnitIdentifier[1];
+  measure: MeasurementUnitRef[1];
+}
+
+Class {doc.doc = 'Sampling grid holding an unbounded collection of unit objects keyed by a separate identifier class.'} test::silvergecko::domain::SamplingGrid
+{
+  gridLabel: String[1];
+  laidOutOn: StrictDate[1];
+  units: SamplingUnit[*];
+}
+
+Class {doc.doc = 'One published version of a governed dataset, nested two levels below the lineage.'} test::silvergecko::domain::DatasetVersion
+{
+  versionLabel: String[1];
+  releasedOn: StrictDate[1];
+  rowsPublished: Integer[1];
+}
+
+Class {doc.doc = 'Catalogue version object that itself holds a collection of dataset versions.'} test::silvergecko::domain::CatalogueVersion
+{
+  versionTag: String[1];
+  cutAt: DateTime[1];
+  datasetVersions: DatasetVersion[*];
+}
+
+Class {doc.doc = 'Lineage holding a one-or-more collection of version objects, giving three-level property nesting.'} test::silvergecko::domain::CatalogueLineage
+{
+  lineageLabel: String[1];
+  versions: CatalogueVersion[1..*];
+}

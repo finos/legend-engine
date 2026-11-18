@@ -1,0 +1,59 @@
+name: silver-warren
+title: "Silver Warren - Environment-Keyed Reference Registers With A Numeric Expiry Sentinel"
+description: |
+  A greenway trail reference registry held twice, once per environment, in two independently
+  declared single-schema stores whose tables are joinless and whose only version discriminator
+  is a numeric expiry sentinel column. Two wide flat classes model those tables one-to-one and
+  four mappings — one per class per environment — carry nothing but an explicit key, a pinned
+  main table and one-to-one column reads, so the environment-specific pairs are structurally
+  identical and a drift on one side stays invisible until that side executes. Two
+  multi-execution services keyed on a path parameter name a mapping and a runtime together per
+  environment: the wide one projects fifteen aliased reference columns plus the year a row was
+  recorded, and the narrow one assembles two compact date keys out of the year, month and day
+  parts of a timestamp with a zero-padding arm for single-digit parts, so a formatting slip
+  shows only for part of the calendar. Environment-pinned single-execution twins carry the
+  assertions, because the keyed executions themselves are proven by compilation and plan
+  generation.
+
+modelSources:
+  model:
+    root: silver-warren
+    files:
+      - test/silverwarren/connection/TrailRegistryConnections.pure
+      - test/silverwarren/domain/TrailRegistryDomain.pure
+      - test/silverwarren/mapping/TrailRegistryArchiveMappings.pure
+      - test/silverwarren/mapping/TrailRegistryFieldMappings.pure
+      - test/silverwarren/runtime/TrailRegistryRuntimes.pure
+      - test/silverwarren/service/TrailSegmentRegister.pure
+      - test/silverwarren/service/TrailheadRegister.pure
+      - test/silverwarren/store/TrailRegistryStores.pure
+
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - date-part-assembly
+  - environment-keyed-execution
+  - expiry-sentinel
+  - h2
+  - joinless-reference-tables
+  - main-table-alias
+  - multi-execution-service
+  - wide-projection

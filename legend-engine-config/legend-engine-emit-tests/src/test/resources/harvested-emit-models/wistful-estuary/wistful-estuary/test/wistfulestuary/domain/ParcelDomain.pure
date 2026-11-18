@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::wistfulestuary::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'Root of the remote reserve-parcel document returned by the registry endpoints.'} test::wistfulestuary::domain::ParcelEnvelope
+{
+  {meta::pure::profiles::doc.doc = 'Catalogue path the parcel document was published under.'} parcelPath: String[1];
+  {meta::pure::profiles::doc.doc = 'Path of the classifier the document body conforms to.'} classifierPath: String[1];
+  {meta::pure::profiles::doc.doc = 'Document body carried by the envelope.'} content: ParcelContent[1];
+  {meta::pure::profiles::doc.doc = 'Name of the catalogue tree the document was read from.'} treeName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Body of a reserve-parcel document, discriminated by its recorded kind.'} test::wistfulestuary::domain::ParcelContent
+{
+  {meta::pure::profiles::doc.doc = 'Discriminator naming the kind of parcel the body describes.'} contentKind: String[1];
+  {meta::pure::profiles::doc.doc = 'Display title of the parcel.'} title: String[1];
+  {meta::pure::profiles::doc.doc = 'Free-text description of the parcel as recorded by the stewards.'} summaryText: String[1];
+  {meta::pure::profiles::doc.doc = 'Tag of the steward group responsible for the parcel.'} stewardTag: String[1];
+  {meta::pure::profiles::doc.doc = 'Revision tag of the published document.'} revisionTag: String[1];
+  {meta::pure::profiles::doc.doc = 'Position of the parcel body inside the published source document.'} origin: OriginLocation[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Position of a parcel body inside the source document it was published from.'} test::wistfulestuary::domain::OriginLocation
+{
+  {meta::pure::profiles::doc.doc = 'First line of the parcel body.'} startLine: Integer[1];
+  {meta::pure::profiles::doc.doc = 'First column of the parcel body.'} startColumn: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Last line of the parcel body.'} endLine: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Last column of the parcel body.'} endColumn: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Character offset of the parcel body.'} charOffset: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Name of the source document the parcel body was published from.'} sourceFile: String[1];
+}

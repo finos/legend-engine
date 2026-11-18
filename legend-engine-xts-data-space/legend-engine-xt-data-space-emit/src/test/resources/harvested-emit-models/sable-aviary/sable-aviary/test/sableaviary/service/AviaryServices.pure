@@ -1,0 +1,290 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sableaviary::service::BirdRegisterService
+{
+  pattern: '/sableaviary/v1/bird-register/{processingDate}';
+  title: 'Sable Aviary - Banded Bird Register';
+  owners:
+  [
+    'sable-aviary-register',
+    'aviary-stewardship'
+  ];
+  documentation: 'Resolves the ringed bird extent at the processing date carried on the URL, keeps the birds whose diet guide is one of the four listed codes and whose keeper note is recorded, and projects the ring label, the condition band, the composed headline, the register provenance and the enclosure name reached one join hop out.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: processingDate: StrictDate[1]|test::sableaviary::domain::RingedBird.all($processingDate)->filter(
+      b|$b.species.dietLabel->in(['GRANIVORE', 'INSECTIVORE', 'FRUGIVORE', 'NECTARIVORE']) && !$b.keeperNote->isEmpty()
+    )->project(
+      [
+        col(
+          b|$b.ringLabel(),
+          'Ring'
+        ),
+        col(
+          b|$b.conditionBand(),
+          'Band'
+        ),
+        col(
+          b|test::sableaviary::function::birdHeadline($b.wingSpanCm, $b.massGrams, $b.ringedOn, $processingDate, $b.keeperNote),
+          'Headline'
+        ),
+        col(
+          b|$b.registerSource,
+          'Source'
+        ),
+        col(
+          b|$b.enclosureLabel->toOne(),
+          'Enclosure'
+        )
+      ]
+    )->distinct()->sort([asc('Ring')]);
+    mapping: test::sableaviary::mapping::AviaryRegisterMapping;
+    runtime: test::sableaviary::runtime::AviaryRegisterRuntime;
+  }
+  testSuites:
+  [
+    birdRegisterServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryRegisterConnection:
+            Relational
+            #{
+              aviary.ringed_bird:
+                'bird_id,ring_code,species_code,enclosure_code,wing_span_cm,mass_grams,ringed_on,keeper_note,in_z,out_z\n'+
+                '1,SA-1001,GR,EN-1,44,940,2026-01-04,wing measured on arrival,2026-01-01,9999-12-31\n'+
+                '2,SA-1002,IN,EN-1,42,610,2026-01-05,light frame,2026-01-01,9999-12-31\n'+
+                '3,SA-1003,FR,EN-2,33,760,2026-01-06,,2026-01-01,9999-12-31\n'+
+                '4,SA-1004,ZZ,EN-2,31,480,2026-01-07,unlisted diet,2026-01-01,9999-12-31\n'+
+                '5,SA-1005,NE,EN-2,24,520,2026-01-08,steady on perch,2026-01-01,9999-12-31\n'+
+                '6,SA-1009,GR,EN-1,45,950,2026-01-02,restated on intake,2025-01-01,2025-06-01\n';
+
+              aviary.enclosure:
+                'enclosure_code,enclosure_name,shift_code,perch_count,cover_note,in_z,out_z\n'+
+                'EN-1,North Flight Aviary,SH-1,18,mesh renewed,2026-01-01,9999-12-31\n'+
+                'EN-2,Reed Flight Aviary,SH-1,12,,2026-01-01,9999-12-31\n';
+
+              aviary.species_guide:
+                'species_code,species_name,diet_code,flight_class\n'+
+                'GR,Sable Finch,GR,perching\n'+
+                'IN,Marsh Warbler,IN,perching\n'+
+                'FR,Fig Pigeon,FR,soaring\n'+
+                'NE,Sunbird,NE,hovering\n'+
+                'ZZ,Unlisted Passerine,XX,perching\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        listedDietsWithNotes:
+        {
+          parameters:
+          [
+            processingDate = %2026-06-01
+          ]
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ring":"SA-1001","Band":"PRIME FLIER","Headline":"PRIME FLIER @ 148d / WING MEASURED ","Source":"SABLE AVIARY REGISTER","Enclosure":"NORTH FLIGHT AVIARY"},{"Ring":"SA-1002","Band":"LONG WING LIGHT","Headline":"LONG WING LIGHT @ 147d / LIGHT FRAME","Source":"SABLE AVIARY REGISTER","Enclosure":"NORTH FLIGHT AVIARY"},{"Ring":"SA-1005","Band":"STEADY FLIER","Headline":"STEADY FLIER @ 144d / STEADY ON PERC","Source":"SABLE AVIARY REGISTER","Enclosure":"REED FLIGHT AVIARY"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::sableaviary::service::RecentRingingService
+{
+  pattern: '/sableaviary/v1/recent-ringing/{processingDate}';
+  title: 'Sable Aviary - Recently Ringed Birds';
+  owners:
+  [
+    'sable-aviary-register',
+    'aviary-stewardship'
+  ];
+  documentation: 'Keeps the birds ringed within the ninety days before the register date by shifting the register date backwards, then projects the ring label, the register age in days and the keeper sentinel, de-duplicated and sorted on the ring.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: processingDate: StrictDate[1]|test::sableaviary::domain::RingedBird.all($processingDate)->filter(
+      b|$b.ringedOn > $processingDate->adjust(-90, DurationUnit.DAYS)
+    )->project(
+      [
+        col(
+          b|$b.ringLabel(),
+          'Ring'
+        ),
+        col(
+          b|test::sableaviary::function::registerAgeDays($b.ringedOn, $processingDate),
+          'AgeDays'
+        ),
+        col(
+          b|$b.keeperLabel(),
+          'Keeper'
+        )
+      ]
+    )->distinct()->sort([asc('Ring')]);
+    mapping: test::sableaviary::mapping::AviaryRegisterMapping;
+    runtime: test::sableaviary::runtime::AviaryRegisterRuntime;
+  }
+  testSuites:
+  [
+    recentRingingServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryRegisterConnection:
+            Relational
+            #{
+              aviary.ringed_bird:
+                'bird_id,ring_code,species_code,enclosure_code,wing_span_cm,mass_grams,ringed_on,keeper_note,in_z,out_z\n'+
+                '1,SA-1001,GR,EN-1,44,940,2026-04-04,wing measured on arrival,2026-01-01,9999-12-31\n'+
+                '2,SA-1002,IN,EN-1,42,610,2026-05-05,,2026-01-01,9999-12-31\n'+
+                '3,SA-1003,FR,EN-2,33,760,2025-11-06,ringed last season,2026-01-01,9999-12-31\n'+
+                '4,SA-1009,GR,EN-1,45,950,2026-05-02,restated on intake,2025-01-01,2025-06-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        ringedWithinTheQuarter:
+        {
+          parameters:
+          [
+            processingDate = %2026-06-01
+          ]
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ring":"SA-1001","AgeDays":58,"Keeper":"WING MEASURED ON ARRIVAL"},{"Ring":"SA-1002","AgeDays":27,"Keeper":"UNVISITED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::sableaviary::service::FeedTallyService
+{
+  pattern: '/sableaviary/v1/feed-tally/{processingDate}';
+  title: 'Sable Aviary - Feed Tally By Enclosure';
+  owners:
+  [
+    'sable-aviary-register',
+    'aviary-stewardship'
+  ];
+  documentation: 'Groups the in-range feed batches by the enclosure name reached across the feed join and by the feed kind, summing the delivered kilograms, so the aggregation is pushed down as a grouped subselect.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: processingDate: StrictDate[1]|test::sableaviary::domain::FeedBatch.all($processingDate)->groupBy(
+      [
+        f|$f.fedEnclosure.enclosureName,
+        f|$f.feedKind
+      ],
+      [
+        agg(
+          f|$f.kilograms,
+          y|$y->sum()
+        )
+      ],
+      [
+        'Enclosure',
+        'FeedKind',
+        'TotalKg'
+      ]
+    )->sort([asc('Enclosure'), asc('FeedKind')]);
+    mapping: test::sableaviary::mapping::AviaryRegisterMapping;
+    runtime: test::sableaviary::runtime::AviaryRegisterRuntime;
+  }
+  testSuites:
+  [
+    feedTallyServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryRegisterConnection:
+            Relational
+            #{
+              aviary.feed_batch:
+                'batch_id,batch_code,enclosure_code,feed_kind,kilograms,delivered_on,in_z,out_z\n'+
+                '1,FB-01,EN-1,seed,40,2026-02-01,2026-01-01,9999-12-31\n'+
+                '2,FB-02,EN-1,seed,25,2026-02-08,2026-01-01,9999-12-31\n'+
+                '3,FB-03,EN-1,insect,12,2026-02-09,2026-01-01,9999-12-31\n'+
+                '4,FB-04,EN-2,fruit,30,2026-02-10,2026-01-01,9999-12-31\n'+
+                '5,FB-06,EN-1,seed,99,2026-02-12,2024-01-01,2025-01-01\n';
+
+              aviary.enclosure:
+                'enclosure_code,enclosure_name,shift_code,perch_count,cover_note,in_z,out_z\n'+
+                'EN-1,North Flight Aviary,SH-1,18,mesh renewed,2026-01-01,9999-12-31\n'+
+                'EN-2,Reed Flight Aviary,SH-1,12,,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        tallyByEnclosureAndKind:
+        {
+          parameters:
+          [
+            processingDate = %2026-06-01
+          ]
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Enclosure":"North Flight Aviary","FeedKind":"insect","TotalKg":12},{"Enclosure":"North Flight Aviary","FeedKind":"seed","TotalKg":65},{"Enclosure":"Reed Flight Aviary","FeedKind":"fruit","TotalKg":30}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

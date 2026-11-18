@@ -1,0 +1,89 @@
+name: gilded-prairie-2
+title: "Gilded Prairie 2 — Assembled Mapping Layers Over Sibling Processing-Temporal Grassland Stores"
+description: |
+  An advanced grassland-survey catalogue whose relational surface is split across
+  three sibling stores — a steward/region reference store, a plot and soil store
+  and a survey and stem-count store — pulled together by a fourth store that
+  includes all three and declares the joins that cross them. Six processing-temporal
+  classes are bound by four mappings assembled through includes: a reference layer,
+  a standalone habitat layer, a survey layer that includes the habitat layer, and a
+  catalogue layer that includes both and carries the association implementation that
+  spans them. Joined properties are reached one and two joins away, so a row whose
+  far side is unmatched or temporally closed resolves the joined value as a null.
+  Five single-execution services cover point-in-time retrieval, prefix filtering,
+  membership over an unbounded caller collection, a window bound computed inside the
+  query by shifting a caller date, projection de-duplication and two ordered bounded
+  slices, and one data space publishes the three mapping/runtime tiers with the
+  services as its executables. Mapping-level suites assert the joined and multi-hop
+  projections directly against store fixtures.
+
+modelSources:
+  model:
+    root: gilded-prairie-2
+    files:
+      - test/gildedprairie2/connection/PrairieWarehouseConnection.pure
+      - test/gildedprairie2/dataspace/PrairieSurveyDataSpace.pure
+      - test/gildedprairie2/domain/PrairieDomain.pure
+      - test/gildedprairie2/mapping/PrairieCatalogMapping.pure
+      - test/gildedprairie2/mapping/PrairieHabitatMapping.pure
+      - test/gildedprairie2/mapping/PrairieReferenceMapping.pure
+      - test/gildedprairie2/mapping/PrairieSurveyMapping.pure
+      - test/gildedprairie2/runtime/PrairieRuntimes.pure
+      - test/gildedprairie2/service/PlotRegisterAsOf.pure
+      - test/gildedprairie2/service/RegionRegisterAsOf.pure
+      - test/gildedprairie2/service/SoilProfileRegister.pure
+      - test/gildedprairie2/service/SpeciesCountRegister.pure
+      - test/gildedprairie2/service/SurveyWindowRegister.pure
+      - test/gildedprairie2/store/PrairieAllDB.pure
+      - test/gildedprairie2/store/PrairiePlotDB.pure
+      - test/gildedprairie2/store/PrairieReferenceDB.pure
+      - test/gildedprairie2/store/PrairieSurveyDB.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:derived-property
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-cross-schema
+  - store:relational-multi-table
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - collection-membership
+  - data-space
+  - date-arithmetic
+  - derived-property
+  - h2
+  - inner-join
+  - mapping-include
+  - multi-hop-join
+  - multi-schema
+  - point-in-time
+  - processing-temporal
+  - service
+  - snowflake
+  - sort-limit
+  - store-include

@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::ambervineyard2::domain::*;
+
+Profile test::ambervineyard2::domain::PaleoProfile
+{
+  stereotypes: [fieldCollected, curated];
+  tags: [origin, source];
+}
+
+Enum test::ambervineyard2::domain::PreservationGrade
+{
+  PRISTINE,
+  STABLE,
+  FRAGILE,
+  CRITICAL
+}
+
+Class test::ambervineyard2::domain::DigRecord
+{
+  catalogueNumber: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal, PaleoProfile.fieldCollected>> {meta::pure::profiles::doc.doc = 'A business-temporally milestoned fossil record specialising the base dig record with era, grade, provenance and derived labels.', PaleoProfile.origin = 'field'} test::ambervineyard2::domain::Fossil extends DigRecord
+{
+  taxonName: String[1];
+  eraLabel: String[0..1];
+  grade: PreservationGrade[0..1];
+  excavatorName: String[0..1];
+  parentCatalogue: String[0..1];
+  authority: String[0..1];
+  sourceRegister: String[1];
+  provenance: Provenance[1];
+  metrics: FieldMetrics[1];
+}
+
+Class test::ambervineyard2::domain::Provenance
+{
+  collector: String[1];
+  method: String[0..1];
+}
+
+Class test::ambervineyard2::domain::FieldMetrics
+{
+  lengthCm: Float[0..1];
+  massG: Float[0..1];
+}
+
+Class test::ambervineyard2::domain::DigSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+}
+
+Class test::ambervineyard2::domain::Excavator
+{
+  excavatorCode: String[1];
+  excavatorName: String[1];
+}
+
+Class test::ambervineyard2::domain::FieldNote
+{
+  noteId: String[1];
+  kind: String[1];
+  body: String[1];
+}
+
+Association test::ambervineyard2::domain::Fossil_DigSite
+{
+  digSite: DigSite[0..1];
+  fossils: Fossil[*];
+}
+
+Association test::ambervineyard2::domain::DigSite_Excavator
+{
+  excavator: Excavator[0..1];
+  sites: DigSite[*];
+}

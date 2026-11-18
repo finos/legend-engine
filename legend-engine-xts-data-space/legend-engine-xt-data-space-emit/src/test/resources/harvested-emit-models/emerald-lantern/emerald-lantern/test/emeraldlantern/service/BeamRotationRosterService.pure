@@ -1,0 +1,150 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldlantern::service::BeamRotationRosterService
+{
+  pattern: '/emeraldlantern/v1/beam-rotation-roster/{depot}';
+  title: 'Emerald Lantern - Beam Rotation Roster';
+  ownership: UserList { users: ['lantern-board-roster'] };
+  documentation: 'Rosters the turning optics that answer to one beam label and were commissioned no later than a requested date. The narrowing happens on the station extent itself, so the beam label has to be reached by narrowing each station to its turning-optic specialisation inside the query; a fixed station has no beam label to compare and drops out. The projection fixes the tabular surface and reads two vocabularies back as enumeration constants and the rotation period through the same specialisation. The single query body is bound to two keyed depots over the same store, so the key chooses only which Sybase target the identical plan is routed to.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {commissionedBy: StrictDate[1], beamKey: String[1]|test::emeraldlantern::domain::LanternStation.all()->filter(
+      s|($s->cast(@test::emeraldlantern::domain::RotatingLantern).rotationLabel == $beamKey) && ($s.commissionedOn <= $commissionedBy)
+    )->project(
+      [
+        s|$s.stationCode,
+        s|$s.stationName,
+        s|$s.districtCode,
+        s|$s.keeperName,
+        s|$s.lensState,
+        s|$s.serviceTier,
+        s|$s.focalMetres,
+        s|$s->cast(@test::emeraldlantern::domain::RotatingLantern).rotationPeriodSeconds
+      ],
+      [
+        'Station',
+        'StationName',
+        'District',
+        'Keeper',
+        'LensState',
+        'ServiceTier',
+        'FocalMetres',
+        'RotationSeconds'
+      ]
+    )->sort([asc('Station')])};
+    key: 'depot';
+    executions['board']:
+    {
+      mapping: test::emeraldlantern::mapping::LanternMapping;
+      runtime: test::emeraldlantern::runtime::HarbourBoardRuntime;
+    }
+    executions['depot']:
+    {
+      mapping: test::emeraldlantern::mapping::LanternMapping;
+      runtime: test::emeraldlantern::runtime::DistrictDepotRuntime;
+    }
+  }
+  testSuites:
+  [
+    beamRotationRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lanternConnection:
+            Reference
+            #{
+              test::emeraldlantern::data::LanternTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        boardKeyBeamSharedByTwoTurningOptics:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['board'];
+          parameters:
+          [
+            commissionedBy = %2026-01-01,
+            beamKey = 'BEAM-A'
+          ]
+          asserts:
+          [
+            bothTurningOpticsOnTheBeam:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"ST-1","StationName":"Emerald Point","District":"NORTH","Keeper":"A Okafor","LensState":"Clear","ServiceTier":"Routine","FocalMetres":18.5,"RotationSeconds":8.0},{"Station":"ST-4","StationName":"Gull Ledge","District":"WEST","Keeper":"D Moreau","LensState":"Unrecorded","ServiceTier":"Routine","FocalMetres":9.5,"RotationSeconds":10.0}]';
+                  }#;
+              }#
+          ]
+        },
+        depotKeyCommissioningCutoffKeepsTheOlderOptic:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['depot'];
+          parameters:
+          [
+            commissionedBy = %2020-01-01,
+            beamKey = 'BEAM-A'
+          ]
+          asserts:
+          [
+            onlyTheOpticCommissionedInTime:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"ST-1","StationName":"Emerald Point","District":"NORTH","Keeper":"A Okafor","LensState":"Clear","ServiceTier":"Routine","FocalMetres":18.5,"RotationSeconds":8.0}]';
+                  }#;
+              }#
+          ]
+        },
+        boardKeyBeamLabelNoOpticCarries:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['board'];
+          parameters:
+          [
+            commissionedBy = %2026-01-01,
+            beamKey = 'BEAM-Z'
+          ]
+          asserts:
+          [
+            noStationRostered:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

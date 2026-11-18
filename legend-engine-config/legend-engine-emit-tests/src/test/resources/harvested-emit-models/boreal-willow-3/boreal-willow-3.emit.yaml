@@ -1,0 +1,73 @@
+name: boreal-willow-3
+title: "Boreal Willow 3 - Apiary Colony Register with Tri-Temporal Milestoning, Enumeration Mappings and View-Backed Yard Rollups"
+modelSources:
+  model:
+    root: boreal-willow-3
+    files:
+      - test/borealwillow3/connection/ApiaryConnections.pure
+      - test/borealwillow3/dataspace/ApiaryDataSpace.pure
+      - test/borealwillow3/domain/ApiaryDomain.pure
+      - test/borealwillow3/generation/ApiaryGeneration.pure
+      - test/borealwillow3/mapping/ApiaryBaseMapping.pure
+      - test/borealwillow3/mapping/ApiaryEnumMappings.pure
+      - test/borealwillow3/mapping/ApiaryMapping.pure
+      - test/borealwillow3/profile/ApiaryProfiles.pure
+      - test/borealwillow3/runtime/ApiaryRuntimes.pure
+      - test/borealwillow3/service/ColonyRosterAsOf.pure
+      - test/borealwillow3/service/FrameSampleDigest.pure
+      - test/borealwillow3/service/InspectionLogbookAsOfPair.pure
+      - test/borealwillow3/service/SwarmWatchRegister.pure
+      - test/borealwillow3/service/YardStewardRoster.pure
+      - test/borealwillow3/service/YardWalkFeed.pure
+      - test/borealwillow3/store/ApiaryDb.pure
+features:
+  - execution:data-space
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - bi-temporal
+  - business-temporal
+  - conditional-transform
+  - cross-schema
+  - data-space
+  - enumeration-mapping
+  - file-generation
+  - h2
+  - inline-view
+  - mapping-include
+  - point-in-time-query
+  - processing-temporal
+  - relational
+  - tabular-data-set

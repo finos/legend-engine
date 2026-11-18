@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::zephyrharbor::store::HarbourDB
+(
+  Schema tide
+  (
+    Table buoy_station
+    (
+      station_id VARCHAR(24) PRIMARY KEY,
+      station_name VARCHAR(80) NOT NULL,
+      mooring_code VARCHAR(20),
+      berth_label VARCHAR(40),
+      depth_metres DOUBLE NOT NULL,
+      shelter_note VARCHAR(120),
+      zone_id VARCHAR(12)
+    )
+    Table dive_survey
+    (
+      survey_id VARCHAR(24) PRIMARY KEY,
+      station_id VARCHAR(24),
+      kelp_cover_pct DOUBLE,
+      visibility_metres DOUBLE,
+      diver_id VARCHAR(24),
+      survey_grade VARCHAR(12)
+    )
+    Table diver_log
+    (
+      diver_id VARCHAR(24) PRIMARY KEY,
+      diver_name VARCHAR(80),
+      crew_id VARCHAR(24),
+      tier_code VARCHAR(8)
+    )
+    Table crew_roster
+    (
+      crew_id VARCHAR(24) PRIMARY KEY,
+      crew_name VARCHAR(80),
+      base_zone VARCHAR(12)
+    )
+
+    View station_cover_summary
+    (
+      ~groupBy
+      (
+        tide.dive_survey.station_id
+      )
+      station_id: tide.dive_survey.station_id PRIMARY KEY,
+      survey_tally: count(tide.dive_survey.survey_id)
+    )
+  )
+
+  Schema shoreline
+  (
+    Table zone_reference
+    (
+      zone_id VARCHAR(12) PRIMARY KEY,
+      zone_label VARCHAR(60),
+      shelter_code VARCHAR(12)
+    )
+    Table relief_survey
+    (
+      survey_id VARCHAR(24) PRIMARY KEY,
+      station_id VARCHAR(24),
+      kelp_cover_pct DOUBLE,
+      visibility_metres DOUBLE,
+      diver_id VARCHAR(24),
+      survey_grade VARCHAR(12)
+    )
+  )
+
+  Filter AcceptedSurveys(toUpper(tide.dive_survey.survey_grade) = 'ACCEPTED')
+  Filter StaffedReliefSurveys(shoreline.relief_survey.diver_id is not null)
+
+  Join station_survey_join(tide.buoy_station.station_id = tide.dive_survey.station_id)
+  Join survey_diver_join(tide.dive_survey.diver_id = tide.diver_log.diver_id)
+  Join diver_crew_join(tide.diver_log.crew_id = tide.crew_roster.crew_id)
+  Join crew_zone_join(tide.crew_roster.base_zone = shoreline.zone_reference.zone_id)
+  Join station_zone_join(tide.buoy_station.zone_id = shoreline.zone_reference.zone_id)
+  Join station_summary_join(tide.buoy_station.station_id = tide.station_cover_summary.station_id)
+)

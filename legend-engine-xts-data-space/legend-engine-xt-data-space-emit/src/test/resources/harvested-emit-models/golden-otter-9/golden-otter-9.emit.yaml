@@ -1,0 +1,89 @@
+name: golden-otter-9
+title: "Golden Otter 9 — a river otter sanctuary register federated from four included stores and served through parameterised and collection-filtered services"
+description: |
+  The register of a river otter sanctuary. Four dependency stores each hold one schema - river reaches,
+  holts with their habitats, survey sightings and the watch-team observers - and an aggregate store
+  declares no tables of its own, includes all four and declares five single-column inner joins whose two
+  sides always sit in different schemas. Four dependency mappings carry the class mappings with trimmed,
+  upper-cased, concatenated and case-banded transforms; the aggregate mapping includes each of them with
+  its store substituted by the aggregate store and declares only the five association mappings, each end
+  bound to one join. Two mapping suites read the association graph. Seven single-execution services under
+  identifier-based ownership share the mapping and one cloud warehouse runtime: two take integer month and
+  year parameters with a three-code membership test, one combines a boolean equality with an existence
+  test over to-many sightings, one nests a non-empty test inside an existence test and deduplicates, one
+  filters projected rows on a string column before deduplicating, and one narrows a to-many path to the
+  latest row inside a projection. A data space lists the services as executables beside a diagram.
+modelSources:
+  model:
+    root: golden-otter-9
+    files:
+      - test/goldenotter9/connection/SanctuaryConnections.pure
+      - test/goldenotter9/data/SanctuaryFixture.pure
+      - test/goldenotter9/dataspace/SanctuaryDataSpace.pure
+      - test/goldenotter9/diagram/SanctuaryDiagram.pure
+      - test/goldenotter9/domain/SanctuaryDomain.pure
+      - test/goldenotter9/mapping/HoltRegisterMapping.pure
+      - test/goldenotter9/mapping/KeeperMapping.pure
+      - test/goldenotter9/mapping/RiverAtlasMapping.pure
+      - test/goldenotter9/mapping/SanctuaryMapping.pure
+      - test/goldenotter9/mapping/SurveyMapping.pure
+      - test/goldenotter9/runtime/SanctuaryRuntime.pure
+      - test/goldenotter9/service/LatestHoltObservers.pure
+      - test/goldenotter9/service/MonthlySightingTally.pure
+      - test/goldenotter9/service/ObserverMonthlyEffort.pure
+      - test/goldenotter9/service/ProtectedOccupiedHolts.pure
+      - test/goldenotter9/service/ReedbedWatchTeams.pure
+      - test/goldenotter9/service/TamarHoltRoster.pure
+      - test/goldenotter9/service/WatchedReaches.pure
+      - test/goldenotter9/store/HoltRegisterDb.pure
+      - test/goldenotter9/store/KeeperDb.pure
+      - test/goldenotter9/store/OtterSanctuaryDb.pure
+      - test/goldenotter9/store/RiverAtlasDb.pure
+      - test/goldenotter9/store/SurveyDb.pure
+features:
+  - connection:oauth-authentication
+  - connection:snowflake
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:mapping-test
+  - execution:service
+  - execution:service-ownership
+  - execution:service-ownership-did
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:diagram
+  - mapping:mapping-include
+  - mapping:mapping-include-store-substitution
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:distinct
+  - query:filter
+  - query:membership-test
+  - execution:service-parameter
+  - query:project
+  - query:sort-limit
+  - query:post-projection-filter
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-join
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-graph
+  - data-space
+  - h2
+  - otter-sanctuary
+  - snowflake
+  - store-substitution
+  - tabular-data-set

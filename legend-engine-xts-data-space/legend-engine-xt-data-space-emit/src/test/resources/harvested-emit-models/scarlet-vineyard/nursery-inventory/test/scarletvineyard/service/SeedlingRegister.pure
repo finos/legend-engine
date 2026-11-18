@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletvineyard::service::SeedlingRegister
+{
+  pattern: '/nursery/v1/seedlings';
+  title: 'Nursery - seedling lot register';
+  owners:
+  [
+    'nursery-operations',
+    'propagation-desk'
+  ];
+  documentation: 'Publishes the seedling lot register as a flat tabular result, normalising the cultivar label in the projection so the emitted plan carries a post-projection string transform over the single mapped table.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::scarletvineyard::domain::SeedlingLot.all()->project([l|$l.code, l|$l.cultivar->trim()->toUpper(), l|$l.seedlingCount], ['Code', 'Cultivar', 'Seedlings'])->sort([asc('Code')])};
+    mapping: test::scarletvineyard::mapping::NurseryMapping;
+    runtime: test::scarletvineyard::runtime::NurseryRuntime;
+  }
+  testSuites:
+  [
+    seedlingRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryConnection:
+            Relational
+            #{
+              nursery.seedling_lot:
+                'lot_id,lot_code,cultivar,seedling_count,sown_on\n'+
+                '1,LOT-A,Sugar Maple,240,2024-03-14\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        singleLot:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+
+          ]
+          asserts:
+          [
+            cultivarUppercased:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"LOT-A","Cultivar":"SUGAR MAPLE","Seedlings":240}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

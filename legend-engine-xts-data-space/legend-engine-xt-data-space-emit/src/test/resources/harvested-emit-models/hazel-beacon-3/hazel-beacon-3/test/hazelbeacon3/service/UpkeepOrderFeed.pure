@@ -1,0 +1,101 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelbeacon3::service::UpkeepOrderFeed
+{
+  pattern: '/hazelbeacon/v1/orders/near-term';
+  title: 'Hazel Beacon - Near-Term Upkeep Orders';
+  owners:
+  [
+    'coastal-trust-upkeep-desk',
+    'depot-crew-roster'
+  ];
+  documentation: 'Publishes the maintenance orders opened in the reporting month whose derived priority band is one the depot works in the near term, with the crew and depot resolved across the crew hop. Orders resolve through the upkeep store rather than the register store, so the feed exercises the second mapping and runtime pair.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::hazelbeacon3::domain::UpkeepOrder.all()->filter(
+      o|($o.openedOn >= %2026-04-01) && ($o.priorityBand->in(['next-tide', 'this-week']))
+    )->project(
+      [
+        o|$o.orderRef,
+        o|$o.beaconCode,
+        o|$o.priorityBand,
+        o|$o.crewName,
+        o|$o.depotName
+      ],
+      [
+        'ORDER_REF',
+        'BEACON_CODE',
+        'PRIORITY_BAND',
+        'CREW',
+        'DEPOT'
+      ]
+    )->sort(
+      [
+        asc('ORDER_REF')
+      ]
+    )->limit(5);
+    mapping: test::hazelbeacon3::mapping::UpkeepMapping;
+    runtime: test::hazelbeacon3::runtime::UpkeepH2Runtime;
+  }
+  testSuites:
+  [
+    nearTermOrderSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          upkeepH2Connection:
+            Relational
+            #{
+              crew.crew_record:
+                'crew_code,crew_name,depot_name\n'+
+                'CR-01,North Shore Crew,Hazel Point Depot\n'+
+                'CR-02,Harbour Crew,Quay Head Depot\n';
+              work.work_order:
+                'order_ref,beacon_code,crew_code,priority_code,opened_on,closed_on\n'+
+                'WO-01,BC-01,CR-01,P1,2026-04-03,2026-04-05\n'+
+                'WO-02,BC-02,CR-01,P2,2026-04-10,\n'+
+                'WO-03,BC-07,CR-02,P3,2026-04-12,\n'+
+                'WO-04,BC-09,CR-09,P9,2026-04-14,\n'+
+                'WO-05,BC-01,CR-02,P1,2026-03-28,2026-03-30\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        nearTermBandsInsideTheReportingMonth:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoOrdersSurviveTheBandAndTheDateFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ORDER_REF":"WO-01","BEACON_CODE":"BC-01","PRIORITY_BAND":"next-tide","CREW":"North Shore Crew","DEPOT":"Hazel Point Depot"},{"ORDER_REF":"WO-02","BEACON_CODE":"BC-02","PRIORITY_BAND":"this-week","CREW":"North Shore Crew","DEPOT":"Hazel Point Depot"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

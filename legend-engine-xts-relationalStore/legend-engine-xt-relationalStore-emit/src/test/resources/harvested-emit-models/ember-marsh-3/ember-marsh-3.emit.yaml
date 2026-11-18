@@ -1,0 +1,44 @@
+name: ember-marsh-3
+title: "Ember Marsh 3 — Two Projecting Services Over One Joined Marsh Boardwalk Estate"
+description: |
+  A marsh-reserve boardwalk maintenance register. Two flat, primitive-typed classes — the
+  boardwalk section carried across the fen and the warden patrol walked over it — are bound to one
+  anchoring table each in a single relational store, and the patrol resolves its section through a
+  declared join so property navigation crosses one relational hop. Both features are carried by the
+  service query bodies rather than by the store: each service exposes a parameterised, single
+  execution that filters the register and projects selected columns and derived expressions into a
+  tabular result, one over the sections of a named reserve above a plank floor and one over the
+  patrols of a named warden that recorded a hazard, reading the reserve name and plank count of the
+  patrolled section through the join. Each service carries its own suite and H2 fixture, so the
+  generated plan is executed rather than merely compiled, including a parameter set that selects no
+  rows at all.
+modelSources:
+  model:
+    root: ember-marsh-3
+    files:
+      - test/embermarsh3/connection/MarshConnection.pure
+      - test/embermarsh3/domain/MarshDomain.pure
+      - test/embermarsh3/mapping/MarshMapping.pure
+      - test/embermarsh3/runtime/MarshRuntime.pure
+      - test/embermarsh3/service/PatrolHazardFeed.pure
+      - test/embermarsh3/service/SectionPlankFeed.pure
+      - test/embermarsh3/store/MarshDb.pure
+features:
+  - execution:service
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - boardwalk-maintenance
+  - h2
+  - join
+  - projection
+  - relational
+  - service-test
+  - tabular-data-set

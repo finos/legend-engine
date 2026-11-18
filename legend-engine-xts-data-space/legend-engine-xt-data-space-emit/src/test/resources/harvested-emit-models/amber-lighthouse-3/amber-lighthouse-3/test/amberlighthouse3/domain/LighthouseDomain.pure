@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::amberlighthouse3::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Order of the optical lens installed in a lighthouse.'} test::amberlighthouse3::domain::LensGrade
+{
+  FIRST_ORDER,
+  SECOND_ORDER,
+  THIRD_ORDER
+}
+
+Class <<test::amberlighthouse3::profile::LighthouseProfile.tendedStation>> {meta::pure::profiles::doc.doc = 'A tended lighthouse on the coastal tending register.', test::amberlighthouse3::profile::LighthouseProfile.keeper = 'Coastal Tending', test::amberlighthouse3::profile::LighthouseProfile.tendingCycle = 'monthly'} test::amberlighthouse3::domain::LighthouseStation
+{
+  {meta::pure::profiles::doc.doc = 'Canonical code of the lighthouse.'} stationCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Name the lighthouse is known by on the tending register.'} stationLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Code of the stretch of coast the lighthouse stands on.'} coastCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Order of the optical lens installed in the lantern room.'} lensGrade: LensGrade[1];
+  {meta::pure::profiles::doc.doc = 'Lamp fittings installed in the lantern room.'} lamps: LampFitting[*];
+  {meta::pure::profiles::doc.doc = 'The installed lamp fittings of one kind, narrowed on read.'} lampsOfKind(kind: String[1])
+  {
+    $this.lamps->filter(l|$l.lampKind == $kind)
+  }: LampFitting[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A lamp fitting installed in the lantern room of a lighthouse.'} test::amberlighthouse3::domain::LampFitting
+{
+  {meta::pure::profiles::doc.doc = 'Canonical code of the fitting.'} lampCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Kind of lamp installed in the fitting.'} lampKind: String[1];
+  {meta::pure::profiles::doc.doc = 'Rated wattage of the fitting.'} wattage: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'How many tended lighthouses stand on one stretch of coast, published by the register itself rather than counted on read.'} test::amberlighthouse3::domain::CoastTendingSummary
+{
+  {meta::pure::profiles::doc.doc = 'Code of the stretch of coast.'} coastCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Number of tended lighthouses standing on the coast.'} stationCount: Integer[1];
+}

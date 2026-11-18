@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::hazelisle4::domain::*;
+
+Enum test::hazelisle4::domain::SoilClass
+{
+  LOAM,
+  CLAY,
+  SANDY,
+  PEAT
+}
+
+Enum test::hazelisle4::domain::TenureClass
+{
+  ANNUAL,
+  SEASONAL,
+  WAITING
+}
+
+Enum test::hazelisle4::domain::ShedClass
+{
+  TIMBER,
+  BRICK,
+  CANVAS
+}
+
+Class {meta::pure::profiles::doc.doc = 'An island allotment plot let to one grower, described by its soil and tenure.'} test::hazelisle4::domain::AllotmentPlot
+{
+  plotCode: String[1];
+  plotName: String[1];
+  bedCount: Integer[1];
+  soil: SoilClass[0..1];
+  tenure: TenureClass[0..1];
+  plotRegistry: String[1];
+  noticeBoard: PlotNotice[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The notice text a plot carries on the site board, held inside the plot row.'} test::hazelisle4::domain::PlotNotice
+{
+  noticeLabel: String[1];
+  soilLabel: String[0..1];
+  tenureLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A tool shed standing on the allotment site and shared by several plots.'} test::hazelisle4::domain::ToolShed
+{
+  shedCode: String[1];
+  shedName: String[1];
+  shedKind: ShedClass[0..1];
+  shelfCount: Integer[1];
+  shedRegistry: String[1];
+  shedPlate: ShedPlate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The plate fixed to a shed door, held inside the shed row.'} test::hazelisle4::domain::ShedPlate
+{
+  plateLabel: String[1];
+  kindLabel: String[0..1];
+  siteLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A grower holding one or more allotment plots on the island site.'} test::hazelisle4::domain::Grower
+{
+  growerCode: String[1];
+  growerName: String[1];
+  parishName: String[1];
+  growerRegistry: String[1];
+}

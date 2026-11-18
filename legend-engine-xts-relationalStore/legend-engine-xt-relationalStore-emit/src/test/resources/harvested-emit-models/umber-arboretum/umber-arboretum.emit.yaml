@@ -1,0 +1,54 @@
+name: umber-arboretum
+title: "Umber Arboretum - de-duplicated relational class mappings with conditional and enum-of-expression transforms"
+description: |
+  An arboretum stewardship model whose de-duplicating relational class mappings
+  express identity against explicit main-table aliases and primary keys over a
+  chain of three included relational stores. Specimen attribution combines
+  nested conditional transforms, null sentinels, an inline view-backed property
+  and a five-hop join path to the stewardship programme, while enumeration
+  mappings are driven by computed expressions rather than raw columns.
+modelSources:
+  model:
+    root: umber-arboretum
+    files:
+      - test/umberarboretum/domain/GroveModel.pure
+      - test/umberarboretum/mapping/GroveCoreMapping.pure
+      - test/umberarboretum/mapping/GroveSurveyMapping.pure
+      - test/umberarboretum/store/GroveCoreDb.pure
+      - test/umberarboretum/store/GroveSurveyDb.pure
+      - test/umberarboretum/store/GroveTaxonomyDb.pure
+features:
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:relational-conditional-transform
+  - mapping:relational-distinct
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-inline-view
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - distinct
+  - duckdb
+  - enum-of-expression
+  - h2
+  - multi-hop-join
+  - primary-key
+  - relational
+  - store-include
+  - view

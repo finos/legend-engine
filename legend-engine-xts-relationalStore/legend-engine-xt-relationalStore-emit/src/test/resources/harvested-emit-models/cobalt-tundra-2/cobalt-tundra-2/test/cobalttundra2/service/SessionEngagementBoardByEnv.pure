@@ -1,0 +1,183 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobalttundra2::service::SessionEngagementBoardByEnv
+{
+  pattern: '/cobalttundra2/sessions/{environment}';
+  ownership: UserList { users: ['catalogue-stewardship-desk'] };
+  documentation: 'Boards the reading sessions whose recorded minutes fall in a half-open window and whose reader group is one of the eighteen published groups, projecting the session, its engagement tier and the catalogue item reached over the association together with the district that item resolves to. The membership test and the window predicate are pushed into the generated query ahead of the projection, and the same body is planned for both keyed environments.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {minMinutes: Integer[1], maxMinutes: Integer[1]|test::cobalttundra2::domain::ReadingSession.all()->filter(
+      s|(($s.minutesSpent >= $minMinutes) && ($s.minutesSpent < $maxMinutes)) && $s.readerGroup->in([
+        'adult-learning',
+        'archive',
+        'community',
+        'conservation',
+        'family',
+        'heritage',
+        'homework-club',
+        'literacy',
+        'local-history',
+        'outreach',
+        'public',
+        'research',
+        'school',
+        'seniors',
+        'story-time',
+        'summer-reading',
+        'teachers',
+        'volunteers'
+      ])
+    )->project(
+      [
+        s|$s.sessionCode,
+        s|$s.readerGroup,
+        s|$s.minutesSpent,
+        s|$s.engagementTier,
+        s|$s.branchName,
+        s|$s.readItem.itemCode,
+        s|$s.readItem.itemTitle,
+        s|$s.readItem.districtName
+      ],
+      [
+        'SessionCode',
+        'ReaderGroup',
+        'MinutesSpent',
+        'EngagementTier',
+        'BranchName',
+        'ItemCode',
+        'ItemTitle',
+        'ItemDistrict'
+      ]
+    )->sort(
+      [
+        asc('SessionCode')
+      ]
+    )};
+    key: 'environment';
+    executions['local']:
+    {
+      mapping: test::cobalttundra2::mapping::CatalogueMapping;
+      runtime: test::cobalttundra2::runtime::CatalogueLocalRuntime;
+    }
+    executions['managed']:
+    {
+      mapping: test::cobalttundra2::mapping::CatalogueMapping;
+      runtime: test::cobalttundra2::runtime::CatalogueManagedRuntime;
+    }
+  }
+  testSuites:
+  [
+    sessionEngagementBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          catalogueLocal:
+            Relational
+            #{
+              catalogue.district:
+                'district_id,district_code,district_name,steward\n'+
+                '1,DIS-N,Northern Reach,NORTH-CATALOGUE-DESK\n'+
+                '2,DIS-S,Southern Reach,South-Catalogue-Desk\n';
+
+              catalogue.branch:
+                'branch_id,branch_code,branch_name,district_id,opened_year\n'+
+                '1,BR-01,Fernbank Reading Room,1,1974\n'+
+                '2,BR-02,Saltmarsh Reading Room,2,1998\n';
+
+              catalogue.shelf_section:
+                'section_id,section_code,section_label,branch_id,capacity_count,reserved_count\n'+
+                '1,SEC-A,Field Guides,1,120,15\n'+
+                '2,SEC-B,Sky Atlases,2,80,5\n';
+
+              catalogue.catalogue_item:
+                'item_id,item_code,item_title,section_id,page_count,edition_year,language_code,condition_code\n'+
+                '1,IT-001,Moss And Lichen Guide,1,240,2019,en,GOOD\n'+
+                '3,IT-003,Night Sky Almanac,2,180,2015,fr,WORN\n';
+
+              catalogue.reading_session:
+                'session_id,session_code,item_id,branch_id,minutes_spent,reader_group\n'+
+                '1,RS-001,1,1,45,school\n'+
+                '2,RS-002,1,1,90,research\n'+
+                '3,RS-003,3,2,20,public\n'+
+                '4,RS-004,3,2,61,school\n'+
+                '5,RS-005,1,1,50,study-hall\n';
+            }#,
+          catalogueManaged:
+            Relational
+            #{
+              catalogue.district:
+                'district_id,district_code,district_name,steward\n'+
+                '1,DIS-N,Northern Reach,NORTH-CATALOGUE-DESK\n'+
+                '2,DIS-S,Southern Reach,South-Catalogue-Desk\n';
+
+              catalogue.branch:
+                'branch_id,branch_code,branch_name,district_id,opened_year\n'+
+                '1,BR-01,Fernbank Reading Room,1,1974\n'+
+                '2,BR-02,Saltmarsh Reading Room,2,1998\n';
+
+              catalogue.shelf_section:
+                'section_id,section_code,section_label,branch_id,capacity_count,reserved_count\n'+
+                '1,SEC-A,Field Guides,1,120,15\n'+
+                '2,SEC-B,Sky Atlases,2,80,5\n';
+
+              catalogue.catalogue_item:
+                'item_id,item_code,item_title,section_id,page_count,edition_year,language_code,condition_code\n'+
+                '1,IT-001,Moss And Lichen Guide,1,240,2019,en,GOOD\n'+
+                '3,IT-003,Night Sky Almanac,2,180,2015,fr,WORN\n';
+
+              catalogue.reading_session:
+                'session_id,session_code,item_id,branch_id,minutes_spent,reader_group\n'+
+                '1,RS-001,1,1,45,school\n'+
+                '2,RS-002,1,1,90,research\n'+
+                '3,RS-003,3,2,20,public\n'+
+                '4,RS-004,3,2,61,school\n'+
+                '5,RS-005,1,1,50,study-hall\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        minuteWindowAndPublishedGroups:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['local', 'managed'];
+          parameters:
+          [
+            minMinutes = 30,
+            maxMinutes = 90
+          ]
+          asserts:
+          [
+            windowedPublishedSessionsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SessionCode":"RS-001","ReaderGroup":"school","MinutesSpent":45,"EngagementTier":"steady","BranchName":"Fernbank Reading Room","ItemCode":"IT-001","ItemTitle":"Moss And Lichen Guide","ItemDistrict":"Northern Reach"},{"SessionCode":"RS-004","ReaderGroup":"school","MinutesSpent":61,"EngagementTier":"deep","BranchName":"Saltmarsh Reading Room","ItemCode":"IT-003","ItemTitle":"Night Sky Almanac","ItemDistrict":"Southern Reach"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

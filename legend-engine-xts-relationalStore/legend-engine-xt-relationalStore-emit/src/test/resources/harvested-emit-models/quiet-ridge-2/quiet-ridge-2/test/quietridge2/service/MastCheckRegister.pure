@@ -1,0 +1,145 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietridge2::service::MastCheckRegister
+{
+  pattern: '/quietridge/v1/mast-check-register/{environment}';
+  title: 'Quiet Ridge - Mast Check Register';
+  ownership: UserList { users: ['ridge-radio-desk'] };
+  documentation: 'Publishes the active ridge mast register for one keyed environment, selecting optional artifact kinds, counting passing mast checks and assigning a review band from the requested check floor.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {kinds: String[*], checkFloor: Integer[1]|test::quietridge2::domain::RidgeArtifact.all()->filter(
+      a|($kinds->isEmpty()) || ($a.artifactKind->in($kinds))
+    )->project(
+      [
+        col(a|$a.artifactCode, 'Artifact'),
+        col(a|$a.ridgeName, 'Ridge'),
+        col(a|$a->cast(@test::quietridge2::domain::DishMast).dishDiameterCm, 'DishCm'),
+        col(a|if($a.checks->exists(c|$c.checkGrade == test::quietridge2::function::passGrade()), |1, |0), 'PassedChecks'),
+        col(a|if(($checkFloor <= 1) && $a.checks->isNotEmpty(), |'REVIEWED', |'AWAITING CHECKS'), 'Band')
+      ]
+    )->sort([asc('Artifact')])};
+    key: 'environment';
+    executions['live']:
+    {
+      mapping: test::quietridge2::mapping::RidgeMastMapping;
+      runtime: test::quietridge2::runtime::RidgeMastRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::quietridge2::mapping::RidgeMastMapping;
+      runtime: test::quietridge2::runtime::RidgeMastRuntime;
+    }
+  }
+  testSuites:
+  [
+    liveMastCheckSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          ridgeConnection:
+            Relational
+            #{
+              ridge.mast_artifact:
+                'artifact_id,artifact_code,ridge_name,artifact_kind,dish_diameter_cm,retired_flag\n'+
+                '1,qr-101,Quiet Ridge North  ,dish,120,N\n'+
+                '2,qr-102,Saddle Spur,dish,90,N\n'+
+                '3,qr-103,Beacon Knoll,panel,,N\n'+
+                '4,qr-104,Old Cairn,dish,150,Y\n';
+              ridge.mast_check:
+                'check_id,artifact_id,check_code,check_grade\n'+
+                '11,1,ck-01,pass\n'+
+                '12,1,ck-02,fail\n'+
+                '13,2,ck-03,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        liveMastCheck:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['live'];
+          parameters:
+          [
+            kinds = ['dish'],
+            checkFloor = 1
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Artifact":"QR-101","Ridge":"Quiet Ridge North","DishCm":120,"PassedChecks":1,"Band":"REVIEWED"},{"Artifact":"QR-102","Ridge":"Saddle Spur","DishCm":90,"PassedChecks":0,"Band":"REVIEWED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    archiveMastCheckSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          ridgeConnection:
+            Relational
+            #{
+              ridge.mast_artifact:
+                'artifact_id,artifact_code,ridge_name,artifact_kind,dish_diameter_cm,retired_flag\n'+
+                '3,qr-103,Beacon Knoll,panel,,N\n';
+              ridge.mast_check:
+                'check_id,artifact_id,check_code,check_grade\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        archiveMastCheck:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['archive'];
+          parameters:
+          [
+            kinds = ['dish'],
+            checkFloor = 1
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

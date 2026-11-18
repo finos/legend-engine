@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::tealhatchery2::dataspace::PondDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'rearing';
+      description: 'Rearing environment - the pond register bound to the warehouse runtime the services are planned against.';
+      mapping: test::tealhatchery2::mapping::PondRegisterMapping;
+      defaultRuntime: test::tealhatchery2::runtime::PondRuntime;
+    }
+  ];
+  defaultExecutionContext: 'rearing';
+  title: 'Teal Hatchery 2 Pond Register';
+  description: 'Discovery surface over the wetland rearing ponds: the ponds themselves, the standing and archived larva batches unioned behind them and the water readings taken on each pond.';
+  elements:
+  [
+    test::tealhatchery2::domain::RearingPond,
+    test::tealhatchery2::domain::LarvaBatch,
+    test::tealhatchery2::domain::WaterReading
+  ];
+  supportInfo: Email
+  {
+    address: 'pond-rearing-desk@pondrearing.invalid';
+  };
+}

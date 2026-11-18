@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::goldenreef5::store::NestingCoastDB
+(
+  Schema coast
+  (
+    Table nest_site
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      site_code VARCHAR(24) PRIMARY KEY,
+      site_name VARCHAR(120) NOT NULL,
+      beach_code VARCHAR(24) NOT NULL,
+      sector_code VARCHAR(24) NOT NULL,
+      substrate_code VARCHAR(24) NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+
+    Table beach
+    (
+      beach_code VARCHAR(24) PRIMARY KEY,
+      beach_name VARCHAR(120) NOT NULL,
+      coast_region VARCHAR(64) NOT NULL
+    )
+  )
+
+  Schema patrol
+  (
+    Table nest_record
+    (
+      nest_ref VARCHAR(24) PRIMARY KEY,
+      site_code VARCHAR(24) NOT NULL,
+      team_code VARCHAR(24) NOT NULL,
+      laid_date DATE NOT NULL,
+      clutch_size INTEGER NOT NULL,
+      hatch_count INTEGER,
+      predation_code VARCHAR(24),
+      sand_temp_c DECIMAL(5,2)
+    )
+
+    Table patrol_team
+    (
+      team_code VARCHAR(24) PRIMARY KEY,
+      team_name VARCHAR(120) NOT NULL,
+      station_code VARCHAR(24) NOT NULL
+    )
+
+    Table field_station
+    (
+      station_code VARCHAR(24) PRIMARY KEY,
+      station_name VARCHAR(120) NOT NULL,
+      coast_region VARCHAR(64) NOT NULL
+    )
+  )
+
+  Join Site_Beach(coast.nest_site.beach_code = coast.beach.beach_code)
+  Join Beach_Station(coast.beach.coast_region = patrol.field_station.coast_region)
+  Join Nest_Team(patrol.nest_record.team_code = patrol.patrol_team.team_code)
+  Join Team_Station(patrol.patrol_team.station_code = patrol.field_station.station_code)
+)

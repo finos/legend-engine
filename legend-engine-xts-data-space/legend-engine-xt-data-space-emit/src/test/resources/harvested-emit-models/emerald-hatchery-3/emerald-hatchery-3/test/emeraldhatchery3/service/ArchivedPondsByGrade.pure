@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldhatchery3::service::ArchivedPondsByGrade
+{
+  pattern: '/hatchery/v1/archive/ponds';
+  title: 'Hatchery - Archived Ponds by Grade Band';
+  documentation: 'Reads the retired-pond archive through its own mapping and runtime, collapsing repeated archive rows to the distinct pond and water source per requested grade band.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {gradeBands: String[*]|test::emeraldhatchery3::domain::ArchivedPond.all()->filter(
+      a|$a.gradeBand->in($gradeBands)
+    )->project(
+      [
+        a|$a.pondCode,
+        a|$a.waterSource
+      ],
+      [
+        'PondCode',
+        'WaterSource'
+      ]
+    )->distinct()->sort([asc('PondCode')])};
+    mapping: test::emeraldhatchery3::mapping::PondArchiveMapping;
+    runtime: test::emeraldhatchery3::runtime::PondArchiveRuntime;
+  }
+  testSuites:
+  [
+    archivedPondSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          archiveConnection:
+            Relational
+            #{
+              retired.pond_archive:
+                'archive_id,pond_code,water_source,grade_band,retired_on\n'+
+                '1,P-102,river,nursery,2024-03-01\n'+
+                '2,P-090,river,nursery,2023-07-15\n'+
+                '3,P-088,spring,grow-out,2022-05-02\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        nurseryArchive:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            gradeBands = ['nursery']
+          ]
+          asserts:
+          [
+            twoRetiredNurseryPonds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PondCode":"P-090","WaterSource":"river"},{"PondCode":"P-102","WaterSource":"river"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,191 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltorchard2::service::InspectionsSinceSeasonStart
+{
+  pattern: '/orchard/v1/inspections-since-season';
+  title: 'Inspections Since Season Start';
+  owners:
+  [
+    'orchard-stewards',
+    'orchard-survey-desk'
+  ];
+  documentation: 'Counts tree inspections recorded strictly after a cutoff derived from the evaluation date by subtracting the inspection season window, grouped by orchard block and inspection kind. Published against the production and rehearsal estates so a consumer pins the estate it reads from.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: |test::cobaltorchard2::domain::TreeInspection.all()->filter(
+      i|$i.recordedAt->toOne() > test::cobaltorchard2::function::inspectionSeasonCutoff()
+    )->groupBy(
+      [
+        i|$i.blockCode,
+        i|$i.inspectionKind
+      ],
+      [
+        agg(i|$i.inspectionId, y|$y->count())
+      ],
+      [
+        'Block',
+        'Kind',
+        'InspectionCount'
+      ]
+    )->sort(
+      [
+        asc('Block'),
+        asc('Kind')
+      ]
+    );
+    key: 'estate';
+    executions['production']:
+    {
+      mapping: test::cobaltorchard2::mapping::InspectionMapping;
+      runtime: test::cobaltorchard2::runtime::OrchardProductionRuntime;
+    }
+    executions['rehearsal']:
+    {
+      mapping: test::cobaltorchard2::mapping::InspectionMapping;
+      runtime: test::cobaltorchard2::runtime::OrchardRehearsalRuntime;
+    }
+  }
+}
+
+Service test::cobaltorchard2::service::InspectionsRecordedToday
+{
+  pattern: '/orchard/v1/inspections-today';
+  title: 'Inspections Recorded Today';
+  owners:
+  [
+    'orchard-stewards',
+    'orchard-survey-desk'
+  ];
+  documentation: 'Counts tree inspections whose timestamp sits between the start of the evaluation date and the evaluation instant, grouped by orchard block and inspection kind, so a block with no inspection today drops out of the answer entirely.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {currentDateTime: DateTime[1], currentDate: StrictDate[1]|test::cobaltorchard2::domain::TreeInspection.all()->filter(
+      i|($i.recordedAt->toOne() <= $currentDateTime) && ($i.recordedAt->toOne() >= $currentDate)
+    )->groupBy(
+      [
+        i|$i.blockCode,
+        i|$i.inspectionKind
+      ],
+      [
+        agg(i|$i.inspectionId, y|$y->count())
+      ],
+      [
+        'Block',
+        'Kind',
+        'InspectionCount'
+      ]
+    )->sort(
+      [
+        asc('Block'),
+        asc('Kind')
+      ]
+    )};
+    key: 'estate';
+    executions['production']:
+    {
+      mapping: test::cobaltorchard2::mapping::InspectionMapping;
+      runtime: test::cobaltorchard2::runtime::OrchardProductionRuntime;
+    }
+    executions['rehearsal']:
+    {
+      mapping: test::cobaltorchard2::mapping::InspectionMapping;
+      runtime: test::cobaltorchard2::runtime::OrchardRehearsalRuntime;
+    }
+  }
+}
+
+Service test::cobaltorchard2::service::InspectionsSinceSeasonStartProduction
+{
+  pattern: '/orchard/v1/inspections-since-season-production';
+  title: 'Inspections Since Season Start (Production)';
+  owners:
+  [
+    'orchard-stewards',
+    'orchard-survey-desk'
+  ];
+  documentation: 'Production-pinned counterpart of the keyed inspection count, asserting the grouped counts, the two rows that share an inspection identifier but differ in the second key column, and the block whose only inspection predates the derived cutoff.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::cobaltorchard2::domain::TreeInspection.all()->filter(
+      i|$i.recordedAt->toOne() > test::cobaltorchard2::function::inspectionSeasonCutoff()
+    )->groupBy(
+      [
+        i|$i.blockCode,
+        i|$i.inspectionKind
+      ],
+      [
+        agg(i|$i.inspectionId, y|$y->count())
+      ],
+      [
+        'Block',
+        'Kind',
+        'InspectionCount'
+      ]
+    )->sort(
+      [
+        asc('Block'),
+        asc('Kind')
+      ]
+    );
+    mapping: test::cobaltorchard2::mapping::InspectionMapping;
+    runtime: test::cobaltorchard2::runtime::OrchardProductionRuntime;
+  }
+  testSuites:
+  [
+    inspectionCountSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          orchardProductionConnection:
+            Relational
+            #{
+              orchard.tree_inspection:
+                'inspection_id,sequence_no,block_code,inspection_kind,canopy_note,recorded_at\n'+
+                'TI-01,1,BLK-NORTH,CANOPY,upper canopy thinning,2999-04-02 08:15:00\n'+
+                'TI-01,2,BLK-NORTH,CANOPY,,2999-04-02 09:30:00\n'+
+                'TI-02,1,BLK-SOUTH,ROOTZONE,mulch depth checked,2999-04-03 07:45:00\n'+
+                'TI-03,1,BLK-WEST,CANOPY,storm damage survey,1999-05-11 06:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        groupedCountsAboveCutoff:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoGroupedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"BLK-NORTH","Kind":"CANOPY","InspectionCount":2},{"Block":"BLK-SOUTH","Kind":"ROOTZONE","InspectionCount":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

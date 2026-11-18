@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::wistfulestuary::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Whether a registry synchronisation profile is shared across steward groups or held privately.'} test::wistfulestuary::domain::ShareScope
+{
+  SHARED,
+  PRIVATE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Steward unit a registry synchronisation profile belongs to.'} test::wistfulestuary::domain::StewardUnit
+{
+  WETLAND_STEWARDS
+}
+
+Class {meta::pure::profiles::doc.doc = 'Governed reserve node published by the estuary registry.'} test::wistfulestuary::domain::ReserveNode
+{
+  {meta::pure::profiles::doc.doc = 'Catalogue path uniquely naming the node.'} qualifiedPath: String[1];
+  {meta::pure::profiles::doc.doc = 'Registry key of the node.'} nodeKey: String[1];
+  {meta::pure::profiles::doc.doc = 'Tier summary of the node derived from the published parcel kind.'} summary: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Short display label of the node.'} shortLabel: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Catalogue tree the node was read from.'} treeName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Steward groups accountable for the node.'} stewards: String[*];
+  {meta::pure::profiles::doc.doc = 'Date the node was retired from the registry.'} retiredOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Synchronisation profile naming the catalogue, endpoint and registry a steward unit reads through.'} test::wistfulestuary::domain::SyncProfile
+{
+  {meta::pure::profiles::doc.doc = 'Sharing scope of the profile.'} visibility: ShareScope[1];
+  {meta::pure::profiles::doc.doc = 'Steward unit the profile belongs to.'} unit: StewardUnit[0..1];
+  {meta::pure::profiles::doc.doc = 'Key of the profile itself.'} profileKey: String[1];
+  {meta::pure::profiles::doc.doc = 'Key of the catalogue the profile reads.'} catalogueKey: String[1];
+  {meta::pure::profiles::doc.doc = 'Key of the remote endpoint the profile reads through.'} endpointKey: String[1];
+  {meta::pure::profiles::doc.doc = 'Key of the registry the profile publishes into.'} registryKey: String[1];
+}

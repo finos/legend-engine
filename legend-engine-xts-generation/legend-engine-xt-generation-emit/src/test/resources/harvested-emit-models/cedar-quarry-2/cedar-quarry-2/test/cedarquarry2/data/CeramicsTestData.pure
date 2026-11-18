@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::cedarquarry2::data::CeramicsRegisterData
+{
+  Relational
+  #{
+    ceramics.vessel_entry:
+      'vessel_id,accession_code,height_mm,clay_body,condition_code,rim_diameter_mm,base_diameter_mm,room_code\n'+
+      '1,CER-0001,240,STONEWARE,INTACT,180,120,ROOM-1\n'+
+      '2,CER-0002,150,PORCELAIN,CHIPPED,90,80,ROOM-1\n'+
+      '3,CER-0003,320,EARTHENWARE,RESTORED,210,150,ROOM-2\n';
+
+    ceramics.tile_entry:
+      'tile_id,accession_code,height_mm,clay_body,condition_code,glazed_face_count,tile_edge_mm\n'+
+      '1,CER-0101,20,EARTHENWARE,INTACT,1,150\n'+
+      '2,CER-0102,18,STONEWARE,CHIPPED,2,200\n';
+
+    ceramics.collection_room:
+      'room_code,room_name\n'+
+      'ROOM-1,Long Gallery\n'+
+      'ROOM-2,Annex Study\n';
+
+    ceramics.kiln_firing_record:
+      'firing_id,firing_code,kiln_code,atmosphere_code,peak_temperature_c,from_z,thru_z\n'+
+      '1,FIR-01,KILN-A,OXIDISING,1180,2026-01-01,9999-12-31\n'+
+      '2,FIR-02,KILN-B,REDUCING,1260,2026-01-01,9999-12-31\n'+
+      '3,FIR-03,KILN-A,NEUTRAL,1090,2025-01-01,2025-12-31\n';
+
+    ceramics.catalogue_revision:
+      'revision_id,revision_code,accession_code,revision_note,in_z,out_z\n'+
+      '1,REV-01,CER-0001,Foot ring re-measured,2026-01-01,9999-12-31\n'+
+      '2,REV-02,CER-0002,Chip logged on the rim,2025-01-01,2025-12-31\n';
+
+    ceramics.display_placement:
+      'placement_id,placement_code,accession_code,venue_name,crate_count,from_z,thru_z,in_z,out_z\n'+
+      '1,DSP-01,CER-0002,Riverside Gallery,3,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+      '2,DSP-02,CER-0003,Hillside Museum,2,2025-01-01,2025-12-31,2026-01-01,9999-12-31\n'+
+      '3,DSP-03,CER-0001,Harbour Rooms,4,2026-01-01,9999-12-31,2025-01-01,2025-12-31\n';
+  }#
+}

@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::verdantquarry3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A working stone quarry that faces and samples are recorded against.'} test::verdantquarry3::domain::QuarrySite
+{
+  quarryCode: String[1];
+  quarryName: String[1];
+  regionCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One excavated face of a quarry, surveyed on a given date.'} test::verdantquarry3::domain::QuarryFace
+{
+  faceCode: String[1];
+  faceName: String[1];
+  benchHeight: Integer[1];
+  surveyedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A drilled core sample taken from a quarry face and graded for mineral purity.'} test::verdantquarry3::domain::CoreSample
+{
+  sampleCode: String[1];
+  mineralCode: String[1];
+  purityPercent: Integer[1];
+  depthMetres: Integer[1];
+  collectedOn: StrictDate[1];
+}
+
+Association test::verdantquarry3::domain::SiteFaces
+{
+  site: QuarrySite[1];
+  faces: QuarryFace[*];
+}
+
+Association test::verdantquarry3::domain::FaceSamples
+{
+  face: QuarryFace[1];
+  samples: CoreSample[*];
+}

@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westerncavern6::mapping::WesternSurveyMapping
+(
+  include mapping test::westerncavern6::mapping::WesternBaseMapping
+
+  *test::westerncavern6::domain::Chamber[chamber]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerncavern6::store::CavernSurveyDb]survey.chamber.chamber_code,
+      [test::westerncavern6::store::CavernSurveyDb]survey.chamber.cavern_code
+    )
+    ~mainTable [test::westerncavern6::store::CavernSurveyDb]survey.chamber
+    chamberCode: [test::westerncavern6::store::CavernSurveyDb]survey.chamber.chamber_code,
+    cavernCode: [test::westerncavern6::store::CavernSurveyDb]survey.chamber.cavern_code,
+    depthM: [test::westerncavern6::store::CavernSurveyDb]survey.chamber.depth_m,
+    depthBand: case(isNull([test::westerncavern6::store::CavernSurveyDb]survey.chamber.depth_m), 'UNPLUMBED', case(greaterThan([test::westerncavern6::store::CavernSurveyDb]survey.chamber.depth_m, 100), 'ABYSSAL', case(greaterThan([test::westerncavern6::store::CavernSurveyDb]survey.chamber.depth_m, 30), 'DEEP', case(greaterThan([test::westerncavern6::store::CavernSurveyDb]survey.chamber.depth_m, 10), 'SHALLOW', case(greaterThan([test::westerncavern6::store::CavernSurveyDb]survey.chamber.depth_m, 0), 'WADEABLE', 'SURFACE'))))),
+    kind: EnumerationMapping KindMapping: [test::westerncavern6::store::CavernSurveyDb]survey.chamber.kind_num,
+    floor: EnumerationMapping FloorMapping: toUpper(trim([test::westerncavern6::store::CavernSurveyDb]survey.chamber.floor_code)),
+    cavernName: [test::westerncavern6::store::CavernSurveyDb]@Chamber_Cavern | karst.cavern.cavern_name,
+    surveyMonth: monthNumber([test::westerncavern6::store::CavernSurveyDb]survey.chamber.mapped_on)
+  }
+
+  *test::westerncavern6::domain::TripSummary[trip]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerncavern6::store::CavernSurveyDb]survey.trip_summary_vw.cavern_code
+    )
+    ~mainTable [test::westerncavern6::store::CavernSurveyDb]survey.trip_summary_vw
+    cavernCode: [test::westerncavern6::store::CavernSurveyDb]survey.trip_summary_vw.cavern_code,
+    tripCount: [test::westerncavern6::store::CavernSurveyDb]survey.trip_summary_vw.trip_count,
+    totalHours: [test::westerncavern6::store::CavernSurveyDb]survey.trip_summary_vw.total_hours
+  }
+
+  *test::westerncavern6::domain::TeamVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerncavern6::store::CavernSurveyDb]survey.team_visit_vw.team_code,
+      [test::westerncavern6::store::CavernSurveyDb]survey.team_visit_vw.cavern_code
+    )
+    ~mainTable [test::westerncavern6::store::CavernSurveyDb]survey.team_visit_vw
+    teamCode: [test::westerncavern6::store::CavernSurveyDb]survey.team_visit_vw.team_code,
+    cavernCode: [test::westerncavern6::store::CavernSurveyDb]survey.team_visit_vw.cavern_code
+  }
+
+  test::westerncavern6::domain::Cavern_Trips: Relational
+  {
+    AssociationMapping
+    (
+      trips[cavern, trip]: [test::westerncavern6::store::CavernSurveyDb]@Cavern_Trips,
+      tripCavern[trip, cavern]: [test::westerncavern6::store::CavernSurveyDb]@Cavern_Trips
+    )
+  }
+)

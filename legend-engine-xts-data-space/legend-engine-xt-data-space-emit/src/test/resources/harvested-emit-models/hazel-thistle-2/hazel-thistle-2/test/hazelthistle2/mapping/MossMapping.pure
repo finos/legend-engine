@@ -1,0 +1,205 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::hazelthistle2::mapping::MossMapping
+(
+  include mapping demo::hazelthistle2::mapping::ReferenceMapping
+
+  *demo::hazelthistle2::domain::MossSurvey[mossSurvey]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::hazelthistle2::store::BogDB]peatland.moss_survey.survey_code
+    )
+    ~mainTable [demo::hazelthistle2::store::BogDB]peatland.moss_survey
+    surveyCode: [demo::hazelthistle2::store::BogDB]peatland.moss_survey.survey_code,
+    surveyedOn: [demo::hazelthistle2::store::BogDB]peatland.moss_survey.surveyed_on,
+    mossClass: toUpper([demo::hazelthistle2::store::BogDB]peatland.moss_survey.moss_class),
+    mossLabel: concat(concat(toUpper([demo::hazelthistle2::store::BogDB]peatland.moss_survey.moss_class), '-'),
+                      substring([demo::hazelthistle2::store::BogDB]peatland.moss_survey.survey_code, 1, 4)),
+    mossCoverPct: [demo::hazelthistle2::store::BogDB]peatland.moss_survey.moss_cover_pct,
+    waterDepthCm: [demo::hazelthistle2::store::BogDB]peatland.moss_survey.water_depth_cm,
+    wetnessIndex: times([demo::hazelthistle2::store::BogDB]peatland.moss_survey.moss_cover_pct,
+                        [demo::hazelthistle2::store::BogDB]peatland.moss_survey.water_depth_cm),
+    damState: case(isEmpty([demo::hazelthistle2::store::BogDB]peatland.moss_survey.dam_state),
+                   sqlNull(),
+                   toUpper(trim([demo::hazelthistle2::store::BogDB]peatland.moss_survey.dam_state))),
+    plot[bogPlot]: [demo::hazelthistle2::store::BogDB]@Survey_Plot
+  }
+
+  testSuites:
+  [
+    openSurveySuite:
+    {
+      function: |demo::hazelthistle2::domain::MossSurvey.all(%2026-03-01)->graphFetch(
+  #{
+    demo::hazelthistle2::domain::MossSurvey{
+      surveyCode,
+      surveyedOn,
+      mossClass,
+      mossLabel,
+      mossCoverPct,
+      waterDepthCm,
+      wetnessIndex,
+      plot{
+        plotCode,
+        plotLabel,
+        catchment{
+          catchmentCode,
+          catchmentName
+        }
+      }
+    }
+  }#
+)->serialize(
+  #{
+    demo::hazelthistle2::domain::MossSurvey{
+      surveyCode,
+      surveyedOn,
+      mossClass,
+      mossLabel,
+      mossCoverPct,
+      waterDepthCm,
+      wetnessIndex,
+      plot{
+        plotCode,
+        plotLabel,
+        catchment{
+          catchmentCode,
+          catchmentName
+        }
+      }
+    }
+  }#
+);
+      tests:
+      [
+        openVersionsWithCatchment:
+        {
+          doc: 'Graph-fetches the survey versions effective on the queried business date, walking the two-hop path from the survey to its bog plot and on to the owning catchment, so the composed moss label and the arithmetic wetness index are asserted as serialized structure. The survey version whose validity window opens later in the season is out of range and absent.';
+          data:
+          [
+            demo::hazelthistle2::store::BogDB:
+              Relational
+              #{
+                peatland.catchment:
+                  'catchment_code,catchment_name\n'+
+                  'CAT-1,Northern Moss\n'+
+                  'CAT-2,Southern Moss\n';
+
+                peatland.bog_plot:
+                  'plot_code,plot_label,catchment_code\n'+
+                  'PLT-1,Plot Ridge Alpha,CAT-1\n'+
+                  'PLT-2,Plot Hollow Beta,CAT-2\n';
+
+                peatland.moss_survey:
+                  'survey_code,surveyed_on,moss_class,moss_cover_pct,water_depth_cm,dam_state,plot_code,from_z,thru_z\n'+
+                  'MS-0001,2026-02-10,sphagnum,45.0,8.0,intact,PLT-1,2026-01-01,9999-12-31\n'+
+                  'MS-0002,2026-02-12,polytrichum,18.0,22.0,,PLT-2,2026-01-01,9999-12-31\n'+
+                  'MS-0003,2026-06-20,sphagnum,52.0,5.0,intact,PLT-1,2026-07-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            versionsOpenOnQueryDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"surveyCode":"MS-0001","surveyedOn":"2026-02-10","mossClass":"SPHAGNUM","mossLabel":"SPHAGNUM-MS-0","mossCoverPct":45.0,"waterDepthCm":8.0,"wetnessIndex":360.0,"plot":{"plotCode":"PLT-1","plotLabel":"Plot Ridge Alpha","catchment":{"catchmentCode":"CAT-1","catchmentName":"Northern Moss"}}},{"surveyCode":"MS-0002","surveyedOn":"2026-02-12","mossClass":"POLYTRICHUM","mossLabel":"POLYTRICHUM-MS-0","mossCoverPct":18.0,"waterDepthCm":22.0,"wetnessIndex":396.0,"plot":{"plotCode":"PLT-2","plotLabel":"Plot Hollow Beta","catchment":{"catchmentCode":"CAT-2","catchmentName":"Southern Moss"}}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    supersededSurveySuite:
+    {
+      function: |demo::hazelthistle2::domain::MossSurvey.all(%2026-09-01)->graphFetch(
+  #{
+    demo::hazelthistle2::domain::MossSurvey{
+      surveyCode,
+      mossLabel,
+      wetnessIndex,
+      plot{
+        plotCode,
+        catchment{
+          catchmentName
+        }
+      }
+    }
+  }#
+)->serialize(
+  #{
+    demo::hazelthistle2::domain::MossSurvey{
+      surveyCode,
+      mossLabel,
+      wetnessIndex,
+      plot{
+        plotCode,
+        catchment{
+          catchmentName
+        }
+      }
+    }
+  }#
+);
+      tests:
+      [
+        restatedVersionSurvives:
+        {
+          doc: 'Graph-fetches the same milestoned class on a later business date so the restated version of a survey replaces its earlier reading, and a survey whose validity window closed before the queried date is out of range and absent.';
+          data:
+          [
+            demo::hazelthistle2::store::BogDB:
+              Relational
+              #{
+                peatland.catchment:
+                  'catchment_code,catchment_name\n'+
+                  'CAT-1,Northern Moss\n'+
+                  'CAT-2,Southern Moss\n';
+
+                peatland.bog_plot:
+                  'plot_code,plot_label,catchment_code\n'+
+                  'PLT-1,Plot Ridge Alpha,CAT-1\n'+
+                  'PLT-2,Plot Hollow Beta,CAT-2\n';
+
+                peatland.moss_survey:
+                  'survey_code,surveyed_on,moss_class,moss_cover_pct,water_depth_cm,dam_state,plot_code,from_z,thru_z\n'+
+                  'MS-0001,2026-02-10,sphagnum,45.0,8.0,intact,PLT-1,2026-01-01,2026-06-01\n'+
+                  'MS-0001,2026-06-15,sphagnum,60.0,4.0,intact,PLT-1,2026-06-01,9999-12-31\n'+
+                  'MS-0002,2026-02-12,polytrichum,18.0,22.0,,PLT-2,2026-01-01,2026-05-01\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyRestatedVersion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyCode":"MS-0001","mossLabel":"SPHAGNUM-MS-0","wetnessIndex":240.0,"plot":{"plotCode":"PLT-1","catchment":{"catchmentName":"Northern Moss"}}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

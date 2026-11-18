@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::embermarsh3::store::MarshDb
+(
+  Schema marsh
+  (
+    Table boardwalk_section
+    (
+      section_code VARCHAR(24) PRIMARY KEY,
+      reserve_name VARCHAR(60),
+      plank_count INTEGER,
+      length_m DOUBLE,
+      surveyed_on DATE
+    )
+
+    Table warden_patrol
+    (
+      patrol_code VARCHAR(24) PRIMARY KEY,
+      section_code VARCHAR(24),
+      warden_code VARCHAR(12),
+      patrolled_on DATE,
+      hazard_count INTEGER,
+      patrol_note VARCHAR(240)
+    )
+  )
+
+  Join SectionPatrol
+  (
+    marsh.warden_patrol.section_code = marsh.boardwalk_section.section_code
+  )
+)

@@ -1,0 +1,52 @@
+name: western-tundra
+title: "Western Tundra — An Alpine Vegetation Survey Hierarchy Reached Through Chained And View-Landing Joins"
+description: >-
+  An alpine tundra vegetation estate held in two relational stores. The live survey store spreads
+  reserves, plots, quadrats, taxa and percent-cover readings across five tables and republishes three
+  of them as inline views; the archive store keeps closed-season plots and readings alongside a digest
+  view. Mapped properties reach sideways rather than downwards: a cover reading resolves its plot code
+  through two hops that land on a view and its reserve name through three chained hops, so one row
+  drives a nested join tree with a sub-select in it. Mapping suites assert both the chained hierarchy
+  hit and the view-backed reads.
+modelSources:
+  model:
+    root: western-tundra
+    files:
+      - test/westerntundra/connection/TundraConnections.pure
+      - test/westerntundra/domain/TundraDomain.pure
+      - test/westerntundra/mapping/TundraArchiveMapping.pure
+      - test/westerntundra/mapping/TundraSurveyMapping.pure
+      - test/westerntundra/runtime/TundraRuntimes.pure
+      - test/westerntundra/store/TundraArchiveDB.pure
+      - test/westerntundra/store/TundraSurveyDB.pure
+features:
+  - execution:mapping-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - alpine-tundra
+  - delegated-kerberos
+  - h2
+  - inline-view
+  - mapping-test
+  - memsql
+  - multi-hop-join
+  - nested-join
+  - tabular-data-set
+  - vegetation-survey
+  - view-backed-property

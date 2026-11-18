@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::verdanttundra::domain::*;
+
+Enum test::verdanttundra::domain::TrailKind
+{
+  RIDGE,
+  VALLEY,
+  LAKESHORE,
+  MEADOW,
+  OTHER
+}
+
+Enum test::verdanttundra::domain::EventKind
+{
+  ARRIVAL,
+  DEPARTURE,
+  SIGHTING,
+  REPAIR,
+  OTHER
+}
+
+Class test::verdanttundra::domain::PatrolRecord
+{
+  recordRef: String[1];
+  rangerName: String[1];
+  trailCode: String[1];
+  eventCode: String[1];
+  loggedOn: String[1];
+  distanceText: String[1];
+  sightingText: String[1];
+}
+
+Class test::verdanttundra::domain::PatrolEvent
+{
+  patrolTag: String[1];
+  rangerName: String[1];
+  trailCode: String[1];
+  trailKind: TrailKind[1];
+  eventKind: EventKind[1];
+  loggedOn: String[1];
+  logYear: Integer[1];
+  distanceKm: Integer[1];
+  effortBand: String[0..1];
+  sightingCount: Integer[1];
+}
+
+Class test::verdanttundra::domain::PatrolDigest
+{
+  digestTag: String[1];
+  rangerLabel: String[1];
+  trailKind: TrailKind[1];
+  effortBand: String[0..1];
+  distanceKm: Integer[1];
+  sightingRate: Integer[1];
+  digestNote: String[1];
+}
+
+Class test::verdanttundra::domain::PatrolBulletin
+{
+  bulletinTag: String[1];
+  headline: String[1];
+  trailKind: TrailKind[1];
+  distanceKm: Integer[1];
+}

@@ -1,0 +1,165 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietcavern4::mapping::CavernSurveyMapping
+(
+  test::quietcavern4::domain::AccessLevel: EnumerationMapping AccessLevelMapping
+  {
+    OPEN: 'OPEN',
+    GUIDED_ONLY: 'GUIDED',
+    SEALED: 'SEALED'
+  }
+
+  *test::quietcavern4::domain::Passage[passage]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcavern4::store::CavernSurveyDb]survey.passage.passage_code
+    )
+    ~mainTable [test::quietcavern4::store::CavernSurveyDb]survey.passage
+    passageCode: [test::quietcavern4::store::CavernSurveyDb]survey.passage.passage_code,
+    kindCode: [test::quietcavern4::store::CavernSurveyDb]survey.passage.kind_code,
+    lengthMetres: [test::quietcavern4::store::CavernSurveyDb]survey.passage.length_m,
+    chamber[chamber]: [test::quietcavern4::store::CavernSurveyDb]@Passage_Chamber,
+    entrance[entrance]: [test::quietcavern4::store::CavernSurveyDb]@Passage_Entrance,
+    markers[marker]: [test::quietcavern4::store::CavernSurveyDb]@Passage_Marker
+  }
+
+  test::quietcavern4::domain::FloodedPassage[floodedPassage] extends [passage]: Relational
+  {
+    ~filter [test::quietcavern4::store::CavernSurveyDb]FloodedPassageFilter
+    floodRule[rule]: [test::quietcavern4::store::CavernSurveyDb]@Passage_Rule
+  }
+
+  test::quietcavern4::domain::CrawlPassage[crawlPassage] extends [passage]: Relational
+  {
+    ~filter [test::quietcavern4::store::CavernSurveyDb]CrawlPassageFilter
+    crawlRule[rule]: [test::quietcavern4::store::CavernSurveyDb]@Passage_Rule
+  }
+
+  test::quietcavern4::domain::DryPassage[dryPassage] extends [passage]: Relational
+  {
+    ~filter [test::quietcavern4::store::CavernSurveyDb]DryPassageFilter
+  }
+
+  *test::quietcavern4::domain::Marker[marker]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcavern4::store::CavernSurveyDb]survey.marker.marker_code
+    )
+    ~mainTable [test::quietcavern4::store::CavernSurveyDb]survey.marker
+    markerCode: [test::quietcavern4::store::CavernSurveyDb]survey.marker.marker_code,
+    markerKind: [test::quietcavern4::store::CavernSurveyDb]survey.marker.marker_kind
+  }
+
+  *test::quietcavern4::domain::Chamber[chamber]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcavern4::store::CavernSurveyDb]survey.chamber.chamber_code
+    )
+    ~mainTable [test::quietcavern4::store::CavernSurveyDb]survey.chamber
+    chamberCode: [test::quietcavern4::store::CavernSurveyDb]survey.chamber.chamber_code,
+    chamberLabel: [test::quietcavern4::store::CavernSurveyDb]survey.chamber.chamber_label
+  }
+
+  *test::quietcavern4::domain::Entrance[entrance]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcavern4::store::CavernSurveyDb]survey.entrance.entrance_code
+    )
+    ~mainTable [test::quietcavern4::store::CavernSurveyDb]survey.entrance
+    entranceCode: [test::quietcavern4::store::CavernSurveyDb]survey.entrance.entrance_code,
+    entranceLabel: [test::quietcavern4::store::CavernSurveyDb]survey.entrance.entrance_label,
+    approach[trail]: [test::quietcavern4::store::CavernSurveyDb]@Entrance_Trail
+  }
+
+  *test::quietcavern4::domain::ApproachTrail[trail]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcavern4::store::CavernSurveyDb]survey.approach_trail.trail_code
+    )
+    ~mainTable [test::quietcavern4::store::CavernSurveyDb]survey.approach_trail
+    trailCode: [test::quietcavern4::store::CavernSurveyDb]survey.approach_trail.trail_code,
+    trailLabel: [test::quietcavern4::store::CavernSurveyDb]survey.approach_trail.trail_label
+  }
+
+  *test::quietcavern4::domain::AccessRule[rule]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcavern4::store::CavernSurveyDb]survey.access_rule.rule_code
+    )
+    ~mainTable [test::quietcavern4::store::CavernSurveyDb]survey.access_rule
+    ruleCode: [test::quietcavern4::store::CavernSurveyDb]survey.access_rule.rule_code,
+    level: EnumerationMapping AccessLevelMapping: [test::quietcavern4::store::CavernSurveyDb]survey.access_rule.access_level,
+    gate[gate]: [test::quietcavern4::store::CavernSurveyDb]@Rule_Gate
+  }
+
+  *test::quietcavern4::domain::GateSpec[gate]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcavern4::store::CavernSurveyDb]survey.gate.gate_code
+    )
+    ~mainTable [test::quietcavern4::store::CavernSurveyDb]survey.gate
+    gateCode: [test::quietcavern4::store::CavernSurveyDb]survey.gate.gate_code,
+    keyHolder: [test::quietcavern4::store::CavernSurveyDb]survey.gate.key_holder
+  }
+
+  *test::quietcavern4::domain::SurveyVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcavern4::store::CavernSurveyDb]survey.survey_visit.visit_code
+    )
+    ~mainTable [test::quietcavern4::store::CavernSurveyDb]survey.survey_visit
+    visitCode: [test::quietcavern4::store::CavernSurveyDb]survey.survey_visit.visit_code,
+    leadTeam[team]: [test::quietcavern4::store::CavernSurveyDb]@Visit_Team
+  }
+
+  *test::quietcavern4::domain::SurveyTeam[team]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcavern4::store::CavernSurveyDb]survey.survey_team.team_code
+    )
+    ~mainTable [test::quietcavern4::store::CavernSurveyDb]survey.survey_team
+    teamCode: [test::quietcavern4::store::CavernSurveyDb]survey.survey_team.team_code,
+    members[member]: [test::quietcavern4::store::CavernSurveyDb]@Team_Member
+  }
+
+  *test::quietcavern4::domain::TeamMember[member]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcavern4::store::CavernSurveyDb]survey.team_member.member_code
+    )
+    ~mainTable [test::quietcavern4::store::CavernSurveyDb]survey.team_member
+    memberCode: [test::quietcavern4::store::CavernSurveyDb]survey.team_member.member_code
+  }
+
+  test::quietcavern4::domain::Passage_Visit: Relational
+  {
+    AssociationMapping
+    (
+      visits[passage, visit]: [test::quietcavern4::store::CavernSurveyDb]@Passage_Visit,
+      passages[visit, passage]: [test::quietcavern4::store::CavernSurveyDb]@Passage_Visit
+    )
+  }
+)

@@ -1,0 +1,395 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealwillow2::service::BedCutRegister
+{
+  pattern: '/borealwillow2/v1/bed-cut-register/{estate}';
+  title: 'Boreal Willow - Bed Cut Register';
+  owners:
+  [
+    'willow-coppice-desk',
+    'willow-rod-depot'
+  ];
+  documentation: 'Publishes the booked willow cuts of a caller-supplied set of coppice beds, resolving the bed and the crew that works it two association hops out, keeping a cut that either clears the caller-supplied bundle floor or is a long fine-grade cut, deriving a rod span on the projected relation and narrowing the published columns. The same query and mapping are planned under two keyed estates that differ only in their runtime and connection.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {bedCodes: String[*], minBundles: Integer[1]|test::borealwillow2::domain::WillowCut.all()->filter(
+      c|($c.bed.bedCode->toOne()->in($bedCodes)) &&
+        (($c.cutState == 'BOOKED') &&
+          (($c.rodBundles >= $minBundles) ||
+            (($c.cutGrade == 'FINE') && ($c.rodLengthCm >= 180))))
+    )->project(~[
+      CutRef: c|$c.cutRef,
+      BedName: c|$c.bed.bedName,
+      CrewName: c|$c.bed.crew.crewName,
+      Depot: c|$c.bed.crew.depotName,
+      RodBundles: c|$c.rodBundles,
+      RodLengthCm: c|$c.rodLengthCm
+    ])->extend(~RodSpanCm: r|($r.RodBundles->toOne() * $r.RodLengthCm->toOne()))
+     ->select(~[CutRef, BedName, CrewName, Depot, RodBundles, RodSpanCm])
+     ->sort(~CutRef->ascending())};
+    key: 'estate';
+    executions['season']:
+    {
+      mapping: test::borealwillow2::mapping::WillowCutMapping;
+      runtime: test::borealwillow2::runtime::WillowSeasonRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::borealwillow2::mapping::WillowCutMapping;
+      runtime: test::borealwillow2::runtime::WillowArchiveRuntime;
+    }
+  }
+  testSuites:
+  [
+    seasonRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          willowSeason:
+            Relational
+            #{
+              coppice.cut_log:
+                'cut_ref,bed_code,cut_round,rod_bundles,rod_length_cm,cut_grade,cut_state\n'+
+                'CT-01,BD-1,1,12,190,FINE,BOOKED\n'+
+                'CT-02,BD-1,2,4,150,COARSE,BOOKED\n'+
+                'CT-03,BD-2,1,9,210,FINE,BOOKED\n'+
+                'CT-04,BD-2,3,2,120,COARSE,VOID\n'+
+                'CT-05,BD-3,1,20,240,FINE,BOOKED\n';
+              coppice.willow_bed:
+                'bed_code,bed_name,soil_code,crew_code\n'+
+                'BD-1,Osier Holt,LOAM,CR-1\n'+
+                'BD-2,River Withy,SILT,CR-1\n'+
+                'BD-3,Fen Sallow,PEAT,CR-2\n';
+              coppice.cutter_crew:
+                'crew_code,crew_name,depot_name\n'+
+                'CR-1,Marsh Rod Crew,North Rod Depot\n'+
+                'CR-2,Fen Rod Crew,South Rod Depot\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        seasonBundleFloorAndFineArm:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['season'];
+          parameters:
+          [
+            bedCodes = ['BD-1', 'BD-2'],
+            minBundles = 10
+          ]
+          asserts:
+          [
+            bothSurvivingArmsArePublished:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CutRef":"CT-01","BedName":"Osier Holt","CrewName":"Marsh Rod Crew","Depot":"North Rod Depot","RodBundles":12,"RodSpanCm":2280},{"CutRef":"CT-03","BedName":"River Withy","CrewName":"Marsh Rod Crew","Depot":"North Rod Depot","RodBundles":9,"RodSpanCm":1890}]';
+                  }#;
+              }#
+          ]
+        },
+        seasonEmptyBedCollection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['season'];
+          parameters:
+          [
+            bedCodes = [],
+            minBundles = 1
+          ]
+          asserts:
+          [
+            emptyMembershipPublishesNothing:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    archiveRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          willowArchive:
+            Relational
+            #{
+              coppice.cut_log:
+                'cut_ref,bed_code,cut_round,rod_bundles,rod_length_cm,cut_grade,cut_state\n'+
+                'CT-09,BD-9,4,1,90,COARSE,VOID\n';
+              coppice.willow_bed:
+                'bed_code,bed_name,soil_code,crew_code\n'+
+                'BD-9,Old Withy Berm,CLAY,CR-9\n';
+              coppice.cutter_crew:
+                'crew_code,crew_name,depot_name\n'+
+                'CR-9,Retired Rod Crew,Closed Rod Depot\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        archiveVoidCutIsHeldBack:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['archive'];
+          parameters:
+          [
+            bedCodes = ['BD-9'],
+            minBundles = 1
+          ]
+          asserts:
+          [
+            voidStateHoldsTheCutBack:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::borealwillow2::service::CrewCutDigest
+{
+  pattern: '/borealwillow2/v1/crew-cut-digest';
+  title: 'Boreal Willow - Crew Cut Digest';
+  owners:
+  [
+    'willow-coppice-desk'
+  ];
+  documentation: 'Digests the cuts of a caller-supplied set of cutting crews, reached two association hops out from the cut, keeping only the grades the caller asked for and holding back a voided cut, then publishing the crew, the grade and the bundles booked.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {crewCodes: String[*], grades: String[*]|test::borealwillow2::domain::WillowCut.all()->filter(
+      c|($c.bed.crew.crewCode->toOne()->in($crewCodes)) &&
+        (($c.cutGrade->in($grades)) && (!($c.cutState == 'VOID')))
+    )->project(~[
+      CrewName: c|$c.bed.crew.crewName,
+      CutGrade: c|$c.cutGrade,
+      RodBundles: c|$c.rodBundles
+    ])->sort([~CrewName->ascending(), ~CutGrade->ascending(), ~RodBundles->ascending()])};
+    mapping: test::borealwillow2::mapping::WillowCutMapping;
+    runtime: test::borealwillow2::runtime::WillowSeasonRuntime;
+  }
+  testSuites:
+  [
+    crewDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          willowSeason:
+            Relational
+            #{
+              coppice.cut_log:
+                'cut_ref,bed_code,cut_round,rod_bundles,rod_length_cm,cut_grade,cut_state\n'+
+                'CT-01,BD-1,1,12,190,FINE,BOOKED\n'+
+                'CT-02,BD-1,2,4,150,COARSE,BOOKED\n'+
+                'CT-03,BD-2,1,9,210,FINE,BOOKED\n'+
+                'CT-04,BD-2,3,2,120,COARSE,VOID\n'+
+                'CT-05,BD-3,1,20,240,FINE,BOOKED\n';
+              coppice.willow_bed:
+                'bed_code,bed_name,soil_code,crew_code\n'+
+                'BD-1,Osier Holt,LOAM,CR-1\n'+
+                'BD-2,River Withy,SILT,CR-1\n'+
+                'BD-3,Fen Sallow,PEAT,CR-2\n';
+              coppice.cutter_crew:
+                'crew_code,crew_name,depot_name\n'+
+                'CR-1,Marsh Rod Crew,North Rod Depot\n'+
+                'CR-2,Fen Rod Crew,South Rod Depot\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bookedCutsOfOneCrew:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            crewCodes = ['CR-1'],
+            grades = ['FINE', 'COARSE']
+          ]
+          asserts:
+          [
+            threeBookedCutsInGradeThenBundleOrder:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CrewName":"Marsh Rod Crew","CutGrade":"COARSE","RodBundles":4},{"CrewName":"Marsh Rod Crew","CutGrade":"FINE","RodBundles":9},{"CrewName":"Marsh Rod Crew","CutGrade":"FINE","RodBundles":12}]';
+                  }#;
+              }#
+          ]
+        },
+        emptyGradeCollection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            crewCodes = ['CR-1'],
+            grades = []
+          ]
+          asserts:
+          [
+            emptyGradeMembershipPublishesNothing:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::borealwillow2::service::SoilSpanScan
+{
+  pattern: '/borealwillow2/v1/soil-span-scan/{soilCode}';
+  title: 'Boreal Willow - Soil Span Scan';
+  owners:
+  [
+    'willow-coppice-desk'
+  ];
+  documentation: 'Scans the cuts taken off the beds of one soil classification for rods at or above a caller-supplied length, folding the grade and the soil classification into one published label and de-duplicating the scanned relation.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {soilCode: String[1], minLength: Integer[1]|test::borealwillow2::domain::WillowCut.all()->filter(
+      c|($c.bed.soilCode->toOne() == $soilCode) && ($c.rodLengthCm >= $minLength)
+    )->project(~[
+      CutRef: c|$c.cutRef,
+      BedName: c|$c.bed.bedName,
+      GradeSoilLabel: c|($c.cutGrade->toUpper() + '/' + $c.bed.soilCode->toOne()->toUpper()),
+      RodLengthCm: c|$c.rodLengthCm
+    ])->distinct()->sort(~CutRef->ascending())};
+    mapping: test::borealwillow2::mapping::WillowCutMapping;
+    runtime: test::borealwillow2::runtime::WillowSeasonRuntime;
+  }
+  testSuites:
+  [
+    soilSpanSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          willowSeason:
+            Relational
+            #{
+              coppice.cut_log:
+                'cut_ref,bed_code,cut_round,rod_bundles,rod_length_cm,cut_grade,cut_state\n'+
+                'CT-01,BD-1,1,12,190,FINE,BOOKED\n'+
+                'CT-02,BD-1,2,4,150,COARSE,BOOKED\n'+
+                'CT-03,BD-2,1,9,210,FINE,BOOKED\n'+
+                'CT-04,BD-2,3,2,120,COARSE,VOID\n'+
+                'CT-05,BD-3,1,20,240,FINE,BOOKED\n';
+              coppice.willow_bed:
+                'bed_code,bed_name,soil_code,crew_code\n'+
+                'BD-1,Osier Holt,LOAM,CR-1\n'+
+                'BD-2,River Withy,SILT,CR-1\n'+
+                'BD-3,Fen Sallow,PEAT,CR-2\n';
+              coppice.cutter_crew:
+                'crew_code,crew_name,depot_name\n'+
+                'CR-1,Marsh Rod Crew,North Rod Depot\n'+
+                'CR-2,Fen Rod Crew,South Rod Depot\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        siltBedsAboveLengthFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            soilCode = 'SILT',
+            minLength = 150
+          ]
+          asserts:
+          [
+            onlyTheLongSiltCutIsScanned:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CutRef":"CT-03","BedName":"River Withy","GradeSoilLabel":"FINE/SILT","RodLengthCm":210}]';
+                  }#;
+              }#
+          ]
+        },
+        peatBedsAboveLowerFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            soilCode = 'PEAT',
+            minLength = 100
+          ]
+          asserts:
+          [
+            theSingleFenCutIsScanned:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CutRef":"CT-05","BedName":"Fen Sallow","GradeSoilLabel":"FINE/PEAT","RodLengthCm":240}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

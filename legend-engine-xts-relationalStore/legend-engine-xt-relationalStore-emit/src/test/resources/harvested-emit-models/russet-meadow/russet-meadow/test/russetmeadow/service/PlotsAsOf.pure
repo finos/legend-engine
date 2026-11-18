@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::russetmeadow::service::PlotsAsOf
+{
+  pattern: '/russetmeadow/plotsAsOf';
+  title: 'Meadow Plots As Of';
+  owners:
+  [
+    'grassland-survey'
+  ];
+  documentation: 'Returns surveyed grassland plots whose business validity window contains the supplied date, restricted to an elevation range and a set of accepted soil types, projecting a formatted label, the derived habitat band and a parameterised tag, de-duplicated and ordered by plot code.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: DateTime[1], minElev: Integer[1], maxElev: Integer[1], minFlowers: Integer[1]|test::russetmeadow::domain::MeadowPlot.all($businessDate)->filter(
+      p|($p.elevationM >= $minElev) && ($p.elevationM <= $maxElev) && ($p.soilType->in(['CHALK', 'LOAM', 'PEAT']))
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.displayLabel,
+        p|$p.wildflowerCount,
+        p|$p.habitatBand,
+        p|$p.richTag($minFlowers)
+      ],
+      [
+        'PlotCode',
+        'Label',
+        'Wildflowers',
+        'Band',
+        'Tag'
+      ]
+    )->distinct()->sort([asc('PlotCode')])};
+    mapping: test::russetmeadow::mapping::MeadowMapping;
+    runtime: test::russetmeadow::runtime::MeadowRuntime;
+  }
+  testSuites:
+  [
+    plotsAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowConnection:
+            Relational
+            #{
+              grassland.plot:
+                'plot_code,plot_name,elevation_m,soil_type,wildflower_count,from_z,thru_z\n'+
+                'MP-01,Brackenfield,500,LOAM,40,2024-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'MP-02,Chalkmoor,900,CHALK,22,2024-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'MP-03,Retiredverge,450,PEAT,10,2023-01-01 00:00:00,2024-06-30 00:00:00\n'+
+                'MP-04,Sandflat,600,SAND,33,2024-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        asOfMid2025:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2025-06-01T00:00:00,
+            minElev = 300,
+            maxElev = 900,
+            minFlowers = 20
+          ]
+          asserts:
+          [
+            liveInRangePlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"MP-01","Label":"BRACKE/loam","Wildflowers":40,"Band":"MONTANE","Tag":"BRACK"},{"PlotCode":"MP-02","Label":"CHALKM/chalk","Wildflowers":22,"Band":"ALPINE","Tag":"CHALK"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

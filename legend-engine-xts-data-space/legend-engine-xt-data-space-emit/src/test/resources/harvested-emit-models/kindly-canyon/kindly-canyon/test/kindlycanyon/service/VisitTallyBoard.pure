@@ -1,0 +1,123 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlycanyon::service::VisitTallyBoard
+{
+  pattern: '/kindlycanyon/v1/visit-tally-board';
+  title: 'Kindly Canyon - Visitor Station Tally Board';
+  documentation: 'Keeps the visitor stations whose tally collection holds at least one count clearing the supplied floor inside the window computed from the supplied day, reads the guide across the roster schema, bands the station on whether that guide hop resolved and trims the board.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'canyon-visitor-desk'
+  ];
+  execution: Single
+  {
+    query: {countFloor: Integer[1], since: StrictDate[1]|test::kindlycanyon::domain::VisitStation.all()->filter(
+      s|$s.tallies->exists(t|($t.headCount >= $countFloor) && ($t.countedOn >= adjust($since, -1, DurationUnit.DAYS)))
+    )->project(
+      [
+        col(
+          s|$s.stationCode,
+          'Station'
+        ),
+        col(
+          s|$s.stationName,
+          'Name'
+        ),
+        col(
+          s|$s.guideName,
+          'Guide'
+        ),
+        col(
+          s|if($s.guideName->isEmpty(),
+            | 'UNSTAFFED',
+            | 'STAFFED'),
+          'Staffing'
+        )
+      ]
+    )->sort(
+      [
+        asc('Station')
+      ]
+    )->limit(5)};
+    mapping: test::kindlycanyon::mapping::VisitMapping;
+    runtime: test::kindlycanyon::runtime::CanyonVisitRuntime;
+  }
+  testSuites:
+  [
+    visitTallyBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          canyonVisit:
+            Reference
+            #{
+              test::kindlycanyon::data::VisitFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        stationsHoldingAQualifyingTally:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            countFloor = 15,
+            since = %2026-04-01
+          ]
+          asserts:
+          [
+            qualifyingStations:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"VS-01","Name":"Rim Gate Kiosk","Guide":"Perrin Vale","Staffing":"STAFFED"},{"Station":"VS-02","Name":"Cottonwood Hut","Guide":"Alix Fenner","Staffing":"STAFFED"}]';
+                  }#;
+              }#
+          ]
+        },
+        aFloorAboveEveryCountPublishesNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            countFloor = 400,
+            since = %2026-04-01
+          ]
+          asserts:
+          [
+            noStations:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

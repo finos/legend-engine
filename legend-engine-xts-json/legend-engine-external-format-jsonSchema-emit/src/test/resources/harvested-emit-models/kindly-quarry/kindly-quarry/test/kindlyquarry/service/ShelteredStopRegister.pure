@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::kindlyquarry::service::ShelteredStopRegister
+{
+  pattern: '/kindlyquarry/v1/sheltered-stop-register';
+  title: 'Kindly Quarry - Sheltered Stop Register';
+  owners:
+  [
+    'transit-network-planning'
+  ];
+  documentation: 'Publishes the boarding points fitted with a full or partial shelter as a relation carrying the composed stop label, the banded access surface and the corridor reached across the stop-to-corridor join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::kindlyquarry::domain::StopPoint.all()->filter(
+      s | $s.shelterCode->in(['A', 'B'])
+    )->project(
+      ~[
+        stopCode: s|$s.stopCode,
+        stopLabel: s|$s.stopLabel,
+        accessBand: s|$s.accessBand,
+        corridorName: s|$s.corridorName
+      ]
+    )->sort(~stopCode->ascending())->limit(5);
+    mapping: demo::kindlyquarry::mapping::TransitMapping;
+    runtime: demo::kindlyquarry::runtime::TransitH2Runtime;
+  }
+  testSuites:
+  [
+    shelteredRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              network.corridor:
+                'corridor_id,corridor_code,corridor_name\n'+
+                '1,CR-01,Riverside Loop\n';
+
+              network.stop_point:
+                'stop_id,stop_code,stop_name,shelter_code,corridor_id,opened_on\n'+
+                '1,SP-01,Kiln Lane,A,1,2021-04-01\n'+
+                '2,SP-02,Weaver Steps,B,1,2021-05-01\n'+
+                '3,SP-03,Orchard Gate,C,1,2021-06-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyShelteredStopsPublished:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            registerRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {"stopCode": "SP-01", "stopLabel": "KILN LANE STOP", "accessBand": "FULL SHELTER", "corridorName": "Riverside Loop"}, {"stopCode": "SP-02", "stopLabel": "WEAVER STEPS STOP", "accessBand": "PARTIAL SHELTER", "corridorName": "Riverside Loop"} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

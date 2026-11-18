@@ -1,0 +1,154 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedvineyard4::service::HarvestYieldByStage
+{
+  pattern: '/vineyard/v1/harvest-yield/{processedAt}';
+  title: 'Gilded Vineyard - Harvest Yield By Pass Stage And Estate';
+  owners:
+  [
+    'vineyard-estate-programme',
+    'vineyard-picking-desk'
+  ];
+  documentation: 'Enters the harvest-pass extent at the requested processing date, keeps passes whose stage appears in the supplied set and whose sugar reading clears the floor derived by the shared tolerance derivation, then groups the survivors by the stage and by the estate reached across the block traversal, summing the picked weight and counting the passes in each group. The traversal re-supplies the processing date, so a superseded pass contributes to no group.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processedAt: StrictDate[1], stages: String[*], brixTarget: Float[1], brixTolerance: Float[1]|test::gildedvineyard4::domain::HarvestPass.all($processedAt)->filter(
+      p|($p.passStage->in($stages)) && ($p.sugarBrix >= test::gildedvineyard4::function::brixFloor($brixTarget, $brixTolerance))
+    )->groupBy(
+      [
+        p|$p.passStage,
+        p|$p.block($processedAt).estateCode
+      ],
+      [
+        agg(p|$p.sugarBrix, y|$y->sum()),
+        agg(p|$p.passCode, y|$y->count())
+      ],
+      [
+        'Stage',
+        'Estate',
+        'Brix Total',
+        'Pass Count'
+      ]
+    )->sort([asc('Stage'), asc('Estate')])};
+    mapping: test::gildedvineyard4::mapping::VineyardMapping;
+    runtime: test::gildedvineyard4::runtime::VineyardRuntime;
+  }
+  testSuites:
+  [
+    harvestYieldSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vineyardWarehouseConnection:
+            Relational
+            #{
+              vineyard.vine_block:
+                'block_id,block_code,varietal_code,estate_code,section_id,vine_count,hectares,soil_ph,planted_on,surveyed_at,warden_name,in_z,out_z\n'+
+                'B1,BL-100,VR-ALBA,EST-N,S1,4200,3.500,6.4,2019-04-01,2026-02-16 08:30:00,Wren Ash,2026-01-01,9999-12-31\n'+
+                'B2,BL-200,VR-NOIR,EST-S,S2,3100,2.250,6.8,2020-05-01,,,2026-01-01,9999-12-31\n';
+
+              vineyard.harvest_pass:
+                'pass_id,pass_code,block_id,crew_code,pass_stage,yield_kg,sugar_brix,picked_on,started_at,in_z,out_z\n'+
+                'P1,HP-01,B1,CR-A,FIRST,1250.50,21.5,2026-02-18,2026-02-18 06:00:00,2026-01-01,9999-12-31\n'+
+                'P2,HP-02,B2,CR-B,FIRST,980.25,22.0,2026-02-19,,2026-01-01,9999-12-31\n'+
+                'P3,HP-03,B1,CR-A,SECOND,410.00,23.5,2026-02-20,,2026-01-01,9999-12-31\n'+
+                'P4,HP-04,B1,CR-D,FIRST,500.00,18.0,2026-02-21,,2026-01-01,9999-12-31\n'+
+                'P5,HP-05,B2,CR-E,SECOND,300.00,24.0,2025-09-10,,2025-01-01,2025-12-31\n'+
+                'P6,HP-06,B1,CR-F,FIRST,1000.00,25.0,2026-02-22,,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        groupsByStageAndTraversedEstate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processedAt = %2026-03-01,
+            stages = ['FIRST', 'SECOND'],
+            brixTarget = 22.0,
+            brixTolerance = 2.0
+          ]
+          asserts:
+          [
+            multiRowGroupAndTwoSingleRowGroups:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stage":"FIRST","Estate":"EST-N","Brix Total":46.5,"Pass Count":2},{"Stage":"FIRST","Estate":"EST-S","Brix Total":22.0,"Pass Count":1},{"Stage":"SECOND","Estate":"EST-N","Brix Total":23.5,"Pass Count":1}]';
+                  }#;
+              }#
+          ]
+        },
+        stageOutsideSuppliedSet:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processedAt = %2026-03-01,
+            stages = ['SECOND'],
+            brixTarget = 22.0,
+            brixTolerance = 2.0
+          ]
+          asserts:
+          [
+            onlySecondStageGroupRemains:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stage":"SECOND","Estate":"EST-N","Brix Total":23.5,"Pass Count":1}]';
+                  }#;
+              }#
+          ]
+        },
+        processingDateBeforeEveryWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processedAt = %2024-01-01,
+            stages = ['FIRST', 'SECOND'],
+            brixTarget = 22.0,
+            brixTolerance = 2.0
+          ]
+          asserts:
+          [
+            emptyResultRatherThanFailure:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

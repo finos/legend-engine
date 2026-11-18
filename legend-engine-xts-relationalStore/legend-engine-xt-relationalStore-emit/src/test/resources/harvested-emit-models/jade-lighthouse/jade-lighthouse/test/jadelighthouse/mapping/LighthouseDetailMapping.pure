@@ -1,0 +1,333 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadelighthouse::mapping::LighthouseDetailMapping
+(
+  include mapping test::jadelighthouse::mapping::LighthouseStructureMapping
+
+  *test::jadelighthouse::domain::Station[station]: Relational
+  {
+    ~filter [test::jadelighthouse::store::LighthouseDB]OpenStation
+    ~primaryKey
+    (
+      [test::jadelighthouse::store::LighthouseDB]coast.station.station_id
+    )
+    ~mainTable [test::jadelighthouse::store::LighthouseDB]coast.station
+    aidCode: [test::jadelighthouse::store::LighthouseDB]coast.station.station_code,
+    aidName: rtrim([test::jadelighthouse::store::LighthouseDB]coast.station.station_name),
+    regionCode: [test::jadelighthouse::store::LighthouseDB]coast.station.region_code,
+    stationType: toUpper([test::jadelighthouse::store::LighthouseDB]coast.station.station_type),
+    statusLabel: case(
+      equal([test::jadelighthouse::store::LighthouseDB]coast.station.status_code, 'A'),
+      'ACTIVE LIGHT',
+      case(
+        equal([test::jadelighthouse::store::LighthouseDB]coast.station.status_code, 'B'),
+        'DAYMARK ONLY',
+        case(
+          equal([test::jadelighthouse::store::LighthouseDB]coast.station.status_code, 'C'),
+          'FOG SIGNAL ONLY',
+          case(
+            equal([test::jadelighthouse::store::LighthouseDB]coast.station.status_code, 'D'),
+            'SEASONAL LIGHT',
+            case(
+              equal([test::jadelighthouse::store::LighthouseDB]coast.station.status_code, 'E'),
+              'RANGE LIGHT',
+              case(
+                equal([test::jadelighthouse::store::LighthouseDB]coast.station.status_code, 'F'),
+                'HARBOUR LIGHT',
+                case(
+                  equal([test::jadelighthouse::store::LighthouseDB]coast.station.status_code, 'G'),
+                  'UNDER REFIT',
+                  case(
+                    equal([test::jadelighthouse::store::LighthouseDB]coast.station.status_code, 'H'),
+                    'HERITAGE DISPLAY',
+                    'UNRECORDED STATUS'
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    keeperNote: case(
+                  isNotEmpty([test::jadelighthouse::store::LighthouseDB]coast.station.keeper_note),
+                  rtrim([test::jadelighthouse::store::LighthouseDB]coast.station.keeper_note),
+                  'NO KEEPER NOTE'
+                ),
+    towerHeightM: [test::jadelighthouse::store::LighthouseDB]coast.station.tower_height_m,
+    rosterLabel: [test::jadelighthouse::store::LighthouseDB]@Station_Roster | [test::jadelighthouse::store::LighthouseDB]coast.station_roster_vw.roster_label
+  }
+
+  *test::jadelighthouse::domain::Inspection[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadelighthouse::store::LighthouseDB]coast.inspection.inspection_id
+    )
+    ~mainTable [test::jadelighthouse::store::LighthouseDB]coast.inspection
+    inspectionId: [test::jadelighthouse::store::LighthouseDB]coast.inspection.inspection_id,
+    inspectorName: toUpper([test::jadelighthouse::store::LighthouseDB]coast.inspection.inspector_name),
+    conditionGrade: EnumerationMapping ConditionMapping: case(
+                      equal([test::jadelighthouse::store::LighthouseDB]coast.inspection.condition_code, '1'),
+                      '1',
+                      case(
+                        equal([test::jadelighthouse::store::LighthouseDB]coast.inspection.condition_code, '2'),
+                        '2',
+                        case(
+                          equal([test::jadelighthouse::store::LighthouseDB]coast.inspection.condition_code, '3'),
+                          '3',
+                          '4'
+                        )
+                      )
+                    ),
+    hazardBand: EnumerationMapping HazardMapping: case(
+                  equal([test::jadelighthouse::store::LighthouseDB]coast.inspection.hazard_code, 'CA'),
+                  'CA',
+                  case(
+                    equal([test::jadelighthouse::store::LighthouseDB]coast.inspection.hazard_code, 'MO'),
+                    'MO',
+                    case(
+                      equal([test::jadelighthouse::store::LighthouseDB]coast.inspection.hazard_code, 'EX'),
+                      'EX',
+                      'SE'
+                    )
+                  )
+                ),
+    regionStationCount: [test::jadelighthouse::store::LighthouseDB]@Inspection_Station > @Station_Region > @Region_Summary | [test::jadelighthouse::store::LighthouseDB]coast.region_summary_vw.station_count
+  }
+
+  *test::jadelighthouse::domain::KeeperLog[keeperLog]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadelighthouse::store::LighthouseDB]coast.keeper_log.log_id
+    )
+    ~mainTable [test::jadelighthouse::store::LighthouseDB]coast.keeper_log
+    logId: [test::jadelighthouse::store::LighthouseDB]coast.keeper_log.log_id,
+    entryText: rtrim([test::jadelighthouse::store::LighthouseDB]coast.keeper_log.entry_text)
+  }
+
+  test::jadelighthouse::domain::Station_Lamp: Relational
+  {
+    AssociationMapping
+    (
+      lamp[station, lamp]: [test::jadelighthouse::store::LighthouseDB]@Station_Lamp,
+      lampStation[lamp, station]: [test::jadelighthouse::store::LighthouseDB]@Station_Lamp
+    )
+  }
+
+  test::jadelighthouse::domain::Station_Region: Relational
+  {
+    AssociationMapping
+    (
+      region[station, region]: [test::jadelighthouse::store::LighthouseDB]@Station_Region,
+      regionStations[region, station]: [test::jadelighthouse::store::LighthouseDB]@Station_Region
+    )
+  }
+
+  test::jadelighthouse::domain::Inspection_Station: Relational
+  {
+    AssociationMapping
+    (
+      station[inspection, station]: [test::jadelighthouse::store::LighthouseDB]@Inspection_Station,
+      inspections[station, inspection]: [test::jadelighthouse::store::LighthouseDB]@Inspection_Station
+    )
+  }
+
+  test::jadelighthouse::domain::Station_Logs: Relational
+  {
+    AssociationMapping
+    (
+      logs[station, keeperLog]: [test::jadelighthouse::store::LighthouseDB]@Log_Station,
+      loggedStation[keeperLog, station]: [test::jadelighthouse::store::LighthouseDB]@Log_Station
+    )
+  }
+
+  testSuites:
+  [
+    stationDigestSuite:
+    {
+      function: |test::jadelighthouse::domain::Station.all()->project(
+        [
+          s|$s.aidCode,
+          s|$s.aidName,
+          s|$s.stationType,
+          s|$s.statusLabel,
+          s|$s.keeperNote,
+          s|$s.rosterLabel->toOne()
+        ],
+        [
+          'Aid',
+          'Name',
+          'Type',
+          'Status',
+          'Note',
+          'Roster'
+        ]
+      )->sort([asc('Aid')]);
+      tests:
+      [
+        stationDigest:
+        {
+          doc: 'Projects open stations through the inherited aid properties, every one of the eight status arms plus the unrecorded fallback, the empty-note fallback and the roster view join; the closed station is dropped by the store filter.';
+          data:
+          [
+            test::jadelighthouse::store::LighthouseDB:
+              Relational
+              #{
+                coast.station:
+                  'station_id,station_code,station_name,region_code,station_type,status_code,tower_height_m,keeper_note,lamp_id\n'+
+                  '1,JL-101,Gull Point Light,R-01,major,A,38,lens cleaned,1\n'+
+                  '2,JL-102,Cobble Head Light,R-01,minor,B,21,,2\n'+
+                  '3,JL-103,Sand Bar Light,R-02,harbour,C,14,fog horn tested,3\n'+
+                  '4,JL-104,Reed Spit Light,R-02,minor,D,17,seasonal shutdown,4\n'+
+                  '5,JL-105,Pilot Range Light,R-02,minor,E,11,alignment checked,5\n'+
+                  '6,JL-106,Quay End Light,R-03,harbour,F,9,quay resurfaced,6\n'+
+                  '7,JL-107,Old Tower Light,R-03,major,G,44,scaffold in place,7\n'+
+                  '8,JL-108,Museum Light,R-03,major,H,26,open to visitors,8\n'+
+                  '9,JL-109,Spare Beacon,R-01,minor,Q,7,status under review,9\n'+
+                  '10,JL-110,Closed Light,R-01,minor,X,5,decommissioned,10\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Aid":"JL-101","Name":"Gull Point Light","Type":"MAJOR","Status":"ACTIVE LIGHT","Note":"lens cleaned","Roster":"ROSTER-R-01"},{"Aid":"JL-102","Name":"Cobble Head Light","Type":"MINOR","Status":"DAYMARK ONLY","Note":"NO KEEPER NOTE","Roster":"ROSTER-R-01"},{"Aid":"JL-103","Name":"Sand Bar Light","Type":"HARBOUR","Status":"FOG SIGNAL ONLY","Note":"fog horn tested","Roster":"ROSTER-R-02"},{"Aid":"JL-104","Name":"Reed Spit Light","Type":"MINOR","Status":"SEASONAL LIGHT","Note":"seasonal shutdown","Roster":"ROSTER-R-02"},{"Aid":"JL-105","Name":"Pilot Range Light","Type":"MINOR","Status":"RANGE LIGHT","Note":"alignment checked","Roster":"ROSTER-R-02"},{"Aid":"JL-106","Name":"Quay End Light","Type":"HARBOUR","Status":"HARBOUR LIGHT","Note":"quay resurfaced","Roster":"ROSTER-R-03"},{"Aid":"JL-107","Name":"Old Tower Light","Type":"MAJOR","Status":"UNDER REFIT","Note":"scaffold in place","Roster":"ROSTER-R-03"},{"Aid":"JL-108","Name":"Museum Light","Type":"MAJOR","Status":"HERITAGE DISPLAY","Note":"open to visitors","Roster":"ROSTER-R-03"},{"Aid":"JL-109","Name":"Spare Beacon","Type":"MINOR","Status":"UNRECORDED STATUS","Note":"status under review","Roster":"ROSTER-R-01"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    inspectionSuite:
+    {
+      function: |test::jadelighthouse::domain::Inspection.all(%2026-06-01, %2026-06-01)->project(
+        [
+          i|$i.inspectionId,
+          i|$i.inspectorName,
+          i|$i.conditionGrade,
+          i|$i.hazardBand,
+          i|$i.regionStationCount->toOne(),
+          i|$i.station.aidCode->toOne()
+        ],
+        [
+          'Inspection',
+          'Inspector',
+          'Condition',
+          'Hazard',
+          'RegionStations',
+          'Aid'
+        ]
+      )->sort([asc('Inspection')]);
+      tests:
+      [
+        bitemporalAsOf:
+        {
+          doc: 'Resolves the bi-temporal inspection extent at a processing date and a business date, translating both code vocabularies onto enumerations and reaching the grouped region view three joins away from the main table; the row whose business window has closed and the row whose processing window has closed are both out of range.';
+          data:
+          [
+            test::jadelighthouse::store::LighthouseDB:
+              Relational
+              #{
+                coast.inspection:
+                  'inspection_id,station_id,inspector_name,condition_code,hazard_code,in_z,out_z,from_z,thru_z\n'+
+                  '1,1,mira holt,1,CA,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '2,2,dane orrel,2,MO,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '3,3,fen ashby,3,EX,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '4,3,fen ashby,4,SE,2026-01-01,9999-12-31,2024-01-01,2025-01-01\n'+
+                  '5,2,dane orrel,2,CA,2024-01-01,2025-01-01,2026-01-01,9999-12-31\n';
+
+                coast.station:
+                  'station_id,station_code,station_name,region_code,station_type,status_code,tower_height_m,keeper_note,lamp_id\n'+
+                  '1,JL-101,Gull Point Light,R-01,major,A,38,lens cleaned,1\n'+
+                  '2,JL-102,Cobble Head Light,R-01,minor,B,21,routine visit,2\n'+
+                  '3,JL-103,Sand Bar Light,R-02,harbour,C,14,fog horn tested,3\n';
+
+                coast.region:
+                  'region_code,region_name,coast_side\n'+
+                  'R-01,North Shore Coast,west\n'+
+                  'R-02,East Sands,east\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inspection":1,"Inspector":"MIRA HOLT","Condition":"Sound","Hazard":"Calm","RegionStations":2,"Aid":"JL-101"},{"Inspection":2,"Inspector":"DANE ORREL","Condition":"Serviceable","Hazard":"Moderate","RegionStations":2,"Aid":"JL-102"},{"Inspection":3,"Inspector":"FEN ASHBY","Condition":"Degraded","Hazard":"Exposed","RegionStations":1,"Aid":"JL-103"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    keeperLogSuite:
+    {
+      function: |test::jadelighthouse::domain::KeeperLog.all(%2026-06-01)->project(
+        [
+          k|$k.logId,
+          k|$k.entryText
+        ],
+        [
+          'Log',
+          'Entry'
+        ]
+      )->sort([asc('Log')]);
+      tests:
+      [
+        processingOnlyAsOf:
+        {
+          doc: 'The single-dimension keeper log resolves at a processing date alone, so the superseded correction row is out of range while the current rows survive.';
+          data:
+          [
+            test::jadelighthouse::store::LighthouseDB:
+              Relational
+              #{
+                coast.keeper_log:
+                  'log_id,station_id,entry_text,in_z,out_z\n'+
+                  '1,1,lamp rotated by hand,2026-01-01,9999-12-31\n'+
+                  '2,2,fog signal serviced,2026-01-01,9999-12-31\n'+
+                  '3,3,superseded entry,2024-01-01,2025-01-01\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Log":1,"Entry":"lamp rotated by hand"},{"Log":2,"Entry":"fog signal serviced"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

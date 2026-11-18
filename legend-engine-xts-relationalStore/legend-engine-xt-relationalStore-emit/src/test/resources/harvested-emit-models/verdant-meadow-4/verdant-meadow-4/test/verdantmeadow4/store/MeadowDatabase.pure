@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::verdantmeadow4::store::MeadowDatabase
+(
+  Schema habitat
+  (
+    Table meadow_plot
+    (
+      plot_code VARCHAR(16) PRIMARY KEY,
+      meadow_code VARCHAR(16),
+      warden_code VARCHAR(16),
+      sward_code VARCHAR(8),
+      grazing_code VARCHAR(8),
+      species_count INTEGER,
+      cut_count INTEGER,
+      area_ha INTEGER,
+      seed_kg INTEGER,
+      band_label VARCHAR(64),
+      tag_label VARCHAR(64),
+      note_text VARCHAR(128),
+      status_code VARCHAR(16)
+    )
+
+    View plot_species_summary
+    (
+      ~groupBy (habitat.meadow_plot.meadow_code)
+      meadow_code: habitat.meadow_plot.meadow_code PRIMARY KEY,
+      plot_count: count(habitat.meadow_plot.plot_code),
+      max_species: max(habitat.meadow_plot.species_count)
+    )
+
+    View plot_tag
+    (
+      plot_code: habitat.meadow_plot.plot_code PRIMARY KEY,
+      tag_text: concat(toUpper(habitat.meadow_plot.sward_code), concat('/', trim(habitat.meadow_plot.tag_label)))
+    )
+  )
+
+  Schema register
+  (
+    Table meadow
+    (
+      meadow_code VARCHAR(16) PRIMARY KEY,
+      meadow_name VARCHAR(128),
+      region_code VARCHAR(16),
+      status_code VARCHAR(16)
+    )
+
+    Table region
+    (
+      region_code VARCHAR(16) PRIMARY KEY,
+      region_name VARCHAR(128),
+      zone_code VARCHAR(16)
+    )
+
+    Table zone
+    (
+      zone_code VARCHAR(16) PRIMARY KEY,
+      zone_name VARCHAR(128),
+      sector_label VARCHAR(64)
+    )
+
+    Table warden
+    (
+      warden_code VARCHAR(16) PRIMARY KEY,
+      warden_name VARCHAR(128),
+      contact_text VARCHAR(64)
+    )
+  )
+
+  Filter KeptPlots(habitat.meadow_plot.status_code != 'RETIRED')
+  Filter ListedMeadows(register.meadow.status_code != 'CLOSED')
+
+  Join Plot_Meadow(habitat.meadow_plot.meadow_code = register.meadow.meadow_code)
+  Join Meadow_Region(register.meadow.region_code = register.region.region_code)
+  Join Region_Zone(register.region.zone_code = register.zone.zone_code)
+  Join Plot_Warden(habitat.meadow_plot.warden_code = register.warden.warden_code)
+  Join Plot_Summary(habitat.meadow_plot.meadow_code = habitat.plot_species_summary.meadow_code)
+  Join Plot_Tag(habitat.meadow_plot.plot_code = habitat.plot_tag.plot_code)
+)

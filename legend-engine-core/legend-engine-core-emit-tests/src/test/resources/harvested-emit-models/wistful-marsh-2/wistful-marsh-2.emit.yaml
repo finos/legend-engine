@@ -1,0 +1,32 @@
+name: wistful-marsh-2
+title: "Wistful Marsh - Tidal Wetland Survey Object Layer (inheritance, closed value domains, bidirectional associations)"
+description: |
+  A store-less Pure object layer for tidal wetland survey work. Inheritance is
+  the dominant structural device: observation records and wetland zones each
+  form a multi-level hierarchy, so property resolution walks the supertypes and
+  a subtype instance still satisfies the supertype contract. Closed value
+  domains outnumber the classes and are shared between a subtype and its
+  supertype, and two bidirectional associations attach records to zones and
+  zones to a monitoring programme so navigation stays valid for every subtype.
+modelSources:
+  model:
+    root: wistful-marsh-2
+    files:
+      - test/wistfulmarsh2/domain/Programme.pure
+      - test/wistfulmarsh2/domain/Records.pure
+      - test/wistfulmarsh2/domain/Vocabularies.pure
+      - test/wistfulmarsh2/domain/Zones.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - enumeration
+  - inheritance
+  - object-layer
+  - store-less
+  - wetland-survey

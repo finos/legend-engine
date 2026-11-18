@@ -1,0 +1,58 @@
+name: teal-prairie
+title: "Prairie Seed Accessions — Locally Bound Temporal Points over a Wide Milestoned Aggregate"
+description: |
+  A prairie seed-vault accession service that opens its body with two local
+  bindings of the current date, used separately as a business point and a
+  processing point, and then aggregates accessions inside a parameterised
+  event-date window. The grouping combines calendar decompositions of the event
+  date, a four-level classification hierarchy read level by level, four
+  business-temporal lookups and one bi-temporal lookup whose returned structures
+  are read a further hop deep, with a duplicate-suppressing collection operator
+  applied on top of the already fully keyed aggregation.
+modelSources:
+  model:
+    root: teal-prairie
+    files:
+      - test/tealprairie/connection/SeedVaultH2Connection.pure
+      - test/tealprairie/data/StewardFixtureData.pure
+      - test/tealprairie/domain/SeedVaultDomain.pure
+      - test/tealprairie/mapping/SeedVaultMapping.pure
+      - test/tealprairie/runtime/SeedVaultRuntime.pure
+      - test/tealprairie/service/SeedAccessionService.pure
+      - test/tealprairie/service/StewardTransferServices.pure
+      - test/tealprairie/store/SeedVaultDatabase.pure
+features:
+  - execution:service
+  - execution:service-test
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - milestoning:processing-date-parameter
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:let-binding
+  - query:nested-property-path
+  - grammar:qualified-property
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bitemporal
+  - calendar-decomposition
+  - classification-hierarchy
+  - group-by
+  - h2
+  - let-binding
+  - milestoning
+  - point-in-time
+  - relational
+  - seed-vault
+  - service-test

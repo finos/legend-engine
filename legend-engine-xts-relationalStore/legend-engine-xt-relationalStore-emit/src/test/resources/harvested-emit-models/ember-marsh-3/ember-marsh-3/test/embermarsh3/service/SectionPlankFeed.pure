@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::embermarsh3::service::SectionPlankFeed
+{
+  pattern: '/embermarsh3/v1/section-plank';
+  title: 'Ember Marsh - Boardwalk Sections Of One Reserve Above A Plank Floor';
+  documentation: 'Keeps the boardwalk sections of one marsh reserve whose plank count clears a supplied floor and projects the section code, the upper-cased reserve name, the plank count and the carried length into a tabular result.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'marsh-boardwalk-crew'
+  ];
+  execution: Single
+  {
+    query: {reserve: String[1], minPlanks: Integer[1]|test::embermarsh3::domain::BoardwalkSection.all()->filter(
+      s|($s.reserveName == $reserve) && ($s.plankCount >= $minPlanks)
+    )->project(
+      [
+        col(
+          s|$s.sectionCode,
+          'SectionCode'
+        ),
+        col(
+          s|$s.reserveName->toUpper(),
+          'Reserve'
+        ),
+        col(
+          s|$s.plankCount,
+          'PlankCount'
+        ),
+        col(
+          s|$s.lengthM,
+          'LengthM'
+        )
+      ]
+    )->sort(
+      [
+        asc('SectionCode')
+      ]
+    )->limit(10)};
+    mapping: test::embermarsh3::mapping::MarshMapping;
+    runtime: test::embermarsh3::runtime::MarshRuntime;
+  }
+  testSuites:
+  [
+    sectionPlankSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+              marsh.boardwalk_section:
+                'section_code,reserve_name,plank_count,length_m,surveyed_on\n'+
+                'BS-01,Alder Fen,240,120.5,2026-04-02\n'+
+                'BS-02,Alder Fen,180,90.25,2026-04-09\n'+
+                'BS-03,Sedge Mire,320,160.75,2026-04-16\n'+
+                'BS-04,Sedge Mire,60,30.5,2026-04-23\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        sectionsOfOneReserveAboveThePlankFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            reserve = 'Alder Fen',
+            minPlanks = 200
+          ]
+          asserts:
+          [
+            sectionRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SectionCode":"BS-01","Reserve":"ALDER FEN","PlankCount":240,"LengthM":120.5}]';
+                  }#;
+              }#
+          ]
+        },
+        aPlankFloorAboveEverySectionSelectsNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            reserve = 'Alder Fen',
+            minPlanks = 1000
+          ]
+          asserts:
+          [
+            noSectionRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

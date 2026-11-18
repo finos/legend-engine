@@ -1,0 +1,139 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarridge3::service::DistrictClearanceService
+{
+  pattern: '/solarridge3/districtClearance';
+  title: 'District Trail Clearance Rollup';
+  owners:
+  [
+    'trail-upkeep-desk'
+  ];
+  documentation: 'Keeps only the trail segments that carry a clearance note, rolls the cleared metres and the crew effort up behind the district and surface pair, and deduplicates the summaries so the published grain is one row per distinct district clearance state.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {surfaceTypes: String[*]|test::solarridge3::domain::TrailSegment.all()->filter(
+      s|($s.clearanceNote->isEmpty()->not()) && ($s.surfaceType->in($surfaceTypes))
+    )->groupBy(
+      [
+        s|$s.districtName,
+        s|$s.surfaceType
+      ],
+      [
+        agg(s|$s.metresCleared, y|$y->sum()),
+        agg(s|$s.crewSize, y|$y->sum()),
+        agg(s|$s.segmentCode, y|$y->count())
+      ],
+      [
+        'District',
+        'Surface',
+        'Cleared Metre Total',
+        'Crew Day Total',
+        'Segment Count'
+      ]
+    )->distinct()->sort(
+      [
+        asc('District'),
+        asc('Surface')
+      ]
+    )};
+    mapping: test::solarridge3::mapping::UpkeepMapping;
+    runtime: test::solarridge3::runtime::UpkeepRuntime;
+  }
+  testSuites:
+  [
+    districtClearanceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          upkeepH2Connection:
+            Reference
+            #{
+              test::solarridge3::data::UpkeepSeasonData
+            }#
+        ]
+      ]
+      tests:
+      [
+        notedSurfaces:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surfaceTypes = ['GRAVEL', 'BOARDWALK']
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"District":"EAST FLAT","Surface":"BOARDWALK","Cleared Metre Total":45.75,"Crew Day Total":2,"Segment Count":1},{"District":"NORTH RIDGE","Surface":"GRAVEL","Cleared Metre Total":200.75,"Crew Day Total":7,"Segment Count":2},{"District":"SOUTH HOLLOW","Surface":"BOARDWALK","Cleared Metre Total":45.75,"Crew Day Total":2,"Segment Count":1}]';
+                  }#;
+              }#
+          ]
+        },
+        singleSurface:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surfaceTypes = ['STONE']
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"District":"WEST SHOULDER","Surface":"STONE","Cleared Metre Total":10.0,"Crew Day Total":1,"Segment Count":1}]';
+                  }#;
+              }#
+          ]
+        },
+        emptySurfaceSelection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surfaceTypes = []
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

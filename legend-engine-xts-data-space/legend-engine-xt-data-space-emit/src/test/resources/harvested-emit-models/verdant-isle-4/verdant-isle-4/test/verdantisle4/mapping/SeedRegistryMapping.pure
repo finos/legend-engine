@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantisle4::mapping::SeedRegistryMapping
+(
+  *test::verdantisle4::domain::SeedLot[seedLot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantisle4::store::SeedRegistryDB]seedreg.seed_lot.lot_id
+    )
+    ~mainTable [test::verdantisle4::store::SeedRegistryDB]seedreg.seed_lot
+    lotCode: [test::verdantisle4::store::SeedRegistryDB]seedreg.seed_lot.lot_code,
+    lotState: [test::verdantisle4::store::SeedRegistryDB]seedreg.seed_lot.lot_state,
+    seedCount: [test::verdantisle4::store::SeedRegistryDB]seedreg.seed_lot.seed_count,
+    viabilityPct: [test::verdantisle4::store::SeedRegistryDB]seedreg.seed_lot.viability_pct,
+    sownOn: [test::verdantisle4::store::SeedRegistryDB]seedreg.seed_lot.sown_on,
+    benchCode: [test::verdantisle4::store::SeedRegistryDB]seedreg.seed_lot.bench_code,
+    keeperCode: [test::verdantisle4::store::SeedRegistryDB]seedreg.seed_lot.keeper_code
+  }
+
+  *test::verdantisle4::domain::Cultivar[cultivar]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantisle4::store::SeedRegistryDB]seedreg.cultivar.cultivar_code
+    )
+    ~mainTable [test::verdantisle4::store::SeedRegistryDB]seedreg.cultivar
+    cultivarCode: [test::verdantisle4::store::SeedRegistryDB]seedreg.cultivar.cultivar_code,
+    cultivarName: [test::verdantisle4::store::SeedRegistryDB]seedreg.cultivar.cultivar_name,
+    speciesGroup: [test::verdantisle4::store::SeedRegistryDB]seedreg.cultivar.species_group,
+    germinationDays: [test::verdantisle4::store::SeedRegistryDB]seedreg.cultivar.germination_days
+  }
+
+  test::verdantisle4::domain::Lot_Cultivar: Relational
+  {
+    AssociationMapping
+    (
+      lots[cultivar, seedLot]: [test::verdantisle4::store::SeedRegistryDB]@Lot_Cultivar,
+      cultivar[seedLot, cultivar]: [test::verdantisle4::store::SeedRegistryDB]@Lot_Cultivar
+    )
+  }
+
+  testSuites:
+  [
+    seedRegistryBindingSuite:
+    {
+      function: |test::verdantisle4::domain::SeedLot.all()->project(
+  [
+    l|$l.lotCode,
+    l|$l.lotState,
+    l|$l.viabilityPct,
+    l|$l.cultivar.cultivarName,
+    l|$l.cultivar.speciesGroup
+  ],
+  [
+    'Lot',
+    'State',
+    'Viability',
+    'Cultivar',
+    'SpeciesGroup'
+  ]
+)->sort([asc('Lot')]);
+      tests:
+      [
+        cultivarReachedThroughTheDynaFunctionJoin:
+        {
+          doc: 'Reads each seed lot with the cultivar it cites. The join is not a plain column equality: the lot side is folded to upper case inside the join condition, so a lot whose cultivar code is recorded in lower case still resolves, and a lot citing a cultivar that is absent from the reference table resolves to nothing on the cultivar columns.';
+          data:
+          [
+            test::verdantisle4::store::SeedRegistryDB:
+              Relational
+              #{
+                seedreg.cultivar:
+                  'cultivar_code,cultivar_name,species_group,germination_days\n'+
+                  'CV-FERN,Island Shield Fern,FERN,21\n'+
+                  'CV-SEDGE,Dune Sedge,GRASS,14\n';
+
+                seedreg.seed_lot:
+                  'lot_id,lot_code,cultivar_code,bench_code,keeper_code,lot_state,seed_count,viability_pct,sown_on\n'+
+                  '1,SL-001,CV-FERN,BN-01,KP-1,SOWN,400,96.0,2026-03-02\n'+
+                  '2,SL-002,cv-sedge,BN-02,KP-2,SOWN,250,88.5,2026-03-03\n'+
+                  '3,SL-003,CV-MOSS,BN-02,KP-2,HELD,120,55.0,2026-03-04\n';
+              }#
+          ];
+          asserts:
+          [
+            lotsWithResolvedCultivars:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"SL-001","State":"SOWN","Viability":96.0,"Cultivar":"Island Shield Fern","SpeciesGroup":"FERN"},{"Lot":"SL-002","State":"SOWN","Viability":88.5,"Cultivar":"Dune Sedge","SpeciesGroup":"GRASS"},{"Lot":"SL-003","State":"HELD","Viability":55.0,"Cultivar":null,"SpeciesGroup":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

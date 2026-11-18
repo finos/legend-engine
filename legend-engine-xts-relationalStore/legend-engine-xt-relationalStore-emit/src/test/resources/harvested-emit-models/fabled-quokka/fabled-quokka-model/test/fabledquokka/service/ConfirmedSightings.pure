@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::fabledquokka::service::ConfirmedSightings
+{
+  pattern: '/wildlife/v1/sightings/{minCount}';
+  title: 'Sanctuary - Confirmed Sightings';
+  owners:
+  [
+    'sanctuary-survey',
+    'habitat-eng'
+  ];
+  documentation: 'Restricts the sighting extent to confirmed records with at least minCount animals observed, then projects three string attributes. The enum predicate is resolved through the mapping enumeration mapping into an integral column test.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minCount: Integer[1]|test::fabledquokka::domain::SightingRecord.all()->filter(
+      s|($s.status == test::fabledquokka::domain::SurveyStatus.CONFIRMED) && ($s.countObserved >= $minCount)
+    )->project(
+      [
+        s|$s.recordCode,
+        s|$s.zoneName,
+        s|$s.speciesName
+      ],
+      [
+        'Record',
+        'Zone',
+        'Species'
+      ]
+    )};
+    mapping: test::fabledquokka::mapping::SanctuaryMapping;
+    runtime: test::fabledquokka::runtime::SanctuaryRuntime;
+  }
+  testSuites:
+  [
+    confirmedSightingsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              sanctuary.sighting:
+                'record_id,record_code,observer_name,zone_name,species_name,status_code,count_observed\n'+
+                '1,SG-0001,Wren Halloway,North Ridge,Spotted Quoll,1,4\n'+
+                '2,SG-0002,Wren Halloway,North Ridge,Sand Goanna,2,6\n'+
+                '3,SG-0003,Otis Pemberton,Salt Marsh,Spotted Quoll,1,2\n'+
+                '4,SG-0004,Otis Pemberton,Salt Marsh,Reed Warbler,1,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        confirmedAtLeastTwo:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minCount = 2
+          ]
+          asserts:
+          [
+            twoConfirmedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Record":"SG-0001","Zone":"North Ridge","Species":"Spotted Quoll"},{"Record":"SG-0003","Zone":"Salt Marsh","Species":"Spotted Quoll"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

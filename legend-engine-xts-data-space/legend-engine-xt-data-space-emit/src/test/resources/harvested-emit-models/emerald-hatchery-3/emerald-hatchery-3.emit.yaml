@@ -1,0 +1,63 @@
+name: emerald-hatchery-3
+title: "Emerald Hatchery — Freshwater Rearing Ponds (data space over two relational mappings with filtered, projected, de-duplicated and date-differenced service endpoints)"
+description: |
+  A freshwater hatchery rearing model published as a data space with two
+  execution contexts: the live rearing warehouse, where ponds and stocked
+  cohorts are mapped onto a two-table schema, and a retired-pond archive
+  addressed through its own mapping, connection and runtime. Four services
+  drive the query surface — an active-pond lookup that narrows on an optional
+  decommissioning date, a set-membership water-source filter and a capacity
+  floor before ordering; a species lookup that de-duplicates its projection so
+  repeated cohorts in one pond report once; a stocking window that composes
+  date and count comparisons, normalises codes at projection time and derives
+  the days each cohort has been growing out; and an archive endpoint that
+  projects and de-duplicates the retired ponds for a requested grade band.
+  Every service carries an inline relational fixture and asserts its tabular
+  payload.
+
+modelSources:
+  model:
+    root: emerald-hatchery-3
+    files:
+      - test/emeraldhatchery3/connection/HatcheryH2Connection.pure
+      - test/emeraldhatchery3/connection/PondArchiveH2Connection.pure
+      - test/emeraldhatchery3/dataspace/HatcheryDataSpace.pure
+      - test/emeraldhatchery3/domain/HatcheryDomain.pure
+      - test/emeraldhatchery3/mapping/HatcheryMapping.pure
+      - test/emeraldhatchery3/mapping/PondArchiveMapping.pure
+      - test/emeraldhatchery3/runtime/HatcheryRuntimes.pure
+      - test/emeraldhatchery3/service/ArchivedPondsByGrade.pure
+      - test/emeraldhatchery3/service/BatchStockingWindow.pure
+      - test/emeraldhatchery3/service/PondsByWaterSource.pure
+      - test/emeraldhatchery3/service/SpeciesBatchPonds.pure
+      - test/emeraldhatchery3/store/HatcheryDb.pure
+      - test/emeraldhatchery3/store/PondArchiveDb.pure
+
+features:
+  - execution:data-space
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - date-arithmetic
+  - distinct
+  - h2
+  - hatchery
+  - multi-context
+  - service-test
+  - set-membership
+  - sort-limit

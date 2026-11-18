@@ -1,0 +1,205 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletreef3::mapping::StudioMapping
+(
+  *test::scarletreef3::domain::KilnUnit[kiln]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletreef3::store::StudioDb]studio.kiln_unit.kiln_code
+    )
+    ~mainTable [test::scarletreef3::store::StudioDb]studio.kiln_unit
+    kilnCode: [test::scarletreef3::store::StudioDb]studio.kiln_unit.kiln_code,
+    kilnLabel: [test::scarletreef3::store::StudioDb]studio.kiln_unit.kiln_label,
+    chamberLitres: [test::scarletreef3::store::StudioDb]studio.kiln_unit.chamber_litres,
+    installedOn: [test::scarletreef3::store::StudioDb]studio.kiln_unit.installed_on
+  }
+
+  *test::scarletreef3::domain::StudioMember[member]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletreef3::store::StudioDb]studio.studio_member.member_code
+    )
+    ~mainTable [test::scarletreef3::store::StudioDb]studio.studio_member
+    memberCode: [test::scarletreef3::store::StudioDb]studio.studio_member.member_code,
+    memberLabel: [test::scarletreef3::store::StudioDb]studio.studio_member.member_label,
+    joinedOn: [test::scarletreef3::store::StudioDb]studio.studio_member.joined_on
+  }
+
+  *test::scarletreef3::domain::ClayBody[clay]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletreef3::store::StudioDb]reference.clay_body.clay_code
+    )
+    ~mainTable [test::scarletreef3::store::StudioDb]reference.clay_body
+    clayCode: [test::scarletreef3::store::StudioDb]reference.clay_body.clay_code,
+    clayLabel: [test::scarletreef3::store::StudioDb]reference.clay_body.clay_label,
+    shrinkPercent: [test::scarletreef3::store::StudioDb]reference.clay_body.shrink_percent
+  }
+
+  *test::scarletreef3::domain::GlazeRecipe[glaze]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletreef3::store::StudioDb]reference.glaze_recipe.glaze_code
+    )
+    ~mainTable [test::scarletreef3::store::StudioDb]reference.glaze_recipe
+    glazeCode: [test::scarletreef3::store::StudioDb]reference.glaze_recipe.glaze_code,
+    glazeLabel: [test::scarletreef3::store::StudioDb]reference.glaze_recipe.glaze_label,
+    coneNumber: [test::scarletreef3::store::StudioDb]reference.glaze_recipe.cone_number
+  }
+
+  *test::scarletreef3::domain::FiringRun[run]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletreef3::store::StudioDb]studio.firing_run.run_code
+    )
+    ~mainTable [test::scarletreef3::store::StudioDb]studio.firing_run
+    runCode: [test::scarletreef3::store::StudioDb]studio.firing_run.run_code,
+    startedAt: [test::scarletreef3::store::StudioDb]studio.firing_run.started_at,
+    peakCelsius: [test::scarletreef3::store::StudioDb]studio.firing_run.peak_celsius,
+    runNote: [test::scarletreef3::store::StudioDb]studio.firing_run.run_note,
+    kilnLabel: [test::scarletreef3::store::StudioDb]@Run_Kiln | studio.kiln_unit.kiln_label,
+    clayLabel: [test::scarletreef3::store::StudioDb]@Run_Clay | reference.clay_body.clay_label,
+    glazeLabel: [test::scarletreef3::store::StudioDb]@Run_Glaze | reference.glaze_recipe.glaze_label
+  }
+
+  testSuites:
+  [
+    firingRegisterSuite:
+    {
+      function: |test::scarletreef3::domain::FiringRun.all()->project(
+      [
+        r|$r.runCode,
+        r|$r.kilnLabel,
+        r|$r.clayLabel,
+        r|$r.glazeLabel,
+        r|$r.peakCelsius
+      ],
+      [
+        'Run',
+        'Kiln',
+        'Clay',
+        'Glaze',
+        'Peak'
+      ]
+    )->sort([asc('Run')]);
+      tests:
+      [
+        everyRunSurvivesTheOuterReachAcrossBothSchemas:
+        {
+          doc: 'The register reaches the kiln label inside its own schema and the clay label in the reference schema, and keeps the run whose recipe key has no counterpart at all: that column arrives empty instead of dropping the row.';
+          data:
+          [
+            test::scarletreef3::store::StudioDb:
+              Relational
+              #{
+                studio.kiln_unit:
+                    'kiln_code,kiln_label,chamber_litres,installed_on\n'+
+                    'KI-01,Front Chamber Kiln,180,2024-05-06\n'+
+                    'KI-02,Rear Chamber Kiln,240,2025-02-11\n';
+
+                studio.studio_member:
+                    'member_code,member_label,joined_on\n'+
+                    'ME-01,Weekday Evening Group,2025-01-13\n'+
+                    'ME-02,Saturday Morning Group,2025-03-08\n';
+
+                studio.firing_run:
+                    'run_code,kiln_code,member_code,clay_code,glaze_code,started_at,peak_celsius,run_note\n'+
+                    'FR-01,KI-01,ME-01,CB-01,GZ-01,2026-04-02 09:00:00,1240,first bisque load of the season\n'+
+                    'FR-02,KI-01,ME-02,CB-02,GZ-09,2026-04-09 08:30:00,1180,\n'+
+                    'FR-03,KI-02,ME-01,CB-01,GZ-02,2026-04-16 10:15:00,1260,glaze test tiles\n';
+
+                reference.clay_body:
+                    'clay_code,clay_label,shrink_percent\n'+
+                    'CB-01,Coarse Grogged Stoneware,12\n'+
+                    'CB-02,Smooth White Earthenware,9\n';
+
+                reference.glaze_recipe:
+                    'glaze_code,glaze_label,cone_number\n'+
+                    'GZ-01,Ash Green Matte,8\n'+
+                    'GZ-02,Speckled Cream Satin,6\n';
+              }#
+          ];
+          asserts:
+          [
+            theUnmatchedRecipeLeavesOneEmptyColumn:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Run":"FR-01","Kiln":"Front Chamber Kiln","Clay":"Coarse Grogged Stoneware","Glaze":"Ash Green Matte","Peak":1240},{"Run":"FR-02","Kiln":"Front Chamber Kiln","Clay":"Smooth White Earthenware","Glaze":null,"Peak":1180},{"Run":"FR-03","Kiln":"Rear Chamber Kiln","Clay":"Coarse Grogged Stoneware","Glaze":"Speckled Cream Satin","Peak":1260}]';
+                  }#;
+              }#
+          ];
+        },
+        aSparseRecipeRelationEmptiesTheColumnForEveryUnmatchedRun:
+        {
+          doc: 'The same register read against a recipe relation holding a single row: the two runs whose recipe key is absent keep their own columns and lose only the reached one, so the combination degrades one column at a time rather than shrinking the register.';
+          data:
+          [
+            test::scarletreef3::store::StudioDb:
+              Relational
+              #{
+                studio.kiln_unit:
+                    'kiln_code,kiln_label,chamber_litres,installed_on\n'+
+                    'KI-01,Front Chamber Kiln,180,2024-05-06\n'+
+                    'KI-02,Rear Chamber Kiln,240,2025-02-11\n';
+
+                studio.studio_member:
+                    'member_code,member_label,joined_on\n'+
+                    'ME-01,Weekday Evening Group,2025-01-13\n'+
+                    'ME-02,Saturday Morning Group,2025-03-08\n';
+
+                studio.firing_run:
+                    'run_code,kiln_code,member_code,clay_code,glaze_code,started_at,peak_celsius,run_note\n'+
+                    'FR-01,KI-01,ME-01,CB-01,GZ-01,2026-04-02 09:00:00,1240,first bisque load of the season\n'+
+                    'FR-02,KI-01,ME-02,CB-02,GZ-09,2026-04-09 08:30:00,1180,\n'+
+                    'FR-03,KI-02,ME-01,CB-01,GZ-02,2026-04-16 10:15:00,1260,glaze test tiles\n';
+
+                reference.clay_body:
+                    'clay_code,clay_label,shrink_percent\n'+
+                    'CB-01,Coarse Grogged Stoneware,12\n'+
+                    'CB-02,Smooth White Earthenware,9\n';
+
+                reference.glaze_recipe:
+                    'glaze_code,glaze_label,cone_number\n'+
+                    'GZ-02,Speckled Cream Satin,6\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyTheRunWhoseRecipeIsStillPresentKeepsThatColumn:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Run":"FR-01","Kiln":"Front Chamber Kiln","Clay":"Coarse Grogged Stoneware","Glaze":null,"Peak":1240},{"Run":"FR-02","Kiln":"Front Chamber Kiln","Clay":"Smooth White Earthenware","Glaze":null,"Peak":1180},{"Run":"FR-03","Kiln":"Rear Chamber Kiln","Clay":"Coarse Grogged Stoneware","Glaze":"Speckled Cream Satin","Peak":1260}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,62 @@
+name: scarlet-prairie-4
+title: "Scarlet Prairie 4 — Restoration Plot Register Through Case Bands, Self Joins, Three-Hop Species Paths and a Distinct Sighting View"
+description: |
+  A grassland restoration programme keeps plots, transects, species observations and a
+  species reference list in one relational store. The plot mapping includes a shared
+  enumeration mapping, applies a multi-term store filter, derives labels with string
+  functions, areas with arithmetic, an eight-arm soil band with a null fallback, a
+  substring-driven grazing tier, a zero-guarded stem density, a constant source tag, the
+  parent plot through a self join and species names through a three-hop path whose last
+  join carries a literal-state condition. A distinct view chains an inner species hop
+  behind a composite transect join, and a model-to-model digest maps three enumerations
+  from computed codes.
+modelSources:
+  model:
+    root: scarlet-prairie-4
+    files:
+      - test/scarletprairie4/domain/PrairieDomain.pure
+      - test/scarletprairie4/mapping/PrairieDigestM2M.pure
+      - test/scarletprairie4/mapping/PrairieEnumMappings.pure
+      - test/scarletprairie4/mapping/PrairiePlotMapping.pure
+      - test/scarletprairie4/store/PrairieSurveyDb.pure
+features:
+  - execution:mapping-test
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-case-expression
+  - scaffolding:relational-mapping
+  - store:relational-filter
+  - mapping:relational-enum-of-expression
+  - mapping:relational-join-path
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-property-expression
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-store
+  - store:relational-composite-join
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-join
+  - store:relational-join-literal-condition
+  - store:relational-nested-join
+  - store:relational-self-join
+  - store:relational-view
+  - store:relational-view-distinct
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - case-bands
+  - distinct-view
+  - grassland-restoration
+  - h2
+  - mapping-include
+  - multi-hop-join
+  - self-join

@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::amberprairie::mapping::PrairieMapping
+(
+  test::amberprairie::domain::RestorationPlot[plot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberprairie::store::PrairieDatabase]PRAIRIE.RESTORATION_PLOT.PLOT_ID
+    )
+    ~mainTable [test::amberprairie::store::PrairieDatabase]PRAIRIE.RESTORATION_PLOT
+    plotName: [test::amberprairie::store::PrairieDatabase]PRAIRIE.RESTORATION_PLOT.PLOT_NAME,
+    soilType: [test::amberprairie::store::PrairieDatabase]PRAIRIE.RESTORATION_PLOT.SOIL_TYPE,
+    seedLots[lot]: [test::amberprairie::store::PrairieDatabase]@Plot_SeedLot
+  }
+
+  test::amberprairie::domain::SeedLot[lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberprairie::store::PrairieDatabase]PRAIRIE.SEED_LOT.LOT_ID
+    )
+    ~mainTable [test::amberprairie::store::PrairieDatabase]PRAIRIE.SEED_LOT
+    lotCode: [test::amberprairie::store::PrairieDatabase]PRAIRIE.SEED_LOT.LOT_CODE,
+    speciesName: [test::amberprairie::store::PrairieDatabase]PRAIRIE.SEED_LOT.SPECIES_NAME,
+    plotRef: [test::amberprairie::store::PrairieDatabase]PRAIRIE.SEED_LOT.PLOT_ID
+  }
+
+  MappingTests
+  [
+    plotSeedTree
+    (
+      query: |test::amberprairie::domain::RestorationPlot.all()->graphFetch(#{test::amberprairie::domain::RestorationPlot{plotName, soilType, seedLots{lotCode}}}#)->serialize(#{test::amberprairie::domain::RestorationPlot{plotName, soilType, seedLots{lotCode}}}#);
+      data:
+      [
+        <Relational, SQL, test::amberprairie::store::PrairieDatabase,
+          'drop schema if exists PRAIRIE cascade;\n'+
+          'create schema PRAIRIE;\n'+
+          'create table PRAIRIE.RESTORATION_PLOT(PLOT_ID DOUBLE PRIMARY KEY, PLOT_NAME VARCHAR(16777216), SOIL_TYPE VARCHAR(16777216));\n'+
+          'create table PRAIRIE.SEED_LOT(LOT_ID DOUBLE PRIMARY KEY, LOT_CODE VARCHAR(16777216), SPECIES_NAME VARCHAR(16777216), PLOT_ID DOUBLE);\n'+
+          'delete from PRAIRIE.SEED_LOT;\n'+
+          'delete from PRAIRIE.RESTORATION_PLOT;\n'+
+          'insert into PRAIRIE.RESTORATION_PLOT (PLOT_ID, PLOT_NAME, SOIL_TYPE) values (1.0, \'North Swale\', \'silt loam\');\n'+
+          'insert into PRAIRIE.RESTORATION_PLOT (PLOT_ID, PLOT_NAME, SOIL_TYPE) values (2.0, \'East Ridge\', \'sandy loam\');\n'+
+          'insert into PRAIRIE.SEED_LOT (LOT_ID, LOT_CODE, SPECIES_NAME, PLOT_ID) values (10.0, \'SL-10\', \'Little Bluestem\', 1.0);\n'+
+          'insert into PRAIRIE.SEED_LOT (LOT_ID, LOT_CODE, SPECIES_NAME, PLOT_ID) values (11.0, \'SL-11\', \'Purple Coneflower\', 2.0);\n'+
+          'insert into PRAIRIE.SEED_LOT (LOT_ID, LOT_CODE, SPECIES_NAME, PLOT_ID) values (12.0, \'SL-12\', \'Prairie Dropseed\', 2.0);\n'
+        >
+      ];
+      assert: '[{"plotName":"North Swale","soilType":"silt loam","seedLots":[{"lotCode":"SL-10"}]},{"plotName":"East Ridge","soilType":"sandy loam","seedLots":[{"lotCode":"SL-11"},{"lotCode":"SL-12"}]}]';
+    )
+  ]
+
+  testSuites:
+  [
+    plotSeedTreeSuite:
+    {
+      function: |test::amberprairie::domain::RestorationPlot.all()->filter(p|$p.seedLots->exists(l|$l.speciesName == 'Purple Coneflower'))->graphFetch(#{test::amberprairie::domain::RestorationPlot{plotName, soilType, seedLots{lotCode}}}#)->serialize(#{test::amberprairie::domain::RestorationPlot{plotName, soilType, seedLots{lotCode}}}#);
+      tests:
+      [
+        plotsWithTheirLots:
+        {
+          doc: 'Keeps only the plots whose lot collection contains a named species, then fetches and serialises the same three-property plot tree through the join-bound collection property.';
+          data:
+          [
+            test::amberprairie::store::PrairieDatabase:
+              Relational
+              #{
+                PRAIRIE.RESTORATION_PLOT:
+                  'PLOT_ID,PLOT_NAME,SOIL_TYPE\n'+
+                  '1.0,North Swale,silt loam\n'+
+                  '2.0,East Ridge,sandy loam\n';
+                PRAIRIE.SEED_LOT:
+                  'LOT_ID,LOT_CODE,SPECIES_NAME,PLOT_ID\n'+
+                  '10.0,SL-10,Little Bluestem,1.0\n'+
+                  '11.0,SL-11,Purple Coneflower,2.0\n'+
+                  '12.0,SL-12,Prairie Dropseed,2.0\n';
+              }#
+          ];
+          asserts:
+          [
+            matchedPlotTree:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"plotName":"East Ridge","soilType":"sandy loam","seedLots":[{"lotCode":"SL-11"},{"lotCode":"SL-12"}]}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

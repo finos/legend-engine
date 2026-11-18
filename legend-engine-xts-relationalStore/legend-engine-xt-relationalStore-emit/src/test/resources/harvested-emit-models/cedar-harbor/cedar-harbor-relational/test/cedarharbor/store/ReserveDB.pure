@@ -1,0 +1,34 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::cedarharbor::store::ReserveDB
+(
+  Schema census
+  (
+    Table animal_count
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      reserve_code VARCHAR(20) PRIMARY KEY,
+      species VARCHAR(60) PRIMARY KEY,
+      headcount INTEGER NOT NULL,
+      from_z TIMESTAMP NOT NULL,
+      thru_z TIMESTAMP
+    )
+  )
+)

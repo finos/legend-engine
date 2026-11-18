@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::solarridge::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A cultivation zone of a community allotment site, optionally nested inside a wider zone.'} test::solarridge::domain::GardenZone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+  parentZone: GardenZone[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single rented growing plot, always sited within one cultivation zone.'} test::solarridge::domain::AllotmentPlot
+{
+  plotCode: String[1];
+  plotName: String[1];
+  zone: GardenZone[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A plot-warden visit recorded against one harvest entry.'} test::solarridge::domain::PlotInspection
+{
+  inspectionCode: String[1];
+  inspectedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A weighed crop lift taken from a plot on a given day, with the warden visits that checked it.'} test::solarridge::domain::HarvestEntry
+{
+  entryCode: String[1];
+  cropName: String[1];
+  harvestedOn: StrictDate[1];
+  weightKg: Integer[1];
+  plot: AllotmentPlot[1];
+  inspections: PlotInspection[*];
+}

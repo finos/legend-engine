@@ -1,0 +1,138 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskycanyon::mapping::CanyonMapping
+(
+  *test::duskycanyon::domain::StrataSample[strata_sample]: Pure
+  {
+    ~src test::duskycanyon::domain::SampleFeed
+    recordId: $src.header.sampleRef.value,
+    label: $src.core.designation.value,
+    thicknessM: $src.core.thickness.value,
+    rockClass: EnumerationMapping RockClassMapping: if($src.core.rockCode.value->toUpper()->in(['SST/ARENITE', 'SANDSTONE', 'LMS/CARBONATE', 'LIMESTONE', 'SHL/MUDROCK', 'SHALE', 'BSL/VOLCANIC', 'BASALT']),
+                                                        | $src.core.rockCode.value->toUpper(),
+                                                        | []),
+    band: EnumerationMapping SurveyBandMapping: $src.core.bandCode.value->toUpper(),
+    markers: $src.core.markers->map(m|$m.value)
+  }
+
+  test::duskycanyon::domain::RockClass: EnumerationMapping RockClassMapping
+  {
+    SANDSTONE: ['SST/ARENITE', 'SANDSTONE'],
+    LIMESTONE: ['LMS/CARBONATE', 'LIMESTONE'],
+    SHALE: ['SHL/MUDROCK', 'SHALE'],
+    BASALT: ['BSL/VOLCANIC', 'BASALT']
+  }
+
+  test::duskycanyon::domain::SurveyBand: EnumerationMapping SurveyBandMapping
+  {
+    RIM: ['RIM/UPPER', 'RIM'],
+    MIDWALL: ['MID/WALL', 'MIDWALL'],
+    FLOOR: ['FLR/BASE', 'FLOOR']
+  }
+
+  testSuites:
+  [
+    strataTransformSuite:
+    {
+      function: |test::duskycanyon::domain::StrataSample.all()->graphFetchChecked(
+        #{
+          test::duskycanyon::domain::StrataSample{
+            recordId,
+            label,
+            thicknessM,
+            rockClass,
+            band,
+            markers
+          }
+        }#
+      )->serialize(
+        #{
+          test::duskycanyon::domain::StrataSample{
+            recordId,
+            label,
+            thicknessM,
+            rockClass,
+            band,
+            markers
+          }
+        }#
+      );
+      tests:
+      [
+        mappedSourceCodes:
+        {
+          doc: 'Translates a composite source rock code and band code through their enumeration mappings after the source text is normalised, flattening the wrapper chain to scalars and the marker collection to strings.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::duskycanyon::domain::SampleFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"header":{"sampleRef":{"value":"CAN-0001"}},"core":{"designation":{"value":"Upper Rim Bed"},"thickness":{"value":12.5},"rockCode":{"value":"sst/arenite"},"bandCode":{"value":"rim/upper"},"markers":[{"value":"cross-bedded"},{"value":"iron-stained"}]}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mappedEnumRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"header\\":{\\"sampleRef\\":{\\"value\\":\\"CAN-0001\\"}},\\"core\\":{\\"designation\\":{\\"value\\":\\"Upper Rim Bed\\"},\\"thickness\\":{\\"value\\":12.5},\\"rockCode\\":{\\"value\\":\\"sst/arenite\\"},\\"bandCode\\":{\\"value\\":\\"rim/upper\\"},\\"markers\\":[{\\"value\\":\\"cross-bedded\\"},{\\"value\\":\\"iron-stained\\"}]}}"},"value":{"header":{"sampleRef":{"value":"CAN-0001"}},"core":{"designation":{"value":"Upper Rim Bed"},"thickness":{"value":12.5},"rockCode":{"value":"sst/arenite"},"bandCode":{"value":"rim/upper"},"markers":[{"value":"cross-bedded"},{"value":"iron-stained"}]}}},"value":{"recordId":"CAN-0001","label":"Upper Rim Bed","thicknessM":12.5,"rockClass":"SANDSTONE","band":"RIM","markers":["cross-bedded","iron-stained"]}}';
+                  }#;
+              }#
+          ];
+        },
+        unmappedSourceCode:
+        {
+          doc: 'Drives a source rock code that no enumeration mapping entry covers, so the optional enumerated property surfaces empty while the mapped band on the same record still resolves.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::duskycanyon::domain::SampleFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"header":{"sampleRef":{"value":"CAN-0002"}},"core":{"designation":{"value":"Talus Wedge"},"thickness":{"value":3.25},"rockCode":{"value":"cgl/conglomerate"},"bandCode":{"value":"flr/base"},"markers":[]}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            unmappedEnumRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"header\\":{\\"sampleRef\\":{\\"value\\":\\"CAN-0002\\"}},\\"core\\":{\\"designation\\":{\\"value\\":\\"Talus Wedge\\"},\\"thickness\\":{\\"value\\":3.25},\\"rockCode\\":{\\"value\\":\\"cgl/conglomerate\\"},\\"bandCode\\":{\\"value\\":\\"flr/base\\"},\\"markers\\":[]}}"},"value":{"header":{"sampleRef":{"value":"CAN-0002"}},"core":{"designation":{"value":"Talus Wedge"},"thickness":{"value":3.25},"rockCode":{"value":"cgl/conglomerate"},"bandCode":{"value":"flr/base"},"markers":[]}}},"value":{"recordId":"CAN-0002","label":"Talus Wedge","thicknessM":3.25,"rockClass":null,"band":"FLOOR","markers":[]}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::kindlygecko::domain::*;
+
+Enum test::kindlygecko::domain::VigourLevel
+{
+  ACTIVE,
+  TORPID,
+  BASKING
+}
+
+Class test::kindlygecko::domain::BodyReading
+{
+  lengthMm: Integer[0..1];
+  massG: Float[0..1];
+  logSource: String[1];
+  recordedBy: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> test::kindlygecko::domain::GeckoSighting
+{
+  sightingId: String[1];
+  geckoTag: String[1];
+  clutchCount: Integer[1];
+  vigour: VigourLevel[0..1];
+  reading: BodyReading[1];
+  enclosureName: String[0..1];
+  zoneName: String[0..1];
+  enclosure: Enclosure[0..1];
+}
+
+Class test::kindlygecko::domain::Enclosure
+{
+  enclosureCode: String[1];
+  enclosureName: String[1];
+  zoneName: String[0..1];
+  registerLabel: String[1];
+}

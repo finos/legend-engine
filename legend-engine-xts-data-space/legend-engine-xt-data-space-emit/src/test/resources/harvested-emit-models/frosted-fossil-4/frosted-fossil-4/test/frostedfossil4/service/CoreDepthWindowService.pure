@@ -1,0 +1,138 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedfossil4::service::CoreDepthWindowService
+{
+  pattern: '/frostedfossil4/v1/core-depth-window/{processingDate}';
+  title: 'Ice Archive - Core Depth Window';
+  documentation: 'Resolves the ice core register at a caller supplied processing instant and keeps only the versions whose drilled depth sits above a lower bound and at or below an upper bound, projecting the stored attributes together with the region reached through the drill site join.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], minDepth: Float[1], maxDepth: Float[1]|test::frostedfossil4::domain::IceCore.all($processingDate)->filter(
+      c|($c.drillDepthMetres > $minDepth) && ($c.drillDepthMetres <= $maxDepth)
+    )->project(
+      [
+        c|$c.coreCode,
+        c|$c.drillDepthMetres,
+        c|$c.retrievedOn,
+        c|$c.siteRegion,
+        c|$c.drillSite.siteName
+      ],
+      [
+        'Core Code',
+        'Drill Depth',
+        'Retrieved On',
+        'Site Region',
+        'Site Name'
+      ]
+    )->sort(
+      [
+        asc('Core Code')
+      ]
+    )};
+    mapping: test::frostedfossil4::mapping::IceArchiveMapping;
+    runtime: test::frostedfossil4::runtime::IceArchiveRuntime;
+  }
+  testSuites:
+  [
+    coreDepthWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          iceArchiveWarehouseConnection: Reference
+            #{
+              test::frostedfossil4::data::IceArchiveData
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentInstantInsideBothBounds:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            minDepth = 100.0,
+            maxDepth = 200.0
+          ]
+          asserts:
+          [
+            windowedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Core Code":"IC-1","Drill Depth":180.5,"Retrieved On":"2026-03-15","Site Region":"North Plateau","Site Name":"Frosted Saddle Station"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierInstantSeesSupersededVersion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-02-15,
+            minDepth = 100.0,
+            maxDepth = 500.0
+          ]
+          asserts:
+          [
+            earlierRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Core Code":"IC-1","Drill Depth":120.5,"Retrieved On":"2026-01-10","Site Region":"North Plateau","Site Name":"Frosted Saddle Station"},{"Core Code":"IC-5","Drill Depth":300.0,"Retrieved On":"2026-02-02","Site Region":"South Basin","Site Name":"Cirque Camp"}]';
+                  }#;
+              }#
+          ]
+        },
+        boundsExcludeEveryVersion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            minDepth = 400.0,
+            maxDepth = 900.0
+          ]
+          asserts:
+          [
+            emptyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

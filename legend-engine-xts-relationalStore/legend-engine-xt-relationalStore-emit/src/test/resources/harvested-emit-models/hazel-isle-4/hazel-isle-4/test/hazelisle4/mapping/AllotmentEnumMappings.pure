@@ -1,0 +1,39 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelisle4::mapping::AllotmentEnumMappings
+(
+  test::hazelisle4::domain::SoilClass: EnumerationMapping SoilSource
+  {
+    LOAM: ['LOAM', 'LM/LOAM'],
+    CLAY: ['CLAY', 'CL/CLAY'],
+    SANDY: ['SAND', 'SD/SANDY'],
+    PEAT: ['PEAT', 'PT/PEAT']
+  }
+
+  test::hazelisle4::domain::TenureClass: EnumerationMapping TenureSource
+  {
+    ANNUAL: ['A', 'A/ANNUAL'],
+    SEASONAL: ['S', 'S/SEASONAL'],
+    WAITING: ['W', 'W/WAITING']
+  }
+
+  test::hazelisle4::domain::ShedClass: EnumerationMapping ShedKindSource
+  {
+    TIMBER: ['TIMBER', 'TB/TIMBER'],
+    BRICK: ['BRICK', 'BK/BRICK'],
+    CANVAS: ['CANVAS', 'CV/CANVAS']
+  }
+)

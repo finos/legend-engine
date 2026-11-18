@@ -1,0 +1,66 @@
+name: russet-warren-2
+title: "Glasshouse Propagation Benches — Arithmetic, String and Eight-Arm Conditional Relational Transforms Beside a Model-to-Model Tray Digest"
+description: |
+  A community glasshouse propagation model whose relational side registers
+  misting-bench trays against a reference schema of bench zones and their
+  keepers. Every mapped tray property is computed rather than read straight
+  through: the tray code is assembled from a literal and a converted
+  identifier, the tray name and its clipped tail are folded through case and
+  substring functions, the per-cell misting figure divides a measured duration
+  by the cell tally, and an eight-arm conditional ladder decodes the bedding
+  band before falling through to a null sentinel when no arm answers. Two
+  enumerations are reached from computed expressions rather than bare columns:
+  the tray stage is decoded from a recoded stage code concatenated with the
+  upper-cased cutting code, and the cutting kind from the upper-cased code
+  alone, so a stage code outside the enumeration mapping decodes to nothing.
+  The zone name is reached across one join hop and the keeper name across two,
+  while a misting filter narrows the mapped extent. A model-to-model mapping
+  refines submitted tray documents into digests, walking an optional bed and
+  aisle chain, banding a misting percentage across four arms and substituting a
+  sentinel cutting code before the enumeration lookup. Two mapper
+  post-processed MemSQL connections rewrite the bench schema per register and a
+  document connection feeds the digest runtime; twelve bench rows cover every
+  banded arm, the fall-through sentinel and the unmapped stage code, and three
+  submitted documents cover the digest fallbacks.
+
+modelSources:
+  model:
+    root: russet-warren-2
+    files:
+      - test/russetwarren2/connection/BenchConnections.pure
+      - test/russetwarren2/domain/NurseryDomain.pure
+      - test/russetwarren2/mapping/PropagationBenchMapping.pure
+      - test/russetwarren2/mapping/TrayDigestM2M.pure
+      - test/russetwarren2/runtime/BenchRuntimes.pure
+      - test/russetwarren2/store/BenchReferenceStore.pure
+      - test/russetwarren2/store/PropagationBenchStore.pure
+
+features:
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+stores:
+  - model
+  - relational
+complexity: basic
+tags:
+  - arithmetic-transform
+  - conditional-cascade
+  - delegated-kerberos
+  - eight-arm-cascade
+  - enum-of-expression
+  - enumeration-mapping
+  - glasshouse-propagation
+  - h2
+  - m2m
+  - mapper-postprocessor
+  - mapping-test
+  - multi-hop-join-path
+  - null-sentinel
+  - string-function-transform

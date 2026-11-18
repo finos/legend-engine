@@ -1,0 +1,51 @@
+name: wistful-harbor-relational
+title: "Wistful Harbor — Intermediate EMIT model (relational store, enum & relational mapping, M2M service, JSON external-format binding)"
+description: |
+  An intermediate non-financial EMIT model in a harbour-registry domain. It materialises a
+  profile, an enumeration, class inheritance (a ferry specialising a vessel), a relational
+  store, a relational mapping with an enumeration mapping, an H2 relational connection and
+  runtime, a model-to-model mapping and a single-execution model-to-model service, and a JSON
+  external-format binding over the berth type. Assertion-backed coverage: a relational Mapping
+  test (enum-filtered projection of inherited and subclass properties) and an M2M Service test.
+modelSources:
+  model:
+    root: wistful-harbor-relational
+    files:
+      - test/wistfulharbor/connection/BerthFeedConnection.pure
+      - test/wistfulharbor/connection/HarborConnection.pure
+      - test/wistfulharbor/domain/Harbor.pure
+      - test/wistfulharbor/external/BerthFormat.pure
+      - test/wistfulharbor/mapping/BerthM2M.pure
+      - test/wistfulharbor/mapping/HarborMapping.pure
+      - test/wistfulharbor/runtime/BerthRuntime.pure
+      - test/wistfulharbor/runtime/HarborRuntime.pure
+      - test/wistfulharbor/service/TransformBerth.pure
+      - test/wistfulharbor/store/HarborDb.pure
+features:
+  - execution:external-format-binding
+  - execution:service
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - class-inheritance
+  - enumeration
+  - external-format
+  - h2
+  - harbor
+  - json-schema
+  - model-to-model
+  - profile
+  - relational
+  - service-test
+  - wistful

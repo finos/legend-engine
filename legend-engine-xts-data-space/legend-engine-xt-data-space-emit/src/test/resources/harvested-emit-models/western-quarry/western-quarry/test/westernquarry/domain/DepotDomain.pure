@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'One baled lot of sorted recyclate leaving a municipal sorting depot; the mapped class that carries every derived label of this model.'} test::westernquarry::domain::BaleLot
+{
+  lotCode: String[1];
+  depotCode: String[0..1];
+  depotName: String[0..1];
+  materialCode: String[0..1];
+  pressCode: String[0..1];
+  purityPct: Float[0..1];
+  massKg: Float[0..1];
+  purityGrade: String[0..1];
+  feedStream: String[1];
+  kilosPerBale: Float[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A municipal sorting depot that presses kerbside recyclate into bales; the other mapped end of the depot association.'} test::westernquarry::domain::SortDepot
+{
+  depotCode: String[1];
+  depotName: String[1];
+  districtName: String[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Navigable both ways between a depot and the bales it pressed; both ends are given relational implementations so navigation becomes a store join.'} test::westernquarry::domain::Depot_Lots
+{
+  depot: test::westernquarry::domain::SortDepot[0..1];
+  lots: test::westernquarry::domain::BaleLot[*];
+}

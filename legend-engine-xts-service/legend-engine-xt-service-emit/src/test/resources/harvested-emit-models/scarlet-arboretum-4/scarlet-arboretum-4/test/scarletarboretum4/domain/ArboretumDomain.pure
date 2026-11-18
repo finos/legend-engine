@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum {meta::pure::profiles::doc.doc = 'Vigour band a specimen is published under; stored codes that declare no translation resolve to nothing.'} test::scarletarboretum4::domain::VigourBand
+{
+  {test::scarletarboretum4::profile::ArboretumTags.displayName = 'Robust'} ROBUST,
+  {test::scarletarboretum4::profile::ArboretumTags.displayName = 'Fair'} FAIR,
+  POOR
+}
+
+Class {meta::pure::profiles::doc.doc = 'Shared identity of anyone accountable for a published specimen record, queried through the supertype while the mapping only ever binds concrete subtypes.'} test::scarletarboretum4::domain::StewardBase
+{
+  stewardCode: String[1];
+  displayLabel: String[1];
+  tier: test::scarletarboretum4::domain::VigourBand[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A steward reached through the walked-survey slice, adding the roster code only that slice can supply.'} test::scarletarboretum4::domain::FieldSteward extends test::scarletarboretum4::domain::StewardBase
+{
+  rosterCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A steward reached through the review slice, adding the review cycle only that slice can supply.'} test::scarletarboretum4::domain::AuditSteward extends test::scarletarboretum4::domain::StewardBase
+{
+  reviewCycle: String[0..1];
+}
+
+Class <<test::scarletarboretum4::profile::ArboretumTags.published>> {meta::pure::profiles::doc.doc = 'The published specimen record, assembled from two disjoint slices of the inbound submissions and constrained so an illegal record is visible as a defect rather than as a silently mapped value.'} test::scarletarboretum4::domain::ArboretumRecord
+[
+  recordRefPresent: $this.recordRef->length() > 0,
+  specimenLabelPresent: $this.specimenLabel->length() > 0,
+  ringCountWithinRange: test::scarletarboretum4::function::ringsWithinRange($this.ringCount),
+  careDigestPresent: $this.careDigest->isNotEmpty(),
+  everyStewardIdentified: $this.stewards->forAll(s | $s.stewardCode->length() > 0)
+]
+{
+  {test::scarletarboretum4::profile::ArboretumTags.externalName = 'record_ref'} recordRef: String[1];
+  specimenLabel: String[1];
+  provenanceLabel: String[1];
+  vigour: test::scarletarboretum4::domain::VigourBand[0..1];
+  canopyLabel: String[0..1];
+  careDigest: String[0..1];
+  ringCount: Integer[0..1];
+  measuredOn: StrictDate[0..1];
+  careTags: String[*];
+  stewards: test::scarletarboretum4::domain::StewardBase[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The walked-survey slice of the published register, which alone carries the roster code the base record does not declare.'} test::scarletarboretum4::domain::WalkedSurveyRecord extends test::scarletarboretum4::domain::ArboretumRecord
+{
+  rosterCode: String[0..1];
+}

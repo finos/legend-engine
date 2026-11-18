@@ -1,0 +1,34 @@
+name: emerald-thistle-3
+title: "Emerald Thistle — point-in-time herbarium sheet extract with a deep hierarchy descent and a conditional tag-prefix derivation"
+description: |
+  Herbarium specimen sheet extract: one business-temporal specimen extent opened at a
+  requested instant feeds a single fixed-arity projection that descends a five-level
+  bed/plot/section/reserve grouping hierarchy into a to-many steward collection, derives a
+  tag prefix by a conditional string expression over a single-value coercion, repeats two
+  traversals under alternate aliases and pads the sheet with thirteen empty-literal columns
+  so the published width stays fixed for a downstream consumer.
+modelSources:
+  model:
+    root: emerald-thistle-3
+    files:
+      - test/emeraldthistle3/domain/SpecimenDomain.pure
+      - test/emeraldthistle3/mapping/SpecimenMapping.pure
+      - test/emeraldthistle3/service/SpecimenSheetExtract.pure
+      - test/emeraldthistle3/store/HerbariumDB.pure
+features:
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:project
+  - query:string-function
+stores:
+  - test::emeraldthistle3::store::HerbariumDB
+complexity: intermediate
+tags:
+  - conditional-string-derivation
+  - deep-hierarchy-traversal
+  - fixed-arity-projection
+  - h2
+  - herbarium
+  - point-in-time-extent
+  - relational

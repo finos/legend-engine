@@ -1,0 +1,154 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easterncove::mapping::CoveMapping
+(
+  *test::easterncove::domain::Berth[berth]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easterncove::store::CoveDb]harbour.berth.berth_code
+    )
+    ~mainTable [test::easterncove::store::CoveDb]harbour.berth
+    berthCode: [test::easterncove::store::CoveDb]harbour.berth.berth_code,
+    berthName: [test::easterncove::store::CoveDb]harbour.berth.berth_name,
+    quayName: [test::easterncove::store::CoveDb]harbour.berth.quay_name,
+    maxLengthM: [test::easterncove::store::CoveDb]harbour.berth.max_length_m
+  }
+
+  *test::easterncove::domain::Sailing[sailing]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easterncove::store::CoveDb]harbour.sailing.sailing_code
+    )
+    ~mainTable [test::easterncove::store::CoveDb]harbour.sailing
+    sailingCode: [test::easterncove::store::CoveDb]harbour.sailing.sailing_code,
+    routeName: [test::easterncove::store::CoveDb]harbour.sailing.route_name,
+    passengers: [test::easterncove::store::CoveDb]harbour.sailing.passengers,
+    sailedOn: [test::easterncove::store::CoveDb]harbour.sailing.sailed_on
+  }
+
+  *test::easterncove::domain::Mooring[mooring]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easterncove::store::CoveDb]harbour.mooring.mooring_code
+    )
+    ~mainTable [test::easterncove::store::CoveDb]harbour.mooring
+    mooringCode: [test::easterncove::store::CoveDb]harbour.mooring.mooring_code,
+    vesselName: [test::easterncove::store::CoveDb]harbour.mooring.vessel_name,
+    tariffBand: [test::easterncove::store::CoveDb]harbour.mooring.tariff_band,
+    crewCount: [test::easterncove::store::CoveDb]harbour.mooring.crew_count
+  }
+
+  test::easterncove::domain::BerthSailings: Relational
+  {
+    AssociationMapping
+    (
+      berth[sailing, berth]: [test::easterncove::store::CoveDb]@Sailing_Berth,
+      sailings[berth, sailing]: [test::easterncove::store::CoveDb]@Sailing_Berth
+    )
+  }
+
+  testSuites:
+  [
+    mooringPointInTimeSuite:
+    {
+      function: |test::easterncove::domain::Mooring.all(%2026-06-01, %2026-06-01)->project(
+        [
+          x|$x.mooringCode,
+          x|$x.vesselName,
+          x|$x.tariffBand,
+          x|$x.crewCount
+        ],
+        [
+          'Mooring',
+          'Vessel',
+          'Band',
+          'Crew'
+        ]
+      )->sort([asc('Mooring')]);
+      tests:
+      [
+        test_in_and_out_of_range:
+        {
+          doc: 'Reads the mooring table at one processing and one business instant, so the corrected row is returned while the superseded row and the not-yet-effective row are both out of range.';
+          data:
+          [
+            test::easterncove::store::CoveDb:
+              Relational
+              #{
+                harbour.mooring:
+                  'mooring_code,berth_code,vessel_name,tariff_band,crew_count,from_z,thru_z,in_z,out_z\n'+
+                  'MR-01,BT-01,Cove Lantern,STANDARD,7,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  'MR-02,BT-02,Tern Runner,PRIORITY,9,2025-01-01,2026-01-01,2025-01-01,9999-12-31\n'+
+                  'MR-03,BT-03,Gannet Post,STANDARD,5,2026-09-01,9999-12-31,2026-09-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            assertion_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Mooring":"MR-01","Vessel":"Cove Lantern","Band":"STANDARD","Crew":7}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+Mapping test::easterncove::mapping::CoveTideMapping
+(
+  *test::easterncove::domain::Berth[berth]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easterncove::store::CoveDb]harbour.berth.berth_code
+    )
+    ~mainTable [test::easterncove::store::CoveDb]harbour.berth
+    berthCode: [test::easterncove::store::CoveDb]harbour.berth.berth_code,
+    berthName: concat([test::easterncove::store::CoveDb]harbour.berth.berth_name, ' (tide)'),
+    quayName: [test::easterncove::store::CoveDb]harbour.berth.quay_name,
+    maxLengthM: [test::easterncove::store::CoveDb]harbour.berth.max_length_m
+  }
+
+  *test::easterncove::domain::Sailing[sailing]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easterncove::store::CoveDb]harbour.sailing.sailing_code
+    )
+    ~mainTable [test::easterncove::store::CoveDb]harbour.sailing
+    sailingCode: [test::easterncove::store::CoveDb]harbour.sailing.sailing_code,
+    routeName: concat([test::easterncove::store::CoveDb]harbour.sailing.route_name, ' Tide Window'),
+    passengers: [test::easterncove::store::CoveDb]harbour.sailing.passengers,
+    sailedOn: [test::easterncove::store::CoveDb]harbour.sailing.sailed_on
+  }
+
+  test::easterncove::domain::BerthSailings: Relational
+  {
+    AssociationMapping
+    (
+      berth[sailing, berth]: [test::easterncove::store::CoveDb]@Sailing_Berth,
+      sailings[berth, sailing]: [test::easterncove::store::CoveDb]@Sailing_Berth
+    )
+  }
+)

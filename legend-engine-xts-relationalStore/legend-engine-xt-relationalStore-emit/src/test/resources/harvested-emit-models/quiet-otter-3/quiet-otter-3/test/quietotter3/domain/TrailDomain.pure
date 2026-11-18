@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A trailhead signage record with a stable marker code, trail label and installation timestamp, serving as the base shape for the distinct relational fixture.'} test::quietotter3::domain::TrailMarker
+{
+  markerCode: String[1];
+  trailName: String[1];
+  installedAt: DateTime[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A lit trail marker specialization that adds the reflective surface note and elevation used to prove inheritance beside mapping-level distinctness.'} test::quietotter3::domain::LitTrailMarker extends test::quietotter3::domain::TrailMarker
+{
+  surfaceNote: String[1];
+  elevationMetres: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An upkeep inspection round with its walk timestamp, inspector note and count of checked markers, exercising the second relational store.'} test::quietotter3::domain::InspectionRound
+{
+  roundCode: String[1];
+  inspectorNote: String[1];
+  walkedAt: DateTime[1];
+  checkedMarkers: Integer[1];
+}

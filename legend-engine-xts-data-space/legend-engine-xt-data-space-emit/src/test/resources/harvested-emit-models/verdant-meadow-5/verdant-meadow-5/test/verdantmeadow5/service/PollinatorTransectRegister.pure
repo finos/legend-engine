@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantmeadow5::service::PollinatorTransectRegister
+{
+  pattern: '/meadow/v1/pollinator-transects';
+  title: 'Hay Meadow - Pollinator Transect Register';
+  ownership: DID { identifier: 'meadow-fieldwork' };
+  documentation: 'Projects every walked pollinator transect with its two counted groups, ordered by transect code.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::verdantmeadow5::domain::PollinatorTransect.all()->project(
+      [
+        t|$t.transectCode,
+        t|$t.parcelCode,
+        t|$t.beeCount,
+        t|$t.butterflyCount
+      ],
+      [
+        'Transect Code',
+        'Parcel Code',
+        'Bee Count',
+        'Butterfly Count'
+      ]
+    )->sort([asc('Transect Code')]);
+    mapping: test::verdantmeadow5::mapping::MeadowMapping;
+    runtime: test::verdantmeadow5::runtime::MeadowRuntime;
+  }
+  testSuites:
+  [
+    pollinatorTransectRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowCuratedConnection:
+            Relational
+            #{
+              meadow.pollinator_transect:
+                'transect_code,parcel_code,bee_count,butterfly_count\n'+
+                'PT-02,MP-02,64,18\n'+
+                'PT-01,MP-01,132,41\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothTransectsWithTheirCounts:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoTransectsSortedByCode:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Transect Code":"PT-01","Parcel Code":"MP-01","Bee Count":132,"Butterfly Count":41},{"Transect Code":"PT-02","Parcel Code":"MP-02","Bee Count":64,"Butterfly Count":18}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

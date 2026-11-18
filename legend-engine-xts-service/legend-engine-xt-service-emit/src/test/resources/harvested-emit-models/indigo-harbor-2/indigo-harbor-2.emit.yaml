@@ -1,0 +1,32 @@
+name: indigo-harbor-2
+title: "Indigo Harbor 2 - store-less berth claim feed binding a hull enumeration over a warden round"
+description: |
+  A harbor mooring register whose only published surface is one single-execution feed: dock arrival
+  entries written by a warden are projected into mooring claims, narrowed to the three docks the
+  register publishes by a membership test over a literal set, bound to the hull-class enumeration
+  through a source-token mapping and defaulted to a placeholder craft name when the warden left the
+  name blank. The feed graph-fetches and serializes the claim tree, and its executed suite replays a
+  warden round in which one entry is named, one is not and one sits at an unpublished dock.
+modelSources:
+  model:
+    root: indigo-harbor-2
+    files:
+      - test/indigoharbor2/connection/DockEntryConnection.pure
+      - test/indigoharbor2/data/DockEntryData.pure
+      - test/indigoharbor2/domain/HarborDomain.pure
+      - test/indigoharbor2/mapping/BerthClaimMapping.pure
+      - test/indigoharbor2/runtime/BerthClaimRuntime.pure
+      - test/indigoharbor2/service/BerthClaimFeed.pure
+features:
+  - execution:service
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - enumeration-binding
+  - graph-fetch
+  - harbor-mooring
+  - literal-set-membership
+  - model-to-model
+  - single-execution-service

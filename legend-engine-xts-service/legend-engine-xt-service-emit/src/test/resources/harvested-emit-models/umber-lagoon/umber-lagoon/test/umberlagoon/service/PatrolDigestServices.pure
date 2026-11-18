@@ -1,0 +1,187 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::umberlagoon::service::SweepDigestService
+{
+  pattern: '/umberlagoon/v1/sweep-digest';
+  title: 'Umber Lagoon - Sweep Digest';
+  ownership: DID { identifier: 'trail-patrol-platform' };
+  documentation: 'Single-execution service publishing the patrol summaries for the caller-named segments, so the trimmed reference, the joined warden label, the divided sweep rate and the rounded tally are all asserted through the service test runner.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {segments: String[*]|test::umberlagoon::domain::PatrolSummary.all()->filter(
+      s|$s.segmentLabel->in($segments)
+    )->graphFetch(
+  #{
+    test::umberlagoon::domain::PatrolSummary{
+      sweepRef,
+      segmentLabel,
+      wardenLabel,
+      sweepRate,
+      sweepTally
+    }
+  }#
+    )->serialize(
+  #{
+    test::umberlagoon::domain::PatrolSummary{
+      sweepRef,
+      segmentLabel,
+      wardenLabel,
+      sweepRate,
+      sweepTally
+    }
+  }#
+    )};
+    mapping: test::umberlagoon::mapping::PatrolSummaryMapping;
+    runtime: test::umberlagoon::runtime::PatrolSummaryRuntime;
+  }
+  testSuites:
+  [
+    sweepDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          patrolConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"lineRef":"pl 101","segmentCode":"RIDGE_NORTH","wardenText":"ada north","surfaceCode":"GRAVEL","noticeText":"clear","sweepCount":6,"sweepMinutes":48.0},{"lineRef":"pl 202","segmentCode":"VALE_SOUTH","wardenText":"bo vale","surfaceCode":"BOARDWALK","noticeText":"muddy","sweepCount":3,"sweepMinutes":30.0}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        ridgeSegmentOnly:
+        {
+          parameters:
+          [
+            segments = ['ridge-north']
+          ]
+          asserts:
+          [
+            onlyTheRidgeSummary:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"sweepRef":"SW-PL101","segmentLabel":"ridge-north","wardenLabel":"ada north / RIDGE_NORTH","sweepRate":4.0,"sweepTally":18}}';
+                  }#;
+              }#
+          ]
+        },
+        bothSegments:
+        {
+          parameters:
+          [
+            segments = ['ridge-north', 'vale-south']
+          ]
+          asserts:
+          [
+            bothSummaries:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"sweepRef":"SW-PL101","segmentLabel":"ridge-north","wardenLabel":"ada north / RIDGE_NORTH","sweepRate":4.0,"sweepTally":18},{"sweepRef":"SW-PL202","segmentLabel":"vale-south","wardenLabel":"bo vale / VALE_SOUTH","sweepRate":2.5,"sweepTally":11}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::umberlagoon::service::KioskDigestService
+{
+  pattern: '/umberlagoon/v1/kiosk-digest';
+  title: 'Umber Lagoon - Kiosk Digest';
+  ownership: DID { identifier: 'trail-patrol-platform' };
+  documentation: 'Single-execution service publishing the kiosk cards rebuilt straight from the inbound patrol lines, so the literal-set surface flag and the multiplied tally of the second model-to-model mapping are asserted end to end.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::umberlagoon::domain::KioskCard.all()->graphFetch(
+  #{
+    test::umberlagoon::domain::KioskCard{
+      cardRef,
+      headline,
+      surfaceNote,
+      ratingText,
+      tallyValue,
+      tallyRank
+    }
+  }#
+    )->serialize(
+  #{
+    test::umberlagoon::domain::KioskCard{
+      cardRef,
+      headline,
+      surfaceNote,
+      ratingText,
+      tallyValue,
+      tallyRank
+    }
+  }#
+    );
+    mapping: test::umberlagoon::mapping::PatrolCardMapping;
+    runtime: test::umberlagoon::runtime::KioskCardRuntime;
+  }
+  testSuites:
+  [
+    kioskDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cardConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"lineRef":"pl 303","segmentCode":"fen_east","wardenText":"cy fen","surfaceCode":"gravel","noticeText":"clear","sweepCount":4,"sweepMinutes":36.0},{"lineRef":"pl 404","segmentCode":"heath_west","wardenText":"di heath","surfaceCode":"grass","noticeText":"wet","sweepCount":2,"sweepMinutes":24.0}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothKioskCards:
+        {
+          asserts:
+          [
+            twoCards:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"cardRef":"KC-PL303","headline":"FEN_EAST | cy fen","surfaceNote":"sealed-surface:true","ratingText":"sweeps-4","tallyValue":59.5,"tallyRank":3},{"cardRef":"KC-PL404","headline":"HEATH_WEST | di heath","surfaceNote":"sealed-surface:false","ratingText":"sweeps-2","tallyValue":41.5,"tallyRank":2}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

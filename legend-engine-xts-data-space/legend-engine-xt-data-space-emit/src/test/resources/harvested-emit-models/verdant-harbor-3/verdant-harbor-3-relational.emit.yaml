@@ -1,0 +1,49 @@
+name: verdant-harbor-3-relational
+title: "Verdant Harbor 3 — flat optional-property classes over independent tables of one schema, explicit composite primary keys and main-table aliases, quoted-identifier warehouse connection and a catalogued data space"
+description: |
+  A tidal-harbour cargo inventory. One relational store holds two independent tables in a
+  single schema — mooring berths and dredging passes — with wide nullable column lists over
+  string, integer, floating-point, date and timestamp types and no join declared between
+  them. Two flat classes of purely optional scalar properties rename those columns in
+  camel case, and one mapping binds each class to its own table, pinning the root through an
+  explicit main-table alias and declaring an explicit two-column primary key rather than
+  relying on an inferred single key column. A cloud-warehouse connection with quoted
+  identifiers supplies the dialect, one engine runtime closes the mapping-store-connection
+  triangle, and a data space catalogues both classes through a single execution context with
+  a support mailbox and no executables. The mapping tests query each root alone so the two
+  single-table plans can be compared, with rows differing in exactly one key column, a row
+  carrying a null key column and rows carrying nulls in every non-key column.
+modelSources:
+  model:
+    root: verdant-harbor-3-relational
+    files:
+      - test/verdantharbor3/connection/HarbourWarehouseConnection.pure
+      - test/verdantharbor3/dataspace/HarbourDataSpace.pure
+      - test/verdantharbor3/domain/HarbourDomain.pure
+      - test/verdantharbor3/mapping/HarbourMapping.pure
+      - test/verdantharbor3/runtime/HarbourRuntime.pure
+      - test/verdantharbor3/store/HarbourDb.pure
+features:
+  - execution:data-space
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - composite-primary-key
+  - data-space
+  - h2
+  - harbour-inventory
+  - main-table-alias
+  - multi-table-store
+  - nullable-columns
+  - quoted-identifiers
+  - relational
+  - snowflake-dialect

@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::meadowwarren5::store::MeadowDatabase
+(
+  Schema meadow
+  (
+    Table forage_sample
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      sample_code VARCHAR(24) PRIMARY KEY,
+      plot_code VARCHAR(16) NOT NULL,
+      species_code VARCHAR(16) NOT NULL,
+      cut_height_cm INTEGER NOT NULL,
+      dry_mass_kg DECIMAL(9,3) NOT NULL,
+      moisture_pct FLOAT NOT NULL,
+      collected_on DATE NOT NULL,
+      logged_at TIMESTAMP NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+
+    Table meadow_plot
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      plot_code VARCHAR(16) PRIMARY KEY,
+      plot_name VARCHAR(120) NOT NULL,
+      aspect_code VARCHAR(16) NOT NULL,
+      elevation_m INTEGER NOT NULL,
+      area_ha DECIMAL(7,2) NOT NULL,
+      slope_pct FLOAT NOT NULL,
+      surveyed_on DATE NOT NULL,
+      revised_at TIMESTAMP NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+
+    Table weather_summary
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      summary_code VARCHAR(24) PRIMARY KEY,
+      plot_code VARCHAR(16) NOT NULL,
+      station_code VARCHAR(16) NOT NULL,
+      frost_nights INTEGER NOT NULL,
+      rainfall_mm DECIMAL(8,2) NOT NULL,
+      mean_temp_c FLOAT NOT NULL,
+      summary_on DATE NOT NULL,
+      published_at TIMESTAMP NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+  )
+)

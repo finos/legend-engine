@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::meadowfjord::mapping::FjordMapping
+(
+  test::meadowfjord::domain::Fjord: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowfjord::store::FjordDatabase]GEOGRAPHY.FJORD.FJORD_ID
+    )
+    ~mainTable [test::meadowfjord::store::FjordDatabase]GEOGRAPHY.FJORD
+    fjordId: [test::meadowfjord::store::FjordDatabase]GEOGRAPHY.FJORD.FJORD_ID,
+    name: [test::meadowfjord::store::FjordDatabase]GEOGRAPHY.FJORD.NAME,
+    country: [test::meadowfjord::store::FjordDatabase]GEOGRAPHY.FJORD.COUNTRY,
+    measurements: [test::meadowfjord::store::FjordDatabase]@Fjord_Measurement
+  }
+
+  test::meadowfjord::domain::Measurement: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowfjord::store::FjordDatabase]HYDROLOGY.MEASUREMENT.MEAS_ID
+    )
+    ~mainTable [test::meadowfjord::store::FjordDatabase]HYDROLOGY.MEASUREMENT
+    measId: [test::meadowfjord::store::FjordDatabase]HYDROLOGY.MEASUREMENT.MEAS_ID,
+    salinity: [test::meadowfjord::store::FjordDatabase]HYDROLOGY.MEASUREMENT.SALINITY,
+    depthM: [test::meadowfjord::store::FjordDatabase]HYDROLOGY.MEASUREMENT.DEPTH_M,
+    fjord: [test::meadowfjord::store::FjordDatabase]@Fjord_Measurement
+  }
+
+  test::meadowfjord::domain::FjordProfile: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowfjord::store::FjordDatabase]FJORD_PROFILE_VW.fjordId
+    )
+    ~mainTable [test::meadowfjord::store::FjordDatabase]FJORD_PROFILE_VW
+    fjordId: [test::meadowfjord::store::FjordDatabase]FJORD_PROFILE_VW.fjordId,
+    name: [test::meadowfjord::store::FjordDatabase]FJORD_PROFILE_VW.name,
+    salinity: [test::meadowfjord::store::FjordDatabase]FJORD_PROFILE_VW.salinity,
+    depthM: [test::meadowfjord::store::FjordDatabase]FJORD_PROFILE_VW.depthM
+  }
+
+  testSuites:
+  [
+    testSuite_FjordProfile:
+    {
+      function: |test::meadowfjord::domain::FjordProfile.all()->project(
+        [
+          x|$x.name,
+          x|$x.salinity
+        ],
+        [
+          'Name',
+          'Salinity'
+        ]
+      );
+      tests:
+      [
+        test_1:
+        {
+          data:
+          [
+            test::meadowfjord::store::FjordDatabase: Reference
+              #{
+                test::meadowfjord::data::FjordTestData
+              }#
+          ];
+          asserts:
+          [
+            assertion_1: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Name" : "Sognefjord",\n  "Salinity" : 35\n}, {\n  "Name" : "Milford Sound",\n  "Salinity" : 34\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

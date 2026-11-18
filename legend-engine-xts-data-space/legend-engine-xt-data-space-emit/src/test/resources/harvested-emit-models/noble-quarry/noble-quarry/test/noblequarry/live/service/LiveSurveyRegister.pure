@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::noblequarry::live::service::LiveSurveyRegister
+{
+  pattern: '/noble-quarry/v1/live/surveys';
+  title: 'Noble Quarry - Live Bench Survey Register';
+  documentation: 'Every bench survey at its latest processing version, projected column for column.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::noblequarry::live::domain::BenchSurvey.all(%latest)->project(
+      [
+        s|$s.surveyRef,
+        s|$s.benchCode,
+        s|$s.surveyorCode,
+        s|$s.faceHeightMetres,
+        s|$s.surveyedOn,
+        s|$s.validFrom,
+        s|$s.validTo
+      ],
+      [
+        'Survey Ref',
+        'Bench Code',
+        'Surveyor Code',
+        'Face Height Metres',
+        'Surveyed On',
+        'Valid From',
+        'Valid To'
+      ]
+    );
+    mapping: test::noblequarry::live::mapping::QuarryLiveMapping;
+    runtime: test::noblequarry::live::runtime::QuarryLiveRuntime;
+  }
+  testSuites:
+  [
+    liveSurveyRegisterSuite:
+    {
+      data: [connections: [quarryLiveStore: Reference #{test::noblequarry::data::LiveQuarryFixture}#]]
+      tests:
+      [
+        latestVersionsOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            supersededSurveyVersionExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey Ref":"SV-1","Bench Code":"BENCH-A","Surveyor Code":"QS-07","Face Height Metres":12.5,"Surveyed On":"2026-02-01","Valid From":"2026-02-01","Valid To":null},{"Survey Ref":"SV-2","Bench Code":"BENCH-B","Surveyor Code":"QS-03","Face Height Metres":9.0,"Surveyed On":"2026-03-01","Valid From":"2026-03-01","Valid To":"2026-04-01"},{"Survey Ref":"SV-3","Bench Code":"BENCH-C","Surveyor Code":"QS-07","Face Height Metres":15.25,"Surveyed On":"2026-03-10","Valid From":"2026-03-10","Valid To":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

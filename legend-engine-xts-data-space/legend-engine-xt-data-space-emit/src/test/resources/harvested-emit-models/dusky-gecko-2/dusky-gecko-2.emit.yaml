@@ -1,0 +1,54 @@
+name: dusky-gecko-2
+title: "Dusky Gecko - a diagrammed cross-schema husbandry binding behind a two-tier data space"
+description: |
+  A reptile house husbandry model. A single database carries a husbandry schema
+  of enclosures and keeper shifts beside a taxonomy schema of species profiles,
+  each class bound to its own aliased main table through an explicit primary
+  key with no join path between them. A diagram lays the three classes out, and
+  a data space pairs the in-process house tier with a vault-authenticated
+  warehouse tier whose service is compiled and plan-generated only.
+modelSources:
+  model:
+    root: dusky-gecko-2
+    files:
+      - test/duskygecko2/connection/HerpetariumConnections.pure
+      - test/duskygecko2/dataspace/HerpetariumDataSpace.pure
+      - test/duskygecko2/diagram/HerpetariumDiagram.pure
+      - test/duskygecko2/domain/HerpetariumDomain.pure
+      - test/duskygecko2/mapping/HerpetariumMapping.pure
+      - test/duskygecko2/runtime/HerpetariumRuntimes.pure
+      - test/duskygecko2/service/HerpetariumServices.pure
+      - test/duskygecko2/store/HerpetariumDb.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - cross-schema
+  - data-space
+  - diagram
+  - h2
+  - multi-table
+  - plan-generation
+  - relational
+  - service-test
+  - snowflake
+  - zoo-husbandry

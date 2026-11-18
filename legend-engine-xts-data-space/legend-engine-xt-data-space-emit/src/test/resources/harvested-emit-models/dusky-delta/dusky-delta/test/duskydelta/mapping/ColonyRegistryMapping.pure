@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskydelta::mapping::ColonyRegistryMapping
+(
+  test::duskydelta::domain::ColonyRecord[colonyRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskydelta::store::ColonyRegistryDatabase]registry.colony_registry.colony_id
+    )
+    ~mainTable [test::duskydelta::store::ColonyRegistryDatabase]registry.colony_registry
+    hiveCode: [test::duskydelta::store::ColonyRegistryDatabase]registry.colony_registry.hive_code,
+    registryState: [test::duskydelta::store::ColonyRegistryDatabase]registry.colony_registry.registry_state,
+    framesRegistered: [test::duskydelta::store::ColonyRegistryDatabase]registry.colony_registry.frames_registered,
+    stateLabel: case(equal([test::duskydelta::store::ColonyRegistryDatabase]registry.colony_registry.registry_state, 'ACTIVE'), 'IN-SERVICE',
+      case(equal([test::duskydelta::store::ColonyRegistryDatabase]registry.colony_registry.registry_state, 'PAUSED'), 'HELD-BACK',
+      case(equal([test::duskydelta::store::ColonyRegistryDatabase]registry.colony_registry.registry_state, 'MERGED'), 'FOLDED-IN',
+      sqlNull()))),
+    inspectorName: [test::duskydelta::store::ColonyRegistryDatabase]@Colony_Inspector | [test::duskydelta::store::ColonyRegistryDatabase]reference.inspector_ref.inspector_name
+  }
+
+  test::duskydelta::domain::Inspector[inspector]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskydelta::store::ColonyRegistryDatabase]reference.inspector_ref.inspector_code
+    )
+    ~mainTable [test::duskydelta::store::ColonyRegistryDatabase]reference.inspector_ref
+    inspectorCode: [test::duskydelta::store::ColonyRegistryDatabase]reference.inspector_ref.inspector_code,
+    inspectorName: [test::duskydelta::store::ColonyRegistryDatabase]reference.inspector_ref.inspector_name,
+    depotLabel: [test::duskydelta::store::ColonyRegistryDatabase]reference.inspector_ref.depot_label
+  }
+
+  testSuites:
+  [
+    colonyRegisterSuite:
+    {
+      function: |test::duskydelta::domain::ColonyRecord.all(%latest)->project(
+        [
+          c|$c.hiveCode,
+          c|$c.registryState,
+          c|$c.stateLabel,
+          c|$c.framesRegistered,
+          c|$c.inspectorName
+        ],
+        [
+          'Hive',
+          'State',
+          'StateLabel',
+          'Frames',
+          'Inspector'
+        ]
+      )->sort([asc('Hive')]);
+      tests:
+      [
+        onlyTheOpenVersionsSurviveTheValidityFilter:
+        {
+          doc: 'The register holds a superseded version of one colony beside its open replacement, so resolving the stored rows at the open instant has to discard the closed version, keep the replacement and still resolve the label transform arms and the inspector reference path for every surviving row.';
+          data:
+          [
+            test::duskydelta::store::ColonyRegistryDatabase:
+              Relational
+              #{
+                  reference.inspector_ref:
+                    'inspector_code,inspector_name,depot_label\n'+
+                    'IN-1,Marta Quill,North Depot\n'+
+                    'IN-2,Piers Loam,South Depot\n';
+
+                  registry.colony_registry:
+                    'colony_id,hive_code,registry_state,inspector_code,frames_registered,in_z,out_z\n'+
+                    '1,HV-01,PAUSED,IN-1,8,2026-01-01,2026-02-01\n'+
+                    '2,HV-01,ACTIVE,IN-1,11,2026-02-01,9999-12-31\n'+
+                    '3,HV-02,MERGED,IN-2,6,2026-01-01,9999-12-31\n'+
+                    '4,HV-03,RETIRED,IN-2,4,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Hive" : "HV-01",\n  "State" : "ACTIVE",\n  "StateLabel" : "IN-SERVICE",\n  "Frames" : 11,\n  "Inspector" : "Marta Quill"\n}, {\n  "Hive" : "HV-02",\n  "State" : "MERGED",\n  "StateLabel" : "FOLDED-IN",\n  "Frames" : 6,\n  "Inspector" : "Piers Loam"\n}, {\n  "Hive" : "HV-03",\n  "State" : "RETIRED",\n  "StateLabel" : null,\n  "Frames" : 4,\n  "Inspector" : "Piers Loam"\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

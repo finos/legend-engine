@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::scarletcavern3::domain::*;
+
+Enum {doc.doc = 'How demanding a lantern-lit walk through the show cave is for the visiting party.'} test::scarletcavern3::domain::LanternGrade
+{
+  EASY,
+  MODERATE,
+  STRENUOUS
+}
+
+Enum {doc.doc = 'The state a guided walk reached once the party came back out of the cave.'} test::scarletcavern3::domain::WalkState
+{
+  COMPLETED,
+  TURNED_BACK,
+  CANCELLED
+}
+
+Class {doc.doc = 'A chamber of the show cave that lantern walks are routed through, held in the relational register.'} test::scarletcavern3::domain::CaveChamber
+{
+  chamberCode: String[1];
+  chamberName: String[1];
+  formationNote: String[0..1];
+}
+
+Class {doc.doc = 'One lantern-lit guided walk booked through the show cave, held in the relational register.'} test::scarletcavern3::domain::LanternWalk
+{
+  walkCode: String[1];
+  guideName: String[1];
+  partySize: Integer[1];
+  metresWalked: Float[1];
+}
+
+Association {doc.doc = 'Ties a booked lantern walk to the chamber it is routed through, resolved across the relational join.'} test::scarletcavern3::domain::Walk_Chamber
+{
+  walks: LanternWalk[*];
+  routedChamber: CaveChamber[0..1];
+}
+
+Class {doc.doc = 'The nested payload a partner ticketing feed hands over for one lantern walk, before any of it has been standardised.'} test::scarletcavern3::domain::WalkPayload
+{
+  walkRef: String[0..1];
+  revision: Integer[0..1];
+  record: WalkRecord[0..1];
+}
+
+Class {doc.doc = 'The recorded body of a handed-over lantern walk.'} test::scarletcavern3::domain::WalkRecord
+{
+  guideCode: String[0..1];
+  partySize: Integer[0..1];
+  gradeCode: String[0..1];
+  stateCode: String[0..1];
+  route: RoutePayload[0..1];
+}
+
+Class {doc.doc = 'The route a handed-over lantern walk followed, down to the chamber and the tier it sits on.'} test::scarletcavern3::domain::RoutePayload
+{
+  routeName: String[0..1];
+  chamber: ChamberPayload[0..1];
+}
+
+Class {doc.doc = 'The chamber a handed-over route ends in.'} test::scarletcavern3::domain::ChamberPayload
+{
+  chamberCode: String[0..1];
+  tierName: String[0..1];
+}
+
+Class {doc.doc = 'The standardised digest of a handed-over lantern walk, the shape the cave publishes.'} test::scarletcavern3::domain::WalkDigest
+{
+  walkRef: String[1];
+  guideLabel: String[1];
+  partyBand: String[1];
+  chamberHint: String[1];
+  grade: LanternGrade[1];
+  state: WalkState[1];
+}
+
+Class {doc.doc = 'The standardised digest of the route a published lantern walk followed.'} test::scarletcavern3::domain::RouteDigest
+{
+  routeName: String[1];
+  tierName: String[0..1];
+}
+
+Association {doc.doc = 'Ties a published walk digest to the digest of the route it followed.'} test::scarletcavern3::domain::Walk_Route
+{
+  routeView: RouteDigest[0..1];
+  walkView: WalkDigest[0..1];
+}

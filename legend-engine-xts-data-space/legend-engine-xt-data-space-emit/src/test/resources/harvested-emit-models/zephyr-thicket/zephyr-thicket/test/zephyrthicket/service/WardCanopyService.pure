@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::zephyrthicket::service::WardCanopyService
+{
+  pattern: '/thicket/v1/wards';
+  title: 'Zephyr Thicket - Ward register';
+  owners:
+  [
+    'parkland-registry',
+    'ward-desk'
+  ];
+  documentation: 'Publishes the civic ward register as a tabular projection, restricting the ward type to its own column list and reaching the hosting district through the implemented ward association.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::zephyrthicket::domain::CivicWard.all()->project(
+      [
+        w|$w.wardCode,
+        w|$w.wardName,
+        w|$w.wardDistrict.districtName
+      ],
+      [
+        'WardCode',
+        'Ward',
+        'District'
+      ]
+    )->sort(
+      [
+        asc('WardCode')
+      ]
+    );
+    mapping: test::zephyrthicket::mapping::ThicketMapping;
+    runtime: test::zephyrthicket::runtime::ThicketRegistryRuntime;
+  }
+  testSuites:
+  [
+    wardRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketRegistryConnection: Reference
+            #{
+              test::zephyrthicket::data::ThicketTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        allWards:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            wardRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"WardCode":"W1","Ward":"WILLOW WARD","District":"Riverside District"},{"WardCode":"W2","Ward":"ASPEN WARD","District":"Riverside District"},{"WardCode":"W3","Ward":"CEDAR WARD","District":"Hilltop District"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

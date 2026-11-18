@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigolantern5::shore::ShoreReferenceMapping
+(
+  test::indigolantern5::shore::ShoreExposure: EnumerationMapping ExposureCodes
+  {
+    SHELTERED: ['S'],
+    EXPOSED: ['E'],
+    UNSURVEYED: ['U']
+  }
+
+  *test::indigolantern5::shore::Headland[headland]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigolantern5::shore::ShoreReferenceDB]shore.headland.headland_code
+    )
+    ~mainTable [test::indigolantern5::shore::ShoreReferenceDB]shore.headland
+    headlandCode: [test::indigolantern5::shore::ShoreReferenceDB]shore.headland.headland_code,
+    headlandName: [test::indigolantern5::shore::ShoreReferenceDB]shore.headland.headland_name,
+    exposure: EnumerationMapping ExposureCodes: [test::indigolantern5::shore::ShoreReferenceDB]shore.headland.exposure_code
+  }
+
+  testSuites:
+  [
+    headlandSuite:
+    {
+      function: |test::indigolantern5::shore::Headland.all()->project(
+        [
+          h|$h.headlandCode,
+          h|$h.headlandName,
+          h|$h.exposure
+        ],
+        [
+          'Code',
+          'Name',
+          'Exposure'
+        ]
+      )->sort([asc('Code')]);
+      tests:
+      [
+        everyExposureCode:
+        {
+          doc: 'Reads one headland per exposure code so every arm of the exposure enumeration mapping is asserted.';
+          data:
+          [
+            test::indigolantern5::shore::ShoreReferenceDB:
+              Relational
+              #{
+                shore.headland:
+                  'headland_code,headland_name,exposure_code\n'+
+                  'HD-01,Gull Point,S\n'+
+                  'HD-02,Storm Bluff,E\n'+
+                  'HD-03,Mist Spit,U\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"HD-01","Name":"Gull Point","Exposure":"SHELTERED"},{"Code":"HD-02","Name":"Storm Bluff","Exposure":"EXPOSED"},{"Code":"HD-03","Name":"Mist Spit","Exposure":"UNSURVEYED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

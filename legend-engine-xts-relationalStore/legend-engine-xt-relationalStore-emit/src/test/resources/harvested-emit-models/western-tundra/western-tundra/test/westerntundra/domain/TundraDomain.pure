@@ -1,0 +1,73 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A protected alpine tundra reserve that plots and quadrats are laid out within.'} test::westerntundra::domain::Reserve
+{
+  reserveCode: String[1];
+  reserveName: String[1];
+  regionCode: String[1];
+  rosterRegionCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A fixed vegetation plot inside a reserve, carrying the elevation the survey crew recorded for it.'} test::westerntundra::domain::Plot
+{
+  plotCode: String[1];
+  elevationM: Integer[1];
+  reserveCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A one-metre sampling quadrat pegged inside a plot.'} test::westerntundra::domain::Quadrat
+{
+  quadratCode: String[1];
+  areaM2: Integer[1];
+  plotCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A plant taxon recognised by the survey key.'} test::westerntundra::domain::Taxon
+{
+  taxonCode: String[1];
+  taxonName: String[1];
+  growthForm: String[1];
+  profileGrowthForm: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One percent-cover reading for a taxon in a quadrat. Its plot code is reached through a two-hop join that lands on a store view, and its reserve name through a three-hop chained join, so a single reading materialises the whole survey hierarchy.'} test::westerntundra::domain::CoverRecord
+{
+  coverPct: Integer[1];
+  recordedOn: StrictDate[1];
+  quadratCode: String[1];
+  taxonName: String[1];
+  plotCode: String[1];
+  reserveName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A plot as retained in the archive store after a survey season closes.'} test::westerntundra::domain::ArchivedPlot
+{
+  plotCode: String[1];
+  reserveCode: String[1];
+  digestReserveCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An archived percent-cover reading, keyed to the archived plot it was taken in.'} test::westerntundra::domain::ArchivedCoverRecord
+{
+  coverPct: Integer[1];
+  seasonCode: String[1];
+  plotCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A view-backed digest row that publishes the archived plot code alongside the reserve code it rolls up to.'} test::westerntundra::domain::PlotDigest
+{
+  plotCode: String[1];
+  reserveCode: String[1];
+}

@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantgecko2::service::FleetAllocationRegister
+{
+  pattern: '/tramnet/v1/fleet-allocation-register';
+  title: 'Tram Network Registry - Fleet Allocation Register';
+  ownership: DID { identifier: 'tram-network-registry-office' };
+  documentation: 'Publishes the currently valid vehicle allocations as a flat table, reaching the line and its stabling depot through two chained association ends so a withdrawn vehicle or a superseded depot record can never appear.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::verdantgecko2::domain::TramVehicle.all()->project(
+      [
+        v|$v.vehicleId,
+        v|$v.fleetNumber,
+        v|$v.seatCount,
+        v|$v.axleLoadT,
+        v|$v.servedLine.lineName,
+        v|$v.servedLine.depot.depotName
+      ],
+      [
+        'VehicleId',
+        'FleetNumber',
+        'SeatCount',
+        'AxleLoadT',
+        'LineName',
+        'DepotName'
+      ]
+    );
+    mapping: test::verdantgecko2::mapping::TramNetworkMapping;
+    runtime: test::verdantgecko2::runtime::TramNetworkRuntime;
+  }
+  testSuites:
+  [
+    fleetAllocationRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          registryConnection:
+            Relational
+            #{
+              network.depot:
+                'depot_id,depot_name,borough_name,bay_count,amended_by,valid_from,valid_thru\n'+
+                '1,Willowbank Depot,Northgate,14,planner.a,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+              network.tram_line:
+                'line_id,depot_id,line_code,line_name,night_service,amended_by,valid_from,valid_thru\n'+
+                '10,1,L4,Willowbank Loop,YES,planner.a,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+              network.tram_vehicle:
+                'vehicle_id,line_id,fleet_number,seat_count,axle_load_t,amended_by,valid_from,valid_thru\n'+
+                '70,10,TR-118,64,9.25,fleet.g,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '71,10,TR-091,58,8.75,fleet.h,2018-01-01 00:00:00,2020-06-30 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        allocatedVehicleRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            oneAllocatedVehicle:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VehicleId":70,"FleetNumber":"TR-118","SeatCount":64,"AxleLoadT":9.25,"LineName":"Willowbank Loop","DepotName":"Willowbank Depot"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

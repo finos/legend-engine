@@ -1,0 +1,145 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietcavern4::service::PassageVisitRoster
+{
+  pattern: '/quietcavern4/visit-roster/{processingDate}/{businessDate}';
+  title: 'Cave Passage Visit Roster';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists, for the requested passages recorded at a processing date, every team member leading a survey visit that is current at that processing date and scheduled over the business date, collapsing members reached through more than one visit.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1], passageCodes: String[*]|test::quietcavern4::domain::Passage.all($processingDate)->filter(p|$p.passageCode->in($passageCodes))->project(
+      [
+        p|$p.passageCode,
+        p|$p.chamber.chamberCode,
+        p|$p.visits($processingDate, $businessDate).leadTeam.members.memberCode
+      ],
+      [
+        'Passage',
+        'Chamber',
+        'Member'
+      ]
+    )->distinct()};
+    mapping: test::quietcavern4::mapping::CavernSurveyMapping;
+    runtime: test::quietcavern4::runtime::CavernSurveyRuntime;
+  }
+  testSuites:
+  [
+    visitRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernSurveyConnection:
+            Relational
+            #{
+              survey.passage:
+                'passage_code,kind_code,length_m,chamber_code,entrance_code,rule_code,in_z,out_z\n'+
+                'PS-01,FLOODED,140,CH-1,EN-1,RL-1,2026-01-01,9999-12-31\n'+
+                'PS-02,CRAWL,35,CH-1,EN-2,RL-2,2026-01-01,9999-12-31\n'+
+                'PS-03,DRY,220,CH-2,,,2026-01-01,9999-12-31\n'+
+                'PS-04,FLOODED,90,CH-2,EN-1,RL-1,2025-01-01,2026-02-01\n'+
+                'PS-04,FLOODED,95,CH-2,EN-1,RL-3,2026-02-01,9999-12-31\n'+
+                'PS-05,CRAWL,20,CH-1,EN-1,RL-4,2026-01-01,9999-12-31\n';
+
+              survey.marker:
+                'marker_code,passage_code,marker_kind\n'+
+                'MK-1,PS-01,BOLT\n'+
+                'MK-2,PS-01,FLAG\n'+
+                'MK-3,PS-02,BOLT\n'+
+                'MK-4,PS-04,BOLT\n'+
+                'MK-5,PS-05,FLAG\n';
+
+              survey.chamber:
+                'chamber_code,chamber_label\n'+
+                'CH-1,Upper Gallery\n'+
+                'CH-2,Lower Gallery\n';
+
+              survey.entrance:
+                'entrance_code,entrance_label,trail_code\n'+
+                'EN-1,Fern Shaft,TR-1\n'+
+                'EN-2,Moss Slot,\n';
+
+              survey.approach_trail:
+                'trail_code,trail_label\n'+
+                'TR-1,Fern Path\n';
+
+              survey.access_rule:
+                'rule_code,access_level,gate_code\n'+
+                'RL-1,SEALED,GT-1\n'+
+                'RL-2,GUIDED,\n'+
+                'RL-3,OPEN,\n'+
+                'RL-4,SEALED,GT-2\n';
+
+              survey.gate:
+                'gate_code,key_holder\n'+
+                'GT-1,Caving Club Warden\n'+
+                'GT-2,Rescue Team Store\n';
+
+              survey.survey_visit:
+                'visit_code,passage_code,team_code,in_z,out_z,from_z,thru_z\n'+
+                'VS-1,PS-01,TM-A,2026-01-01,9999-12-31,2026-05-01,2026-06-01\n'+
+                'VS-2,PS-01,TM-A,2026-01-01,9999-12-31,2026-05-10,2026-05-20\n'+
+                'VS-3,PS-02,TM-B,2026-01-01,2026-03-01,2026-05-01,9999-12-31\n'+
+                'VS-3,PS-02,TM-C,2026-03-01,9999-12-31,2026-05-01,9999-12-31\n'+
+                'VS-4,PS-04,TM-A,2026-01-01,9999-12-31,2026-06-01,9999-12-31\n';
+
+              survey.survey_team:
+                'team_code,team_label\n'+
+                'TM-A,Lamp Crew\n'+
+                'TM-B,Rope Crew\n'+
+                'TM-C,Sump Crew\n';
+
+              survey.team_member:
+                'member_code,team_code\n'+
+                'MB-1,TM-A\n'+
+                'MB-2,TM-A\n'+
+                'MB-3,TM-B\n'+
+                'MB-4,TM-C\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        outOfRangeVisitsAreNotReached:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            businessDate = %2026-05-15,
+            passageCodes = ['PS-01', 'PS-02', 'PS-04']
+          ]
+          asserts:
+          [
+            dedupedMembers:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Passage":"PS-01","Chamber":"CH-1","Member":"MB-1"},{"Passage":"PS-01","Chamber":"CH-1","Member":"MB-2"},{"Passage":"PS-02","Chamber":"CH-1","Member":"MB-4"},{"Passage":"PS-04","Chamber":"CH-2","Member":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

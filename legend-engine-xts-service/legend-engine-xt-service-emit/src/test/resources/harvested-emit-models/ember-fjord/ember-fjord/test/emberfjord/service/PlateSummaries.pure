@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberfjord::service::PlateSummaries
+{
+  pattern: '/emberfjord/v1/plateSummaries/{surveyWindow}';
+  title: 'Ember Fjord - Night Survey Plate Summaries';
+  owners:
+  [
+    'night-survey-reduction'
+  ];
+  documentation: 'Serves the published plate summary graph for an inbound night-survey document, so the defaulted transforms are exercised in-memory over a model-store runtime with no relational store behind it.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {surveyWindow: String[1]|test::emberfjord::domain::PlateSummary.all()->graphFetch(
+      #{
+        test::emberfjord::domain::PlateSummary{
+          runCode,
+          plateCode,
+          stationLabel,
+          leadSighting,
+          faintestMagnitudeMilli,
+          sightingCount
+        }
+      }#
+    )->serialize(
+      #{
+        test::emberfjord::domain::PlateSummary{
+          runCode,
+          plateCode,
+          stationLabel,
+          leadSighting,
+          faintestMagnitudeMilli,
+          sightingCount
+        }
+      }#
+    )};
+    mapping: test::emberfjord::mapping::PlateSummaryMapping;
+    runtime: test::emberfjord::runtime::PlateSummaryRuntime;
+  }
+  testSuites:
+  [
+    plateSummariesSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          surveyRunConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"runCode":"RUN-07","station":{"stationName":"Beacon Dome","plate":{"plateCode":"PL-07","sightings":[{"sightingCode":"SG-70","category":"STEADY","magnitudeMilli":6200},{"sightingCode":"SG-71","category":"VARIABLE","magnitudeMilli":12400}]}}}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        servedPlateSummary:
+        {
+          parameters:
+          [
+            surveyWindow = 'AUTUMN'
+          ]
+          asserts:
+          [
+            variableSightingSurfaced:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{\n  "builder" : {\n    "_type" : "json"\n  },\n  "values" : {\n    "runCode" : "RUN-07",\n    "plateCode" : "PL-07",\n    "stationLabel" : "PL-07",\n    "leadSighting" : "SG-71",\n    "faintestMagnitudeMilli" : 12400,\n    "sightingCount" : 2\n  }\n}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

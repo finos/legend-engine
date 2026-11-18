@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::meadowwharf::mapping::GaugeReadingMapping
+(
+  *test::meadowwharf::domain::GaugeReading[readingSet]: ServiceStore
+  {
+    ~service [test::meadowwharf::store::HarbourGaugeApi] GaugeServices.StationReadings
+    (
+      ~request
+      (
+        parameters
+        (
+          stationRef = 'ST-' + $this.stationCode,
+          basin = 'north-quay',
+          gauge = if($this.gaugeLabel->isEmpty(), |'any-gauge', |$this.gaugeLabel->toOne())
+        )
+      )
+    )
+  }
+
+  testSuites:
+  [
+    stationReadingSuite:
+    {
+      function: |test::meadowwharf::domain::GaugeReading.all()->filter(r|($r.stationCode == '4180') && ($r.gaugeLabel == 'EBB-2'))->graphFetch(#{test::meadowwharf::domain::GaugeReading{stationCode, gaugeLabel, tideStage, heightCentimetres, observedAt, inspectorNotes}}#)->serialize(#{test::meadowwharf::domain::GaugeReading{stationCode, gaugeLabel, tideStage, heightCentimetres, observedAt, inspectorNotes}}#);
+      tests:
+      [
+        stubbedStationReadingsDeserialiseIntoTwoReadings:
+        {
+          doc: 'Resolves the remote station-readings operation, whose basin request parameter is supplied by the mapping as a constant, and deserialises the reply document into two readings.';
+          data:
+          [
+            test::meadowwharf::store::HarbourGaugeApi:
+              ServiceStore
+              #{
+                [
+                  {
+                    request:
+                    {
+                      method: GET;
+                      url: '/gauge/stations/ST-4180/readings?basin=north-quay&gauge=EBB-2';
+                    };
+                    response:
+                    {
+                      body:
+                        ExternalFormat
+                        #{
+                          contentType: 'application/json';
+                          data: '[{"stationCode":"4180","gaugeLabel":"EBB-2","tideStage":"ebb","heightCentimetres":128.5,"observedAt":"2026-04-11T05:20:00","inspectorNotes":["float chamber flushed","staff gauge rechecked"]},{"stationCode":"4180","gaugeLabel":"EBB-2","inspectorNotes":[]}]';
+                        }#;
+                    };
+                  }
+                ]
+              }#
+          ];
+          asserts:
+          [
+            bothReadingsRoundTripWithAbsentOptionals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stationCode":"4180","gaugeLabel":"EBB-2","tideStage":"ebb","heightCentimetres":128.5,"observedAt":"2026-04-11T05:20:00","inspectorNotes":["float chamber flushed","staff gauge rechecked"]},{"stationCode":"4180","gaugeLabel":"EBB-2","tideStage":null,"heightCentimetres":null,"observedAt":null,"inspectorNotes":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

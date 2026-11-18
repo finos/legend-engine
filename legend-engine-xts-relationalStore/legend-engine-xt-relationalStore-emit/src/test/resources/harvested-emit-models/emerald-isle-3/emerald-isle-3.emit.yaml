@@ -1,0 +1,48 @@
+name: emerald-isle-3
+title: "Emerald Isle Seabird Census - Pinned-Instant Plot Versions Behind Single And Multi Execution Services"
+description: |
+  A seabird colony census corpus for an offshore isle whose census plots are
+  business-temporal, so every plot carries a validity window and any query must name
+  the instant it is resolved at. A single-execution service pins that instant to a
+  literal far in the future, branches on nest occupancy or habitat membership, gates
+  the plot code and status on multi-valued parameters and normalises the warden note
+  by trimming it before measuring its length, so the text comparison runs on a
+  derived string rather than the stored one. Its testSuite covers a plot version that
+  closed before the instant, one that contains it, one that opens after it and an
+  in-range plot that the normalised-note predicate rejects. An environment-keyed
+  multi-execution twin serves the same shape across two runtimes, and the mapping
+  carries its own suite proving the point-in-time resolution independently of the
+  service layer.
+modelSources:
+  model:
+    root: emerald-isle-3
+    files:
+      - test/emeraldisle3/connection/IsleConnections.pure
+      - test/emeraldisle3/domain/IsleDomain.pure
+      - test/emeraldisle3/mapping/IsleCensusMapping.pure
+      - test/emeraldisle3/runtime/IsleRuntimes.pure
+      - test/emeraldisle3/service/ColonyPlotsAsOf.pure
+      - test/emeraldisle3/store/IsleCensusDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - mapping:relational-string-function-transform
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - collection-op
+  - h2
+  - isle-census
+  - mapping-test
+  - multi-execution
+  - point-in-time
+  - service-test
+  - string-function

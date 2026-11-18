@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::scarlethatchery::domain::*;
+
+Class {HatcheryPresentation.displayLabel = 'hatchery.pipeline / Processor'} test::scarlethatchery::domain::HatcheryProcessor
+{
+  {HatcheryPresentation.displayLabel = 'Processor Key'} processorKey: String[1];
+  enabled: Boolean[0..1];
+  {HatcheryPresentation.unitOfMeasure = 'attempts'} retryLimit: Integer[0..1];
+}
+
+Class {HatcheryPresentation.displayLabel = 'hatchery.pipeline / Clutch-Aware Processor'} test::scarlethatchery::domain::ClutchAwareProcessor extends HatcheryProcessor
+{
+  {HatcheryPresentation.displayLabel = 'Clutch Scope'} clutchScope: String[0..1];
+  speciesFilter: String[0..1];
+}
+
+Class {HatcheryPresentation.displayLabel = 'hatchery.pipeline / Observation Loader'} test::scarlethatchery::domain::ObservationLoader extends ClutchAwareProcessor
+{
+  {HatcheryPresentation.displayLabel = 'Source Feed'} sourceFeed: String[0..1];
+  {HatcheryPresentation.unitOfMeasure = 'rows'} batchSize: Integer[0..1];
+}
+
+Class {HatcheryPresentation.displayLabel = 'hatchery.pipeline / Nocturnal Observation Loader'} test::scarlethatchery::domain::NocturnalObservationLoader extends ObservationLoader
+{
+  {HatcheryPresentation.unitOfMeasure = 'watts'} lampWattage: Integer[0..1];
+  quietMode: Boolean[0..1];
+}
+
+Class {HatcheryPresentation.displayLabel = 'hatchery.pipeline / Tag Scan Loader'} test::scarlethatchery::domain::TagScanLoader extends ClutchAwareProcessor
+{
+  {HatcheryPresentation.displayLabel = 'Scanner Model'} scannerModel: String[0..1];
+  scanIntervalSeconds: Integer[0..1];
+}

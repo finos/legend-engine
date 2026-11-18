@@ -1,0 +1,34 @@
+name: solar-meadow-4-survey
+title: "Solar Meadow 4 Survey - Shared Transect Domain, Store And Mapping For A Wildflower Meadow Register"
+description: |
+  The shared wildflower meadow survey layer. Transects carry an open-for-survey flag, the day they were
+  walked and the timestamp their recording window runs until, and they reach their meadow site, the
+  recorder shifts, the cutting passes and the indicator species names through four joins. Three qualified
+  properties pick the recorder on shift and the cutting pass in force on a given day and the indicator
+  name under a requested naming scheme, and a standalone function counts the days since a walk. The
+  layer exists only to be included under a new store identity by the register module.
+modelSources:
+  model:
+    root: solar-meadow-4-survey
+    files:
+      - test/solarmeadow4/domain/TransectDomain.pure
+      - test/solarmeadow4/function/TransectFunctions.pure
+      - test/solarmeadow4/mapping/SurveyMapping.pure
+      - test/solarmeadow4/store/SurveyStore.pure
+features:
+  - grammar:association
+  - grammar:enumeration
+  - grammar:function
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - meadow-survey
+  - qualified-property
+  - shared-domain

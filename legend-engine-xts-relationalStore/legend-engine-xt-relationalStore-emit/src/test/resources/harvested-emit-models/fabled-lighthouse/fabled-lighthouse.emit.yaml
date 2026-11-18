@@ -1,0 +1,40 @@
+name: fabled-lighthouse
+title: "Fabled Lighthouse — Beam-Watch Region Ranking and Station Profiles"
+description: |
+  A coastal lighthouse beam-watch model whose services combine relational
+  querying shapes: one service filters nightly logs with a date-arithmetic
+  guard, groups active hours per region and ranks the regions with a window
+  function; the other projects each staffed station by collapsing its to-many
+  log collection. Together they exercise filter, project, group-by, window,
+  collection-op and date-arithmetic over a single mapped H2 store.
+modelSources:
+  model:
+    root: fabled-lighthouse
+    files:
+      - test/fabledlighthouse/connection/BeaconH2Connection.pure
+      - test/fabledlighthouse/domain/Domain.pure
+      - test/fabledlighthouse/mapping/BeaconMapping.pure
+      - test/fabledlighthouse/runtime/BeaconRuntime.pure
+      - test/fabledlighthouse/service/RegionActivityRank.pure
+      - test/fabledlighthouse/service/StationBeamProfile.pure
+      - test/fabledlighthouse/store/BeaconDb.pure
+features:
+  - execution:service
+  - grammar:derived-property
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:window
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - beam
+  - coastal
+  - group-by
+  - h2
+  - lighthouse
+  - ranking
+  - window

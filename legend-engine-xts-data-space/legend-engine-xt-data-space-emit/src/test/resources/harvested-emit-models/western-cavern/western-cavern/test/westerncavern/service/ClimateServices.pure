@@ -1,0 +1,292 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westerncavern::service::SortedStationReadings
+{
+  pattern: '/westerncavern/v1/sorted-station-readings';
+  title: 'Western Cavern - Sorted Station Readings';
+  owners:
+  [
+    'cavern-survey-register'
+  ];
+  documentation: 'Projects the climate reading extent, narrows the tabular result on a four-way conjunction over the batch, the join-reached station label, the station code and a temperature floor, and returns the survivors in reading order.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {batch: Integer[1], stationLabel: String[1]|test::westerncavern::domain::ClimateReading.all()->project(
+      [
+        r|$r.readingCode,
+        r|$r.batchId,
+        r|$r.stationCode,
+        r|$r.stationLabel,
+        r|$r.readingDate,
+        r|$r.airTemperatureCelsius,
+        r|$r.humidityPercent,
+        r|$r.dripRatePerMinute
+      ],
+      [
+        'Reading Code',
+        'Batch',
+        'Station Code',
+        'Station Label',
+        'Reading Date',
+        'Air Temperature',
+        'Humidity',
+        'Drip Rate'
+      ]
+    )->filter(
+      r|and($r.getInteger('Batch') == $batch, and($r.getString('Station Label') == $stationLabel, and($r.getString('Station Code') == 'CT-01', $r.getFloat('Air Temperature') > 7.0)))
+    )->sort(
+      [
+        asc('Reading Code')
+      ]
+    )};
+    mapping: test::westerncavern::mapping::CavernSurveyMapping;
+    runtime: test::westerncavern::runtime::CavernSurveyRuntime;
+  }
+  testSuites:
+  [
+    sortedStationReadingsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernSurvey: Reference
+            #{
+              test::westerncavern::data::CavernSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        fourWayConjunctionKeepsThreeReadings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            batch = 1,
+            stationLabel = 'Cathedral Drip Post'
+          ]
+          asserts:
+          [
+            readingsInOrder:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading Code":"CR-01","Batch":1,"Station Code":"CT-01","Station Label":"Cathedral Drip Post","Reading Date":"2026-03-02","Air Temperature":8.5,"Humidity":92.5,"Drip Rate":14},{"Reading Code":"CR-02","Batch":1,"Station Code":"CT-01","Station Label":"Cathedral Drip Post","Reading Date":"2026-03-03","Air Temperature":9.25,"Humidity":null,"Drip Rate":18},{"Reading Code":"CR-03","Batch":1,"Station Code":"CT-01","Station Label":"Cathedral Drip Post","Reading Date":"2026-03-04","Air Temperature":7.75,"Humidity":88.0,"Drip Rate":null}]';
+                  }#;
+              }#
+          ]
+        },
+        anotherBatchLeavesNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            batch = 2,
+            stationLabel = 'Cathedral Drip Post'
+          ]
+          asserts:
+          [
+            noReadingSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::westerncavern::service::StationTemperatureTally
+{
+  pattern: '/westerncavern/v1/station-temperature-tally';
+  title: 'Western Cavern - Station Temperature Tally';
+  owners:
+  [
+    'cavern-survey-register'
+  ];
+  documentation: 'Aggregates the climate readings per station and batch into a temperature total and a reading count, then keeps one batch of one station so the grouped result is read back a group at a time.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::westerncavern::domain::ClimateReading.all()->project(
+      [
+        r|$r.readingCode,
+        r|$r.stationCode,
+        r|$r.batchId,
+        r|$r.airTemperatureCelsius
+      ],
+      [
+        'Reading Code',
+        'Station Code',
+        'Batch',
+        'Air Temperature'
+      ]
+    )->groupBy(
+      [
+        'Station Code',
+        'Batch'
+      ],
+      [
+        agg(
+          'Temperature Total',
+          x|$x.getFloat('Air Temperature'),
+          y|$y->sum()
+        ),
+        agg(
+          'Reading Count',
+          x|$x.getString('Reading Code'),
+          y|$y->count()
+        )
+      ]
+    )->filter(
+      r|and($r.getInteger('Batch') == 1, $r.getString('Station Code') == 'CT-01')
+    )};
+    mapping: test::westerncavern::mapping::CavernSurveyMapping;
+    runtime: test::westerncavern::runtime::CavernSurveyRuntime;
+  }
+  testSuites:
+  [
+    stationTemperatureTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernSurvey: Reference
+            #{
+              test::westerncavern::data::CavernSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        oneMultiRowGroupSurvivesTheGroupFilter:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            multiRowGroupTotals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station Code":"CT-01","Batch":1,"Temperature Total":25.5,"Reading Count":3}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::westerncavern::service::WarmStationRollup
+{
+  pattern: '/westerncavern/v1/warm-station-rollup';
+  title: 'Western Cavern - Warm Station Rollup';
+  owners:
+  [
+    'cavern-survey-register'
+  ];
+  documentation: 'Filters the climate readings to those above a fixed temperature floor and rolls the survivors up per station, so a multi-row group and a single-row group are both returned.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::westerncavern::domain::ClimateReading.all()->filter(
+      r|$r.airTemperatureCelsius > 7.0
+    )->project(
+      [
+        r|$r.readingCode,
+        r|$r.stationCode,
+        r|$r.airTemperatureCelsius
+      ],
+      [
+        'Reading Code',
+        'Station Code',
+        'Air Temperature'
+      ]
+    )->groupBy(
+      [
+        'Station Code'
+      ],
+      [
+        agg(
+          'Warm Reading Count',
+          x|$x.getString('Reading Code'),
+          y|$y->count()
+        )
+      ]
+    )->sort(
+      [
+        asc('Station Code')
+      ]
+    )};
+    mapping: test::westerncavern::mapping::CavernSurveyMapping;
+    runtime: test::westerncavern::runtime::CavernSurveyRuntime;
+  }
+  testSuites:
+  [
+    warmStationRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernSurvey: Reference
+            #{
+              test::westerncavern::data::CavernSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        warmReadingsRollUpPerStation:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            warmCountsPerStation:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station Code":"CT-01","Warm Reading Count":3}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

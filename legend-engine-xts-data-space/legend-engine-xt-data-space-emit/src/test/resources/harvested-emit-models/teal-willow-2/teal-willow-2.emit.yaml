@@ -1,0 +1,67 @@
+name: teal-willow-2
+title: "Teal Willow - Museum curation data product over composed relational stores with association mappings, a diagram and a data space"
+description: |
+  A museum-curation corpus whose aggregate relational store composes a gallery
+  store and a collection store by inclusion and owns the joins that relate their
+  tables. An association-rich mapping composes an included base mapping, binds
+  three associations through those joins and reaches gallery labels across a
+  two-hop path. A governed data space wires the curated mapping to its runtime,
+  a stored diagram documents the class graph, and services project exhibits and
+  artifacts with row-level assertions.
+modelSources:
+  model:
+    root: teal-willow-2
+    files:
+      - test/tealwillow2/connection/CurationConnection.pure
+      - test/tealwillow2/data/CurationData.pure
+      - test/tealwillow2/dataspace/CurationDataSpace.pure
+      - test/tealwillow2/diagram/CurationDiagram.pure
+      - test/tealwillow2/domain/CurationDomain.pure
+      - test/tealwillow2/mapping/CurationMapping.pure
+      - test/tealwillow2/mapping/GalleryBaseMapping.pure
+      - test/tealwillow2/runtime/CurationRuntime.pure
+      - test/tealwillow2/service/CurationServices.pure
+      - test/tealwillow2/store/CollectionStore.pure
+      - test/tealwillow2/store/CurationStore.pure
+      - test/tealwillow2/store/GalleryStore.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:diagram
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - data-space
+  - diagram
+  - h2
+  - mapping-include
+  - multi-hop-join
+  - museum-curation
+  - redshift
+  - redshift-connection
+  - relational-mapping
+  - service-test
+  - store-include

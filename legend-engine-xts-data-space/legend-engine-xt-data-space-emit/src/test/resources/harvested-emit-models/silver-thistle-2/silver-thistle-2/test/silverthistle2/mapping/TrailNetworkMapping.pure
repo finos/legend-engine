@@ -1,0 +1,288 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverthistle2::mapping::TrailNetworkMapping
+(
+  test::silverthistle2::domain::TrailGrade: EnumerationMapping TrailGradeMapping
+  {
+    EASY: ['easy'],
+    MODERATE: ['moderate'],
+    STEEP: ['steep'],
+    EXPOSED_SCRAMBLE: ['exposed scramble']
+  }
+
+  test::silverthistle2::domain::UpkeepClass: EnumerationMapping UpkeepClassMapping
+  {
+    ROUTINE: ['routine'],
+    PRIORITY: ['priority'],
+    DEFERRED: ['deferred']
+  }
+
+  test::silverthistle2::domain::PatrolKind: EnumerationMapping PatrolKindMapping
+  {
+    FOOT: ['foot'],
+    SKI: ['ski'],
+    MOUNTED: ['mounted']
+  }
+
+  test::silverthistle2::domain::TrailSegment[segment_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverthistle2::store::TrailNetworkDb]alpine.trail_segment.segment_id
+    )
+    ~mainTable [test::silverthistle2::store::TrailNetworkDb]alpine.trail_segment
+    segmentId: [test::silverthistle2::store::TrailNetworkDb]alpine.trail_segment.segment_id,
+    label: [test::silverthistle2::store::TrailNetworkDb]alpine.trail_segment.label,
+    lengthMeters: [test::silverthistle2::store::TrailNetworkDb]alpine.trail_segment.length_m,
+    grade: EnumerationMapping TrailGradeMapping: [test::silverthistle2::store::TrailNetworkDb]alpine.trail_segment.grade_code,
+    regionName: [test::silverthistle2::store::TrailNetworkDb]@Segment_Station > @Station_Region | [test::silverthistle2::store::TrailNetworkDb]alpine.trail_region.region_name
+  }
+
+  test::silverthistle2::domain::RangerStation[station_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverthistle2::store::TrailNetworkDb]alpine.ranger_station.station_id
+    )
+    ~mainTable [test::silverthistle2::store::TrailNetworkDb]alpine.ranger_station
+    stationId: [test::silverthistle2::store::TrailNetworkDb]alpine.ranger_station.station_id,
+    stationName: [test::silverthistle2::store::TrailNetworkDb]alpine.ranger_station.station_name,
+    upkeep: EnumerationMapping UpkeepClassMapping: [test::silverthistle2::store::TrailNetworkDb]alpine.ranger_station.upkeep_code
+  }
+
+  test::silverthistle2::domain::TrailRegion[region_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverthistle2::store::TrailNetworkDb]alpine.trail_region.region_code
+    )
+    ~mainTable [test::silverthistle2::store::TrailNetworkDb]alpine.trail_region
+    regionCode: [test::silverthistle2::store::TrailNetworkDb]alpine.trail_region.region_code,
+    regionName: [test::silverthistle2::store::TrailNetworkDb]alpine.trail_region.region_name
+  }
+
+  test::silverthistle2::domain::PatrolLog[patrol_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverthistle2::store::TrailNetworkDb]alpine.patrol_log.patrol_id
+    )
+    ~mainTable [test::silverthistle2::store::TrailNetworkDb]alpine.patrol_log
+    patrolId: [test::silverthistle2::store::TrailNetworkDb]alpine.patrol_log.patrol_id,
+    note: [test::silverthistle2::store::TrailNetworkDb]alpine.patrol_log.note,
+    patrolKind: EnumerationMapping PatrolKindMapping: [test::silverthistle2::store::TrailNetworkDb]alpine.patrol_log.patrol_code
+  }
+
+  test::silverthistle2::domain::SurveyMark[mark_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverthistle2::store::TrailNetworkDb]alpine.survey_mark.mark_id
+    )
+    ~mainTable [test::silverthistle2::store::TrailNetworkDb]alpine.survey_mark
+    markId: [test::silverthistle2::store::TrailNetworkDb]alpine.survey_mark.mark_id,
+    markName: [test::silverthistle2::store::TrailNetworkDb]alpine.survey_mark.mark_name,
+    grade: EnumerationMapping TrailGradeMapping: [test::silverthistle2::store::TrailNetworkDb]alpine.survey_mark.grade_code
+  }
+
+  test::silverthistle2::domain::TrailheadKiosk[kiosk_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverthistle2::store::TrailNetworkDb]alpine.trailhead_kiosk.kiosk_id
+    )
+    ~mainTable [test::silverthistle2::store::TrailNetworkDb]alpine.trailhead_kiosk
+    kioskId: [test::silverthistle2::store::TrailNetworkDb]alpine.trailhead_kiosk.kiosk_id,
+    kioskName: [test::silverthistle2::store::TrailNetworkDb]alpine.trailhead_kiosk.kiosk_name
+  }
+
+  test::silverthistle2::domain::SegmentStation: Relational
+  {
+    AssociationMapping
+    (
+      station[segment_set, station_set]: [test::silverthistle2::store::TrailNetworkDb]@Segment_Station,
+      segment[station_set, segment_set]: [test::silverthistle2::store::TrailNetworkDb]@Segment_Station
+    )
+  }
+
+  test::silverthistle2::domain::StationRegion: Relational
+  {
+    AssociationMapping
+    (
+      region[station_set, region_set]: [test::silverthistle2::store::TrailNetworkDb]@Station_Region,
+      homeStation[region_set, station_set]: [test::silverthistle2::store::TrailNetworkDb]@Station_Region
+    )
+  }
+
+  test::silverthistle2::domain::SegmentPatrol: Relational
+  {
+    AssociationMapping
+    (
+      patrol[segment_set, patrol_set]: [test::silverthistle2::store::TrailNetworkDb]@Segment_Patrol,
+      patrolledSegment[patrol_set, segment_set]: [test::silverthistle2::store::TrailNetworkDb]@Segment_Patrol
+    )
+  }
+
+  testSuites:
+  [
+    segmentSuite:
+    {
+      function: |test::silverthistle2::domain::TrailSegment.all()->project(
+        ~[
+          segment: x|$x.segmentId,
+          grade: x|$x.grade,
+          station: x|$x.station.stationName,
+          upkeep: x|$x.station.upkeep,
+          region: x|$x.regionName,
+          patrol: x|$x.patrol.patrolKind
+        ]
+      );
+      tests:
+      [
+        segmentsReachStationRegionAndPatrol:
+        {
+          data:
+          [
+            test::silverthistle2::store::TrailNetworkDb:
+              Relational
+              #{
+                alpine.trail_segment:
+                  'segment_id,station_id,patrol_id,label,length_m,grade_code\n'+
+                  'TS-01,RS-01,PL-01,north ridge,4200,easy\n'+
+                  'TS-02,RS-02,PL-02,cirque loop,3100,moderate\n'+
+                  'TS-03,RS-01,PL-03,summit chute,1500,exposed scramble\n';
+
+                alpine.ranger_station:
+                  'station_id,region_code,station_name,upkeep_code\n'+
+                  'RS-01,RG-01,North Hut,routine\n'+
+                  'RS-02,RG-02,Cirque Hut,priority\n';
+
+                alpine.trail_region:
+                  'region_code,region_name\n'+
+                  'RG-01,Granite Divide\n'+
+                  'RG-02,Blue Cirque\n';
+
+                alpine.patrol_log:
+                  'patrol_id,note,patrol_code\n'+
+                  'PL-01,dry tread,foot\n'+
+                  'PL-02,drifted cornice,ski\n'+
+                  'PL-03,rockfall watch,mounted\n';
+              }#
+          ];
+          asserts:
+          [
+            segmentRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "segment" : "TS-01", \n  "grade" : "EASY", \n  "station" : "North Hut", \n  "upkeep" : "ROUTINE", \n  "region" : "Granite Divide", \n  "patrol" : "FOOT"\n}, {\n  "segment" : "TS-02", \n  "grade" : "MODERATE", \n  "station" : "Cirque Hut", \n  "upkeep" : "PRIORITY", \n  "region" : "Blue Cirque", \n  "patrol" : "SKI"\n}, {\n  "segment" : "TS-03", \n  "grade" : "EXPOSED_SCRAMBLE", \n  "station" : "North Hut", \n  "upkeep" : "ROUTINE", \n  "region" : "Granite Divide", \n  "patrol" : "MOUNTED"\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    regionSuite:
+    {
+      function: |test::silverthistle2::domain::TrailRegion.all()->project(
+        ~[
+          region: x|$x.regionCode,
+          regionName: x|$x.regionName,
+          station: x|$x.homeStation.stationName,
+          upkeep: x|$x.homeStation.upkeep
+        ]
+      );
+      tests:
+      [
+        regionsReachHomeStationInReverse:
+        {
+          data:
+          [
+            test::silverthistle2::store::TrailNetworkDb:
+              Relational
+              #{
+                alpine.trail_region:
+                  'region_code,region_name\n'+
+                  'RG-01,Granite Divide\n'+
+                  'RG-02,Blue Cirque\n';
+
+                alpine.ranger_station:
+                  'station_id,region_code,station_name,upkeep_code\n'+
+                  'RS-01,RG-01,North Hut,routine\n'+
+                  'RS-02,RG-02,Cirque Hut,priority\n';
+              }#
+          ];
+          asserts:
+          [
+            regionRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "region" : "RG-01", \n  "regionName" : "Granite Divide", \n  "station" : "North Hut", \n  "upkeep" : "ROUTINE"\n}, {\n  "region" : "RG-02", \n  "regionName" : "Blue Cirque", \n  "station" : "Cirque Hut", \n  "upkeep" : "PRIORITY"\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    markSuite:
+    {
+      function: |test::silverthistle2::domain::SurveyMark.all()->project(
+        ~[
+          mark: x|$x.markId,
+          markName: x|$x.markName,
+          grade: x|$x.grade
+        ]
+      );
+      tests:
+      [
+        marksReuseTheGradeEnumerationMapping:
+        {
+          data:
+          [
+            test::silverthistle2::store::TrailNetworkDb:
+              Relational
+              #{
+                alpine.survey_mark:
+                  'mark_id,segment_id,mark_name,grade_code\n'+
+                  'SM-01,TS-01,north cairn,easy\n'+
+                  'SM-02,TS-03,chute pin,steep\n';
+              }#
+          ];
+          asserts:
+          [
+            markRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "mark" : "SM-01", \n  "markName" : "north cairn", \n  "grade" : "EASY"\n}, {\n  "mark" : "SM-02", \n  "markName" : "chute pin", \n  "grade" : "STEEP"\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

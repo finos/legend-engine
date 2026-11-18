@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::verdantfossil::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A quarry excavation site registered with the palaeontology field programme.'} test::verdantfossil::domain::DigSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  regionName: String[1];
+  openedYear: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A numbered excavation trench cut inside a dig site.'} test::verdantfossil::domain::Trench
+{
+  trenchCode: String[1];
+  trenchLabel: String[1];
+  depthCm: Integer[1];
+  siteName: String[0..1];
+  depthBand()
+  {
+    if($this.depthCm >= 200, |'DEEP', |'SHALLOW')
+  }: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named geological layer that finds are recovered from.'} test::verdantfossil::domain::Stratum
+{
+  stratumCode: String[1];
+  stratumName: String[1];
+  periodName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single fossil recovered from a trench and attributed to a stratum.'} test::verdantfossil::domain::Find
+{
+  findId: String[1];
+  specimenLabel: String[1];
+  massG: Integer[1];
+  conditionCode: String[1];
+  trenchLabel: String[0..1];
+  siteName: String[0..1];
+  stratumName: String[0..1];
+  labelLine()
+  {
+    $this.findId + ' / ' + $this.specimenLabel
+  }: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A member of the laboratory team who prepares recovered material.'} test::verdantfossil::domain::Preparator
+{
+  preparatorCode: String[1];
+  preparatorName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A transport crate holding prepared material on its way to the laboratory.'} test::verdantfossil::domain::Crate
+{
+  crateCode: String[1];
+  crateLabel: String[1];
+  preparatorName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One field season worked at a dig site under a named field lead.'} test::verdantfossil::domain::FieldSeason
+{
+  seasonCode: String[1];
+  seasonYear: Integer[1];
+  fieldLead: String[1];
+  siteName: String[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a dig site to the trenches cut inside it.'} test::verdantfossil::domain::SiteTrenches
+{
+  site: DigSite[1];
+  trenches: Trench[*];
+}

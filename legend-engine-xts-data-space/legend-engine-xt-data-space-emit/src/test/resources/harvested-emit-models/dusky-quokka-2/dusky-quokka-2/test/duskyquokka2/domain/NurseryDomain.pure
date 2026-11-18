@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::duskyquokka2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A propagation block inside one glasshouse zone of the nursery.'} test::duskyquokka2::domain::NurseryBlock
+{
+  blockCode: String[1];
+  blockName: String[1];
+  glasshouseZone: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A sown seedling tray standing in a propagation block, carrying a composed label tag derived from its cultivar.'} test::duskyquokka2::domain::SeedlingTray
+{
+  trayCode: String[1];
+  cultivar: String[1];
+  cellCount: Integer[1];
+  labelTag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A grower crew working out of one potting shed and looking after propagation blocks.'} test::duskyquokka2::domain::GrowerCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  pottingShed: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A germination viability reading taken on a propagation block, reaching the block name through a join.'} test::duskyquokka2::domain::ViabilityCheck
+{
+  checkCode: String[1];
+  viabilityPercent: Integer[1];
+  blockName: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a propagation block to the seedling trays standing in it.'} test::duskyquokka2::domain::BlockTrays
+{
+  block: NurseryBlock[0..1];
+  trays: SeedlingTray[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a grower crew to the propagation blocks it looks after.'} test::duskyquokka2::domain::CrewBlocks
+{
+  crew: GrowerCrew[0..1];
+  blocks: NurseryBlock[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One numbered sowing round on a seedling tray, keyed by the tray and the round number together, recording how many cells germinated.'} test::duskyquokka2::domain::SowingRound
+{
+  roundNumber: Integer[1];
+  sownCells: Integer[1];
+  germinatedCells: Integer[1];
+  roundLabel: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a seedling tray to its numbered sowing rounds.'} test::duskyquokka2::domain::TrayRounds
+{
+  tray: SeedlingTray[0..1];
+  rounds: SowingRound[*];
+}

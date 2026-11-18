@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::goldenridge2::store::HerbariumDB
+(
+  Schema herbarium
+  (
+    Table sheet_record
+    (
+      sheet_id VARCHAR(24) PRIMARY KEY,
+      voucher_code VARCHAR(24) NOT NULL,
+      taxon_code VARCHAR(12) NOT NULL,
+      collector_code VARCHAR(12) NOT NULL,
+      mount_count INTEGER NOT NULL,
+      vigour_score INTEGER NOT NULL,
+      handling_code CHAR(1),
+      valid_from DATE NOT NULL,
+      valid_thru DATE
+    )
+
+    Table taxon_ref
+    (
+      taxon_code VARCHAR(12) PRIMARY KEY,
+      taxon_name VARCHAR(80) NOT NULL
+    )
+
+    View voucher_dupe_vw
+    (
+      ~groupBy
+      (
+        herbarium.sheet_record.voucher_code
+      )
+      voucher_code: herbarium.sheet_record.voucher_code PRIMARY KEY,
+      sheet_count: count(herbarium.sheet_record.sheet_id),
+      peak_mounts: max(herbarium.sheet_record.mount_count)
+    )
+  )
+
+  Schema accession
+  (
+    Table accession_lot
+    (
+      batch_id VARCHAR(24) PRIMARY KEY,
+      voucher_code VARCHAR(24) NOT NULL,
+      lot_count INTEGER NOT NULL,
+      batch_state CHAR(1)
+    )
+
+    View batch_rollup_vw
+    (
+      ~groupBy
+      (
+        accession.accession_lot.voucher_code
+      )
+      voucher_code: accession.accession_lot.voucher_code PRIMARY KEY,
+      batch_count: count(accession.accession_lot.batch_id),
+      lot_total: sum(accession.accession_lot.lot_count)
+    )
+  )
+
+  Filter EffectiveSheets(herbarium.sheet_record.valid_thru is null or herbarium.sheet_record.valid_thru > herbarium.sheet_record.valid_from)
+
+  Filter SettledBatches(accession.accession_lot.batch_state is null or accession.accession_lot.batch_state = 'S')
+
+  Join Sheet_Taxon(herbarium.sheet_record.taxon_code = herbarium.taxon_ref.taxon_code)
+
+  Join Sheet_Dupe(herbarium.sheet_record.voucher_code = herbarium.voucher_dupe_vw.voucher_code)
+
+  Join Dupe_Rollup(herbarium.voucher_dupe_vw.voucher_code = accession.batch_rollup_vw.voucher_code)
+)

@@ -1,0 +1,109 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::silverorchard3::store::RegisterDb
+(
+  Schema bee_ref
+  (
+    Table hive_base
+    (
+    milestoning
+    (
+      processing(PROCESSING_IN = batch_in_on, PROCESSING_OUT = batch_out_on, INFINITY_DATE = %9999-12-31)
+    )
+
+      batch_in_id INTEGER PRIMARY KEY,
+      batch_out_id INTEGER PRIMARY KEY,
+      batch_in_on DATE NOT NULL,
+      batch_out_on DATE NOT NULL,
+      row_digest VARCHAR(64) PRIMARY KEY,
+      global_id VARCHAR(24) PRIMARY KEY,
+      hive_label VARCHAR(120) NOT NULL,
+      colony_strain VARCHAR(60),
+      frame_count INTEGER,
+      region_code VARCHAR(12) NOT NULL
+    )
+
+    Table apiary_base
+    (
+    milestoning
+    (
+      processing(PROCESSING_IN = batch_in_on, PROCESSING_OUT = batch_out_on, INFINITY_DATE = %9999-12-31)
+    )
+
+      batch_in_id INTEGER PRIMARY KEY,
+      batch_out_id INTEGER PRIMARY KEY,
+      batch_in_on DATE NOT NULL,
+      batch_out_on DATE NOT NULL,
+      row_digest VARCHAR(64) PRIMARY KEY,
+      global_id VARCHAR(24) PRIMARY KEY,
+      apiary_name VARCHAR(120) NOT NULL,
+      altitude_m INTEGER,
+      forage_kind VARCHAR(60),
+      region_code VARCHAR(12) NOT NULL
+    )
+  )
+)
+
+###Relational
+Database test::silverorchard3::store::ExtensionDb
+(
+  Schema bee_ext
+  (
+    Table hive_ext
+    (
+    milestoning
+    (
+      processing(PROCESSING_IN = batch_in_on, PROCESSING_OUT = batch_out_on, INFINITY_DATE = %9999-12-31)
+    )
+
+      batch_in_id INTEGER PRIMARY KEY,
+      batch_out_id INTEGER PRIMARY KEY,
+      batch_in_on DATE NOT NULL,
+      batch_out_on DATE NOT NULL,
+      row_digest VARCHAR(64) PRIMARY KEY,
+      global_id VARCHAR(24) PRIMARY KEY,
+      queen_year INTEGER,
+      temperament VARCHAR(40)
+    )
+
+    Table apiary_ext
+    (
+    milestoning
+    (
+      processing(PROCESSING_IN = batch_in_on, PROCESSING_OUT = batch_out_on, INFINITY_DATE = %9999-12-31)
+    )
+
+      batch_in_id INTEGER PRIMARY KEY,
+      batch_out_id INTEGER PRIMARY KEY,
+      batch_in_on DATE NOT NULL,
+      batch_out_on DATE NOT NULL,
+      row_digest VARCHAR(64) PRIMARY KEY,
+      global_id VARCHAR(24) PRIMARY KEY,
+      shelter_kind VARCHAR(60),
+      water_source VARCHAR(60)
+    )
+  )
+)
+
+###Relational
+Database test::silverorchard3::store::ApiaryDb
+(
+  include test::silverorchard3::store::RegisterDb
+  include test::silverorchard3::store::ExtensionDb
+
+  Join Hive_Ext(bee_ref.hive_base.global_id = bee_ext.hive_ext.global_id)
+  Join Apiary_Ext(bee_ref.apiary_base.global_id = bee_ext.apiary_ext.global_id)
+)

@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletvineyard::mapping::NurseryMapping
+(
+  *test::scarletvineyard::domain::PropagationBed[bed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletvineyard::store::NurseryDB]nursery.propagation_bed.bed_id
+    )
+    ~mainTable [test::scarletvineyard::store::NurseryDB]nursery.propagation_bed
+    code: [test::scarletvineyard::store::NurseryDB]nursery.propagation_bed.bed_code,
+    name: [test::scarletvineyard::store::NurseryDB]nursery.propagation_bed.bed_name,
+    bedArea: [test::scarletvineyard::store::NurseryDB]nursery.propagation_bed.bed_area,
+    soilMix: [test::scarletvineyard::store::NurseryDB]nursery.propagation_bed.soil_mix
+  }
+
+  *test::scarletvineyard::domain::SeedlingLot[lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletvineyard::store::NurseryDB]nursery.seedling_lot.lot_id
+    )
+    ~mainTable [test::scarletvineyard::store::NurseryDB]nursery.seedling_lot
+    code: [test::scarletvineyard::store::NurseryDB]nursery.seedling_lot.lot_code,
+    cultivar: [test::scarletvineyard::store::NurseryDB]nursery.seedling_lot.cultivar,
+    seedlingCount: [test::scarletvineyard::store::NurseryDB]nursery.seedling_lot.seedling_count,
+    sownOn: [test::scarletvineyard::store::NurseryDB]nursery.seedling_lot.sown_on
+  }
+
+  testSuites:
+  [
+    bedRegisterSuite:
+    {
+      function: |test::scarletvineyard::domain::PropagationBed.all()->project([b|$b.code, b|$b.name->trim()->toLower(), b|$b.bedArea], ['Code', 'Bed', 'Area'])->sort([asc('Code')]);
+      tests:
+      [
+        everyBed:
+        {
+          doc: 'Projects the propagation beds with the bed label normalised in the tabular layer, so both mapped tables of the store are proven independently addressable.';
+          data:
+          [
+            test::scarletvineyard::store::NurseryDB:
+              Relational
+              #{
+                nursery.propagation_bed:
+                  'bed_id,bed_code,bed_name,bed_area,soil_mix\n'+
+                  '1,BED-A,North Frames,12.5,loam blend\n'+
+                  '2,BED-B,South Frames,8.25,peat blend\n';
+              }#
+          ];
+          asserts:
+          [
+            bothBedsNormalised:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"BED-A","Bed":"north frames","Area":12.5},{"Code":"BED-B","Bed":"south frames","Area":8.25}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

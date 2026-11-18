@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::fabledlighthouse::service::RegionActivityRank
+{
+  pattern: '/fabledlighthouse/v1/regionActivityRank';
+  owners:
+  [
+    'beacon-signal-team'
+  ];
+  documentation: 'Aggregates beam-watch active hours per coastal region (filtering low-visibility nights via a date-arithmetic guard) and ranks the regions by total active hours with a window function.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::fabledlighthouse::domain::BeamLog.all()->filter(
+      l | ($l.visibilityDm >= 40) && ($l.logDate->dateDiff(%2020-01-01, DurationUnit.DAYS) != 0)
+    )->groupBy(
+      [
+        l | $l.region
+      ],
+      [
+        agg(
+          l | $l.activeHours,
+          v | $v->sum()
+        )
+      ],
+      [
+        'Region',
+        'TotalActiveHours'
+      ]
+    )->olapGroupBy(
+      [],
+      desc('TotalActiveHours'),
+      w | $w->rank(),
+      'ActivityRank'
+    )->sort([asc('Region')]);
+    mapping: demo::fabledlighthouse::mapping::BeaconMapping;
+    runtime: demo::fabledlighthouse::runtime::BeaconRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconConnection:
+            Relational
+            #{
+              signal.beam_log:
+                'log_id,station_code,region,log_date,visibility_dm,active_hours,rotations\n'+
+                'BL1,ST1,North,2024-02-01,55,3,100\n'+
+                'BL2,ST1,North,2024-03-01,60,5,90\n'+
+                'BL3,ST2,South,2024-02-15,45,6,80\n'+
+                'BL5,ST3,West,2024-04-01,30,4,60\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_1:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {"Region": "North", "TotalActiveHours": 8, "ActivityRank": 1}, {"Region": "South", "TotalActiveHours": 6, "ActivityRank": 2} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

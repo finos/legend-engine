@@ -1,0 +1,147 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberaviary4::mapping::AviaryLogMapping
+(
+  *test::umberaviary4::domain::RingingRecord[ringingRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberaviary4::store::AviaryLogDb]aviary.ringing_record.ring_code
+    )
+    ~mainTable [test::umberaviary4::store::AviaryLogDb]aviary.ringing_record
+    ringCode: [test::umberaviary4::store::AviaryLogDb]aviary.ringing_record.ring_code,
+    speciesCode: [test::umberaviary4::store::AviaryLogDb]aviary.ringing_record.species_code,
+    ageClass: [test::umberaviary4::store::AviaryLogDb]aviary.ringing_record.age_class,
+    wingMm: [test::umberaviary4::store::AviaryLogDb]aviary.ringing_record.wing_mm,
+    massG: [test::umberaviary4::store::AviaryLogDb]aviary.ringing_record.mass_g,
+    ringedOn: [test::umberaviary4::store::AviaryLogDb]aviary.ringing_record.ringed_on,
+    createdAt: [test::umberaviary4::store::AviaryLogDb]aviary.ringing_record.created_at,
+    updatedAt: [test::umberaviary4::store::AviaryLogDb]aviary.ringing_record.updated_at
+  }
+
+  *test::umberaviary4::domain::NestBoxCheck[nestBoxCheck]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberaviary4::store::AviaryLogDb]aviary.nest_box_check.check_code
+    )
+    ~mainTable [test::umberaviary4::store::AviaryLogDb]aviary.nest_box_check
+    checkCode: [test::umberaviary4::store::AviaryLogDb]aviary.nest_box_check.check_code,
+    boxCode: [test::umberaviary4::store::AviaryLogDb]aviary.nest_box_check.box_code,
+    nestStage: [test::umberaviary4::store::AviaryLogDb]aviary.nest_box_check.nest_stage,
+    eggCount: [test::umberaviary4::store::AviaryLogDb]aviary.nest_box_check.egg_count,
+    chickCount: [test::umberaviary4::store::AviaryLogDb]aviary.nest_box_check.chick_count,
+    checkedOn: [test::umberaviary4::store::AviaryLogDb]aviary.nest_box_check.checked_on,
+    createdAt: [test::umberaviary4::store::AviaryLogDb]aviary.nest_box_check.created_at,
+    updatedAt: [test::umberaviary4::store::AviaryLogDb]aviary.nest_box_check.updated_at
+  }
+
+  *test::umberaviary4::domain::FeederVisit[feederVisit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberaviary4::store::AviaryLogDb]aviary.feeder_visit.visit_code
+    )
+    ~mainTable [test::umberaviary4::store::AviaryLogDb]aviary.feeder_visit
+    visitCode: [test::umberaviary4::store::AviaryLogDb]aviary.feeder_visit.visit_code,
+    feederCode: [test::umberaviary4::store::AviaryLogDb]aviary.feeder_visit.feeder_code,
+    seedMix: [test::umberaviary4::store::AviaryLogDb]aviary.feeder_visit.seed_mix,
+    visitTally: [test::umberaviary4::store::AviaryLogDb]aviary.feeder_visit.visit_tally,
+    countedOn: [test::umberaviary4::store::AviaryLogDb]aviary.feeder_visit.counted_on,
+    createdAt: [test::umberaviary4::store::AviaryLogDb]aviary.feeder_visit.created_at,
+    updatedAt: [test::umberaviary4::store::AviaryLogDb]aviary.feeder_visit.updated_at
+  }
+
+  *test::umberaviary4::domain::MoultScore[moultScore]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberaviary4::store::AviaryLogDb]aviary.moult_score.score_code
+    )
+    ~mainTable [test::umberaviary4::store::AviaryLogDb]aviary.moult_score
+    scoreCode: [test::umberaviary4::store::AviaryLogDb]aviary.moult_score.score_code,
+    ringCode: [test::umberaviary4::store::AviaryLogDb]aviary.moult_score.ring_code,
+    moultPhase: [test::umberaviary4::store::AviaryLogDb]aviary.moult_score.moult_phase,
+    primaryScore: [test::umberaviary4::store::AviaryLogDb]aviary.moult_score.primary_score,
+    scoredOn: [test::umberaviary4::store::AviaryLogDb]aviary.moult_score.scored_on,
+    createdAt: [test::umberaviary4::store::AviaryLogDb]aviary.moult_score.created_at,
+    updatedAt: [test::umberaviary4::store::AviaryLogDb]aviary.moult_score.updated_at
+  }
+
+  *test::umberaviary4::domain::FlightHallInspection[flightHallInspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberaviary4::store::AviaryLogDb]aviary.flight_hall_inspection.inspection_code
+    )
+    ~mainTable [test::umberaviary4::store::AviaryLogDb]aviary.flight_hall_inspection
+    inspectionCode: [test::umberaviary4::store::AviaryLogDb]aviary.flight_hall_inspection.inspection_code,
+    hallCode: [test::umberaviary4::store::AviaryLogDb]aviary.flight_hall_inspection.hall_code,
+    meshState: [test::umberaviary4::store::AviaryLogDb]aviary.flight_hall_inspection.mesh_state,
+    perchCount: [test::umberaviary4::store::AviaryLogDb]aviary.flight_hall_inspection.perch_count,
+    inspectedOn: [test::umberaviary4::store::AviaryLogDb]aviary.flight_hall_inspection.inspected_on,
+    createdAt: [test::umberaviary4::store::AviaryLogDb]aviary.flight_hall_inspection.created_at,
+    updatedAt: [test::umberaviary4::store::AviaryLogDb]aviary.flight_hall_inspection.updated_at
+  }
+
+  *test::umberaviary4::domain::DietRation[dietRation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberaviary4::store::AviaryLogDb]aviary.diet_ration.ration_code
+    )
+    ~mainTable [test::umberaviary4::store::AviaryLogDb]aviary.diet_ration
+    rationCode: [test::umberaviary4::store::AviaryLogDb]aviary.diet_ration.ration_code,
+    groupCode: [test::umberaviary4::store::AviaryLogDb]aviary.diet_ration.group_code,
+    foodKind: [test::umberaviary4::store::AviaryLogDb]aviary.diet_ration.food_kind,
+    gramsPerBird: [test::umberaviary4::store::AviaryLogDb]aviary.diet_ration.grams_per_bird,
+    plannedOn: [test::umberaviary4::store::AviaryLogDb]aviary.diet_ration.planned_on,
+    createdAt: [test::umberaviary4::store::AviaryLogDb]aviary.diet_ration.created_at,
+    updatedAt: [test::umberaviary4::store::AviaryLogDb]aviary.diet_ration.updated_at
+  }
+
+  *test::umberaviary4::domain::HealthCheck[healthCheck]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberaviary4::store::AviaryLogDb]aviary.health_check.health_code
+    )
+    ~mainTable [test::umberaviary4::store::AviaryLogDb]aviary.health_check
+    healthCode: [test::umberaviary4::store::AviaryLogDb]aviary.health_check.health_code,
+    ringCode: [test::umberaviary4::store::AviaryLogDb]aviary.health_check.ring_code,
+    plumageNote: [test::umberaviary4::store::AviaryLogDb]aviary.health_check.plumage_note,
+    bodyCondition: [test::umberaviary4::store::AviaryLogDb]aviary.health_check.body_condition,
+    checkedOn: [test::umberaviary4::store::AviaryLogDb]aviary.health_check.checked_on,
+    createdAt: [test::umberaviary4::store::AviaryLogDb]aviary.health_check.created_at,
+    updatedAt: [test::umberaviary4::store::AviaryLogDb]aviary.health_check.updated_at
+  }
+
+  *test::umberaviary4::domain::PerchSurvey[perchSurvey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberaviary4::store::AviaryLogDb]aviary.perch_survey.survey_code
+    )
+    ~mainTable [test::umberaviary4::store::AviaryLogDb]aviary.perch_survey
+    surveyCode: [test::umberaviary4::store::AviaryLogDb]aviary.perch_survey.survey_code,
+    hallCode: [test::umberaviary4::store::AviaryLogDb]aviary.perch_survey.hall_code,
+    roostSide: [test::umberaviary4::store::AviaryLogDb]aviary.perch_survey.roost_side,
+    birdsRoosting: [test::umberaviary4::store::AviaryLogDb]aviary.perch_survey.birds_roosting,
+    surveyedOn: [test::umberaviary4::store::AviaryLogDb]aviary.perch_survey.surveyed_on,
+    createdAt: [test::umberaviary4::store::AviaryLogDb]aviary.perch_survey.created_at,
+    updatedAt: [test::umberaviary4::store::AviaryLogDb]aviary.perch_survey.updated_at
+  }
+)

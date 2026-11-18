@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealwillow2::mapping::WillowCutMapping
+(
+  *test::borealwillow2::domain::WillowCut[willowCut]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealwillow2::store::WillowCoppiceDb]coppice.cut_log.cut_ref
+    )
+    ~mainTable [test::borealwillow2::store::WillowCoppiceDb]coppice.cut_log
+    cutRef: [test::borealwillow2::store::WillowCoppiceDb]coppice.cut_log.cut_ref,
+    cutRound: [test::borealwillow2::store::WillowCoppiceDb]coppice.cut_log.cut_round,
+    rodBundles: [test::borealwillow2::store::WillowCoppiceDb]coppice.cut_log.rod_bundles,
+    rodLengthCm: [test::borealwillow2::store::WillowCoppiceDb]coppice.cut_log.rod_length_cm,
+    cutGrade: [test::borealwillow2::store::WillowCoppiceDb]coppice.cut_log.cut_grade,
+    cutState: [test::borealwillow2::store::WillowCoppiceDb]coppice.cut_log.cut_state
+  }
+
+  *test::borealwillow2::domain::WillowBed[willowBed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealwillow2::store::WillowCoppiceDb]coppice.willow_bed.bed_code
+    )
+    ~mainTable [test::borealwillow2::store::WillowCoppiceDb]coppice.willow_bed
+    bedCode: [test::borealwillow2::store::WillowCoppiceDb]coppice.willow_bed.bed_code,
+    bedName: [test::borealwillow2::store::WillowCoppiceDb]coppice.willow_bed.bed_name,
+    soilCode: [test::borealwillow2::store::WillowCoppiceDb]coppice.willow_bed.soil_code
+  }
+
+  *test::borealwillow2::domain::CutterCrew[cutterCrew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealwillow2::store::WillowCoppiceDb]coppice.cutter_crew.crew_code
+    )
+    ~mainTable [test::borealwillow2::store::WillowCoppiceDb]coppice.cutter_crew
+    crewCode: [test::borealwillow2::store::WillowCoppiceDb]coppice.cutter_crew.crew_code,
+    crewName: [test::borealwillow2::store::WillowCoppiceDb]coppice.cutter_crew.crew_name,
+    depotName: [test::borealwillow2::store::WillowCoppiceDb]coppice.cutter_crew.depot_name
+  }
+
+  test::borealwillow2::domain::CutBed: Relational
+  {
+    AssociationMapping
+    (
+      bed[willowCut, willowBed]: [test::borealwillow2::store::WillowCoppiceDb]@cutToBed,
+      cuts[willowBed, willowCut]: [test::borealwillow2::store::WillowCoppiceDb]@cutToBed
+    )
+  }
+
+  test::borealwillow2::domain::BedCrew: Relational
+  {
+    AssociationMapping
+    (
+      crew[willowBed, cutterCrew]: [test::borealwillow2::store::WillowCoppiceDb]@bedToCrew,
+      beds[cutterCrew, willowBed]: [test::borealwillow2::store::WillowCoppiceDb]@bedToCrew
+    )
+  }
+)

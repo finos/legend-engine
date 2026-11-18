@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westerngecko::mapping::GeckoMapping
+(
+  *test::westerngecko::domain::GeckoRecord[gecko_record]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerngecko::store::GeckoSurveyDb]field.gecko_record.record_id
+    )
+    ~mainTable [test::westerngecko::store::GeckoSurveyDb]field.gecko_record
+    recordCode: [test::westerngecko::store::GeckoSurveyDb]field.gecko_record.record_code,
+    species: EnumerationMapping SpeciesGroupMapping: [test::westerngecko::store::GeckoSurveyDb]field.gecko_record.species_group,
+    observerName: [test::westerngecko::store::GeckoSurveyDb]field.gecko_record.observer_name,
+    tailFlag: [test::westerngecko::store::GeckoSurveyDb]field.gecko_record.tail_flag,
+    site[survey_site]: [test::westerngecko::store::GeckoSurveyDb]@Record_Site,
+    tags[observation_tag]: [test::westerngecko::store::GeckoSurveyDb]@Record_Tag
+  }
+
+  *test::westerngecko::domain::SurveySite[survey_site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerngecko::store::GeckoSurveyDb]field.survey_site.site_id
+    )
+    ~mainTable [test::westerngecko::store::GeckoSurveyDb]field.survey_site
+    siteName: [test::westerngecko::store::GeckoSurveyDb]field.survey_site.site_name,
+    habitatKind: [test::westerngecko::store::GeckoSurveyDb]field.survey_site.habitat_kind,
+    protectionFlag: [test::westerngecko::store::GeckoSurveyDb]field.survey_site.protection_flag
+  }
+
+  *test::westerngecko::domain::ObservationTag[observation_tag]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerngecko::store::GeckoSurveyDb]field.observation_tag.tag_id
+    )
+    ~mainTable [test::westerngecko::store::GeckoSurveyDb]field.observation_tag
+    tagLabel: [test::westerngecko::store::GeckoSurveyDb]field.observation_tag.tag_label
+  }
+
+  test::westerngecko::domain::SpeciesGroup: EnumerationMapping SpeciesGroupMapping
+  {
+    rockDwelling: ['ROCK'],
+    arboreal: ['ARBO'],
+    terrestrial: ['TERR']
+  }
+)

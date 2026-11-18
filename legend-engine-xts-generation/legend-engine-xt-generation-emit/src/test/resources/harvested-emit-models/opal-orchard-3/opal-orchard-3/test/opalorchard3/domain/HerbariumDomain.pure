@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::opalorchard3::domain::*;
+import test::opalorchard3::profile::*;
+
+Class <<HerbariumProfile.catalogued>> {HerbariumProfile.gardenSection = 'glasshouse'} test::opalorchard3::domain::Specimen
+{
+  <<HerbariumProfile.livingSample>> {HerbariumProfile.curator = 'garden-archive'} specimenCode: String[1];
+  scientificName: String[1];
+  collectedOn: StrictDate[1];
+  displayLabel: String[1];
+}
+
+Class test::opalorchard3::domain::FernSpecimen extends Specimen
+{
+  frondCount: Integer[1];
+  habitatNote: String[0..1];
+}
+
+Class test::opalorchard3::domain::OrchidSpecimen extends Specimen
+{
+  petalCount: Integer[1];
+  bloomColor: String[1];
+}
+
+Class test::opalorchard3::domain::HerbariumLocation
+{
+  locationCode: String[1];
+  glasshouseName: String[1];
+  shelfNumber: Integer[1];
+}
+
+Class test::opalorchard3::domain::CollectionNote
+{
+  noteCode: String[1];
+  specimenCode: String[1];
+  noteText: String[1];
+}

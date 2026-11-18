@@ -1,0 +1,52 @@
+name: boreal-ridge
+title: "Boreal Ridge — annotated ridge-route stewardship surface with derived readings and a banded patrol digest"
+description: |
+  A store-free upland ridge-route stewardship surface. Route sections carry surface and grade
+  values drawn from closed value domains, two section kinds specialize the declared base and
+  add their own dimensional readings, and each section reaches a to-many collection of route
+  markers so a derivation over that collection depends on cardinality as well as on values.
+  Qualified properties derive their values at access time in four different ways: straight from
+  a stored value, from a function of one, from a literal substituted when a value is absent,
+  and by folding a collection operation over the navigated marker collection. Five operational
+  records carry a business-time dimension by stereotype rather than by declared validity
+  properties. A model-to-model mapping publishes a patrol digest whose marker band walks the
+  two escalation arms, the clear arm and an absent-count fallback, whose enumeration-mapped
+  values substitute a sentinel ahead of the lookup when their code is absent, whose effective
+  date takes the planned arm when a planned date is present and the patrolled arm otherwise,
+  and whose registration state is decided by a validity window; its mapping test exercises
+  every arm, both sentinels and a patrol on either side of the window.
+modelSources:
+  model:
+    root: boreal-ridge
+    files:
+      - test/borealridge/domain/RidgeDomain.pure
+      - test/borealridge/domain/RidgeEnums.pure
+      - test/borealridge/domain/RidgeTemporal.pure
+      - test/borealridge/mapping/RidgePatrolM2M.pure
+      - test/borealridge/payload/RidgePayload.pure
+      - test/borealridge/profile/RidgeProfiles.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - grammar:derived-property-collection-op
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - business-temporal
+  - class-inheritance
+  - conditional-transform
+  - derived-property
+  - enumeration-mapping
+  - model-to-model-mapping
+  - profile-tagged-values
+  - ridge-route

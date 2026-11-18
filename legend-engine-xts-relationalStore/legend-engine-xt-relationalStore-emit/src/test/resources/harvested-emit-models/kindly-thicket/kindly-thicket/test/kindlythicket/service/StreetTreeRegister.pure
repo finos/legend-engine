@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlythicket::service::StreetTreeRegister
+{
+  pattern: '/kindlythicket/v1/street-trees/{processingDate}/{businessDate}';
+  title: 'Kindly Thicket - Street Tree Register';
+  ownership: UserList { users: ['civic-tree-inventory'] };
+  documentation: 'Resolves the street-tree inventory at a caller-supplied processing date and projects eight aliased columns in which the planting bed, its district and the three rostered crew roles are each resolved at a separately supplied business date, so a hop with no version effective on that date yields an absent value instead of dropping the tree.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|test::kindlythicket::domain::TreeRecord.all($processingDate)->project(
+      [
+        t|$t.tagCode,
+        t|$t.speciesCode,
+        t|$t.protectedSpecimen,
+        t|$t.bed($businessDate).bedCode,
+        t|$t.bed($businessDate).district($businessDate).districtName,
+        t|$t.inspectionCrew($businessDate).crewCode,
+        t|$t.pruningCrew($businessDate).crewCode,
+        t|$t.wateringCrew($businessDate).contactZone
+      ],
+      [
+        'Tree/Tag',
+        'Tree/Species',
+        'Tree/Protected',
+        'Bed/Code',
+        'District/Name',
+        'Crew/Inspection',
+        'Crew/Pruning',
+        'Crew/WateringZone'
+      ]
+    )->distinct()->sort([asc('Tree/Tag')])->limit(25)};
+    mapping: test::kindlythicket::mapping::ThicketMapping;
+    runtime: test::kindlythicket::runtime::ThicketRuntime;
+  }
+  testSuites:
+  [
+    streetTreeRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketConnection:
+            Relational
+            #{
+              civic.street_tree:
+                'tree_id,tag_code,species_code,protected_specimen,bed_id,inspection_crew_id,pruning_crew_id,watering_crew_id,in_z,out_z\n'+
+                '1,TT-001,ACPL,true,10,50,51,52,2026-01-01,9999-12-31\n'+
+                '2,TT-002,TICO,false,11,50,53,53,2026-01-01,9999-12-31\n'+
+                '3,TT-003,QURO,true,12,54,51,52,2026-01-01,9999-12-31\n'+
+                '4,TT-004,PLAC,false,10,50,51,52,2024-01-01,2025-06-30\n';
+
+              civic.planting_bed:
+                'bed_id,bed_code,surface_type,district_id,from_z,thru_z\n'+
+                '10,PB-A,ASPHALT,20,2026-01-01,9999-12-31\n'+
+                '11,PB-B,GRASS,21,2026-01-01,9999-12-31\n'+
+                '12,PB-C,GRAVEL,20,2024-01-01,2025-12-31\n';
+
+              civic.civic_district:
+                'district_id,district_name,from_z,thru_z\n'+
+                '20,North Verge,2026-01-01,9999-12-31\n'+
+                '21,East Common,2024-01-01,2025-12-31\n';
+
+              civic.maintenance_crew:
+                'crew_id,crew_code,contact_zone,from_z,thru_z\n'+
+                '50,MC-01,ZONE NORTH,2026-01-01,9999-12-31\n'+
+                '51,MC-02,ZONE EAST,2026-01-01,9999-12-31\n'+
+                '52,MC-03,ZONE WEST,2026-01-01,9999-12-31\n'+
+                '53,MC-04,ZONE SOUTH,2024-01-01,2025-12-31\n'+
+                '54,MC-05,ZONE CENTRAL,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerAsOfMarch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-03-01,
+            businessDate = %2026-03-01
+          ]
+          asserts:
+          [
+            perHopWindowsApplied:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tree/Tag":"TT-001","Tree/Species":"ACPL","Tree/Protected":true,"Bed/Code":"PB-A","District/Name":"North Verge","Crew/Inspection":"MC-01","Crew/Pruning":"MC-02","Crew/WateringZone":"ZONE WEST"},{"Tree/Tag":"TT-002","Tree/Species":"TICO","Tree/Protected":false,"Bed/Code":"PB-B","District/Name":null,"Crew/Inspection":"MC-01","Crew/Pruning":null,"Crew/WateringZone":null},{"Tree/Tag":"TT-003","Tree/Species":"QURO","Tree/Protected":true,"Bed/Code":null,"District/Name":null,"Crew/Inspection":"MC-05","Crew/Pruning":"MC-02","Crew/WateringZone":"ZONE WEST"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

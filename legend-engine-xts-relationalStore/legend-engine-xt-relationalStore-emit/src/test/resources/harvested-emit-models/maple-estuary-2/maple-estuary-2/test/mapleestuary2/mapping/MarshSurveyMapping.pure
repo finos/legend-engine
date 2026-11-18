@@ -1,0 +1,314 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::mapleestuary2::mapping::MarshSurveyMapping
+(
+  test::mapleestuary2::domain::TransectEntry[northTransect]: Relational
+  {
+    ~primaryKey
+    (
+      [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.entry_id
+    )
+    ~mainTable [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north
+    entryCode: [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.entry_code,
+    sourceRegister: 'NORTH',
+    stationCode: [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.station_code,
+    tallyCount: [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.tally_count,
+    meanDepthCm: [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.mean_depth_cm,
+    surveyDate: [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.survey_date,
+    substrateType: case(isNull([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.substrate_type), 'unrecorded', [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.substrate_type),
+    zoneBand: case(equal([test::mapleestuary2::store::MarshSurveyDb]@TransectNorth_Station > (INNER) @Station_Zone | [test::mapleestuary2::store::MarshSurveyDb]marsh.habitat_zone.zone_rank, 2), 'CORE-ZONE', 'FRINGE-ZONE'),
+    stationBand: case(equal([test::mapleestuary2::store::MarshSurveyDb]@TransectNorth_Station | [test::mapleestuary2::store::MarshSurveyDb]marsh.station.station_kind, 'TIDAL'), 'TIDAL-STATION', 'INLAND-STATION'),
+    registerLabel: case(equal([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.substrate_type, 'silt'), 'SILT-BED', 'MIXED-BED'),
+    depthBand: case(or(and(equal([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.substrate_type, 'silt'), greaterThan(abs(ceiling([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.mean_depth_cm)), 40)), and(equal([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.substrate_type, 'sand'), equal([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.tally_count, 7))), 'DEEP-CHANNEL', 'SHALLOW-FLAT'),
+    noteHint: case(equal([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.note_text, 'use-station-name'), [test::mapleestuary2::store::MarshSurveyDb]@TransectNorth_Station | [test::mapleestuary2::store::MarshSurveyDb]marsh.station.station_name, [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_north.note_text),
+    stewardName: [test::mapleestuary2::store::MarshSurveyDb]@TransectNorth_Station > (INNER) @Station_Zone > @Zone_Grade > @Grade_Steward | [test::mapleestuary2::store::MarshSurveyDb]marsh.steward.steward_name,
+    reachLabel: [test::mapleestuary2::store::MarshSurveyDb]@TransectNorth_Station > (INNER) @Station_Zone > @Zone_Grade > @Grade_Steward > @Steward_Reach | [test::mapleestuary2::store::MarshSurveyDb]marsh.reach.reach_label,
+    noteCount: [test::mapleestuary2::store::MarshSurveyDb]@TransectNorth_Station > @Station_NoteView | [test::mapleestuary2::store::MarshSurveyDb]marshview.station_note_view.note_count
+  }
+
+  test::mapleestuary2::domain::TransectEntry[southTransect]: Relational
+  {
+    ~primaryKey
+    (
+      [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.entry_id
+    )
+    ~mainTable [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south
+    entryCode: [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.entry_code,
+    sourceRegister: 'SOUTH',
+    stationCode: [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.station_code,
+    tallyCount: [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.tally_count,
+    meanDepthCm: [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.mean_depth_cm,
+    surveyDate: [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.survey_date,
+    substrateType: case(isNull([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.substrate_type), 'unrecorded', [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.substrate_type),
+    zoneBand: case(equal([test::mapleestuary2::store::MarshSurveyDb]@TransectSouth_Station > (INNER) @Station_Zone | [test::mapleestuary2::store::MarshSurveyDb]marsh.habitat_zone.zone_rank, 2), 'CORE-ZONE', 'FRINGE-ZONE'),
+    stationBand: case(equal([test::mapleestuary2::store::MarshSurveyDb]@TransectSouth_Station | [test::mapleestuary2::store::MarshSurveyDb]marsh.station.station_kind, 'TIDAL'), 'TIDAL-STATION', 'INLAND-STATION'),
+    registerLabel: case(equal([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.substrate_type, 'silt'), 'SILT-BED', 'MIXED-BED'),
+    depthBand: case(or(and(equal([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.substrate_type, 'silt'), greaterThan(abs(ceiling([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.mean_depth_cm)), 40)), and(equal([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.substrate_type, 'sand'), equal([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.tally_count, 7))), 'DEEP-CHANNEL', 'SHALLOW-FLAT'),
+    noteHint: case(equal([test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.note_text, 'use-station-name'), [test::mapleestuary2::store::MarshSurveyDb]@TransectSouth_Station | [test::mapleestuary2::store::MarshSurveyDb]marsh.station.station_name, [test::mapleestuary2::store::MarshSurveyDb]marsh.transect_south.note_text),
+    stewardName: [test::mapleestuary2::store::MarshSurveyDb]@TransectSouth_Station > (INNER) @Station_Zone > @Zone_Grade > @Grade_Steward | [test::mapleestuary2::store::MarshSurveyDb]marsh.steward.steward_name,
+    reachLabel: [test::mapleestuary2::store::MarshSurveyDb]@TransectSouth_Station > (INNER) @Station_Zone > @Zone_Grade > @Grade_Steward > @Steward_Reach | [test::mapleestuary2::store::MarshSurveyDb]marsh.reach.reach_label,
+    noteCount: [test::mapleestuary2::store::MarshSurveyDb]@TransectSouth_Station > @Station_NoteView | [test::mapleestuary2::store::MarshSurveyDb]marshview.station_note_view.note_count
+  }
+
+  *test::mapleestuary2::domain::TransectEntry: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(northTransect, southTransect)
+  }
+
+  test::mapleestuary2::domain::GaugeReading[tidalGauge]: Relational
+  {
+    ~primaryKey
+    (
+      [test::mapleestuary2::store::MarshSurveyDb]marsh.gauge_tidal.reading_id
+    )
+    ~mainTable [test::mapleestuary2::store::MarshSurveyDb]marsh.gauge_tidal
+    readingCode: [test::mapleestuary2::store::MarshSurveyDb]marsh.gauge_tidal.reading_code,
+    sourceRegister: 'TIDAL',
+    stationCode: [test::mapleestuary2::store::MarshSurveyDb]marsh.gauge_tidal.station_code,
+    gaugeHeightCm: [test::mapleestuary2::store::MarshSurveyDb]marsh.gauge_tidal.gauge_height_cm,
+    zoneName: [test::mapleestuary2::store::MarshSurveyDb]@GaugeTidal_Station > (INNER) @Station_Zone | [test::mapleestuary2::store::MarshSurveyDb]marsh.habitat_zone.zone_name,
+    readingBand: case(equal([test::mapleestuary2::store::MarshSurveyDb]@GaugeTidal_Station | [test::mapleestuary2::store::MarshSurveyDb]marsh.station.station_kind, 'TIDAL'), 'TIDAL-GAUGE', 'CREEK-GAUGE')
+  }
+
+  test::mapleestuary2::domain::GaugeReading[fieldGauge]: Relational
+  {
+    ~primaryKey
+    (
+      [test::mapleestuary2::store::MarshSurveyDb]marsh.gauge_field.reading_id
+    )
+    ~mainTable [test::mapleestuary2::store::MarshSurveyDb]marsh.gauge_field
+    readingCode: [test::mapleestuary2::store::MarshSurveyDb]marsh.gauge_field.reading_code,
+    sourceRegister: 'FIELD',
+    stationCode: [test::mapleestuary2::store::MarshSurveyDb]marsh.gauge_field.station_code,
+    gaugeHeightCm: [test::mapleestuary2::store::MarshSurveyDb]marsh.gauge_field.gauge_height_cm,
+    zoneName: [test::mapleestuary2::store::MarshSurveyDb]@GaugeField_Station > (INNER) @Station_Zone | [test::mapleestuary2::store::MarshSurveyDb]marsh.habitat_zone.zone_name,
+    readingBand: case(equal([test::mapleestuary2::store::MarshSurveyDb]@GaugeField_Station | [test::mapleestuary2::store::MarshSurveyDb]marsh.station.station_kind, 'TIDAL'), 'TIDAL-GAUGE', 'CREEK-GAUGE')
+  }
+
+  *test::mapleestuary2::domain::GaugeReading: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(tidalGauge, fieldGauge)
+  }
+
+  test::mapleestuary2::domain::Station[station]: Relational
+  {
+    ~filter [test::mapleestuary2::store::MarshSurveyDb]TidalStationFilter
+    ~primaryKey
+    (
+      [test::mapleestuary2::store::MarshSurveyDb]marsh.station.station_code
+    )
+    ~mainTable [test::mapleestuary2::store::MarshSurveyDb]marsh.station
+    stationCode: [test::mapleestuary2::store::MarshSurveyDb]marsh.station.station_code,
+    stationName: [test::mapleestuary2::store::MarshSurveyDb]marsh.station.station_name,
+    zoneCode: [test::mapleestuary2::store::MarshSurveyDb]marsh.station.zone_code
+  }
+
+  testSuites:
+  [
+    transectRegisterSuite:
+    {
+      function: |test::mapleestuary2::domain::TransectEntry.all()->project(
+        [
+          e|$e.entryCode,
+          e|$e.sourceRegister,
+          e|$e.substrateType,
+          e|$e.zoneBand,
+          e|$e.stationBand,
+          e|$e.registerLabel,
+          e|$e.depthBand,
+          e|$e.noteHint,
+          e|$e.stewardName,
+          e|$e.reachLabel,
+          e|$e.noteCount
+        ],
+        [
+          'EntryCode',
+          'SourceRegister',
+          'SubstrateType',
+          'ZoneBand',
+          'StationBand',
+          'RegisterLabel',
+          'DepthBand',
+          'NoteHint',
+          'StewardName',
+          'ReachLabel',
+          'NoteCount'
+        ]
+      )->sort([asc('EntryCode')]);
+      tests:
+      [
+        allConditionalArms:
+        {
+          doc: 'Both transect registers are unioned onto one class and every conditional arm, the four-hop steward path, the five-hop reach path and the view-reached note count are observed in one result.';
+          data:
+          [
+            test::mapleestuary2::store::MarshSurveyDb:
+              Relational
+              #{
+                marsh.transect_north:
+                  'entry_id,entry_code,station_code,tally_count,mean_depth_cm,substrate_type,survey_date,note_text\n'+
+                  'TN-01,MN-101,ST-01,12,44.5,silt,2026-04-02,routine walk\n'+
+                  'TN-02,MN-102,ST-02,7,18.25,sand,2026-04-03,use-station-name\n'+
+                  'TN-03,MN-103,ST-03,3,9.25,,2026-04-04,partial count\n'+
+                  'TN-04,MN-104,ST-01,5,12.5,silt,2026-04-05,high tide\n';
+                marsh.transect_south:
+                  'entry_id,entry_code,station_code,tally_count,mean_depth_cm,substrate_type,survey_date,note_text\n'+
+                  'TS-01,MS-201,ST-02,9,30.5,sand,2026-04-06,south walk\n'+
+                  'TS-02,MS-202,ST-03,2,5.5,silt,2026-04-07,use-station-name\n';
+                marsh.gauge_tidal:
+                  'reading_id,reading_code,station_code,gauge_height_cm,taken_on\n'+
+                  'GT-01,GT-501,ST-01,118.5,2026-04-02\n'+
+                  'GT-02,GT-502,ST-03,42.5,2026-04-03\n';
+                marsh.gauge_field:
+                  'reading_id,reading_code,station_code,gauge_height_cm,taken_on\n'+
+                  'GF-01,GF-601,ST-02,76.25,2026-04-04\n';
+                marsh.station:
+                  'station_code,station_name,zone_code,station_grade,station_kind,active_flag\n'+
+                  'ST-01,Northpoint Roost,ZN-01,2,TIDAL,Y\n'+
+                  'ST-02,Creekmouth Hide,ZN-02,-3,CREEK,Y\n'+
+                  'ST-03,Upland Blind,ZN-02,5,INLAND,N\n';
+                marsh.habitat_zone:
+                  'zone_code,zone_name,grade_code,zone_rank,hectares\n'+
+                  'ZN-01,Tidal Flat One,GR-A,2,12.5\n'+
+                  'ZN-02,Reed Bed Two,GR-B,4,7.25\n';
+                marsh.zone_grade:
+                  'grade_code,grade_rank,grade_label,steward_code\n'+
+                  'GR-A,1,PRIME,SW-01\n'+
+                  'GR-B,3,SECONDARY,SW-02\n';
+                marsh.steward:
+                  'steward_code,steward_name,reach_code\n'+
+                  'SW-01,North Reach Warden,RC-01\n'+
+                  'SW-02,Creek Reach Warden,RC-02\n';
+                marsh.reach:
+                  'reach_code,reach_label\n'+
+                  'RC-01,Outer Reach\n'+
+                  'RC-02,Inner Reach\n';
+                marsh.station_note:
+                  'note_id,station_code,note_text\n'+
+                  'NT-01,ST-01,boardwalk repaired\n'+
+                  'NT-02,ST-01,gate replaced\n'+
+                  'NT-03,ST-02,reed cut back\n';
+              }#
+          ];
+          asserts:
+          [
+            unionedTransectEntries:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"EntryCode":"MN-101","SourceRegister":"NORTH","SubstrateType":"silt","ZoneBand":"CORE-ZONE","StationBand":"TIDAL-STATION","RegisterLabel":"SILT-BED","DepthBand":"DEEP-CHANNEL","NoteHint":"routine walk","StewardName":"North Reach Warden","ReachLabel":"Outer Reach","NoteCount":2},{"EntryCode":"MN-102","SourceRegister":"NORTH","SubstrateType":"sand","ZoneBand":"FRINGE-ZONE","StationBand":"INLAND-STATION","RegisterLabel":"MIXED-BED","DepthBand":"DEEP-CHANNEL","NoteHint":"Creekmouth Hide","StewardName":"Creek Reach Warden","ReachLabel":"Inner Reach","NoteCount":1},{"EntryCode":"MN-103","SourceRegister":"NORTH","SubstrateType":"unrecorded","ZoneBand":"FRINGE-ZONE","StationBand":"INLAND-STATION","RegisterLabel":"MIXED-BED","DepthBand":"SHALLOW-FLAT","NoteHint":"partial count","StewardName":"Creek Reach Warden","ReachLabel":"Inner Reach","NoteCount":null},{"EntryCode":"MN-104","SourceRegister":"NORTH","SubstrateType":"silt","ZoneBand":"CORE-ZONE","StationBand":"TIDAL-STATION","RegisterLabel":"SILT-BED","DepthBand":"SHALLOW-FLAT","NoteHint":"high tide","StewardName":"North Reach Warden","ReachLabel":"Outer Reach","NoteCount":2},{"EntryCode":"MS-201","SourceRegister":"SOUTH","SubstrateType":"sand","ZoneBand":"FRINGE-ZONE","StationBand":"INLAND-STATION","RegisterLabel":"MIXED-BED","DepthBand":"SHALLOW-FLAT","NoteHint":"south walk","StewardName":"Creek Reach Warden","ReachLabel":"Inner Reach","NoteCount":1},{"EntryCode":"MS-202","SourceRegister":"SOUTH","SubstrateType":"silt","ZoneBand":"FRINGE-ZONE","StationBand":"INLAND-STATION","RegisterLabel":"SILT-BED","DepthBand":"SHALLOW-FLAT","NoteHint":"Upland Blind","StewardName":"Creek Reach Warden","ReachLabel":"Inner Reach","NoteCount":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    gaugeRegisterSuite:
+    {
+      function: |test::mapleestuary2::domain::GaugeReading.all()->project(
+        [
+          g|$g.readingCode,
+          g|$g.sourceRegister,
+          g|$g.stationCode,
+          g|$g.gaugeHeightCm,
+          g|$g.zoneName,
+          g|$g.readingBand
+        ],
+        [
+          'ReadingCode',
+          'SourceRegister',
+          'StationCode',
+          'GaugeHeightCm',
+          'ZoneName',
+          'ReadingBand'
+        ]
+      )->sort([asc('ReadingCode')]);
+      tests:
+      [
+        unionedGaugeRegisters:
+        {
+          doc: 'The tidal and field gauge registers are unioned onto one class, each row reaching its habitat zone through a forced inner hop.';
+          data:
+          [
+            test::mapleestuary2::store::MarshSurveyDb:
+              Relational
+              #{
+                marsh.transect_north:
+                  'entry_id,entry_code,station_code,tally_count,mean_depth_cm,substrate_type,survey_date,note_text\n'+
+                  'TN-01,MN-101,ST-01,12,44.5,silt,2026-04-02,routine walk\n'+
+                  'TN-02,MN-102,ST-02,7,18.25,sand,2026-04-03,use-station-name\n'+
+                  'TN-03,MN-103,ST-03,3,9.25,,2026-04-04,partial count\n'+
+                  'TN-04,MN-104,ST-01,5,12.5,silt,2026-04-05,high tide\n';
+                marsh.transect_south:
+                  'entry_id,entry_code,station_code,tally_count,mean_depth_cm,substrate_type,survey_date,note_text\n'+
+                  'TS-01,MS-201,ST-02,9,30.5,sand,2026-04-06,south walk\n'+
+                  'TS-02,MS-202,ST-03,2,5.5,silt,2026-04-07,use-station-name\n';
+                marsh.gauge_tidal:
+                  'reading_id,reading_code,station_code,gauge_height_cm,taken_on\n'+
+                  'GT-01,GT-501,ST-01,118.5,2026-04-02\n'+
+                  'GT-02,GT-502,ST-03,42.5,2026-04-03\n';
+                marsh.gauge_field:
+                  'reading_id,reading_code,station_code,gauge_height_cm,taken_on\n'+
+                  'GF-01,GF-601,ST-02,76.25,2026-04-04\n';
+                marsh.station:
+                  'station_code,station_name,zone_code,station_grade,station_kind,active_flag\n'+
+                  'ST-01,Northpoint Roost,ZN-01,2,TIDAL,Y\n'+
+                  'ST-02,Creekmouth Hide,ZN-02,-3,CREEK,Y\n'+
+                  'ST-03,Upland Blind,ZN-02,5,INLAND,N\n';
+                marsh.habitat_zone:
+                  'zone_code,zone_name,grade_code,zone_rank,hectares\n'+
+                  'ZN-01,Tidal Flat One,GR-A,2,12.5\n'+
+                  'ZN-02,Reed Bed Two,GR-B,4,7.25\n';
+                marsh.zone_grade:
+                  'grade_code,grade_rank,grade_label,steward_code\n'+
+                  'GR-A,1,PRIME,SW-01\n'+
+                  'GR-B,3,SECONDARY,SW-02\n';
+                marsh.steward:
+                  'steward_code,steward_name,reach_code\n'+
+                  'SW-01,North Reach Warden,RC-01\n'+
+                  'SW-02,Creek Reach Warden,RC-02\n';
+                marsh.reach:
+                  'reach_code,reach_label\n'+
+                  'RC-01,Outer Reach\n'+
+                  'RC-02,Inner Reach\n';
+                marsh.station_note:
+                  'note_id,station_code,note_text\n'+
+                  'NT-01,ST-01,boardwalk repaired\n'+
+                  'NT-02,ST-01,gate replaced\n'+
+                  'NT-03,ST-02,reed cut back\n';
+              }#
+          ];
+          asserts:
+          [
+            unionedGaugeReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingCode":"GF-601","SourceRegister":"FIELD","StationCode":"ST-02","GaugeHeightCm":76.25,"ZoneName":"Reed Bed Two","ReadingBand":"CREEK-GAUGE"},{"ReadingCode":"GT-501","SourceRegister":"TIDAL","StationCode":"ST-01","GaugeHeightCm":118.5,"ZoneName":"Tidal Flat One","ReadingBand":"TIDAL-GAUGE"},{"ReadingCode":"GT-502","SourceRegister":"TIDAL","StationCode":"ST-03","GaugeHeightCm":42.5,"ZoneName":"Reed Bed Two","ReadingBand":"CREEK-GAUGE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

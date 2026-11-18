@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::fabledsummit2::domain::*;
+
+Class demo::fabledsummit2::domain::CollectionItem
+{
+  itemCode: String[1];
+  taxonName: String[1];
+  collectedYear: Integer[1];
+  holdingName()
+  {
+    'HIGHLAND SEED CONSERVATORY'
+  }: String[1];
+  label(prefix: String[1])
+  {
+    $prefix + '-' + $this.itemCode + '-' + $this.collectedYear->toString()
+  }: String[1];
+}
+
+Class demo::fabledsummit2::domain::SeedLot extends CollectionItem
+{
+  sampleCount: Integer[1];
+  germinationPct: Float[1];
+  moisturePct: Float[1];
+  vault: StorageVault[0..1];
+  viableSeeds()
+  {
+    (($this.germinationPct / 100.0) * $this.sampleCount->toFloat())->round()
+  }: Integer[1];
+  viableSeedsAfter(lossPct: Float[1])
+  {
+    ((($this.germinationPct - $lossPct) / 100.0) * $this.sampleCount->toFloat())->round()
+  }: Integer[1];
+  storageLabel()
+  {
+    if($this.vault->isEmpty(),
+       | 'UNVAULTED ' + $this.itemCode,
+       | $this.vault->toOne().chamberLabel($this.taxonName))
+  }: String[1];
+}
+
+Class demo::fabledsummit2::domain::HeritageSeedLot extends SeedLot
+{
+  stewardNote: String[0..1];
+  reviewYear: Integer[1];
+  stewardSummary()
+  {
+    if($this.stewardNote->isEmpty() || ($this.stewardNote->toOne()->trim()->length() == 0),
+       | $this.label('HERITAGE') + ' / NO NOTE',
+       | $this.label('HERITAGE') + ' / ' + $this.stewardNote->toOne()->trim()->toUpper())
+  }: String[1];
+  yearsUnderReview()
+  {
+    $this.reviewYear - $this.collectedYear
+  }: Integer[1];
+}
+
+Class demo::fabledsummit2::domain::StorageVault
+{
+  vaultCode: String[1];
+  chamberTempC: Float[1];
+  humidityPct: Float[1];
+  chamberLabel(taxonName: String[1])
+  {
+    $this.vaultCode + ':' + $taxonName->toUpper() + ':' + $this.drynessBand()
+  }: String[1];
+  drynessBand()
+  {
+    if($this.humidityPct < 15.0,
+       | if($this.chamberTempC < 0.0, | 'DEEP DRY', | 'DRY'),
+       | if($this.humidityPct < 35.0, | 'MODERATE', | 'HUMID'))
+  }: String[1];
+}

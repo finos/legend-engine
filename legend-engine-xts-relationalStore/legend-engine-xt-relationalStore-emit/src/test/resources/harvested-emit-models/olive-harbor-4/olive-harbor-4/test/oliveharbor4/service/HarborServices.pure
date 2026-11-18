@@ -1,0 +1,137 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::oliveharbor4::service::HaulOutRegister
+{
+  pattern: '/oliveharbor4/v1/haul-out-register';
+  title: 'Olive Harbor - Haul-Out Register';
+  owners:
+  [
+    'harbour-boatyard-desk',
+    'harbour-slipway-crew'
+  ];
+  documentation: 'Publishes the boats currently ashore on a caller-supplied set of lift cradles, keeping a haul that either clears the caller-supplied lift-score floor or has already stood ashore for a long dock spell, resolving the cradle one association hop out and the slipway two hops out, and reporting the label and the lift score the mapping derives.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {cradleCodes: String[*], minScore: Float[1]|test::oliveharbor4::domain::HaulOut.all()->filter(
+      h|($h.cradle.cradleCode->toOne()->in($cradleCodes)) &&
+        (($h.haulState == 'HAULED') &&
+          (($h.haulScore >= $minScore) || ($h.dockDays >= 10)))
+    )->project(
+      [
+        x|$x.haulRef,
+        x|$x.haulLabel,
+        x|$x.haulScore,
+        x|$x.dockDays,
+        x|$x.cradle.cradleName,
+        x|$x.cradle.slip.slipName
+      ],
+      [
+        'HaulRef',
+        'HaulLabel',
+        'HaulScore',
+        'DockDays',
+        'CradleName',
+        'SlipName'
+      ]
+    )->sort(
+      [
+        asc('HaulRef')
+      ]
+    )};
+    mapping: test::oliveharbor4::mapping::HarborHaulMapping;
+    runtime: test::oliveharbor4::runtime::HarborYardRuntime;
+  }
+  testSuites:
+  [
+    haulOutRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harborYard:
+            Relational
+            #{
+              yard.haul_out:
+                'haul_ref,cradle_code,craft_name,craft_kind,haul_state,keel_metres,tonnage,dock_days\n'+
+                'HL-01,CR-1,Osprey,SLOOP,HAULED,9.0,12.0,5\n'+
+                'HL-02,CR-1,Redwing,KETCH,HAULED,4.0,,10\n'+
+                'HL-03,CR-2,Gannet,TRAWLER,HAULED,14.0,30.0,15\n'+
+                'HL-04,CR-2,Tern,DINGHY,AFLOAT,3.0,1.0,2\n'+
+                'HL-05,CR-3,Petrel,SLOOP,HAULED,9.0,1.0,1\n';
+              yard.lift_cradle:
+                'cradle_code,cradle_name,slip_code,cradle_tonnes_t\n'+
+                'CR-1,North Cradle,SL-1,20.0\n'+
+                'CR-2,South Cradle,SL-2,40.0\n'+
+                'CR-3,West Cradle,SL-1,15.0\n';
+              yard.slipway:
+                'slip_code,slip_name,winch_rating_t\n'+
+                'SL-1,North Slipway,25.0\n'+
+                'SL-2,South Slipway,60.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        scoreFloorAndLongDockArms:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cradleCodes = ['CR-1', 'CR-2', 'CR-3'],
+            minScore = 10.0
+          ]
+          asserts:
+          [
+            bothSurvivingArmsArePublished:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HaulRef":"HL-01","HaulLabel":"SLOOP / Osprey #HL-01","HaulScore":13.0,"DockDays":5,"CradleName":"North Cradle","SlipName":"North Slipway"},{"HaulRef":"HL-02","HaulLabel":"KETCH / Redwing #HL-02","HaulScore":4.0,"DockDays":10,"CradleName":"North Cradle","SlipName":"North Slipway"},{"HaulRef":"HL-03","HaulLabel":"TRAWLER / Gannet #HL-03","HaulScore":22.0,"DockDays":15,"CradleName":"South Cradle","SlipName":"South Slipway"}]';
+                  }#;
+              }#
+          ]
+        },
+        emptyCradleCollection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cradleCodes = [],
+            minScore = 1.0
+          ]
+          asserts:
+          [
+            emptyMembershipPublishesNothing:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

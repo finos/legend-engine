@@ -1,0 +1,51 @@
+name: hazel-thistle-2
+title: "Hazel Thistle 2 - business-temporal moss survey timeline behind a data space and an included plot register"
+description: |
+  A peatland moss-restoration survey. The survey class lives on a business
+  timeline over a milestoned table, composes its label from the moss class and
+  the survey code, derives an arithmetic wetness index, and normalises an
+  optional dam state through a conditional transform. A reference mapping
+  carrying the plot and catchment extents is included by the survey mapping, so
+  one endpoint resolves its class purely through the include chain while the
+  other narrows the timeline to a point in time and projects a classified
+  recovery band. Two graph-fetching mapping suites assert the versions open on a
+  queried date and the restatement that supersedes them, and a data space
+  publishes both endpoints over the local runtime and the shared warehouse
+  runtime whose Snowflake connection authenticates with OAuth.
+modelSources:
+  model:
+    root: hazel-thistle-2
+    files:
+      - test/hazelthistle2/connection/BogConnections.pure
+      - test/hazelthistle2/dataspace/BogDataSpace.pure
+      - test/hazelthistle2/domain/BogDomain.pure
+      - test/hazelthistle2/mapping/MossMapping.pure
+      - test/hazelthistle2/mapping/ReferenceMapping.pure
+      - test/hazelthistle2/runtime/BogRuntimes.pure
+      - test/hazelthistle2/service/CatchmentRegister.pure
+      - test/hazelthistle2/service/MossCoverAsOf.pure
+      - test/hazelthistle2/store/BogDB.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - mapping:mapping-include
+  - milestoning:point-in-time-query
+  - query:project
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - data-space
+  - duckdb
+  - graph-fetch
+  - h2
+  - mapping-include
+  - point-in-time
+  - snowflake
+  - tdsv2

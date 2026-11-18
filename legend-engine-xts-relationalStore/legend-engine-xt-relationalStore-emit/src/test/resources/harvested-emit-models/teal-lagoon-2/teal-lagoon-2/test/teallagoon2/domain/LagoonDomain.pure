@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::teallagoon2::domain::*;
+
+Class {doc.doc = 'A warden who walks the seagrass patches of one lagoon sector.'} test::teallagoon2::domain::SectorWarden
+{
+  wardenCode: String[1];
+  wardenName: String[1];
+  radioCall: String[1];
+}
+
+Class {doc.doc = 'A sector of the tidal lagoon, the coarsest grouping the seagrass register keeps.'} test::teallagoon2::domain::LagoonSector
+{
+  sectorCode: String[1];
+  sectorName: String[1];
+}
+
+Class {doc.doc = 'A meadow zone inside one lagoon sector, the grouping the mapped patches hang from.'} test::teallagoon2::domain::MeadowZone
+{
+  meadowCode: String[1];
+  meadowName: String[1];
+}
+
+Class {doc.doc = 'One mapped patch of seagrass, carrying the meadow, sector and warden reached by walking the patch-to-meadow-to-sector-to-warden join path.'} test::teallagoon2::domain::SeagrassPatch
+{
+  patchCode: String[1];
+  patchName: String[0..1];
+  patchLabel: String[1];
+  plantedYear: Integer[1];
+  shootDensity: Float[1];
+  mappedOn: StrictDate[1];
+  patrolNote: String[0..1];
+  meadowName: String[0..1];
+  sectorName: String[0..1];
+  wardenName: String[0..1];
+}
+
+Class {doc.doc = 'One survey visit to a mapped seagrass patch, whose warden is four join hops away from the visit relation.'} test::teallagoon2::domain::SurveyVisit
+{
+  visitId: Integer[1];
+  visitCode: String[1];
+  visitedOn: StrictDate[1];
+  shootTally: Integer[1];
+  waterTempC: Float[1];
+  visibilityCode: String[1];
+  tideState: String[1];
+  surveyRound: Integer[1];
+  patchName: String[0..1];
+  meadowName: String[0..1];
+  wardenName: String[0..1];
+}

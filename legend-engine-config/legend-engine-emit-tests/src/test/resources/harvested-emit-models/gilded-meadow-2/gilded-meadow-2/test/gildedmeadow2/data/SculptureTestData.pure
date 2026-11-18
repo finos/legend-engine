@@ -1,0 +1,28 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::gildedmeadow2::data::SculptureTestData
+{
+  Relational
+  #{
+    SURVEY.SCULPTURE_SURVEY:
+      'SURVEY_CODE,SCULPTURE_CODE,WARD_CODE,SURVEYED_ON,CONDITION_GRADE,CORROSION_PCT,NOTED_AT,REQUIRES_CLEANING\n'+
+      'SV-01,SC-11,W-1,2026-03-02,SOUND,4,2026-03-02T09:15:00,false\n'+
+      'SV-02,SC-12,W-1,2026-03-18,FAIR,17,2026-03-18T10:05:00,true\n'+
+      'SV-03,SC-13,W-2,2026-04-06,POOR,38,2026-04-06T11:25:00,true\n'+
+      'SV-04,SC-14,W-2,2026-05-11,SOUND,2,2026-05-11T08:45:00,false\n'+
+      'SV-05,SC-15,W-3,2026-06-29,FAIR,12,2026-06-29T14:35:00,true\n';
+  }#
+}

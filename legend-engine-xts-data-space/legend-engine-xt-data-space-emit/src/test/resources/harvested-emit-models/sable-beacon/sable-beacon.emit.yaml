@@ -1,0 +1,57 @@
+name: sable-beacon
+title: "River Gauge Network - Multi-Hop Join Chain, Conditional Grade Transform and a DataSpace"
+description: |
+  A river gauge corpus whose readings are resolved to their drainage basin through
+  a five-hop sensor, station, district, zone and basin join chain, reused by an
+  inline view for the view-backed basin property. The grade label is a conditional
+  relational transform with two recognised arms and a null fallback. One service
+  filters readings into the cutoff month with date arithmetic and a multi-valued
+  grade membership test and asserts all four branch rows, a second aggregates level
+  totals per basin, and a DataSpace publishes the mapping under two execution
+  contexts.
+modelSources:
+  model:
+    root: sable-beacon
+    files:
+      - test/sablebeacon/connection/GaugeH2Connection.pure
+      - test/sablebeacon/dataspace/GaugeDataSpace.pure
+      - test/sablebeacon/domain/GaugeDomain.pure
+      - test/sablebeacon/mapping/GaugeMapping.pure
+      - test/sablebeacon/runtime/GaugeRuntime.pure
+      - test/sablebeacon/service/GaugeReadings.pure
+      - test/sablebeacon/store/GaugeDB.pure
+features:
+  - execution:data-space
+  - execution:service
+  - execution:service-test
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - data-space
+  - date-arithmetic
+  - group-by
+  - h2
+  - inline-view
+  - multi-hop-join
+  - plan-generation
+  - relational
+  - river-gauge
+  - service-test

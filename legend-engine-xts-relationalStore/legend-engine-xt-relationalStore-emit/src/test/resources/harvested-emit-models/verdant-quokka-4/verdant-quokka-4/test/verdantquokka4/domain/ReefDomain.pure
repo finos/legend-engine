@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::doc::*;
+
+Profile test::verdantquokka4::domain::ReefSurveyProfile
+{
+  stereotypes: [fieldRecord];
+  tags: [steward, grain];
+}
+
+Class <<test::verdantquokka4::domain::ReefSurveyProfile.fieldRecord>> {test::verdantquokka4::domain::ReefSurveyProfile.steward = 'reef-watch-volunteers', test::verdantquokka4::domain::ReefSurveyProfile.grain = 'one-site', doc.doc = 'A named reef site within a survey region, the anchor for every transect laid on it.'} test::verdantquokka4::domain::ReefSite
+{
+  regionCode: String[1];
+  siteCode: String[1];
+  siteLabel: String[1];
+  depthFeet: Float[0..1];
+  programme: String[1];
+}
+
+Class {doc.doc = 'A measured tape line laid across a reef site and surveyed by divers.'} test::verdantquokka4::domain::Transect
+{
+  regionCode: String[1];
+  siteCode: String[1];
+  transectNo: Integer[1];
+  lengthMetres: Float[1];
+  widthMetres: Float[1];
+  areaSquareMetres: Float[1];
+  siteName: String[0..1];
+}
+
+Class {doc.doc = 'A single organism sighting recorded along a transect.'} test::verdantquokka4::domain::Sighting
+{
+  sightingId: Integer[1];
+  taxonName: String[1];
+  countSeen: Integer[1];
+  organismGroup: String[1];
+}
+
+Class {doc.doc = 'A sighting of a coral colony with its estimated cover.'} test::verdantquokka4::domain::CoralSighting extends test::verdantquokka4::domain::Sighting
+{
+  coverPercent: Float[0..1];
+  siteName: String[0..1];
+}
+
+Class {doc.doc = 'A sighting of a reef fish school with its mean body length.'} test::verdantquokka4::domain::FishSighting extends test::verdantquokka4::domain::Sighting
+{
+  meanLengthCm: Float[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'Water condition readings for a reef site, valid over a business window.'} test::verdantquokka4::domain::SiteCondition
+{
+  regionCode: String[1];
+  siteCode: String[1];
+  waterTempF: Float[1];
+  visibilityMetres: Float[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'The conservation status of a reef taxon within a region, valid over a business window.'} test::verdantquokka4::domain::TaxonStatus
+{
+  taxonCode: String[1];
+  regionCode: String[1];
+  statusCode: String[1];
+  colonyForm: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A dive permit held by a volunteer diver, valid over a business window.'} test::verdantquokka4::domain::DiverPermit
+{
+  diverCode: String[1];
+  permitNo: Integer[1];
+  diverName: String[1];
+  depthLimitMetres: Float[1];
+}
+
+Association test::verdantquokka4::domain::TransectOnSite
+{
+  site: test::verdantquokka4::domain::ReefSite[0..1];
+  transects: test::verdantquokka4::domain::Transect[*];
+}
+
+Association test::verdantquokka4::domain::CoralOnTransect
+{
+  transect: test::verdantquokka4::domain::Transect[0..1];
+  corals: test::verdantquokka4::domain::CoralSighting[*];
+}
+
+Association test::verdantquokka4::domain::FishOnSite
+{
+  fishSite: test::verdantquokka4::domain::ReefSite[0..1];
+  fishSightings: test::verdantquokka4::domain::FishSighting[*];
+}

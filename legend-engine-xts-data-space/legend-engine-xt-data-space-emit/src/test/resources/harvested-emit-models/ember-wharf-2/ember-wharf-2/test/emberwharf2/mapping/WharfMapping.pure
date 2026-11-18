@@ -1,0 +1,187 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emberwharf2::mapping::WharfMapping
+(
+  *test::emberwharf2::domain::BerthSlot[berth_slot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberwharf2::store::WharfDb]wharf.berth_slot.slot_code,
+      [test::emberwharf2::store::WharfDb]wharf.berth_slot.in_z
+    )
+    ~mainTable [test::emberwharf2::store::WharfDb]wharf.berth_slot
+    slotCode: [test::emberwharf2::store::WharfDb]wharf.berth_slot.slot_code,
+    slotName: [test::emberwharf2::store::WharfDb]wharf.berth_slot.slot_name,
+    quaySide: [test::emberwharf2::store::WharfDb]wharf.berth_slot.quay_side,
+    draughtMetres: [test::emberwharf2::store::WharfDb]wharf.berth_slot.draught_metres
+  }
+
+  *test::emberwharf2::domain::CraneUnit[crane_unit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberwharf2::store::WharfDb]wharf.crane_unit.crane_code,
+      [test::emberwharf2::store::WharfDb]wharf.crane_unit.in_z
+    )
+    ~mainTable [test::emberwharf2::store::WharfDb]wharf.crane_unit
+    craneCode: [test::emberwharf2::store::WharfDb]wharf.crane_unit.crane_code,
+    craneLabel: [test::emberwharf2::store::WharfDb]wharf.crane_unit.crane_label,
+    liftCapacityTonnes: [test::emberwharf2::store::WharfDb]wharf.crane_unit.lift_capacity_tonnes,
+    lastServicedOn: [test::emberwharf2::store::WharfDb]wharf.crane_unit.last_serviced_on
+  }
+
+  *test::emberwharf2::domain::VesselCall[vessel_call]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberwharf2::store::WharfDb]wharf.vessel_call.call_code,
+      [test::emberwharf2::store::WharfDb]wharf.vessel_call.in_z
+    )
+    ~mainTable [test::emberwharf2::store::WharfDb]wharf.vessel_call
+    callCode: [test::emberwharf2::store::WharfDb]wharf.vessel_call.call_code,
+    vesselName: [test::emberwharf2::store::WharfDb]wharf.vessel_call.vessel_name,
+    slotCode: [test::emberwharf2::store::WharfDb]wharf.vessel_call.slot_code,
+    berthedAt: [test::emberwharf2::store::WharfDb]wharf.vessel_call.berthed_at
+  }
+
+  *test::emberwharf2::domain::PalletLot[pallet_lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberwharf2::store::WharfDb]wharf.pallet_lot.lot_code,
+      [test::emberwharf2::store::WharfDb]wharf.pallet_lot.in_z
+    )
+    ~mainTable [test::emberwharf2::store::WharfDb]wharf.pallet_lot
+    lotCode: [test::emberwharf2::store::WharfDb]wharf.pallet_lot.lot_code,
+    commodityClass: [test::emberwharf2::store::WharfDb]wharf.pallet_lot.commodity_class,
+    grossWeightKg: [test::emberwharf2::store::WharfDb]wharf.pallet_lot.gross_weight_kg,
+    packedOn: [test::emberwharf2::store::WharfDb]wharf.pallet_lot.packed_on
+  }
+
+  testSuites:
+  [
+    berthSlotVersionSuite:
+    {
+      function: |test::emberwharf2::domain::BerthSlot.all(%2026-03-01)->project(
+        [
+          s|$s.slotCode,
+          s|$s.slotName,
+          s|$s.quaySide->toUpper()->trim(),
+          s|$s.draughtMetres
+        ],
+        [
+          'Slot Code',
+          'Slot Name',
+          'Quay Side',
+          'Draught'
+        ]
+      )->distinct()->sort(
+        [
+          asc('Slot Code')
+        ]
+      );
+      tests:
+      [
+        currentVersionsOnly:
+        {
+          doc: 'Reads the aliased berthing-slot table at one processing instant so the composite key keeps a single version per slot code, the superseded draft version and the slot whose window closed before the instant both drop out, and the optional decimal column resolves to null.';
+          data:
+          [
+            test::emberwharf2::store::WharfDb:
+              Relational
+              #{
+                wharf.berth_slot:
+                  'slot_code,slot_name,quay_side,draught_metres,in_z,out_z\n'+
+                  'B-01,North Quay Slot Draft,north,11.50,2026-01-01,2026-02-01\n'+
+                  'B-01,North Quay Slot,north,12.25,2026-02-01,9999-12-31\n'+
+                  'B-02,East Quay Slot,east,,2026-02-01,9999-12-31\n'+
+                  'B-03,Retired Lay-by Slot,south,8.00,2026-01-01,2026-01-15\n';
+              }#
+          ];
+          asserts:
+          [
+            twoLiveSlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Slot Code":"B-01","Slot Name":"North Quay Slot","Quay Side":"NORTH","Draught":12.25},{"Slot Code":"B-02","Slot Name":"East Quay Slot","Quay Side":"EAST","Draught":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    palletLotVersionSuite:
+    {
+      function: |test::emberwharf2::domain::PalletLot.all(%2026-03-01)->filter(
+        l|$l.commodityClass != 'SCRAP'
+      )->project(
+        [
+          l|$l.lotCode,
+          l|$l.commodityClass,
+          l|$l.grossWeightKg,
+          l|$l.packedOn
+        ],
+        [
+          'Lot Code',
+          'Commodity',
+          'Gross Weight',
+          'Packed On'
+        ]
+      )->sort(
+        [
+          asc('Lot Code')
+        ]
+      );
+      tests:
+      [
+        livePalletLots:
+        {
+          doc: 'Filters the pallet-lot extent at one processing instant so the superseded lot version is excluded by the generated processing predicate and the excluded commodity class is excluded by the predicate, leaving one fully populated and one wholly optional-null row.';
+          data:
+          [
+            test::emberwharf2::store::WharfDb:
+              Relational
+              #{
+                wharf.pallet_lot:
+                  'lot_code,commodity_class,gross_weight_kg,packed_on,in_z,out_z\n'+
+                  'P-01,TIMBER,1100.000,2026-01-02,2026-01-01,2026-02-01\n'+
+                  'P-01,TIMBER,1250.500,2026-02-02,2026-02-01,9999-12-31\n'+
+                  'P-02,CERAMIC,,,2026-02-01,9999-12-31\n'+
+                  'P-03,SCRAP,410.250,2026-02-04,2026-02-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            twoRetainedLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot Code":"P-01","Commodity":"TIMBER","Gross Weight":1250.500,"Packed On":"2026-02-02"},{"Lot Code":"P-02","Commodity":"CERAMIC","Gross Weight":null,"Packed On":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

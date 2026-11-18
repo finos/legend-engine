@@ -1,0 +1,52 @@
+name: quiet-orchard-m2m
+title: "Quiet Orchard — M2M feed curation with nested-collection flattening"
+description: |
+  A model-to-model orchard-cultivation model that ingests a denormalised orchard
+  feed as JSON through an in-model connection, transforms it into a curated orchard
+  object, and flattens the feed's nested tree entries into a collection of cultivar
+  names on the target. A single-execution service and a mapping test share the same
+  graph-fetch/serialize query, and an Avro file generation is collected into a
+  generation specification. A second model-to-model mapping profiles inbound block
+  survey records: an eight-arm canopy vigour classifier with an unrecorded fallback
+  that publishes no band, and three enumeration mappings whose inputs are normalised
+  site codes with an unclassified default for codes outside the mapped sets. That
+  mapping carries a named mapping test suite with one test per classifier arm, the
+  fallback, and the unmapped-code path.
+modelSources:
+  model:
+    root: quiet-orchard-m2m
+    files:
+      - test/quietorchard/connection/OrchardFeedConnection.pure
+      - test/quietorchard/domain/Orchard.pure
+      - test/quietorchard/domain/OrchardBlock.pure
+      - test/quietorchard/generation/OrchardAvro.pure
+      - test/quietorchard/generation/OrchardGenerationSpecification.pure
+      - test/quietorchard/mapping/OrchardBlockMapping.pure
+      - test/quietorchard/mapping/OrchardMapping.pure
+      - test/quietorchard/runtime/OrchardRuntime.pure
+      - test/quietorchard/service/TransformOrchard.pure
+features:
+  - scaffolding:model-connection
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:mapping-test
+  - execution:service
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-collection-flatten
+  - mapping:m2m-transform
+  - execution:test-suite
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - avro
+  - collection-flatten
+  - enumeration-mapping
+  - graph-fetch
+  - model-to-model
+  - orchard
+  - service-test

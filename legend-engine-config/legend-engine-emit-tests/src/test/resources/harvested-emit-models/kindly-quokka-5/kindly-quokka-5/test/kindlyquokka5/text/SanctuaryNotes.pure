@@ -1,0 +1,26 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Text
+Text test::kindlyquokka5::text::SanctuaryOverview
+{
+  type: markdown;
+  content: '# Island Sanctuary Register\n\nThe register holds the estate a fenced wildlife sanctuary manages: zones inside the sanctuary, the fenced holdings inside each zone, the browse patches and drinkers that serve a holding, the animals resident in a holding and the people named on the field records.\n\nThe estate register, the people register and the permit register are each a generalization hierarchy: one supertype carries the code, the label and the season the entry was written, and the subtypes add only what is specific to a holding, a browse patch, a drinker, a keeper, a volunteer, a vet, a research permit or a transfer permit.\n';
+}
+
+Text test::kindlyquokka5::text::FieldRecordNote
+{
+  type: markdown;
+  content: '# Field records and their two clocks\n\nEvery field record — a walked round, a welfare check, a browse tally, a move between holdings and an enclosure census — is held along two intervals. The business interval says which day in the field the record speaks about; the processing interval says when the register came to believe it.\n\nA correction therefore never overwrites: a re-read weight or a mis-keyed destination opens a new processing interval over the same business day, so the register can be read either as it stands today or as it stood when the earlier figure was published. Reading such a record requires both temporal qualifiers, and a record with no correction simply has one open processing interval.\n';
+}

@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ambermarsh2::service::WaterTableTrendBoard
+{
+  pattern: '/ambermarsh2/v1/watertable/{asOf}/{maxDepthMm}';
+  ownership: UserList { users: ['moorland-hydrology-desk'] };
+  documentation: 'Reads the dipwell register and keeps the dips shallower than a caller-supplied threshold that were taken within the ninety days preceding the requested instant, returning the age of each dip in days beside a normalised well label so that a stale dipwell is visible without a second lookup.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], maxDepthMm: Integer[1]|test::ambermarsh2::domain::WaterTableDip.all()->filter(
+      d|($d.depthMm <= $maxDepthMm) &&
+        ($d.dippedOn >= $asOf->adjust(-90, DurationUnit.DAYS)) &&
+        ($d.dippedOn <= $asOf)
+    )->project(
+      [
+        d|$d.dipCode->toUpper(),
+        d|$d.wellRef->trim()->toUpper() + ' <- ' + $d.loggerName->trim(),
+        d|dateDiff($d.dippedOn, $asOf, DurationUnit.DAYS),
+        d|($d.depthMm / 10) - 1
+      ],
+      [
+        'Dip',
+        'WellLogger',
+        'DipAgeDays',
+        'DepthCmOffset'
+      ]
+    )->sort(
+      [
+        asc('WellLogger'),
+        desc('DipAgeDays')
+      ]
+    )};
+    mapping: test::ambermarsh2::mapping::MoorlandMapping;
+    runtime: test::ambermarsh2::runtime::MoorlandCoreRuntime;
+  }
+}

@@ -1,0 +1,139 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarprairie3::service::SectorRestorationBoard
+{
+  pattern: '/cedarprairie/v1/sector/restoration';
+  title: 'Sector Restoration Board';
+  owners:
+  [
+    'prairie-restoration'
+  ];
+  documentation: 'Aggregates the plot register of a caller-sized seeding window by sector, summing the seeded area and the native and invasive cover legs and counting the contributing plots, so a caller can compare the sectors reached inside one seeding season.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {since: StrictDate[1], minArea: Integer[1], sectors: String[*]|test::cedarprairie3::domain::PrairiePlot.all()->filter(
+      p|((meta::pure::functions::date::dateDiff($since, $p.seededOn, meta::pure::functions::date::DurationUnit.DAYS) >= 0) && ($p.areaHa >= $minArea)) && ($p.sectorCode->in($sectors))
+    )->groupBy(
+      [
+        p|$p.sectorCode
+      ],
+      [
+        agg(p|$p.areaHa, y|$y->sum()),
+        agg(p|$p.nativePct, y|$y->sum()),
+        agg(p|$p.invasivePct, y|$y->sum()),
+        agg(p|$p.plotCode, y|$y->count())
+      ],
+      [
+        'Sector',
+        'TotalArea',
+        'NativeSum',
+        'InvasiveSum',
+        'Plots'
+      ]
+    )->sort([asc('Sector')])};
+    mapping: test::cedarprairie3::mapping::PrairieNetworkMapping;
+    runtime: test::cedarprairie3::runtime::PrairieRuntime;
+  }
+  testSuites:
+  [
+    sectorBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          registerConnection: Reference
+            #{
+              test::cedarprairie3::data::PrairieNetworkData
+            }#
+        ]
+      ]
+      tests:
+      [
+        windowWithRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            since = %2026-03-01,
+            minArea = 2,
+            sectors = ['NORTH', 'SOUTH', 'WEST', 'EAST']
+          ]
+          asserts:
+          [
+            aggregatedSectors:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sector":"EAST","TotalArea":7,"NativeSum":45,"InvasiveSum":25,"Plots":2},{"Sector":"NORTH","TotalArea":21,"NativeSum":175,"InvasiveSum":7,"Plots":2},{"Sector":"SOUTH","TotalArea":13,"NativeSum":110,"InvasiveSum":28,"Plots":2},{"Sector":"WEST","TotalArea":7,"NativeSum":65,"InvasiveSum":90,"Plots":2}]';
+                  }#;
+              }#
+          ]
+        },
+        windowWithoutRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            since = %2027-01-01,
+            minArea = 2,
+            sectors = ['NORTH', 'SOUTH', 'WEST', 'EAST']
+          ]
+          asserts:
+          [
+            emptyWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        },
+        sectorSelectingNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            since = %2026-03-01,
+            minArea = 2,
+            sectors = ['CENTRAL']
+          ]
+          asserts:
+          [
+            emptySectorSet:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

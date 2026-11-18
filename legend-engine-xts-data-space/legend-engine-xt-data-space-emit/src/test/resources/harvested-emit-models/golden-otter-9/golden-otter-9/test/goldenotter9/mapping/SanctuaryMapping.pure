@@ -1,0 +1,161 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenotter9::mapping::SanctuaryMapping
+(
+  include mapping test::goldenotter9::mapping::RiverAtlasMapping[test::goldenotter9::store::RiverAtlasDb->test::goldenotter9::store::OtterSanctuaryDb]
+  include mapping test::goldenotter9::mapping::HoltRegisterMapping[test::goldenotter9::store::HoltRegisterDb->test::goldenotter9::store::OtterSanctuaryDb]
+  include mapping test::goldenotter9::mapping::SurveyMapping[test::goldenotter9::store::SurveyDb->test::goldenotter9::store::OtterSanctuaryDb]
+  include mapping test::goldenotter9::mapping::KeeperMapping[test::goldenotter9::store::KeeperDb->test::goldenotter9::store::OtterSanctuaryDb]
+
+  test::goldenotter9::domain::ReachHabitat: Relational
+  {
+    AssociationMapping
+    (
+      habitat[reach, habitat]: [test::goldenotter9::store::OtterSanctuaryDb]@Reach_Habitat,
+      reaches[habitat, reach]: [test::goldenotter9::store::OtterSanctuaryDb]@Reach_Habitat
+    )
+  }
+
+  test::goldenotter9::domain::ReachHolts: Relational
+  {
+    AssociationMapping
+    (
+      reach[holt, reach]: [test::goldenotter9::store::OtterSanctuaryDb]@Holt_Reach,
+      holts[reach, holt]: [test::goldenotter9::store::OtterSanctuaryDb]@Holt_Reach
+    )
+  }
+
+  test::goldenotter9::domain::HoltKeeper: Relational
+  {
+    AssociationMapping
+    (
+      keeper[holt, observer]: [test::goldenotter9::store::OtterSanctuaryDb]@Holt_Warden,
+      keptHolts[observer, holt]: [test::goldenotter9::store::OtterSanctuaryDb]@Holt_Warden
+    )
+  }
+
+  test::goldenotter9::domain::HoltSightings: Relational
+  {
+    AssociationMapping
+    (
+      holt[sighting, holt]: [test::goldenotter9::store::OtterSanctuaryDb]@Sighting_Holt,
+      sightings[holt, sighting]: [test::goldenotter9::store::OtterSanctuaryDb]@Sighting_Holt
+    )
+  }
+
+  test::goldenotter9::domain::ObserverSightings: Relational
+  {
+    AssociationMapping
+    (
+      observer[sighting, observer]: [test::goldenotter9::store::OtterSanctuaryDb]@Sighting_Observer,
+      sightings[observer, sighting]: [test::goldenotter9::store::OtterSanctuaryDb]@Sighting_Observer
+    )
+  }
+
+  testSuites:
+  [
+    holtGraphSuite:
+    {
+      function: |test::goldenotter9::domain::Holt.all()->project(
+        [
+          h|$h.holtCode,
+          h|$h.reach.reachTag,
+          h|$h.reach.habitat.habitatLabel,
+          h|$h.keeper.gradeLabel
+        ],
+        [
+          'HoltCode',
+          'ReachTag',
+          'Habitat',
+          'KeeperGrade'
+        ]
+      )->sort([asc('HoltCode')]);
+      tests:
+      [
+        holtReachHabitatKeeper:
+        {
+          doc: 'Every holt resolves its reach, the reach habitat two hops away and the keeper grade through associations bound to joins declared in the aggregate store over the substituted included stores.';
+          data:
+          [
+            test::goldenotter9::store::OtterSanctuaryDb: Reference
+              #{
+                test::goldenotter9::data::SanctuaryFixture
+              }#
+          ];
+          asserts:
+          [
+            holtGraphRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HoltCode":"HT-1","ReachTag":"TAMAR/RR-1","Habitat":"Reedbed","KeeperGrade":"SENIOR"},{"HoltCode":"HT-2","ReachTag":"TAMAR/RR-1","Habitat":"Reedbed","KeeperGrade":"VOLUNTEER"},{"HoltCode":"HT-3","ReachTag":"WYE/RR-2","Habitat":"Woodland","KeeperGrade":"RANGER"},{"HoltCode":"HT-4","ReachTag":"TAMAR/RR-3","Habitat":"Gravel bar","KeeperGrade":"SENIOR"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sightingGraphSuite:
+    {
+      function: |test::goldenotter9::domain::Sighting.all()->project(
+        [
+          s|$s.sightingCode,
+          s|$s.periodKey,
+          s|$s.isLatest,
+          s|$s.observer.observerName,
+          s|$s.holt.sizeBand
+        ],
+        [
+          'Sighting',
+          'Period',
+          'Latest',
+          'Observer',
+          'HoltSize'
+        ]
+      )->sort([asc('Sighting')]);
+      tests:
+      [
+        sightingObserverHoltSize:
+        {
+          doc: 'Every sighting carries its composed period key and latest flag and resolves its observer and the size band of its holt across the cross-schema joins.';
+          data:
+          [
+            test::goldenotter9::store::OtterSanctuaryDb: Reference
+              #{
+                test::goldenotter9::data::SanctuaryFixture
+              }#
+          ];
+          asserts:
+          [
+            sightingGraphRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sighting":"SG-01","Period":"2026-5","Latest":false,"Observer":"Ana Rees","HoltSize":"LARGE"},{"Sighting":"SG-02","Period":"2026-6","Latest":true,"Observer":"Liv Penn","HoltSize":"LARGE"},{"Sighting":"SG-03","Period":"2026-6","Latest":true,"Observer":"Tom Vale","HoltSize":"SINGLE"},{"Sighting":"SG-04","Period":"2026-6","Latest":false,"Observer":"Tom Vale","HoltSize":"MEDIUM"},{"Sighting":"SG-05","Period":"2025-6","Latest":true,"Observer":"Liv Penn","HoltSize":"MEDIUM"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

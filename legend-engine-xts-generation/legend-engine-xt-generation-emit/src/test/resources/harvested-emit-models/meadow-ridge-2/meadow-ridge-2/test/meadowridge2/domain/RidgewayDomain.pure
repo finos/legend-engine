@@ -1,0 +1,31 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::meadowridge2::domain::*;
+
+Class {doc.doc = 'One waymark post along a meadow ridgeway path. The leaf of the two-class model: two mandatory text properties plus a mandatory floating-point identifier that is mapped to the key column, so an approximate number is both the identity and a published output field.'} test::meadowridge2::domain::WaymarkPost
+{
+  postCode: String[1];
+  postFinish: String[1];
+  postNumber: Float[1];
+}
+
+Class {doc.doc = 'A meadow ridgeway path, holding two mandatory text properties and a zero-or-more collection of the waymark posts along it. The collection is the only complex-typed property and resolves through the store join rather than through an association element, and the path key column is deliberately not surfaced as a property.'} test::meadowridge2::domain::MeadowPath
+{
+  pathName: String[1];
+  surfaceType: String[1];
+  posts: WaymarkPost[*];
+}

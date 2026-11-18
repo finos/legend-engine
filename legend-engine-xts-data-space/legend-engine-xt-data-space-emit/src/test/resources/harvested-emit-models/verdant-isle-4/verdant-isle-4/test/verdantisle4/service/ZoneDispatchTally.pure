@@ -1,0 +1,120 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantisle4::service::ZoneDispatchTally
+{
+  pattern: '/verdantisle4/v1/zone-dispatch-tally';
+  title: 'Island Nursery - Zone Dispatch Tally';
+  documentation: 'Aggregates released dispatches per zone reference over a date window. One aggregate is conditional: only tray counts at or above the heavy threshold contribute to the heavy total, so a zone whose dispatches are all light reports a heavy total of zero rather than dropping out of the tally.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'island-nursery-desk'
+  ];
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], thruDate: StrictDate[1]|test::verdantisle4::domain::DispatchRecord.all()->filter(
+      d|($d.dispatchState == 'RELEASED') && (($d.dispatchedOn >= $fromDate) && ($d.dispatchedOn <= $thruDate))
+    )->groupBy(
+      [
+        d|$d.zoneRef
+      ],
+      [
+        agg(
+          d|$d.trayCount,
+          y|$y->sum()
+        ),
+        agg(
+          d|if($d.trayCount >= 24,
+            | $d.trayCount,
+            | 0),
+          y|$y->sum()
+        ),
+        agg(
+          d|$d.dispatchCode,
+          y|$y->count()
+        ),
+        agg(
+          d|$d.trayCount,
+          y|$y->max()
+        )
+      ],
+      [
+        'Zone',
+        'Trays',
+        'HeavyTrays',
+        'Dispatches',
+        'MaxTrays'
+      ]
+    )->sort([asc('Zone')])};
+    mapping: test::verdantisle4::mapping::NurseryPublishedMapping;
+    runtime: test::verdantisle4::runtime::NurseryVerificationRuntime;
+  }
+  testSuites:
+  [
+    zoneDispatchTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryVerificationH2:
+            Relational
+            #{
+              nurserylocal.dispatch_record:
+                'dispatch_id,dispatch_code,lot_code,zone_code,dispatch_state,tray_count,dispatched_on\n'+
+                '1,DR-001,SL-001,ZN-1,RELEASED,120,2026-04-01\n'+
+                '2,DR-002,SL-001,ZN-1,RELEASED,80,2026-04-01\n'+
+                '3,DR-003,SL-002,ZN-2,RELEASED,60,2026-04-02\n'+
+                '4,DR-004,SL-002,ZN-2,RELEASED,36,2026-04-02\n'+
+                '5,DR-005,SL-003,ZN-1,RELEASED,28,2026-04-03\n'+
+                '6,DR-006,SL-003,ZN-1,RELEASED,20,2026-04-03\n'+
+                '7,DR-007,SL-001,ZN-2,RELEASED,10,2026-04-04\n'+
+                '8,DR-008,SL-002,ZN-2,RELEASED,4,2026-04-04\n'+
+                '9,DR-009,SL-003,ZN-1,RELEASED,0,2026-04-05\n'+
+                '10,DR-010,SL-404,ZN-9,RELEASED,50,2026-04-05\n'+
+                '11,DR-011,SL-001,ZN-1,HELD,90,2026-04-06\n'+
+                '12,DR-012,SL-001,ZN-1,RELEASED,70,2026-05-20\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        tallyOverTheDispatchWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-04-01,
+            thruDate = %2026-04-30
+          ]
+          asserts:
+          [
+            perZoneTotals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Zone":"ZN-1","Trays":248,"HeavyTrays":228,"Dispatches":5,"MaxTrays":120},{"Zone":"ZN-2","Trays":110,"HeavyTrays":96,"Dispatches":4,"MaxTrays":60},{"Zone":"ZN-9","Trays":50,"HeavyTrays":50,"Dispatches":1,"MaxTrays":50}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,179 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantharbor3::mapping::HarbourMapping
+(
+  *test::verdantharbor3::domain::MooringBerth[berth]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth.berth_code,
+      [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth.quay_code
+    )
+    ~mainTable [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth
+    berthCode: [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth.berth_code,
+    quayCode: [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth.quay_code,
+    hullClass: [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth.hull_class,
+    commissionedOn: [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth.commissioned_on,
+    lastInspectedAt: [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth.last_inspected_at,
+    cleatLoadKn: [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth.cleat_load_kn,
+    depthAtChartDatumM: [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth.depth_at_chart_datum_m,
+    bollardCount: [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth.bollard_count,
+    pontoonNote: [test::verdantharbor3::store::HarbourDb]harbour.mooring_berth.pontoon_note
+  }
+
+  *test::verdantharbor3::domain::DredgePass[pass]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantharbor3::store::HarbourDb]harbour.dredge_pass.pass_ref,
+      [test::verdantharbor3::store::HarbourDb]harbour.dredge_pass.swept_on
+    )
+    ~mainTable [test::verdantharbor3::store::HarbourDb]harbour.dredge_pass
+    passRef: [test::verdantharbor3::store::HarbourDb]harbour.dredge_pass.pass_ref,
+    sweptOn: [test::verdantharbor3::store::HarbourDb]harbour.dredge_pass.swept_on,
+    vesselCode: [test::verdantharbor3::store::HarbourDb]harbour.dredge_pass.vessel_code,
+    crewSize: [test::verdantharbor3::store::HarbourDb]harbour.dredge_pass.crew_size,
+    durationHours: [test::verdantharbor3::store::HarbourDb]harbour.dredge_pass.duration_hours,
+    loggedAt: [test::verdantharbor3::store::HarbourDb]harbour.dredge_pass.logged_at,
+    spoilNote: [test::verdantharbor3::store::HarbourDb]harbour.dredge_pass.spoil_note
+  }
+
+  testSuites:
+  [
+    berthSuite:
+    {
+      function: |test::verdantharbor3::domain::MooringBerth.all()->project(
+  [
+    b|$b.berthCode,
+    b|$b.quayCode,
+    b|$b.hullClass,
+    b|$b.commissionedOn,
+    b|$b.lastInspectedAt,
+    b|$b.cleatLoadKn,
+    b|$b.depthAtChartDatumM,
+    b|$b.bollardCount,
+    b|$b.pontoonNote
+  ],
+  [
+    'BerthCode',
+    'QuayCode',
+    'HullClass',
+    'CommissionedOn',
+    'LastInspectedAt',
+    'CleatLoadKn',
+    'DepthAtChartDatumM',
+    'BollardCount',
+    'PontoonNote'
+  ]
+)->sort(
+  [
+    asc('BerthCode'),
+    asc('QuayCode')
+  ]
+);
+      tests:
+      [
+        keyTupleIdentityAndNullColumns:
+        {
+          doc: 'Queries the berth root alone through its main-table alias: two rows share the first key column and differ in exactly one key column, a third row carries a null second key column, and the same row leaves every non-key column null so the single-table select is proven to tolerate nulls in every projected type.';
+          data:
+          [
+            test::verdantharbor3::store::HarbourDb:
+              Relational
+              #{
+                harbour.mooring_berth:
+                  'berth_code,quay_code,hull_class,commissioned_on,last_inspected_at,cleat_load_kn,depth_at_chart_datum_m,bollard_count,pontoon_note\n'+
+                  'B-11,Q-NORTH,cutter,2021-03-04,2026-02-11 07:30:00,45.5,6.25,4,timber decking\n'+
+                  'B-11,Q-SOUTH,ketch,2019-11-18,2026-02-12 15:05:00,38.75,4.75,2,alloy gangway\n'+
+                  'B-12,,,,,,,,\n';
+              }#
+          ];
+          asserts:
+          [
+            threeKeyedBerths:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BerthCode":"B-11","QuayCode":"Q-NORTH","HullClass":"cutter","CommissionedOn":"2021-03-04","LastInspectedAt":"2026-02-11T07:30:00.000000000+0000","CleatLoadKn":45.5,"DepthAtChartDatumM":6.25,"BollardCount":4,"PontoonNote":"timber decking"},{"BerthCode":"B-11","QuayCode":"Q-SOUTH","HullClass":"ketch","CommissionedOn":"2019-11-18","LastInspectedAt":"2026-02-12T15:05:00.000000000+0000","CleatLoadKn":38.75,"DepthAtChartDatumM":4.75,"BollardCount":2,"PontoonNote":"alloy gangway"},{"BerthCode":"B-12","QuayCode":null,"HullClass":null,"CommissionedOn":null,"LastInspectedAt":null,"CleatLoadKn":null,"DepthAtChartDatumM":null,"BollardCount":null,"PontoonNote":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    dredgePassSuite:
+    {
+      function: |test::verdantharbor3::domain::DredgePass.all()->project(
+  [
+    p|$p.passRef,
+    p|$p.sweptOn,
+    p|$p.vesselCode,
+    p|$p.crewSize,
+    p|$p.durationHours,
+    p|$p.loggedAt,
+    p|$p.spoilNote
+  ],
+  [
+    'PassRef',
+    'SweptOn',
+    'VesselCode',
+    'CrewSize',
+    'DurationHours',
+    'LoggedAt',
+    'SpoilNote'
+  ]
+)->sort(
+  [
+    asc('PassRef')
+  ]
+);
+      tests:
+      [
+        secondRootPlannedAlone:
+        {
+          doc: 'Queries the second, unjoined root of the same store so its own single-table plan can be compared with the berth plan; one row is fully populated and one leaves every non-key column null.';
+          data:
+          [
+            test::verdantharbor3::store::HarbourDb:
+              Relational
+              #{
+                harbour.dredge_pass:
+                  'pass_ref,swept_on,vessel_code,crew_size,duration_hours,logged_at,spoil_note\n'+
+                  'DP-01,2026-01-09,Otter Dredger,5,7.5,2026-01-09 18:40:00,silt routed to the spoil ground\n'+
+                  'DP-02,2026-01-10,,,,,\n';
+              }#
+          ];
+          asserts:
+          [
+            twoSweptPasses:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PassRef":"DP-01","SweptOn":"2026-01-09","VesselCode":"Otter Dredger","CrewSize":5,"DurationHours":7.5,"LoggedAt":"2026-01-09T18:40:00.000000000+0000","SpoilNote":"silt routed to the spoil ground"},{"PassRef":"DP-02","SweptOn":"2026-01-10","VesselCode":null,"CrewSize":null,"DurationHours":null,"LoggedAt":null,"SpoilNote":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::goldendelta::connection::RosterH2Connection
+{
+  store: test::goldendelta::store::RosterDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls:
+    [
+      'drop table if exists roster.volunteer_record;',
+      'create schema if not exists roster;',
+      'create table roster.volunteer_record(record_ref varchar(16), combined_name varchar(120), depot_code varchar(8), trailhead_name varchar(64), access_note varchar(120), enrolled_on date);',
+      'insert into roster.volunteer_record values (\'GD-201\', \'Ferny Wraysbury\', \'DP-N\', \'Alder Steps\', \'Gate is left unlatched in summer\', \'2026-03-02\');',
+      'insert into roster.volunteer_record values (\'GD-202\', \'Marsh Kite Alderway\', \'DP-N\', \'Bramble Gate\', \'Second gate on the lower path\', \'2026-03-05\');',
+      'insert into roster.volunteer_record values (\'GD-203\', \' Bracken Hollow\', \'DP-S\', \'Cinder Rise\', \'Park on the verge below the rise\', \'2026-03-09\');',
+      'insert into roster.volunteer_record values (\'GD-204\', \'Cobweb \', \'DP-S\', \'Dyke Crossing\', \'Ford is impassable after rain\', \'2026-03-11\');'
+    ];
+  };
+  auth: DefaultH2;
+}
+
+ModelChainConnection test::goldendelta::connection::RosterChainConnection
+{
+  mappings:
+  [
+    test::goldendelta::mapping::RosterRelationalMapping
+  ];
+}

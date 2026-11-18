@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::wistfulorchard2::data::GraftTestData
+{
+  Relational
+  #{
+    grove.scion_grade:
+      'grade_code,grade_label,plot_code\n'+
+      'G1,Dense scion,P1\n'+
+      'G2,Sparse scion,P2\n';
+
+    grove.grove_plot:
+      'plot_code,plot_name,orchard_code,canopy_flag\n'+
+      'P1,Cordon Plot,O1,SHELTERED\n'+
+      'P2,Espalier Plot,O2,OPEN\n';
+
+    grove.orchard_house:
+      'orchard_code,orchard_name\n'+
+      'O1,North Orchard\n'+
+      'O2,South Orchard\n';
+
+    grove.house_warden:
+      'orchard_code,warden_name\n'+
+      'O1,North warden\n'+
+      'O2,South warden\n';
+
+    grove.warden_post:
+      'warden_name,post_name\n'+
+      'North warden,Northern grove post\n'+
+      'South warden,Southern grove post\n';
+
+    journal.graft_journal:
+      'journal_id,journal_code,journal_hours,journal_kind,journal_date\n'+
+      '1,GRAFTROW,18.5,GRAFTING,2031-05-01\n'+
+      '2,AUDITROW,3.5,AUDIT,2031-05-02\n';
+
+    journal.tray_load:
+      'load_id,journal_id,tray_kind,tray_mass_kg\n'+
+      '1,1,BOARD,12.5\n'+
+      '2,1,FRAME,7.5\n'+
+      '3,2,BOARD,5.0\n';
+
+    graft.graft_run:
+      'run_id,run_name,scion_count,canopy_span_cm,band_code,hardiness_code,vigour_code,grade_code,journal_id,note_text,in_z,out_z\n'+
+      '1,quince cordon,4,90.0,A,HARDY,STRONG,G1,1,row survey,2031-01-01,9999-12-31\n'+
+      '2,apple espalier,2,45.0,B,TENDER,WEAK,G1,1,graft survey,2031-01-01,9999-12-31\n'+
+      '3,pear fan,4,50.0,C,HALF_HARDY,STRONG,G1,1,,2031-01-01,9999-12-31\n'+
+      '4,plum bush,4,70.0,D,ALPINE,WEAK,G1,1,bush survey,2031-01-01,9999-12-31\n'+
+      '5,cherry maiden,2,55.0,E,HARDY,STRONG,G1,1,maiden survey,2031-01-01,9999-12-31\n'+
+      '6,medlar standard,4,30.0,F,ALPINE,WEAK,G1,1,,2031-01-01,9999-12-31\n'+
+      '7,damson stool,4,110.0,G,HALF_HARDY,STRONG,G1,1,stool survey,2031-01-01,9999-12-31\n'+
+      '8,mulberry stepover,4,26.0,H,TENDER,WEAK,G1,1,stepover survey,2031-01-01,9999-12-31\n'+
+      '9,quiet nook,2,35.0,,HARDY,STRONG,G1,1,,2031-01-01,9999-12-31\n'+
+      '10,south row,4,130.0,A,HARDY,WEAK,G2,1,row survey,2031-01-01,9999-12-31\n'+
+      '11,mystery bend,2,15.0,B,UNCHARTED,STRONG,G1,1,,2031-01-01,9999-12-31\n'+
+      '12,shallow bar,4,42.0,C,HARDY,STRONG,G1,2,bar survey,2031-01-01,9999-12-31\n'+
+      '13,retired bay,4,60.0,D,HARDY,WEAK,G1,1,retired survey,2020-01-01,2021-01-01\n';
+  }#
+}

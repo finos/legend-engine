@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenquokka2::mapping::ReserveReferenceMapping
+(
+  *test::goldenquokka2::domain::SpeciesReference[species]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenquokka2::store::ReserveDb]ref.species_reference.species_code
+    )
+    ~mainTable [test::goldenquokka2::store::ReserveDb]ref.species_reference
+    speciesCode: [test::goldenquokka2::store::ReserveDb]ref.species_reference.species_code,
+    commonName: [test::goldenquokka2::store::ReserveDb]ref.species_reference.common_name,
+    familyName: [test::goldenquokka2::store::ReserveDb]ref.species_reference.family_name
+  }
+
+  *test::goldenquokka2::domain::Warden[warden]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenquokka2::store::ReserveDb]staff.warden.warden_code
+    )
+    ~mainTable [test::goldenquokka2::store::ReserveDb]staff.warden
+    wardenCode: [test::goldenquokka2::store::ReserveDb]staff.warden.warden_code,
+    wardenName: [test::goldenquokka2::store::ReserveDb]staff.warden.warden_name
+  }
+
+  *test::goldenquokka2::domain::ReserveSector[sector]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenquokka2::store::ReserveDb]estate.reserve_sector.sector_code
+    )
+    ~mainTable [test::goldenquokka2::store::ReserveDb]estate.reserve_sector
+    sectorCode: [test::goldenquokka2::store::ReserveDb]estate.reserve_sector.sector_code,
+    sectorName: [test::goldenquokka2::store::ReserveDb]estate.reserve_sector.sector_name,
+    regionName: [test::goldenquokka2::store::ReserveDb]estate.reserve_sector.region_name
+  }
+
+  *test::goldenquokka2::domain::ReserveGate[gate]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenquokka2::store::ReserveDb]estate.reserve_gate.gate_code
+    )
+    ~mainTable [test::goldenquokka2::store::ReserveDb]estate.reserve_gate
+    gateCode: [test::goldenquokka2::store::ReserveDb]estate.reserve_gate.gate_code,
+    sectorCode: [test::goldenquokka2::store::ReserveDb]estate.reserve_gate.sector_code,
+    gateName: [test::goldenquokka2::store::ReserveDb]estate.reserve_gate.gate_name
+  }
+)

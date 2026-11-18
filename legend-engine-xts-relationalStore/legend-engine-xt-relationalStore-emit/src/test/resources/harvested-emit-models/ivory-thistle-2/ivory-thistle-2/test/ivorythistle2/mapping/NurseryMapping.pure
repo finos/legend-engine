@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivorythistle2::mapping::NurseryMapping
+(
+  test::ivorythistle2::domain::Bench: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivorythistle2::store::NurseryDb]PROPAGATION.BENCH.BENCH_ID
+    )
+    ~mainTable [test::ivorythistle2::store::NurseryDb]PROPAGATION.BENCH
+    benchId: [test::ivorythistle2::store::NurseryDb]PROPAGATION.BENCH.BENCH_ID,
+    benchName: [test::ivorythistle2::store::NurseryDb]PROPAGATION.BENCH.BENCH_NAME,
+    glasshouse: [test::ivorythistle2::store::NurseryDb]PROPAGATION.BENCH.GLASSHOUSE
+  }
+
+  test::ivorythistle2::domain::PropagationTray: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivorythistle2::store::NurseryDb]PROPAGATION.TRAY.TRAY_ID
+    )
+    ~mainTable [test::ivorythistle2::store::NurseryDb]PROPAGATION.TRAY
+    recordCode: [test::ivorythistle2::store::NurseryDb]PROPAGATION.TRAY.RECORD_CODE,
+    trayLabel: [test::ivorythistle2::store::NurseryDb]PROPAGATION.TRAY.TRAY_LABEL,
+    cuttingCount: [test::ivorythistle2::store::NurseryDb]PROPAGATION.TRAY.CUTTING_COUNT,
+    pottedAt: [test::ivorythistle2::store::NurseryDb]PROPAGATION.TRAY.POTTED_AT,
+    hardenedOff: [test::ivorythistle2::store::NurseryDb]PROPAGATION.TRAY.HARDENED_OFF,
+    bench: [test::ivorythistle2::store::NurseryDb]@Bench_Tray
+  }
+
+  testSuites:
+  [
+    testSuite_PropagationTray:
+    {
+      function: test::ivorythistle2::domain::PropagationTray.all()->project(~[Tray: x|$x.trayLabel, Cuttings: x|$x.cuttingCount, Bench: x|$x.bench.benchName, Glasshouse: x|$x.bench.glasshouse]);
+      tests:
+      [
+        test_1:
+        {
+          data:
+          [
+            test::ivorythistle2::store::NurseryDb: Reference
+              #{
+                test::ivorythistle2::data::NurseryData
+              }#
+          ];
+          asserts:
+          [
+            assertion_1: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Tray" : "Silver Tray",\n  "Cuttings" : 24,\n  "Bench" : "North Bench",\n  "Glasshouse" : "Glasshouse A"\n}, {\n  "Tray" : "Willow Tray",\n  "Cuttings" : 18,\n  "Bench" : "East Bench",\n  "Glasshouse" : "Glasshouse B"\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::fabledbeacon4::store::BeaconDB
+(
+  Schema grove
+  (
+    Table tree_record
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      tree_code VARCHAR(20) PRIMARY KEY,
+      zone_code VARCHAR(20) NOT NULL,
+      tree_name VARCHAR(80) NOT NULL,
+      measured_at TIMESTAMP NOT NULL,
+      healthy_flag BIT NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+  )
+  Schema habitat
+  (
+    Table zone
+    (
+      zone_code VARCHAR(20) PRIMARY KEY,
+      zone_name VARCHAR(80) NOT NULL,
+      zone_tier INTEGER NOT NULL
+    )
+    Table zone_note
+    (
+      note_code VARCHAR(20) PRIMARY KEY,
+      zone_code VARCHAR(20) NOT NULL,
+      note_text VARCHAR(120) NOT NULL
+    )
+  )
+  Join Tree_Zone(grove.tree_record.zone_code = habitat.zone.zone_code)
+  Join Zone_Note(habitat.zone.zone_code = habitat.zone_note.zone_code)
+)

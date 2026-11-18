@@ -1,0 +1,192 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitfossil::mapping::SpecimenDispatchMapping
+(
+  *test::sunlitfossil::domain::DispatchTerms[dispatchTerms]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_terms.terms_code
+    )
+    ~mainTable [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_terms
+    termsCode: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_terms.terms_code,
+    hostMuseum: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_terms.host_museum,
+    courierNote: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_terms.courier_note,
+    maxCrateWeight: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_terms.max_crate_weight,
+    reviewCycleDays: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_terms.review_cycle_days,
+    agreedAt: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_terms.agreed_at
+  }
+
+  *test::sunlitfossil::domain::Dispatch[dispatch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch.dispatch_code
+    )
+    ~mainTable [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch
+    dispatchCode: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch.dispatch_code,
+    termsCode: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch.terms_code,
+    destinationHall: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch.destination_hall,
+    curatorNote: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch.curator_note,
+    declaredWeight: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch.declared_weight,
+    crateCount: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch.crate_count,
+    shippedAt: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch.shipped_at,
+    items[dispatchItem]: [test::sunlitfossil::store::SpecimenDispatchDB]@Dispatch_Item
+  }
+
+  *test::sunlitfossil::domain::DispatchItem[dispatchItem]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_item.dispatch_code,
+      [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_item.line_ordinal
+    )
+    ~mainTable [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_item
+    dispatchCode: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_item.dispatch_code,
+    lineOrdinal: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_item.line_ordinal,
+    specimenLabel: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_item.specimen_label,
+    packingNote: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_item.packing_note,
+    itemWeight: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_item.item_weight,
+    fragmentCount: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_item.fragment_count,
+    packedAt: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.dispatch_item.packed_at,
+    portions[itemPortion]: [test::sunlitfossil::store::SpecimenDispatchDB]@Item_Portion
+  }
+
+  *test::sunlitfossil::domain::ItemPortion[itemPortion]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.item_portion.dispatch_code,
+      [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.item_portion.line_ordinal,
+      [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.item_portion.portion_code
+    )
+    ~mainTable [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.item_portion
+    dispatchCode: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.item_portion.dispatch_code,
+    lineOrdinal: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.item_portion.line_ordinal,
+    portionCode: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.item_portion.portion_code,
+    portionLabel: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.item_portion.portion_label,
+    portionWeight: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.item_portion.portion_weight,
+    trayCount: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.item_portion.tray_count,
+    loggedAt: [test::sunlitfossil::store::SpecimenDispatchDB]dispatchhall.item_portion.logged_at
+  }
+
+  testSuites:
+  [
+    dispatchWindowSuite:
+    {
+      function: |test::sunlitfossil::domain::Dispatch.all(%2026-01-15)->project(
+        [
+          x|$x.dispatchCode,
+          x|$x.destinationHall,
+          x|$x.crateCount
+        ],
+        [
+          'Dispatch',
+          'Hall',
+          'Crates'
+        ]
+      );
+      tests:
+      [
+        openWindowRowsOnly:
+        {
+          doc: 'Two business-milestoned dispatch rows are valid at the query date and a third whose validity window closed beforehand is removed by the generated milestoning predicate.';
+          data:
+          [
+            test::sunlitfossil::store::SpecimenDispatchDB:
+              Relational
+              #{
+                dispatchhall.dispatch:
+                  'dispatch_code,terms_code,destination_hall,curator_note,declared_weight,crate_count,shipped_at,valid_from,valid_thru\n'+
+                  'DP-1,TM-1,West Gallery,handle upright,120.50,3,2025-06-02 09:00:00,2025-06-01,9999-12-31\n'+
+                  'DP-2,TM-1,East Annexe,,64.25,1,2025-06-03 09:00:00,2025-06-01,9999-12-31\n'+
+                  'DP-9,TM-1,Closed Store,retired route,10.00,1,2024-02-02 09:00:00,2024-01-01,2025-01-01\n';
+              }#
+          ];
+          asserts:
+          [
+            openDispatchesOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ { "Dispatch" : "DP-1", "Hall" : "West Gallery", "Crates" : 3 }, { "Dispatch" : "DP-2", "Hall" : "East Annexe", "Crates" : 1 } ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    dispatchChainSuite:
+    {
+      function: |test::sunlitfossil::domain::Dispatch.all(%2026-01-15)->project(
+        [
+          x|$x.dispatchCode,
+          x|$x.items.specimenLabel,
+          x|$x.items.portions.portionLabel
+        ],
+        [
+          'Dispatch',
+          'Specimen',
+          'Portion'
+        ]
+      );
+      tests:
+      [
+        twoHopChainWithUnmatchedSides:
+        {
+          doc: 'A three-level chain resolves through the single-column join and then the composite two-column join. A line item whose ordinal matches no portion and a dispatch with no line item at all yield a null on the unmatched side, while a portion whose ordinal matches no line item never appears because the composite equality requires both operands to match.';
+          data:
+          [
+            test::sunlitfossil::store::SpecimenDispatchDB:
+              Relational
+              #{
+                dispatchhall.dispatch:
+                  'dispatch_code,terms_code,destination_hall,curator_note,declared_weight,crate_count,shipped_at,valid_from,valid_thru\n'+
+                  'DP-1,TM-1,West Gallery,handle upright,120.50,3,2025-06-02 09:00:00,2025-06-01,9999-12-31\n'+
+                  'DP-2,TM-1,East Annexe,,64.25,1,2025-06-03 09:00:00,2025-06-01,9999-12-31\n';
+                dispatchhall.dispatch_item:
+                  'dispatch_code,line_ordinal,specimen_label,packing_note,item_weight,fragment_count,packed_at,valid_from,valid_thru\n'+
+                  'DP-1,1,Cranium cast,foam cradle,40.25,2,2025-06-01 08:00:00,2025-06-01,9999-12-31\n'+
+                  'DP-1,2,Femur cast,,38.00,1,2025-06-01 08:30:00,2025-06-01,9999-12-31\n'+
+                  'DP-1,3,Tooth plate,,4.75,6,2025-06-01 09:00:00,2025-06-01,9999-12-31\n';
+                dispatchhall.item_portion:
+                  'dispatch_code,line_ordinal,portion_code,portion_label,portion_weight,tray_count,logged_at,valid_from,valid_thru\n'+
+                  'DP-1,1,PT-1,Tray A,20.25,1,2025-06-01 10:00:00,2025-06-01,9999-12-31\n'+
+                  'DP-1,2,PT-2,Tray B,38.00,2,2025-06-01 10:30:00,2025-06-01,9999-12-31\n'+
+                  'DP-1,9,PT-9,Tray Orphan,1.00,1,2025-06-01 11:00:00,2025-06-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            matchedChainRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ { "Dispatch" : "DP-1", "Specimen" : "Cranium cast", "Portion" : "Tray A" }, { "Dispatch" : "DP-1", "Specimen" : "Femur cast", "Portion" : "Tray B" }, { "Dispatch" : "DP-1", "Specimen" : "Tooth plate", "Portion" : null }, { "Dispatch" : "DP-2", "Specimen" : null, "Portion" : null } ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

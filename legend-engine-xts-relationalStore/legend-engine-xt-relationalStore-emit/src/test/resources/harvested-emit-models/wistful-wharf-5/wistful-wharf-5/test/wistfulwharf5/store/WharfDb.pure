@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::wistfulwharf5::store::WharfDb
+(
+  Schema harbour
+  (
+    Table mooring_berth
+    (
+      berth_id INTEGER PRIMARY KEY,
+      berth_code VARCHAR(24) NOT NULL,
+      berth_name VARCHAR(120) NOT NULL,
+      pontoon_name VARCHAR(60) NOT NULL,
+      berth_length_m DOUBLE NOT NULL
+    )
+
+    Table harbour_watch
+    (
+      watch_id INTEGER PRIMARY KEY,
+      watch_code VARCHAR(24) NOT NULL,
+      watch_lead_name VARCHAR(120) NOT NULL,
+      watch_name VARCHAR(60) NOT NULL
+    )
+
+    Table vessel_visit
+    (
+      visit_id INTEGER PRIMARY KEY,
+      visit_code VARCHAR(24) NOT NULL,
+      vessel_name VARCHAR(120) NOT NULL,
+      state_code VARCHAR(4),
+      nights_alongside INTEGER NOT NULL,
+      berth_id INTEGER,
+      watch_id INTEGER
+    )
+  )
+
+  Join Visit_Berth(harbour.vessel_visit.berth_id = harbour.mooring_berth.berth_id)
+  Join Visit_Watch(harbour.vessel_visit.watch_id = harbour.harbour_watch.watch_id)
+)

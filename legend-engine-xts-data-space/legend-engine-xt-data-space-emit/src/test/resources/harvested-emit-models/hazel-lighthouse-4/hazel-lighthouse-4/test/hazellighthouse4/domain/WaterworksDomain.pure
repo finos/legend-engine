@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::hazellighthouse4::domain::*;
+
+Class test::hazellighthouse4::domain::Reservoir
+{
+  reservoirCode: String[1];
+  reservoirName: String[1];
+  districtName: String[1];
+  commissionedOn: StrictDate[0..1];
+}
+
+Class test::hazellighthouse4::domain::PumpStation
+{
+  stationCode: String[1];
+  modelName: String[1];
+  ratedFlowLps: Float[1];
+  headMetres: Float[1];
+  activeFlag: Boolean[1];
+  districtLabel: String[1];
+  crewDepot: String[0..1];
+}
+
+Class test::hazellighthouse4::domain::ServiceCall
+{
+  callCode: String[1];
+  calledOn: StrictDate[1];
+  downtimeHours: Float[1];
+  completed: Boolean[1];
+  reservoirName: String[1];
+}
+
+Class test::hazellighthouse4::domain::MaintenanceCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  depotName: String[1];
+}
+
+Association test::hazellighthouse4::domain::Reservoir_PumpStation
+{
+  reservoir: Reservoir[1];
+  pumpStations: PumpStation[*];
+}
+
+Association test::hazellighthouse4::domain::PumpStation_MaintenanceCrew
+{
+  servicingCrew: MaintenanceCrew[0..1];
+  servicedStations: PumpStation[*];
+}

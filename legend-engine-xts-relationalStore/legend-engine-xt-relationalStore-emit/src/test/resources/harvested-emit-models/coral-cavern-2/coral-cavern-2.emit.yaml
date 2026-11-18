@@ -1,0 +1,43 @@
+name: coral-cavern-2
+title: "Show-Cave Chamber Register — Integer-Flag Conditional Transforms Across A Current/History Table Pair"
+description: |
+  A show-cave survey register whose interest is a conditional mapping layer over a
+  three-table schema. Every boolean property is produced by a mapping-level
+  conditional that tests an integer flag column against the literal one and yields a
+  database-level true or false, and the same conditional recurs on differently named
+  flag columns and on both the current chamber table and its twin history table, whose
+  composite primary key admits several revisions of one chamber. A nested growth-band
+  conditional and a composed, null-defaulting access note sit on top of that layer, and
+  three tabular test suites pin both arms of every flag, the boundary row of the banding
+  and the null fallback.
+modelSources:
+  model:
+    root: coral-cavern-2
+    files:
+      - test/coralcavern2/connection/CavernConnection.pure
+      - test/coralcavern2/domain/CavernDomain.pure
+      - test/coralcavern2/mapping/CavernMapping.pure
+      - test/coralcavern2/runtime/CavernRuntime.pure
+      - test/coralcavern2/store/CavernDB.pure
+features:
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: basic
+tags:
+  - cave-survey
+  - composite-primary-key
+  - conditional-transform
+  - current-history-pair
+  - flag-decoding
+  - h2
+  - mapping-test
+  - multi-table-store

@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlythicket2::service::TrailNodeRegisterDeep
+{
+  pattern: '/kindlythicket2/v1/trail-nodes/deep';
+  title: 'Trail Node Register Deep';
+  owners:
+  [
+    'thicket-trail-stewardship'
+  ];
+  documentation: 'Projects the default extent of the milestoned trail-node hierarchy into a wider register that descends past the five named levels into the spur, station and waypoint half-levels, pairing each descriptive name with its node identifier. Nodes that stop short of the deepest half-level surface a literal placeholder instead of an absent waypoint name.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::kindlythicket2::domain::TrailNode.all()->project(
+      [
+        x|$x.reserveName,
+        x|$x.reserveCode,
+        x|$x.districtName,
+        x|$x.districtCode,
+        x|$x.corridorName,
+        x|$x.corridorCode,
+        x|$x.sectorName,
+        x|$x.sectorCode,
+        x|$x.segmentName,
+        x|$x.segmentCode,
+        x|$x.spurName,
+        x|$x.spurCode,
+        x|$x.stationName,
+        x|$x.stationCode,
+        x|if(
+          $x.waypointName->isEmpty(),
+          |'UNMARKED WAYPOINT',
+          |$x.waypointName->toOne()
+        ),
+        x|$x.waypointCode,
+        x|$x.nodeCode,
+        x|$x.nodeLabel
+      ],
+      [
+        'ReserveName',
+        'ReserveCode',
+        'DistrictName',
+        'DistrictCode',
+        'CorridorName',
+        'CorridorCode',
+        'SectorName',
+        'SectorCode',
+        'SegmentName',
+        'SegmentCode',
+        'SpurName',
+        'SpurCode',
+        'StationName',
+        'StationCode',
+        'WaypointName',
+        'WaypointCode',
+        'NodeCode',
+        'NodeLabel'
+      ]
+    )->sort(
+      [
+        asc('NodeCode')
+      ]
+    );
+    mapping: test::kindlythicket2::mapping::ThicketM2M;
+    runtime: test::kindlythicket2::runtime::TrailNodeRuntime;
+  }
+  testSuites:
+  [
+    trailNodeRegisterDeepSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketH2Connection:
+            Relational
+            #{
+              reserve.trail_node:
+                'node_code,node_label,reserve_name,reserve_code,district_name,district_code,corridor_name,corridor_code,sector_name,sector_code,segment_name,segment_code,spur_name,spur_code,station_name,station_code,waypoint_name,waypoint_code,from_z,thru_z\n'+
+                'TD-1,Willow Bend Head,Kindly Thicket Reserve,RS-1,North Bracken District,DS-1,Willow Corridor,CR-4,Bend Sector,SC-4,Willow Bend Segment,SG-4,Otter Spur,SP-4,Bend Station,ST-4,Willow Marker,WP-4,2025-04-01,9999-12-31\n'+
+                'TD-2,Hazel Rise Gate,Kindly Thicket Reserve,RS-1,South Bramble District,DS-2,Hazel Corridor,CR-5,Rise Sector,SC-5,Hazel Rise Segment,SG-5,Hazel Spur,SP-5,Rise Station,ST-5,,,2025-04-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        deepAndShallowNodes:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            deepRegister:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReserveName":"Kindly Thicket Reserve","ReserveCode":"RS-1","DistrictName":"North Bracken District","DistrictCode":"DS-1","CorridorName":"Willow Corridor","CorridorCode":"CR-4","SectorName":"Bend Sector","SectorCode":"SC-4","SegmentName":"Willow Bend Segment","SegmentCode":"SG-4","SpurName":"Otter Spur","SpurCode":"SP-4","StationName":"Bend Station","StationCode":"ST-4","WaypointName":"Willow Marker","WaypointCode":"WP-4","NodeCode":"TD-1","NodeLabel":"Willow Bend Head"},{"ReserveName":"Kindly Thicket Reserve","ReserveCode":"RS-1","DistrictName":"South Bramble District","DistrictCode":"DS-2","CorridorName":"Hazel Corridor","CorridorCode":"CR-5","SectorName":"Rise Sector","SectorCode":"SC-5","SegmentName":"Hazel Rise Segment","SegmentCode":"SG-5","SpurName":"Hazel Spur","SpurCode":"SP-5","StationName":"Rise Station","StationCode":"ST-5","WaypointName":"UNMARKED WAYPOINT","WaypointCode":null,"NodeCode":"TD-2","NodeLabel":"Hazel Rise Gate"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::coppercanyon::store::ObservatoryDB
+(
+  Schema sky
+  (
+    Table field_plate
+    (
+      plate_id INTEGER PRIMARY KEY,
+      plate_code VARCHAR(32) NOT NULL,
+      field_name VARCHAR(120) NOT NULL,
+      declination_deg DOUBLE NOT NULL
+    )
+    Table exposure
+    (
+      exposure_id INTEGER PRIMARY KEY,
+      exposure_ref VARCHAR(32) NOT NULL,
+      plate_id INTEGER NOT NULL,
+      instrument_id INTEGER NOT NULL,
+      exposure_seconds INTEGER NOT NULL,
+      filter_code VARCHAR(12),
+      seeing_arcsec DOUBLE
+    )
+  )
+
+  Schema registry
+  (
+    Table instrument
+    (
+      instrument_id INTEGER PRIMARY KEY,
+      instrument_name VARCHAR(120) NOT NULL,
+      mount_kind VARCHAR(40) NOT NULL
+    )
+  )
+
+  Join Exposure_Plate(sky.exposure.plate_id = sky.field_plate.plate_id)
+  Join Exposure_Instrument(sky.exposure.instrument_id = registry.instrument.instrument_id)
+)

@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::amberquokka3::store::RefugeRegisterDB
+(
+  Schema refuges
+  (
+    Table valley_zone
+    (
+      zone_code VARCHAR(32) PRIMARY KEY,
+      zone_name VARCHAR(120) NOT NULL,
+      terrain_kind VARCHAR(60) NOT NULL
+    )
+    Table mountain_refuge
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      refuge_code VARCHAR(32) PRIMARY KEY,
+      refuge_name VARCHAR(120) NOT NULL,
+      warden_code VARCHAR(40) NOT NULL,
+      altitude_m INTEGER NOT NULL,
+      zone_code VARCHAR(32),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table dorm_room
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      room_code VARCHAR(32) PRIMARY KEY,
+      refuge_code VARCHAR(32) NOT NULL,
+      room_label VARCHAR(120) NOT NULL,
+      heating_kind VARCHAR(60) NOT NULL,
+      bunk_count INTEGER NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table occupancy_spell
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      spell_code VARCHAR(32) PRIMARY KEY,
+      room_code VARCHAR(32) NOT NULL,
+      stay_kind VARCHAR(40) NOT NULL,
+      guest_party VARCHAR(120) NOT NULL,
+      arrival_date DATE NOT NULL,
+      departure_date DATE NOT NULL,
+      guest_count INTEGER NOT NULL,
+      permit_code VARCHAR(40),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+  )
+
+  Join Refuge_Rooms(refuges.mountain_refuge.refuge_code = refuges.dorm_room.refuge_code)
+  Join Refuge_Zone(refuges.mountain_refuge.zone_code = refuges.valley_zone.zone_code)
+  Join Room_Spells(refuges.dorm_room.room_code = refuges.occupancy_spell.room_code)
+)

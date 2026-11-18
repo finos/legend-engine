@@ -1,0 +1,38 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::lunarotter::connection::WildlifeH2Connection
+{
+  store: test::lunarotter::store::WildlifeDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists wildlife;',
+      'create schema wildlife;',
+      'create table wildlife.region (region_id integer primary key, region_name varchar(200) not null);',
+      'create table wildlife.habitat (habitat_id integer primary key, habitat_name varchar(200) not null, region_id integer not null);',
+      'create table wildlife.otter (otter_id integer primary key, otter_name varchar(200) not null, weight_kg double not null, habitat_id integer not null);',
+      'insert into wildlife.region values (1, \'Northern Fenland\');',
+      'insert into wildlife.region values (2, \'Coastal Estuary\');',
+      'insert into wildlife.habitat values (1, \'Willow Bend\', 1);',
+      'insert into wildlife.habitat values (2, \'Tidal Creek\', 2);',
+      'insert into wildlife.otter values (1, \'Pebble\', 8.4, 1);',
+      'insert into wildlife.otter values (2, \'Ripple\', 6.1, 1);',
+      'insert into wildlife.otter values (3, \'Marsh\', 9.2, 2);'
+      ];
+  };
+  auth: DefaultH2;
+}

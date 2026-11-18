@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::easternlighthouse6::domain::*;
+
+Class {doc.doc = 'One seed accession kept in an upland seed vault: the taxon it was collected from, the room, shelf, tray and packet it is stored in, the provenance and handling notes recorded against it, the instants it was collected, received, tested and repacked, and the measured mass, moisture, germination rate and packet tally, every one of them read straight from its own typed column.'} test::easternlighthouse6::domain::SeedAccession
+{
+  accessionCode: String[1];
+  taxonName: String[1];
+  commonName: String[0..1];
+  familyName: String[0..1];
+  collectionCode: String[0..1];
+  storageRoomCode: String[1];
+  shelfCode: String[0..1];
+  trayCode: String[0..1];
+  packetCode: String[0..1];
+  seedLotCode: String[0..1];
+  collectorName: String[0..1];
+  collectorTeam: String[0..1];
+  habitatNote: String[0..1];
+  soilNote: String[0..1];
+  weatherNote: String[0..1];
+  provenanceRegion: String[0..1];
+  provenanceDistrict: String[0..1];
+  provenanceSite: String[0..1];
+  viabilityGrade: String[0..1];
+  germinationNote: String[0..1];
+  dormancyClass: String[0..1];
+  cleaningMethod: String[0..1];
+  dryingMethod: String[0..1];
+  packagingType: String[0..1];
+  curationNote: String[0..1];
+  curatorName: String[0..1];
+  collectedAt: DateTime[1];
+  receivedAt: DateTime[0..1];
+  testedAt: DateTime[0..1];
+  repackedAt: DateTime[0..1];
+  seedMassG: Decimal[0..1];
+  moisturePct: Decimal[0..1];
+  germinationRatePct: Decimal[0..1];
+  thousandSeedMassG: Decimal[0..1];
+  packetCount: Integer[1];
+  viabilityScore: Integer[0..1];
+}

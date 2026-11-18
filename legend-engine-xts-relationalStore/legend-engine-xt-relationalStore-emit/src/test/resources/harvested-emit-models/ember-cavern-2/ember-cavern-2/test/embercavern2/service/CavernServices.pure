@@ -1,0 +1,566 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::embercavern2::service::DeepestDescentByRegion
+{
+  pattern: '/embercavern2/v1/descents/deepest/{asOf}';
+  title: 'Ember Cavern - Deepest Descent Per Region';
+  documentation: 'Expeditions in three survey regions that carry a leader note and departed this year, ranked against the deepest descent of their region and of their cave.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['cave-survey-warden', 'descent-log-keeper'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::embercavern2::domain::Expedition.all($asOf)->filter(
+      e|$e.regionCode->in(['NORTH', 'WEST', 'KARST']) && (!$e.leaderNote->isEmpty() && ($e.departedAt >= %2026-01-01T00:00:00))
+    )->project(
+      [
+        e|$e.expeditionCode,
+        e|$e.regionCode,
+        e|$e.cave.caveName,
+        e|$e.cave.massif.district.authority.authorityName,
+        e|$e.depthM
+      ],
+      [
+        'Expedition',
+        'Region',
+        'Cave',
+        'Authority',
+        'Depth'
+      ]
+    )->olapGroupBy(
+      ['Region'],
+      func('Depth', y|$y->max()),
+      'RegionDeepest'
+    )->olapGroupBy(
+      ['Cave'],
+      func('Depth', y|$y->max()),
+      'CaveDeepest'
+    )->filter(
+      r|($r.getInteger('Depth') == $r.getInteger('RegionDeepest')) && !($r.getString('Region') == 'SEA')
+    )->distinct()->sort([asc('Expedition')])};
+    mapping: test::embercavern2::mapping::CavernMapping;
+    runtime: test::embercavern2::runtime::CavernRuntime;
+  }
+  testSuites:
+  [
+    deepestDescentByRegionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernConnection:
+            Reference
+            #{
+              test::embercavern2::data::CavernData
+            }#
+        ]
+      ]
+      tests:
+      [
+        deepestPerRegionAtMidYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-15
+          ]
+          asserts:
+          [
+            regionLeaders:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Expedition":"EX-01","Region":"NORTH","Cave":"Ember Hollow","Authority":"Fells Access Trust","Depth":140,"RegionDeepest":140,"CaveDeepest":140},{"Expedition":"EX-04","Region":"KARST","Cave":"Glowworm Rift","Authority":null,"Depth":210,"RegionDeepest":210,"CaveDeepest":210}]';
+                  }#;
+              }#
+          ]
+        },
+        versionOutsideCurrentWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2025-08-01
+          ]
+          asserts:
+          [
+            supersededPlanOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Expedition":"EX-01","Region":"NORTH","Cave":null,"Authority":null,"Depth":0,"RegionDeepest":0,"CaveDeepest":0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::embercavern2::service::ActiveCrewByStatus
+{
+  pattern: '/embercavern2/v1/crews/active/{asOf}';
+  title: 'Ember Cavern - Crew Of Active Expeditions';
+  documentation: 'Planned or underground expeditions outside the hardest grade, one row per crew member, narrowed to those underground or on the moor massif.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['cave-survey-warden', 'crew-roster-desk'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::embercavern2::domain::Expedition.all($asOf)->filter(
+      e|(($e.status == test::embercavern2::domain::ExpeditionStatus.UNDERGROUND) || ($e.status == test::embercavern2::domain::ExpeditionStatus.PLANNED)) && !$e.grade->in([test::embercavern2::domain::SurveyGrade.G4])
+    )->project(
+      [
+        e|$e.expeditionCode,
+        e|$e.status,
+        e|$e.grade,
+        e|$e.cave.massif.massifName,
+        e|$e.members.caverName
+      ],
+      [
+        'Expedition',
+        'Status',
+        'Grade',
+        'Massif',
+        'Member'
+      ]
+    )->filter(
+      r|($r.getEnum('Status') == test::embercavern2::domain::ExpeditionStatus.UNDERGROUND) || ($r.getString('Massif') == 'Ash Moor')
+    )->distinct()->sort([asc('Expedition'), asc('Member')])};
+    mapping: test::embercavern2::mapping::CavernMapping;
+    runtime: test::embercavern2::runtime::CavernRuntime;
+  }
+  testSuites:
+  [
+    activeCrewByStatusSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernConnection:
+            Reference
+            #{
+              test::embercavern2::data::CavernData
+            }#
+        ]
+      ]
+      tests:
+      [
+        undergroundCrewAtMidYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-15
+          ]
+          asserts:
+          [
+            undergroundCrew:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Expedition":"EX-01","Status":"UNDERGROUND","Grade":"G2","Massif":"Cinder Fells","Member":"Ada Flint"},{"Expedition":"EX-01","Status":"UNDERGROUND","Grade":"G2","Massif":"Cinder Fells","Member":"Bo Marl"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::embercavern2::service::KitLoadOut
+{
+  pattern: '/embercavern2/v1/kit/{asOf}';
+  title: 'Ember Cavern - Rope And Lamp Load-Out';
+  documentation: 'Reads rope length and lamp output through subtype casts on the two kit navigations of each equipped expedition.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['kit-store-keeper', 'cave-survey-warden'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::embercavern2::domain::Expedition.all($asOf)->filter(
+      e|!($e.expeditionCode == $e.regionCode) && (!$e.ropeKit->isEmpty() || !$e.lampKit->isEmpty())
+    )->project(
+      [
+        e|$e.expeditionCode,
+        e|$e.ropeKit.kitCode,
+        e|$e.ropeKit->cast(@test::embercavern2::domain::RopeKit).ropeLengthM,
+        e|$e.lampKit->cast(@test::embercavern2::domain::LampKit).lumens
+      ],
+      [
+        'Expedition',
+        'RopeKit',
+        'RopeLength',
+        'Lumens'
+      ]
+    )->filter(
+      r|$r.getString('Expedition')->in(['EX-01', 'EX-02', 'EX-04'])
+    )->distinct()->sort([asc('Expedition')])};
+    mapping: test::embercavern2::mapping::CavernMapping;
+    runtime: test::embercavern2::runtime::CavernRuntime;
+  }
+  testSuites:
+  [
+    kitLoadOutSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernConnection:
+            Reference
+            #{
+              test::embercavern2::data::CavernData
+            }#
+        ]
+      ]
+      tests:
+      [
+        ropeAndLampSubtypes:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-15
+          ]
+          asserts:
+          [
+            loadOut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Expedition":"EX-01","RopeKit":"KT-R1","RopeLength":60,"Lumens":800},{"Expedition":"EX-02","RopeKit":null,"RopeLength":null,"Lumens":1200},{"Expedition":"EX-04","RopeKit":null,"RopeLength":null,"Lumens":1200}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::embercavern2::service::ClearedCrewToday
+{
+  pattern: '/embercavern2/v1/crews/cleared-today';
+  title: 'Ember Cavern - Rescue-Cleared Crews Today';
+  documentation: 'Groups the rescue-cleared expeditions valid today by region, joining crew names and keeping the deepest descent.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['rescue-liaison', 'crew-roster-desk'] };
+  execution: Single
+  {
+    query: {|let today = now();
+    test::embercavern2::domain::Expedition.all($today)->filter(
+      e|($e.isRescueCleared == true) && !$e.regionCode->in(['SEA', 'DESERT'])
+    )->groupBy(
+      [
+        e|$e.regionCode
+      ],
+      [
+        agg(e|$e.members.caverName, y|$y->joinStrings('; ')),
+        agg(e|$e.depthM, y|$y->max())
+      ],
+      [
+        'Region',
+        'Crew',
+        'Deepest'
+      ]
+    )->filter(
+      r|($r.getString('Region') == 'NORTH') || ($r.getString('Region') == 'KARST')
+    )->sort([asc('Region')]);};
+    mapping: test::embercavern2::mapping::CavernMapping;
+    runtime: test::embercavern2::runtime::CavernRuntime;
+  }
+  testSuites:
+  [
+    clearedCrewTodaySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernConnection:
+            Reference
+            #{
+              test::embercavern2::data::CavernData
+            }#
+        ]
+      ]
+      tests:
+      [
+        clearedRegionsToday:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            clearedRegions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Region":"KARST","Crew":"Ada Flint","Deepest":210},{"Region":"NORTH","Crew":"Ada Flint; Bo Marl; Cy Tuff","Deepest":140}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::embercavern2::service::DepartureCalendar
+{
+  pattern: '/embercavern2/v1/departures/{asOf}';
+  title: 'Ember Cavern - Departure Calendar By Entrance';
+  documentation: 'Departure days of returned or returning expeditions already under way, set against the latest departure through the same entrance kind.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['descent-log-keeper', 'rescue-liaison'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::embercavern2::domain::Expedition.all($asOf)->filter(
+      e|($e.departedAt < now()) && (!($e.status == test::embercavern2::domain::ExpeditionStatus.ABANDONED) && !$e.dueBackAt->isEmpty())
+    )->project(
+      [
+        e|$e.expeditionCode,
+        e|$e.departedAt->datePart(),
+        e|$e.cave.entranceKind
+      ],
+      [
+        'Expedition',
+        'Departed',
+        'Entrance'
+      ]
+    )->olapGroupBy(
+      ['Entrance'],
+      func('Departed', y|$y->max()),
+      'LatestDeparture'
+    )->filter(
+      r|($r.getString('Entrance') == 'SHAFT') || ($r.getString('Entrance') == 'RESURGENCE')
+    )->distinct()->sort([asc('Expedition')])};
+    mapping: test::embercavern2::mapping::CavernMapping;
+    runtime: test::embercavern2::runtime::CavernRuntime;
+  }
+  testSuites:
+  [
+    departureCalendarSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernConnection:
+            Reference
+            #{
+              test::embercavern2::data::CavernData
+            }#
+        ]
+      ]
+      tests:
+      [
+        departuresPerEntrance:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-15
+          ]
+          asserts:
+          [
+            calendarRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Expedition":"EX-01","Departed":"2026-05-02","Entrance":"SHAFT","LatestDeparture":"2026-05-02"},{"Expedition":"EX-03","Departed":"2026-02-10","Entrance":"RESURGENCE","LatestDeparture":"2026-04-01"},{"Expedition":"EX-04","Departed":"2026-04-01","Entrance":"RESURGENCE","LatestDeparture":"2026-04-01"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::embercavern2::service::DiverRoster
+{
+  pattern: '/embercavern2/v1/divers/{asOf}';
+  title: 'Ember Cavern - Divers On Crewed Expeditions';
+  documentation: 'Crewed expeditions in three regions, one row per member, kept only where the member is a diver.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['sump-dive-officer', 'crew-roster-desk'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::embercavern2::domain::Expedition.all($asOf)->filter(
+      e|!$e.members->isEmpty() && $e.regionCode->in(['NORTH', 'KARST', 'WEST'])
+    )->project(
+      [
+        e|$e.expeditionCode,
+        e|$e.members.caverName,
+        e|$e.members.isDiver,
+        e|$e.cave.massif.district.districtName
+      ],
+      [
+        'Expedition',
+        'Caver',
+        'Diver',
+        'District'
+      ]
+    )->filter(
+      r|$r.getBoolean('Diver') == true
+    )->distinct()->sort([asc('Expedition'), asc('Caver')])};
+    mapping: test::embercavern2::mapping::CavernMapping;
+    runtime: test::embercavern2::runtime::CavernRuntime;
+  }
+  testSuites:
+  [
+    diverRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernConnection:
+            Reference
+            #{
+              test::embercavern2::data::CavernData
+            }#
+        ]
+      ]
+      tests:
+      [
+        diversAtMidYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-15
+          ]
+          asserts:
+          [
+            diverRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Expedition":"EX-01","Caver":"Ada Flint","Diver":true,"District":"Upper Dale"},{"Expedition":"EX-02","Caver":"Cy Tuff","Diver":true,"District":"Upper Dale"},{"Expedition":"EX-04","Caver":"Ada Flint","Diver":true,"District":"Lower Dale"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::embercavern2::service::MassifDepthBoard
+{
+  pattern: '/embercavern2/v1/massifs/depth/{asOf}';
+  title: 'Ember Cavern - Depth Board Per Massif';
+  documentation: 'A let-bound excluded region feeds the post-filter; each expedition is shown with the deepest descent on its massif, excluding the easiest grade.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['cave-survey-warden', 'descent-log-keeper'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|let excludedRegion = 'SEA';
+    test::embercavern2::domain::Expedition.all($asOf)->filter(
+      e|$e.regionCode->in(['NORTH', 'KARST', 'WEST']) && ($e.grade->in([test::embercavern2::domain::SurveyGrade.G1, test::embercavern2::domain::SurveyGrade.G2, test::embercavern2::domain::SurveyGrade.G3]) || ($e.status == test::embercavern2::domain::ExpeditionStatus.UNDERGROUND))
+    )->project(
+      [
+        e|$e.expeditionCode,
+        e|$e.regionCode,
+        e|$e.cave.caveName,
+        e|$e.cave.massif.massifName,
+        e|$e.grade,
+        e|$e.depthM
+      ],
+      [
+        'Expedition',
+        'Region',
+        'Cave',
+        'Massif',
+        'Grade',
+        'Depth'
+      ]
+    )->olapGroupBy(
+      ['Massif'],
+      func('Depth', y|$y->max()),
+      'MassifDeepest'
+    )->filter(
+      r|!($r.getEnum('Grade') == test::embercavern2::domain::SurveyGrade.G1) && !($r.getString('Region') == $excludedRegion)
+    )->distinct()->sort([asc('Expedition')]);};
+    mapping: test::embercavern2::mapping::CavernMapping;
+    runtime: test::embercavern2::runtime::CavernRuntime;
+  }
+  testSuites:
+  [
+    massifDepthBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernConnection:
+            Reference
+            #{
+              test::embercavern2::data::CavernData
+            }#
+        ]
+      ]
+      tests:
+      [
+        massifBoardAtMidYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-15
+          ]
+          asserts:
+          [
+            boardRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Expedition":"EX-01","Region":"NORTH","Cave":"Ember Hollow","Massif":"Cinder Fells","Grade":"G2","Depth":140,"MassifDeepest":140},{"Expedition":"EX-02","Region":"NORTH","Cave":"Lantern Pot","Massif":"Cinder Fells","Grade":"G3","Depth":85,"MassifDeepest":140},{"Expedition":"EX-04","Region":"KARST","Cave":"Glowworm Rift","Massif":"Ash Moor","Grade":"G4","Depth":210,"MassifDeepest":210}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

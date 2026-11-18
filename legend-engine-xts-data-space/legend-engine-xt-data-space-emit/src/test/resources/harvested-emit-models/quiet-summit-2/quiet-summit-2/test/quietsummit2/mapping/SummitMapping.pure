@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietsummit2::mapping::SummitMapping
+(
+  *test::quietsummit2::domain::Station[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietsummit2::store::SummitDB]alpine.station.station_code
+    )
+    ~mainTable [test::quietsummit2::store::SummitDB]alpine.station
+    stationCode: [test::quietsummit2::store::SummitDB]alpine.station.station_code,
+    name: [test::quietsummit2::store::SummitDB]alpine.station.station_name,
+    elevationMetres: [test::quietsummit2::store::SummitDB]alpine.station.elevation_metres,
+    region: [test::quietsummit2::store::SummitDB]alpine.station.region
+  }
+
+  *test::quietsummit2::domain::Sensor[sensor]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietsummit2::store::SummitDB]alpine.sensor.sensor_code
+    )
+    ~mainTable [test::quietsummit2::store::SummitDB]alpine.sensor
+    sensorCode: [test::quietsummit2::store::SummitDB]alpine.sensor.sensor_code,
+    label: [test::quietsummit2::store::SummitDB]alpine.sensor.label,
+    sensorKind: [test::quietsummit2::store::SummitDB]alpine.sensor.sensor_kind,
+    calibratedOn: [test::quietsummit2::store::SummitDB]alpine.sensor.calibrated_on
+  }
+
+  *test::quietsummit2::domain::GustReading[gustReading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietsummit2::store::SummitDB]alpine.gust_reading.reading_code
+    )
+    ~mainTable [test::quietsummit2::store::SummitDB]alpine.gust_reading
+    readingCode: [test::quietsummit2::store::SummitDB]alpine.gust_reading.reading_code,
+    stationCode: [test::quietsummit2::store::SummitDB]alpine.gust_reading.station_code,
+    gustSpeed: [test::quietsummit2::store::SummitDB]alpine.gust_reading.gust_speed,
+    observedOn: [test::quietsummit2::store::SummitDB]alpine.gust_reading.observed_on
+  }
+
+  *test::quietsummit2::domain::SnowSample[snowSample]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietsummit2::store::SummitDB]alpine.snow_sample.sample_code
+    )
+    ~mainTable [test::quietsummit2::store::SummitDB]alpine.snow_sample
+    sampleCode: [test::quietsummit2::store::SummitDB]alpine.snow_sample.sample_code,
+    stationCode: [test::quietsummit2::store::SummitDB]alpine.snow_sample.station_code,
+    depthCentimetres: [test::quietsummit2::store::SummitDB]alpine.snow_sample.depth_centimetres,
+    sampledOn: [test::quietsummit2::store::SummitDB]alpine.snow_sample.sampled_on
+  }
+
+  testSuites:
+  [
+    stationRosterSuite:
+    {
+      function: |test::quietsummit2::domain::Station.all()->project(
+  [
+    s|$s.stationCode,
+    s|$s.name,
+    s|$s.elevationMetres,
+    s|$s.region
+  ],
+  [
+    'Code',
+    'Name',
+    'Elevation',
+    'Region'
+  ]
+)->sort(
+  [
+    asc('Code')
+  ]
+);
+      tests:
+      [
+        stationRoster:
+        {
+          doc: 'Projects the four primary-key-anchored station columns over the main table alias to verify the root class mapping.';
+          data:
+          [
+            test::quietsummit2::store::SummitDB:
+              Relational
+              #{
+                alpine.station:
+                  'station_code,station_name,elevation_metres,region\n'+
+                  'NRDG,North Ridge,2410,NORTH\n'+
+                  'SCOL,South Col,1980,SOUTH\n';
+              }#
+          ];
+          asserts:
+          [
+            bothStations:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"NRDG","Name":"North Ridge","Elevation":2410,"Region":"NORTH"},{"Code":"SCOL","Name":"South Col","Elevation":1980,"Region":"SOUTH"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

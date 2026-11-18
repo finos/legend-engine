@@ -1,0 +1,55 @@
+name: meadow-harbor
+title: "Meadow Harbor Bitemporal Cover Register — Point-In-Time Service Over Business And Processing Windows"
+description: |
+  A harbor seagrass survey model whose register is milestoned in two dimensions. Mooring
+  berths carry a business-date validity window, the cover readings taken at them carry both
+  a business window and a processing window, and a single-execution service pins every one
+  of those dimensions from its own parameters, so each call resolves exactly one version per
+  milestoned table. The query restricts the berths by set membership over a literal list of
+  surveyed zones before anything is projected, derives two day counts from the requested
+  business date — one from the recorded placement date and one from the review date offset
+  off it — and removes retired readings after projection, so a berth kept in the register
+  with nothing but a retired reading contributes no row. The service tests call the same
+  query at two points in time: one where the current rows are effective and one inside a
+  closed business window, so the rows that fall out of range at each point are pinned by
+  assertion rather than by construction.
+modelSources:
+  model:
+    root: meadow-harbor
+    files:
+      - test/meadowharbor/connection/HarborH2Connection.pure
+      - test/meadowharbor/domain/HarborDomain.pure
+      - test/meadowharbor/mapping/HarborMapping.pure
+      - test/meadowharbor/runtime/HarborH2Runtime.pure
+      - test/meadowharbor/service/MeadowCoverAsOfService.pure
+      - test/meadowharbor/store/HarborDatabase.pure
+features:
+  - execution:service
+  - execution:service-test
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association-mapping
+  - bitemporal
+  - business-temporal
+  - date-arithmetic
+  - h2
+  - h2-runtime
+  - point-in-time
+  - processing-temporal
+  - seagrass-survey
+  - service-test
+  - set-membership

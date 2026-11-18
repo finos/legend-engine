@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::frostedarboretum::store::CablewayDb
+(
+  Schema cableway
+  (
+    Table cabin_allotment
+    (
+      milestoning
+      (
+        business(BUS_FROM = bus_from, BUS_THRU = bus_thru, INFINITY_DATE = %9999-12-31T00:00:00.000000+0000)
+      )
+      allot_id INTEGER PRIMARY KEY,
+      cabin_code VARCHAR(16) NOT NULL,
+      station_code VARCHAR(16) NOT NULL,
+      cabin_class VARCHAR(16) NOT NULL,
+      planned_zone VARCHAR(16) NOT NULL,
+      service_zone VARCHAR(16) NOT NULL,
+      haul_kind VARCHAR(16) NOT NULL,
+      allot_state VARCHAR(16) NOT NULL,
+      season_code VARCHAR(16) NOT NULL,
+      seat_count INTEGER NOT NULL,
+      cable_length_m INTEGER NOT NULL,
+      bus_from TIMESTAMP NOT NULL,
+      bus_thru TIMESTAMP NOT NULL
+    )
+
+    Table station_ref
+    (
+      station_code VARCHAR(16) PRIMARY KEY,
+      station_name VARCHAR(80) NOT NULL,
+      staffed_flag VARCHAR(4) NOT NULL
+    )
+  )
+
+  Filter WinterSeason(cableway.cabin_allotment.season_code = 'WINTER')
+
+  Join Allotment_Station(equal(cableway.cabin_allotment.station_code, cableway.station_ref.station_code))
+)

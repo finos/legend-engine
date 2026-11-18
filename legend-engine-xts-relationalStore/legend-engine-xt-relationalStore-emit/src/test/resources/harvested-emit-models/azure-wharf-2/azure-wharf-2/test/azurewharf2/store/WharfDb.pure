@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::azurewharf2::store::WharfDb
+(
+  Schema wharf
+  (
+    Table mooring_log
+    (
+      log_id INTEGER PRIMARY KEY,
+      log_code VARCHAR(24) NOT NULL,
+      berth_code VARCHAR(24) NOT NULL,
+      vessel_code VARCHAR(24) NOT NULL,
+      crew_code VARCHAR(24) NOT NULL,
+      hull_note VARCHAR(80),
+      deck_note VARCHAR(80),
+      lamp_note VARCHAR(80),
+      crate_count INTEGER,
+      checked_on DATE NOT NULL
+    )
+    Table berth
+    (
+      berth_code VARCHAR(24) PRIMARY KEY,
+      quay_code VARCHAR(24) NOT NULL,
+      berth_name VARCHAR(80) NOT NULL
+    )
+    Table quay
+    (
+      quay_code VARCHAR(24) PRIMARY KEY,
+      quay_name VARCHAR(80) NOT NULL
+    )
+    Table vessel
+    (
+      vessel_code VARCHAR(24) PRIMARY KEY,
+      vessel_name VARCHAR(80) NOT NULL
+    )
+    Table watch_crew
+    (
+      crew_code VARCHAR(24) PRIMARY KEY,
+      crew_name VARCHAR(80) NOT NULL
+    )
+  )
+
+  Join LogToBerth(wharf.mooring_log.berth_code = wharf.berth.berth_code)
+  Join BerthToQuay(wharf.berth.quay_code = wharf.quay.quay_code)
+  Join LogToVessel(wharf.mooring_log.vessel_code = wharf.vessel.vessel_code)
+  Join LogToCrew(wharf.mooring_log.crew_code = wharf.watch_crew.crew_code)
+)

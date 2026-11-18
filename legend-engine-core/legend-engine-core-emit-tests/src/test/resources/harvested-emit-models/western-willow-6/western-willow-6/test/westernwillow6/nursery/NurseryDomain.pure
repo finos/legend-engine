@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::westernwillow6::nursery::*;
+
+Class <<meta::pure::profiles::temporal.processingtemporal, test::westernwillow6::nursery::NurseryStewardship.curated>> {meta::pure::profiles::doc.doc = 'A nursery bed where willow rods are rooted and divided over processing time.', test::westernwillow6::nursery::NurseryStewardship.custodian = 'riverbank team'} test::westernwillow6::nursery::WithyBed
+{
+  {meta::pure::profiles::doc.doc = 'Name displayed for the nursery bed.', test::westernwillow6::nursery::NurseryStewardship.reviewCadence = 'seasonal'} bedName: String[1];
+  {meta::pure::profiles::doc.doc = 'Prepared substrate of the bed.'} substrate: BedSubstrate[1];
+  {meta::pure::profiles::doc.doc = 'Earlier bed from which this bed was split.'} parentBed: WithyBed[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal, test::westernwillow6::nursery::NurseryStewardship.provisional>> {meta::pure::profiles::doc.doc = 'A processing-temporal batch of willow cuttings prepared for planting.'} test::westernwillow6::nursery::CuttingBatch
+{
+  {meta::pure::profiles::doc.doc = 'Label assigned to the cutting batch.'} batchLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Recorded vigour of the rods in the batch.'} vigour: RodVigour[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal, test::westernwillow6::nursery::NurseryStewardship.curated>> {meta::pure::profiles::doc.doc = 'A craft-school crew that tends nursery beds.'} test::westernwillow6::nursery::WeaverCrew
+{
+  {meta::pure::profiles::doc.doc = 'Name of the tending crew.'} crewName: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal, test::westernwillow6::nursery::NurseryStewardship.provisional>> {meta::pure::profiles::doc.doc = 'A versioned vocabulary reference for a grade of rod.'} test::westernwillow6::nursery::RodGrade
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named season in which the nursery harvest is scheduled.'} test::westernwillow6::nursery::HarvestSeason
+{
+  {meta::pure::profiles::doc.doc = 'Name of the harvest season.'} seasonName: String[1];
+  {meta::pure::profiles::doc.doc = 'Number of weeks in the season.'} weekCount: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A kit of hand tools used at the nursery.'} test::westernwillow6::nursery::ToolKit
+{
+  {meta::pure::profiles::doc.doc = 'Name of the tool kit.'} kitName: String[1];
+}

@@ -1,0 +1,30 @@
+name: indigo-marsh-4
+title: "Indigo Marsh — Store-Less Quadrat Domain with an Unaddressable Empty-Named Derivation"
+description: |
+  A store-less marsh-survey domain whose quadrat class exposes two recorded text
+  properties, a constant-valued derivation returning an empty string for every
+  instance, and a second derivation declared with an empty name and an empty
+  parameter list, so the compiled class carries a member that no property path can
+  reach. A companion observation class keeps the flat optional-scalar shape over
+  text, decimal, date, date-time and boolean and derives a patch label from its
+  optional name. There is no store, mapping, runtime or query anywhere, so the
+  model is validated by compilation alone.
+modelSources:
+  model:
+    root: indigo-marsh-4
+    files:
+      - test/indigomarsh4/domain/MarshQuadrat.pure
+      - test/indigomarsh4/domain/ReedPatchObservation.pure
+features:
+  - grammar:derived-property
+  - grammar:empty-named-qualified-property
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - constant-derivation
+  - derived-property
+  - empty-named-qualified-property
+  - marsh
+  - optional-scalars
+  - store-less

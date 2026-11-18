@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::wistfulgecko::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A licensed field observer who records nocturnal gecko counts.'} test::wistfulgecko::domain::Observer
+{
+  observerCode: String[1];
+  observerName: String[1];
+  teamName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A surveyed habitat patch that gecko sightings are recorded against.'} test::wistfulgecko::domain::Habitat
+{
+  habitatCode: String[1];
+  habitatName: String[1];
+  terrainCode: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'One nocturnal gecko sighting valid over a business window, widened with habitat and observer detail reached over store joins.'} test::wistfulgecko::domain::GeckoSighting
+{
+  sightingCode: String[1];
+  speciesCode: String[1];
+  geckoCount: Integer[1];
+  nightTempC: Float[1];
+  habitatName: String[0..1];
+  terrainCode: String[0..1];
+  observerName: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A canopy survey of a habitat patch, corrected in place so only the latest processing window is visible.'} test::wistfulgecko::domain::HabitatSurvey
+{
+  surveyCode: String[1];
+  canopyPct: Float[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A retired sighting row kept in the archive estate under its own processing window.'} test::wistfulgecko::domain::ArchivedSighting
+{
+  archiveCode: String[1];
+  sightingCode: String[1];
+  retiredStage: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a habitat patch to the sightings recorded in it.'} test::wistfulgecko::domain::Habitat_Sightings
+{
+  habitat: Habitat[0..1];
+  sightings: GeckoSighting[*];
+}

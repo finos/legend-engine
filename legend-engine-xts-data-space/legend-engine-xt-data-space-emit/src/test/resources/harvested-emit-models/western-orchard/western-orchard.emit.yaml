@@ -1,0 +1,57 @@
+name: western-orchard
+title: "Orchard Estate Register — A Curated Entry Point Over An Anchored Multi-Table Binding, Its Layout Element And Two Featured Projection Endpoints"
+description: |
+  A fruit-orchard estate model whose four domain classes are each anchored to their own main
+  table with an explicit identity column set, and whose three associations are resolved through
+  declared joins so a projection can reach the planted variety and the rostered picking crew
+  from a harvest lot. A layout element positions the classes and their relationship views, and a
+  curated entry point binds the mapping, the warehouse runtime, that layout and two featured
+  single-execution projection endpoints into one consumable unit with support metadata.
+modelSources:
+  model:
+    root: western-orchard
+    files:
+      - test/westernorchard/connection/OrchardConnection.pure
+      - test/westernorchard/dataspace/OrchardDataSpace.pure
+      - test/westernorchard/diagram/OrchardDiagram.pure
+      - test/westernorchard/domain/OrchardDomain.pure
+      - test/westernorchard/mapping/OrchardMapping.pure
+      - test/westernorchard/runtime/OrchardRuntime.pure
+      - test/westernorchard/service/BlockRoster.pure
+      - test/westernorchard/service/LotLookup.pure
+      - test/westernorchard/store/OrchardDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:diagram
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - agriculture
+  - association-mapping
+  - dataspace
+  - diagram
+  - h2
+  - main-table-alias
+  - primary-key
+  - projection
+  - relational
+  - service-test
+  - snowflake
+  - snowflake-public-auth

@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::tealotter3::dataspace::SeedArchiveDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'vault';
+      description: 'Cold-room environment - the seed archive mapping served through the vault warehouse runtime.';
+      mapping: test::tealotter3::mapping::SeedArchiveMapping;
+      defaultRuntime: test::tealotter3::runtime::SeedVaultRuntime;
+    }
+  ];
+  defaultExecutionContext: 'vault';
+  title: 'Seed Vault Conservation Register';
+  description: 'Discovery surface over the stored seed accessions, the taxa and cold rooms they resolve against, and the germination trials recorded for them.';
+  elements:
+  [
+    test::tealotter3::domain::SeedAccession,
+    test::tealotter3::domain::SeedTaxon,
+    test::tealotter3::domain::SeedVault,
+    test::tealotter3::domain::GerminationTrial
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Accession Register';
+      description: 'The keyed register endpoint with its taxon, vault and seed-count parameters.';
+      executable: test::tealotter3::service::AccessionRegister;
+    },
+    {
+      id: 2;
+      title: 'Trial Rank Board';
+      description: 'The taxon-partitioned germination ranking endpoint.';
+      executable: test::tealotter3::service::TrialRankBoard;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'seed-vault-desk@seedconservation.invalid';
+  };
+}

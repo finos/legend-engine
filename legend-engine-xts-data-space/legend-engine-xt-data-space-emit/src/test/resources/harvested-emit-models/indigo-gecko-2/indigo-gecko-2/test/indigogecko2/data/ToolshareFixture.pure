@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::indigogecko2::data::ToolshareFixture
+{
+  Relational
+  #{
+    toolshare.checkout:
+      'checkout_code,period,status_code,tool_code,member_code,wear_points,setup_points,taken_on,due_on,returned_on,minutes_used,wear_grade\n'+
+      'L01,2026-05,OUT,TL-SAW-1,MB-01,4.0,10.0,2026-05-02,2026-05-09,,120,A\n'+
+      'L02,2026-05,BACK,TL-SAW-2,MB-02,3.0,5.0,2026-05-03,2026-05-10,2026-05-08,60,B\n'+
+      'L03,2026-05,OUT,TL-DRL-1,MB-03,6.0,10.0,2026-05-04,2026-05-20,,90,A\n'+
+      'L04,2026-05,OUT,TL-TEST-1,MB-01,2.0,0.0,2026-05-05,2026-05-12,,20,A\n'+
+      'L05,2026-05,OUT,TL-DRL-1,XM-04,5.0,5.0,2026-05-05,2026-05-12,,55,B\n'+
+      'L06,2026-05,LOST,TL-SAW-2,MB-02,9.0,5.0,2026-05-06,2026-05-10,2026-05-11,10,C\n'+
+      'L07,2026-05,VOID,TL-SAW-1,MB-01,1.0,1.0,2026-05-07,2026-05-14,,5,A\n'+
+      'L08,2026-05,LATE,TL-SEW-1,MB-05,0.0,0.0,2026-04-20,2026-04-27,,30,C\n'+
+      'L09,2026-06,OUT,TL-SAW-2,MB-01,3.0,5.0,2026-06-01,2026-06-08,,45,A\n'+
+      'L10,2026-05,BACK,TL-GRN-1-R,MB-03,8.0,0.0,2026-05-06,2026-05-07,2026-05-07,15,B\n';
+
+    toolshare.member:
+      'member_code,member_name,workshop_code\n'+
+      'MB-01,Ada Fox,WS-1\n'+
+      'MB-02,Bea Lund,WS-1\n'+
+      'MB-03,Cal Ortiz,WS-2\n'+
+      'XM-04,Dev Pike,WS-2\n'+
+      'MB-05,Eli Shaw,WS-3\n';
+
+    toolshare.workshop:
+      'workshop_code,workshop_name,steward_code\n'+
+      'WS-1,Wood bench,ST-1\n'+
+      'WS-2,Metal bench,ST-2\n'+
+      'WS-3,Textile bench,ST-9\n';
+
+    toolshare.steward:
+      'steward_code,steward_name\n'+
+      'ST-1,Steward Ida\n'+
+      'ST-2,Steward Omar\n';
+
+    toolshare.tool:
+      'tool_code,tool_name,supplier_code\n'+
+      'TL-SAW-1,Panel saw,SP-1\n'+
+      'TL-SAW-2,Coping saw,SP-1\n'+
+      'TL-DRL-1,Hand drill,SP-2\n'+
+      'TL-TEST-1,Test rig,SP-2\n'+
+      'TL-GRN-1-R,Bench grinder,SP-9\n'+
+      'TL-SEW-1,Sewing frame,SP-2\n';
+
+    toolshare.supplier:
+      'supplier_code,supplier_name\n'+
+      'SP-1,Grainline Tools\n'+
+      'SP-2,Anvil Supply\n'+
+      'SP-9,Clearance lot\n';
+
+    toolshare.checkout_tag:
+      'checkout_code,tag_code\n'+
+      'L01,PRIORITY\n'+
+      'L03,ROUTINE\n'+
+      'L05,ROUTINE\n'+
+      'L08,PRIORITY\n'+
+      'L10,ROUTINE\n';
+  }#
+}

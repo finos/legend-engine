@@ -1,0 +1,36 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::solarcavern2::store::CavernDb
+(
+  Schema speleo
+  (
+    Table chamber_reading
+    (
+      reading_id INTEGER PRIMARY KEY,
+      chamber_code VARCHAR(24),
+      passage_name VARCHAR(64),
+      surveyor_team VARCHAR(48),
+      depth_m DECIMAL(9,3),
+      humidity_pct DECIMAL(5,2),
+      logged_at TIMESTAMP,
+      calibrated_on DATE,
+      lamp_active BIT,
+      mapped_on_num DECIMAL(8,0),
+      sealed_on_num DECIMAL(8,0),
+      sampled_on_num DECIMAL(8,0)
+    )
+  )
+)

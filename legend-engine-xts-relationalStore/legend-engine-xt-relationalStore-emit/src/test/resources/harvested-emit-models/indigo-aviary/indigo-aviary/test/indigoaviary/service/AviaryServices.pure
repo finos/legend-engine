@@ -1,0 +1,235 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigoaviary::service::ReadingWindowService
+{
+  pattern: '/indigoaviary/v1/reading-window';
+  documentation: 'Filters sensor observations inside a requested date window and projects decoded sensor and condition labels.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], daysBack: Integer[1], bands: test::indigoaviary::domain::ConditionBand[*]|test::indigoaviary::domain::SensorReading.all($asOf)->filter(
+      r|($r.capturedOn >= test::indigoaviary::function::windowFloor($asOf, $daysBack)) &&
+        (($r.capturedOn <= $asOf) && (($bands->isEmpty()) || ($r.conditionBand->toOne()->in($bands))))
+    )->project(
+      [
+        r|$r.readingCode,
+        r|$r.unitCode,
+        r|$r.sensorKind,
+        r|test::indigoaviary::function::readingAge($asOf, $r.capturedOn)
+      ],
+      [
+        'Reading',
+        'Unit',
+        'Sensor',
+        'AgeDays'
+      ]
+    )->sort(
+      [
+        asc('Reading')
+      ]
+    )->take(20)};
+    mapping: test::indigoaviary::mapping::AviaryMapping;
+    runtime: test::indigoaviary::runtime::AviaryRuntime;
+  }
+  testSuites:
+  [
+    readingWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviary: Reference
+            #{
+              test::indigoaviary::data::AviaryTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        windowReadsCurrentSensors:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-30,
+            daysBack = 30,
+            bands = []
+          ]
+          asserts:
+          [
+            currentReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"RD-01","Unit":"WT-01","Sensor":"VIBRATION","AgeDays":20},{"Reading":"RD-02","Unit":"WT-01","Sensor":"TEMPERATURE","AgeDays":19},{"Reading":"RD-03","Unit":"WT-02","Sensor":"VIBRATION","AgeDays":18},{"Reading":"RD-04","Unit":"WT-02","Sensor":"OIL_PRESSURE","AgeDays":17}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::indigoaviary::service::SectorConditionService
+{
+  pattern: '/indigoaviary/v1/sector-condition';
+  documentation: 'Groups current readings by sensor kind and returns the count and total observed value.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::indigoaviary::domain::SensorReading.all($asOf)->filter(
+      r|$r.capturedOn >= test::indigoaviary::function::windowFloor($asOf, 30)
+    )->groupBy(
+      [
+        r|$r.sensorKind
+      ],
+      [
+        agg(r|$r.readingValue, v|$v->sum()),
+        agg(r|$r.readingCode, v|$v->count())
+      ],
+      [
+        'Sensor',
+        'TotalValue',
+        'ReadingCount'
+      ]
+    )->sort(
+      [
+        asc('Sensor')
+      ]
+    )};
+    mapping: test::indigoaviary::mapping::AviaryMapping;
+    runtime: test::indigoaviary::runtime::AviaryRuntime;
+  }
+  testSuites:
+  [
+    sectorConditionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviary: Reference
+            #{
+              test::indigoaviary::data::AviaryTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        groupsSensorRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-30
+          ]
+          asserts:
+          [
+            groupedSensors:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sensor":"OIL_PRESSURE","TotalValue":4.0,"ReadingCount":1},{"Sensor":"TEMPERATURE","TotalValue":78.0,"ReadingCount":1},{"Sensor":"VIBRATION","TotalValue":46.0,"ReadingCount":2}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::indigoaviary::service::TurbineWatchService
+{
+  pattern: '/indigoaviary/v1/turbine-watch';
+  documentation: 'Narrows the turbine hierarchy to land machines, applies collection and date predicates over work items and projects subtype-only blade span.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], minSpan: Float[1]|test::indigoaviary::domain::WindUnit.all($asOf)->subType(@test::indigoaviary::domain::LandTurbine)->filter(
+      t|($t.bladeSpanMetres >= $minSpan) &&
+        ($t.workStates->count() >= 1)
+    )->project(
+      [
+        t|$t.unitCode,
+        t|$t.foundationType,
+        t|$t.bladeSpanMetres
+      ],
+      [
+        'Unit',
+        'Foundation',
+        'Span'
+      ]
+    )->sort(
+      [
+        desc('Span')
+      ]
+    )->take(5)};
+    mapping: test::indigoaviary::mapping::AviaryMapping;
+    runtime: test::indigoaviary::runtime::AviaryRuntime;
+  }
+  testSuites:
+  [
+    turbineWatchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviary: Reference
+            #{
+              test::indigoaviary::data::AviaryTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        landSubtypeIsProjected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-30,
+            minSpan = 100.0
+          ]
+          asserts:
+          [
+            oneLandTurbine:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Unit":"WT-01","Foundation":"GRAVITY","Span":120.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

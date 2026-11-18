@@ -1,0 +1,144 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sunlitthicket::service::ThicketFeedService
+{
+  pattern: '/sunlit-thicket/v1/coppice-feed';
+  title: 'Sunlit Thicket - Coppice Round Feed Lookup';
+  documentation: 'The feed reference the caller supplies is tested against the document root, and because that reference is the mapped request parameter of the remote lookup the predicate is what selects the remote call rather than filtering a fetched collection. The surviving document is walked three nodes deep by a graph-fetch tree and serialized through the same tree, so the block and the ride cut through it are published alongside the round header.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['thicket-wardens'] };
+  execution: Single
+  {
+    query: {feedRef: String[1]|test::sunlitthicket::domain::ThicketFeedDoc.all()->filter(
+      d|$d.feedRef == $feedRef
+    )->graphFetch(
+      #{
+        test::sunlitthicket::domain::ThicketFeedDoc
+        {
+          feedRef,
+          reserveName,
+          surveyRound,
+          publishedOn,
+          block
+          {
+            blockCode,
+            canopyPct,
+            coppiceCycleYears,
+            lastCutOn,
+            scallopCount,
+            deerBrowse,
+            ride
+            {
+              rideCode,
+              rideWidthM,
+              surfaceType,
+              mownOn,
+              sightlineMetres,
+              vergeCondition
+            }
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::sunlitthicket::domain::ThicketFeedDoc
+        {
+          feedRef,
+          reserveName,
+          surveyRound,
+          publishedOn,
+          block
+          {
+            blockCode,
+            canopyPct,
+            coppiceCycleYears,
+            lastCutOn,
+            scallopCount,
+            deerBrowse,
+            ride
+            {
+              rideCode,
+              rideWidthM,
+              surfaceType,
+              mownOn,
+              sightlineMetres,
+              vergeCondition
+            }
+          }
+        }
+      }#
+    );};
+    mapping: test::sunlitthicket::mapping::ThicketFeedMapping;
+    runtime: test::sunlitthicket::runtime::ThicketFeedRuntime;
+  }
+  testSuites:
+  [
+    coppiceFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketFeedConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/thicket/coppice-feed/FD-11';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"feedRef":"FD-11","reserveName":"Sunlit Thicket Reserve","surveyRound":4,"publishedOn":"2026-03-18","block":{"blockCode":"BK-03","canopyPct":42,"coppiceCycleYears":12,"lastCutOn":"2024-02-11","scallopCount":6,"deerBrowse":"LIGHT","ride":{"rideCode":"RD-02","rideWidthM":5,"surfaceType":"GRASS","mownOn":"2026-02-26","sightlineMetres":140,"vergeCondition":"CUT_BACK"}}}';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        theRequestedFeedIsWalkedToTheRideNode:
+        {
+          parameters:
+          [
+            feedRef = 'FD-11'
+          ]
+          asserts:
+          [
+            oneFeedDocumentThreeNodesDeep:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"feedRef":"FD-11","reserveName":"Sunlit Thicket Reserve","surveyRound":4,"publishedOn":"2026-03-18","block":{"blockCode":"BK-03","canopyPct":42,"coppiceCycleYears":12,"lastCutOn":"2024-02-11","scallopCount":6,"deerBrowse":"LIGHT","ride":{"rideCode":"RD-02","rideWidthM":5,"surfaceType":"GRASS","mownOn":"2026-02-26","sightlineMetres":140,"vergeCondition":"CUT_BACK"}}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

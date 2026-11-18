@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarquarry::mapping::NurseryBaseMapping
+(
+  include mapping test::cedarquarry::mapping::NurseryEnumMappings
+
+  *test::cedarquarry::domain::NurseryBed[bed]: Relational
+  {
+    ~filter [test::cedarquarry::store::NurseryDatabase]ActiveBed
+    ~primaryKey
+    (
+      [test::cedarquarry::store::NurseryDatabase]nursery.bed.bed_code
+    )
+    ~mainTable [test::cedarquarry::store::NurseryDatabase]nursery.bed
+    bedCode: [test::cedarquarry::store::NurseryDatabase]nursery.bed.bed_code,
+    bedName: [test::cedarquarry::store::NurseryDatabase]nursery.bed.bed_name,
+    aspect: [test::cedarquarry::store::NurseryDatabase]nursery.bed.aspect,
+    capacity: [test::cedarquarry::store::NurseryDatabase]nursery.bed.capacity
+  }
+
+  *test::cedarquarry::domain::Species[species]: Relational
+  {
+    ~filter [test::cedarquarry::store::NurseryDatabase]CurrentSpecies
+    ~primaryKey
+    (
+      [test::cedarquarry::store::NurseryDatabase]nursery.species.species_code
+    )
+    ~mainTable [test::cedarquarry::store::NurseryDatabase]nursery.species
+    speciesCode: [test::cedarquarry::store::NurseryDatabase]nursery.species.species_code,
+    speciesName: [test::cedarquarry::store::NurseryDatabase]nursery.species.species_name,
+    leafHabit: [test::cedarquarry::store::NurseryDatabase]nursery.species.leaf_habit
+  }
+
+  *test::cedarquarry::domain::Greenhouse[greenhouse]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry::store::NurseryDatabase]estate.greenhouse.greenhouse_code
+    )
+    ~mainTable [test::cedarquarry::store::NurseryDatabase]estate.greenhouse
+    greenhouseCode: [test::cedarquarry::store::NurseryDatabase]estate.greenhouse.greenhouse_code,
+    greenhouseName: [test::cedarquarry::store::NurseryDatabase]estate.greenhouse.greenhouse_name,
+    benchSlots: [test::cedarquarry::store::NurseryDatabase]@Greenhouse_Bench | [test::cedarquarry::store::NurseryDatabase]estate.greenhouse_bench_vw.bench_slots
+  }
+
+  *test::cedarquarry::domain::PropagationZone[zone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry::store::NurseryDatabase]estate.zone.zone_code
+    )
+    ~mainTable [test::cedarquarry::store::NurseryDatabase]estate.zone
+    zoneCode: [test::cedarquarry::store::NurseryDatabase]estate.zone.zone_code,
+    zoneName: [test::cedarquarry::store::NurseryDatabase]estate.zone.zone_name,
+    climateBand: [test::cedarquarry::store::NurseryDatabase]estate.zone.climate_band
+  }
+
+  *test::cedarquarry::domain::Propagator[propagator]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry::store::NurseryDatabase]estate.propagator.propagator_code
+    )
+    ~mainTable [test::cedarquarry::store::NurseryDatabase]estate.propagator
+    propagatorCode: [test::cedarquarry::store::NurseryDatabase]estate.propagator.propagator_code,
+    propagatorName: [test::cedarquarry::store::NurseryDatabase]estate.propagator.propagator_name,
+    shiftCode: [test::cedarquarry::store::NurseryDatabase]estate.propagator.shift_code
+  }
+
+  *test::cedarquarry::domain::BedYield[bedYield]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry::store::NurseryDatabase]nursery.bed_yield_vw.bed_code
+    )
+    ~mainTable [test::cedarquarry::store::NurseryDatabase]nursery.bed_yield_vw
+    bedCode: [test::cedarquarry::store::NurseryDatabase]nursery.bed_yield_vw.bed_code,
+    lotCount: [test::cedarquarry::store::NurseryDatabase]nursery.bed_yield_vw.lot_count,
+    totalSeedlings: [test::cedarquarry::store::NurseryDatabase]nursery.bed_yield_vw.total_seedlings
+  }
+
+  *test::cedarquarry::domain::GraftRecord[graft]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry::store::NurseryDatabase]nursery.graft_record.graft_code
+    )
+    ~mainTable [test::cedarquarry::store::NurseryDatabase]nursery.graft_record
+    graftCode: [test::cedarquarry::store::NurseryDatabase]nursery.graft_record.graft_code,
+    lotCode: [test::cedarquarry::store::NurseryDatabase]nursery.graft_record.lot_code,
+    rootstockCode: [test::cedarquarry::store::NurseryDatabase]nursery.graft_record.rootstock_code,
+    rootstockVigour: EnumerationMapping VigourSource: substring(
+                       toUpper(trim([test::cedarquarry::store::NurseryDatabase]nursery.graft_record.rootstock_code)),
+                       0,
+                       1
+                     ),
+    lotSpecies: [test::cedarquarry::store::NurseryDatabase]@Graft_Lot | [test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.species_code,
+    graftedOn: [test::cedarquarry::store::NurseryDatabase]nursery.graft_record.grafted_on
+  }
+)

@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::oliveprairie::service::FieldByRegion
+{
+  pattern: '/prairie/v1/fields/{region}';
+  title: 'Prairie - Fields by Region';
+  owners:
+  [
+    'prairie-platform',
+    'grassland-eng'
+  ];
+  documentation: 'Single-execution graph-fetch returning field names and regions for a region, backed by a relational mapping whose association navigation, inner join and plot row filter are also materialized.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {region: String[1]|test::oliveprairie::domain::Field.all()->filter(
+      f|$f.region == $region
+    )->graphFetch(
+      #{
+        test::oliveprairie::domain::Field{
+          name,
+          region
+        }
+      }#
+    )->serialize(
+      #{
+        test::oliveprairie::domain::Field{
+          name,
+          region
+        }
+      }#
+    )};
+    mapping: test::oliveprairie::mapping::PrairieMapping;
+    runtime: test::oliveprairie::runtime::PrairieRuntime;
+  }
+  testSuites:
+  [
+    fieldByRegionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              prairie.field:
+                'field_id,name,region\n'+
+                '1,North Field,PLAINS\n'+
+                '2,South Field,VALLEY\n';
+              prairie.plot:
+                'plot_id,field_id,crop_count\n'+
+                '10,1,150\n'+
+                '11,1,40\n'+
+                '12,2,200\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        plains:
+        {
+          parameters:
+          [
+            region = 'PLAINS'
+          ]
+          asserts:
+          [
+            northField:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"name":"North Field","region":"PLAINS"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

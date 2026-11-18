@@ -1,0 +1,62 @@
+name: indigo-glacier-2
+title: "Indigo Glacier Mass-Balance Survey - Filter-Gated Multi-Schema Stores, Store Include, Delegated-Kerberos Sybase Data Space"
+description: |
+  A glacier mass-balance survey catalogue. A registry store holds sites,
+  field crews and composite-keyed stake posts; a survey store includes the
+  registry and spreads stake readings, snow pits and melt ponds over a field
+  schema with ice cores and composite-keyed isotope samples in a lab schema;
+  an archive store keeps dated reading and core history. Every class mapping
+  declares an explicit primary key and is gated by a named store filter that
+  conjoins state tests with range, null and disjunctive depth-or-layering
+  conditions. A survey mapping includes the registry mapping with a store
+  rewrite and an include-only catalogue mapping composes survey and archive.
+  Three delegated-Kerberos Sybase connections over static datasources back
+  five runtimes that a documented data space selects per execution context.
+modelSources:
+  model:
+    root: indigo-glacier-2
+    files:
+      - test/indigoglacier2/connection/IceConnections.pure
+      - test/indigoglacier2/dataspace/IceDataSpace.pure
+      - test/indigoglacier2/domain/IceDomain.pure
+      - test/indigoglacier2/mapping/IceArchiveMapping.pure
+      - test/indigoglacier2/mapping/IceCatalogMapping.pure
+      - test/indigoglacier2/mapping/IceRegistryMapping.pure
+      - test/indigoglacier2/mapping/IceSurveyMapping.pure
+      - test/indigoglacier2/runtime/IceRuntimes.pure
+      - test/indigoglacier2/store/IceArchiveDb.pure
+      - test/indigoglacier2/store/IceRegistryDb.pure
+      - test/indigoglacier2/store/IceSurveyDb.pure
+features:
+  - connection:delegated-kerberos-authentication
+  - connection:static-datasource
+  - connection:sybase
+  - execution:data-space
+  - execution:mapping-test
+  - execution:test-data
+  - mapping:mapping-include
+  - store:relational-filter
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-multi-table
+  - store:relational-store-include
+stores:
+  - relational
+complexity: intermediate
+tds_variant: tabular-data-set
+tags:
+  - composite-key
+  - data-space
+  - delegated-kerberos
+  - glacier-survey
+  - h2
+  - mapping-include
+  - multi-schema
+  - relational
+  - store-filter
+  - sybase

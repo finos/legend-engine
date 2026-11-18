@@ -1,0 +1,69 @@
+name: dusky-isle
+title: "Dusky Isle — Mail-Boat Round Register (eight-armed weather banding, four-hop landing reach, grouped route-load view)"
+description: |
+  An island mail-boat register whose rounds are described by derivation rather
+  than by stored text: a weather band is chosen by an eight-armed conditional
+  whose first two arms accept either of two codes and whose ninth arm falls
+  through to a null sentinel, while string, arithmetic and null-defaulting
+  transforms supply the run code, the upper-cased name, the trimmed prefix, the
+  crew tag, the sacks-per-drop ratio and the span share of a possibly absent
+  distance. Three enumerated properties decode from computed expressions — the
+  swell state from a suffixed code, the hull class from a code defaulted when
+  absent, and the sailing window from a prefixed code — so a swell value the
+  enumeration mapping does not know arrives undecoded. Reference data is reached
+  across a second schema through a four-hop chain of route, landing stage,
+  harbour and isle, and a grouped view over the rounds themselves supplies the
+  per-route round count and sack total that a banded load tier reads. A second
+  class resolves route legs to their stage through the same declared join. The
+  fixture carries one row per conditional arm, one row that falls through to the
+  null band, one row per broken hop of the reach, and one row whose swell source
+  value is unmapped.
+
+modelSources:
+  model:
+    root: dusky-isle
+    files:
+      - test/duskyisle/data/IsleTestData.pure
+      - test/duskyisle/domain/IsleDomain.pure
+      - test/duskyisle/mapping/IsleRoundMapping.pure
+      - test/duskyisle/store/IsleRoundStore.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:derived-property
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+
+stores:
+  - relational
+
+complexity: advanced
+
+tags:
+  - branch-coverage
+  - conditional-transform
+  - enumeration-mapping
+  - grouped-view
+  - mail-boat
+  - multi-hop-join
+  - relational

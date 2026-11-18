@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::coralwarren9::store::SeedLibraryDb
+(
+  Schema catalog
+  (
+    Table plant_family
+    (
+      family_code VARCHAR(8) PRIMARY KEY,
+      family_label VARCHAR(48) NOT NULL,
+      habit_code VARCHAR(8)
+    )
+    Table seed_variety
+    (
+      variety_code VARCHAR(8) PRIMARY KEY,
+      variety_label VARCHAR(64) NOT NULL,
+      family_code VARCHAR(8) NOT NULL,
+      sow_season VARCHAR(12) NOT NULL,
+      days_to_harvest INTEGER NOT NULL
+    )
+
+    View family_vw
+    (
+      family_code: catalog.plant_family.family_code PRIMARY KEY,
+      family_label: catalog.plant_family.family_label,
+      habit_code: catalog.plant_family.habit_code
+    )
+    View variety_vw
+    (
+      variety_code: catalog.seed_variety.variety_code PRIMARY KEY,
+      variety_label: catalog.seed_variety.variety_label,
+      family_code: catalog.seed_variety.family_code,
+      sow_season: catalog.seed_variety.sow_season,
+      days_to_harvest: catalog.seed_variety.days_to_harvest
+    )
+  )
+
+  Schema lending
+  (
+    Table library_branch
+    (
+      branch_code VARCHAR(8) PRIMARY KEY,
+      branch_label VARCHAR(48) NOT NULL,
+      town_label VARCHAR(48)
+    )
+    Table seed_packet
+    (
+      packet_code VARCHAR(8) PRIMARY KEY,
+      variety_code VARCHAR(8) NOT NULL,
+      branch_code VARCHAR(8) NOT NULL,
+      donor_code VARCHAR(8) NOT NULL,
+      harvest_year INTEGER NOT NULL,
+      gram_weight INTEGER NOT NULL
+    )
+
+    View branch_vw
+    (
+      branch_code: lending.library_branch.branch_code PRIMARY KEY,
+      branch_label: lending.library_branch.branch_label,
+      town_label: lending.library_branch.town_label,
+      branch_tag: concat('LIB-', lending.library_branch.branch_code)
+    )
+    View packet_vw
+    (
+      packet_code: lending.seed_packet.packet_code PRIMARY KEY,
+      variety_code: lending.seed_packet.variety_code,
+      branch_code: lending.seed_packet.branch_code,
+      donor_code: lending.seed_packet.donor_code,
+      harvest_year: lending.seed_packet.harvest_year,
+      gram_weight: lending.seed_packet.gram_weight
+    )
+  )
+
+  Schema members
+  (
+    Table gardener
+    (
+      gardener_code VARCHAR(8) PRIMARY KEY,
+      gardener_name VARCHAR(48) NOT NULL,
+      plot_code VARCHAR(8)
+    )
+
+    View gardener_vw
+    (
+      gardener_code: members.gardener.gardener_code PRIMARY KEY,
+      gardener_name: members.gardener.gardener_name,
+      plot_code: members.gardener.plot_code
+    )
+  )
+
+  Join Variety_Family(catalog.variety_vw.family_code = catalog.family_vw.family_code)
+  Join Packet_Variety(lending.packet_vw.variety_code = catalog.variety_vw.variety_code)
+  Join Packet_Branch(lending.packet_vw.branch_code = lending.branch_vw.branch_code)
+  Join Packet_Donor(lending.packet_vw.donor_code = members.gardener_vw.gardener_code)
+)

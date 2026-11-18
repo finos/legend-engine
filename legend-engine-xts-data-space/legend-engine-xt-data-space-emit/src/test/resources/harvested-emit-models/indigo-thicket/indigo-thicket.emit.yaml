@@ -1,0 +1,84 @@
+name: indigo-thicket
+title: "Indigo Thicket — Curated Ringing Catalogue Of Keyed, Aggregating And De-Duplicating Endpoints Behind One Data Space"
+description: |
+  A woodland ringing model whose records hang off the site they were taken at and the sightings
+  recorded against them, wired by two equality joins so one hop is reached as a to-one site
+  property and the other as a to-many sighting collection. Three endpoints front the same curated
+  mapping and cover three distinct query shapes.
+
+  The cohort register narrows the records with a single conjunction of two boolean equalities and
+  four instant comparisons and then projects, so its predicate is one deep chain rather than
+  several stacked filters, and two of its projected columns are helper-function calls the
+  warehouse cannot evaluate — the plan therefore post-processes the returned rows rather than
+  pushing the derivation down. The site tally groups every record by the joined site name and
+  aggregates the masses and the widest wing, so the grouping key is reached through a join and the
+  aggregation is pushed into the generated SQL. The retrap digest decides membership by a
+  collection test over the sighting join, projects, narrows a projected column against a literal
+  set and de-duplicates, so retraps agreeing on site and guild collapse to one row.
+
+  Two of the endpoints are keyed by an environment path segment and are planned once per key
+  against a different runtime, so the identical body resolves against the survey warehouse or the
+  reviewer warehouse. A data space packages the three endpoints for discovery through two
+  execution contexts over those runtimes, three element executables, the exposed classes, a
+  diagram of the record graph and an email support contact, so every referenced mapping, runtime
+  and element has to resolve for the catalogue to compile.
+
+  The suites assert each shape: the cohort admitted by the conjunction and the retrap, non-adult
+  and out-of-window records it rejects, the ordered per-site aggregation, the collapsing digest
+  and an observer role no sighting carries.
+modelSources:
+  model:
+    root: indigo-thicket
+    files:
+      - test/indigothicket/connection/ThicketConnections.pure
+      - test/indigothicket/dataspace/ThicketDataSpace.pure
+      - test/indigothicket/diagram/ThicketDiagram.pure
+      - test/indigothicket/domain/ThicketDomain.pure
+      - test/indigothicket/function/ThicketFunctions.pure
+      - test/indigothicket/mapping/ThicketMapping.pure
+      - test/indigothicket/runtime/ThicketRuntimes.pure
+      - test/indigothicket/service/ThicketCohortRegister.pure
+      - test/indigothicket/service/ThicketRetrapDigest.pure
+      - test/indigothicket/service/ThicketSiteTally.pure
+      - test/indigothicket/store/ThicketDB.pure
+tds_variant: tabular-data-set
+features:
+  - execution:data-space
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:derived-property
+  - grammar:diagram
+  - grammar:function
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:aggregation
+  - query:collection-op
+  - query:distinct
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - collection-op
+  - data-space
+  - deep-conjunction
+  - diagram
+  - distinct
+  - group-by
+  - h2
+  - multi-execution
+  - non-pushdownable-function
+  - snowflake
+  - tabular-data-set
+  - woodland-ringing

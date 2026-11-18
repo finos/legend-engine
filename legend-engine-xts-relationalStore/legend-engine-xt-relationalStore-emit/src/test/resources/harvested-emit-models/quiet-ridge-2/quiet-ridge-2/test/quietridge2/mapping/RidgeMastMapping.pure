@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietridge2::mapping::RidgeMastMapping
+(
+  *test::quietridge2::domain::RidgeArtifact[artifact]: Relational
+  {
+    ~filter [test::quietridge2::store::RidgeMastDb]ActiveMast
+    ~primaryKey
+    (
+      [test::quietridge2::store::RidgeMastDb]ridge.mast_artifact.artifact_id
+    )
+    ~mainTable [test::quietridge2::store::RidgeMastDb]ridge.mast_artifact
+    artifactCode: toUpper([test::quietridge2::store::RidgeMastDb]ridge.mast_artifact.artifact_code),
+    ridgeName: rtrim([test::quietridge2::store::RidgeMastDb]ridge.mast_artifact.ridge_name),
+    artifactKind: ltrim([test::quietridge2::store::RidgeMastDb]ridge.mast_artifact.artifact_kind)
+  }
+
+  *test::quietridge2::domain::DishMast[dish_mast] extends [artifact]: Relational
+  {
+    ~filter [test::quietridge2::store::RidgeMastDb]DishMastOnly
+    dishDiameterCm: [test::quietridge2::store::RidgeMastDb]ridge.mast_artifact.dish_diameter_cm
+  }
+
+  *test::quietridge2::domain::MastCheck[check]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietridge2::store::RidgeMastDb]ridge.mast_check.check_id
+    )
+    ~mainTable [test::quietridge2::store::RidgeMastDb]ridge.mast_check
+    checkCode: toUpper([test::quietridge2::store::RidgeMastDb]ridge.mast_check.check_code),
+    checkGrade: case(
+                  isNotEmpty([test::quietridge2::store::RidgeMastDb]ridge.mast_check.check_grade),
+                  toUpper([test::quietridge2::store::RidgeMastDb]ridge.mast_check.check_grade),
+                  'UNGRADED'
+                )
+  }
+
+  test::quietridge2::domain::Artifact_Check: Relational
+  {
+    AssociationMapping
+    (
+      checks[artifact, check]: [test::quietridge2::store::RidgeMastDb]@Artifact_Check,
+      checkedArtifact[check, artifact]: [test::quietridge2::store::RidgeMastDb]@Artifact_Check
+    )
+  }
+
+  testSuites:
+  [
+    mastRegisterMappingSuite:
+    {
+      function: |test::quietridge2::domain::RidgeArtifact.all()->project(
+        [
+          a|$a.artifactCode,
+          a|$a.ridgeName,
+          a|$a.artifactKind
+        ],
+        [
+          'Artifact',
+          'Ridge',
+          'Kind'
+        ]
+      )->sort([asc('Artifact')]);
+      tests:
+      [
+        activeMasts:
+        {
+          data:
+          [
+            test::quietridge2::store::RidgeMastDb:
+              Relational
+              #{
+                ridge.mast_artifact:
+                  'artifact_id,artifact_code,ridge_name,artifact_kind,dish_diameter_cm,retired_flag\n'+
+                  '1,qr-101,Quiet Ridge North  ,dish,120,N\n'+
+                  '2,qr-102,Saddle Spur,dish,90,N\n'+
+                  '3,qr-103,Beacon Knoll,panel,,N\n'+
+                  '4,qr-104,Old Cairn,dish,150,Y\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Artifact":"QR-101","Ridge":"Quiet Ridge North","Kind":"dish"},{"Artifact":"QR-102","Ridge":"Saddle Spur","Kind":"dish"},{"Artifact":"QR-103","Ridge":"Beacon Knoll","Kind":"panel"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

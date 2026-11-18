@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::westernthicket3::domain::*;
+import meta::pure::profiles::*;
+
+Profile test::westernthicket3::domain::ThicketProfile
+{
+  stereotypes: [surveyed, audited];
+  tags: [tier, custodian];
+}
+
+Enum {doc.doc = 'How much light the canopy of a stand lets through.'} test::westernthicket3::domain::CanopyBand
+{
+  {doc.doc = 'Canopy cut back so the stand is open to the sky.'} OPEN,
+  {doc.doc = 'Canopy part cut, part standing.'} MIXED,
+  {doc.doc = 'Canopy closed over the stand.'} CLOSED
+}
+
+Enum {doc.doc = 'How the stools of a stand came back after the last cut.'} test::westernthicket3::domain::RegrowthGrade
+{
+  {doc.doc = 'Stools came back strongly.'} VIGOROUS,
+  {doc.doc = 'Stools came back at the expected rate.'} STEADY,
+  {doc.doc = 'Stools came back behind the expected rate.'} SLOW,
+  {doc.doc = 'Stools did not come back at all.'} STALLED
+}
+
+Class {doc.doc = 'A grove the coppice stands of a wood are grouped under.'} test::westernthicket3::domain::GroveRef
+{
+  {doc.doc = 'Code the grove is quoted by on the wood plan.'} groveCode: String[1];
+  {doc.doc = 'Name the grove is called by.'} groveName: String[0..1];
+  {doc.doc = 'How many stands the grove tallies, read from the tally view.'} standTally: Integer[0..1];
+}
+
+Class <<ThicketProfile.surveyed>> {doc.doc = 'A coppice stand of the wood, grouped under a grove.'} test::westernthicket3::domain::StandRef
+{
+  {doc.doc = 'Code the stand is quoted by on the wood plan.'} standCode: String[1];
+  {doc.doc = 'Name the stand is called by, defaulted when the plan leaves it blank.'} standName: String[0..1];
+  {doc.doc = 'How much light the canopy of the stand lets through.'} canopyBand: CanopyBand[1];
+  {doc.doc = 'Free-text note the warden left against the stand.'} standNote: String[0..1];
+  {doc.doc = 'Grove the stand is grouped under, one hop away.'} groveName: String[0..1];
+}
+
+Class {doc.doc = 'Someone carried on the warden roster of the wood.'} test::westernthicket3::domain::WardenRecord
+{
+  {doc.doc = 'Code the warden is quoted by on the roster.'} wardenCode: String[1];
+  {doc.doc = 'Name the warden signs the roster with.'} wardenName: String[0..1];
+}
+
+Class {doc.doc = 'A warden carried on the grove rota of the wood.'} test::westernthicket3::domain::GroveWarden extends WardenRecord
+{
+  {doc.doc = 'Rota the grove warden is carried on.'} rotaCode: String[0..1];
+  {doc.doc = 'Date the grove warden is certified to cut until.'} certifiedUntil: StrictDate[0..1];
+  {doc.doc = 'Rota stamped with the roster code of the warden.'} rotaLabel() {$this.rotaCode->toOne()->toUpper() + '/' + $this.wardenCode}: String[1];
+}
+
+Class {doc.doc = 'A warden brought in from a cutting contractor rather than the grove rota.'} test::westernthicket3::domain::ContractWarden extends WardenRecord
+{
+  {doc.doc = 'Contractor the warden is brought in from.'} supplierOrg: String[0..1];
+}
+
+Class <<temporal.businesstemporal, ThicketProfile.surveyed>> {ThicketProfile.tier = 'core', doc.doc = 'One cutting survey of a coppice stand, effective over the business window the head warden signs off, resolving the stand it was cut on, the grove that stand is grouped under and the tally of that grove.'} test::westernthicket3::domain::CutSurveyRecord
+{
+  {doc.doc = 'Code the survey is quoted by in the cutting book.'} surveyCode: String[1];
+  {doc.doc = 'How the stand was cut on this survey.'} cutKind: String[1];
+  {doc.doc = 'How the stools of the stand came back after the cut.'} regrowthGrade: RegrowthGrade[1];
+  {doc.doc = 'How many stems were counted on the stools.'} stemCount: Integer[1];
+  {doc.doc = 'Height the stools were left at.'} stoolHeightCm: Float[1];
+  {doc.doc = 'Share of the stand left as canopy gap after the cut.'} canopyGapPct: Float[1];
+  {doc.doc = 'Date the stand was walked and the stems counted.'} surveyedOn: StrictDate[1];
+  {doc.doc = 'Date the cutting cycle of the stand was opened.'} cycleStartedOn: StrictDate[1];
+  {doc.doc = 'Tier the survey is filed under, carried as a literal by the mapping.'} tierLabel: String[1];
+  {doc.doc = 'Stand the survey was cut on, one hop away.'} standName: String[0..1];
+  {doc.doc = 'Grove the stand is grouped under, two hops away.'} groveName: String[0..1];
+  {doc.doc = 'Tally of the grove of the stand, three hops away over the tally view.'} standTally: Integer[0..1];
+  {doc.doc = 'Digest of the note the checker left, reached across the audit schema.'} checkDigest: String[0..1];
+  {doc.doc = 'Class the regrowth code resolves to, emptied when the code is not carried.'} vigourClass: String[0..1];
+  {doc.doc = 'Warden who walked the stand, resolved on the grove rota.'} warden: WardenRecord[0..1];
+  {doc.doc = 'Warden brought in from a cutting contractor for the same survey.'} contractWarden: WardenRecord[0..1];
+  {doc.doc = 'Days the cutting cycle had been open when the stand was walked.'} cycleDays() {dateDiff($this.cycleStartedOn, $this.surveyedOn, DurationUnit.DAYS)}: Integer[1];
+  {doc.doc = 'Band the counted stems and the stool height fall in, walked as eight nested arms over the cut and the regrowth of the stand and defaulted when none of them is met.'} vigourBand() {if($this.stemCount >= 96,
+                                  | 'BAND ONE CLEARED',
+                                  | if($this.stemCount >= 72,
+                                       | 'BAND TWO CLEARED',
+                                       | if(($this.stemCount >= 48) && ($this.stoolHeightCm >= 30.0),
+                                            | 'BAND THREE CLEARED',
+                                            | if($this.stemCount >= 36,
+                                                 | 'BAND FOUR CLEARED',
+                                                 | if(($this.stemCount >= 24) || ($this.canopyGapPct >= 40.0),
+                                                      | 'BAND FIVE CLEARED',
+                                                      | if($this.stemCount >= 18,
+                                                           | 'BAND SIX CLEARED',
+                                                           | if($this.stemCount >= 12,
+                                                                | 'BAND SEVEN CLEARED',
+                                                                | if($this.stemCount >= 6,
+                                                                     | 'BAND EIGHT CLEARED',
+                                                                     | 'BAND FLOOR'))))))))}: String[1];
+  {doc.doc = 'Whether the cutting cycle had been open longer than the given number of days when the stand was walked.'} cycleOpenBeyond(days: Integer[1]) {dateDiff($this.cycleStartedOn, $this.surveyedOn, DurationUnit.DAYS) > $days}: Boolean[1];
+  {doc.doc = 'Band of the stand read against a given stem floor, defaulted when the stand is under it.'} bandAtFloor(stemFloor: Integer[1]) {if($this.stemCount >= $stemFloor, | $this.cutKind->toUpper(), | 'UNDER FLOOR')}: String[1];
+}

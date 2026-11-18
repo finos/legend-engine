@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###QueryPostProcessor
+RelationalMapper test::sunlitfossil::connection::DispatchHallCuratedTargets
+(
+  SchemaMappers:
+  [
+    test::sunlitfossil::store::SpecimenDispatchDB.dispatchhall -> 'DISPATCHHALL_CURATED'
+  ];
+)
+
+###QueryPostProcessor
+RelationalMapper test::sunlitfossil::connection::DispatchHallArchiveTargets
+(
+  SchemaMappers:
+  [
+    test::sunlitfossil::store::SpecimenDispatchDB.dispatchhall -> 'DISPATCHHALL_ARCHIVE'
+  ];
+)
+
+###Connection
+RelationalDatabaseConnection test::sunlitfossil::connection::DispatchHallCuratedConnection
+{
+  store: test::sunlitfossil::store::SpecimenDispatchDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'SUNLIT_DISPATCHHALL_DB';
+    account: 'sunlit_dispatchhall_account';
+    warehouse: 'SUNLIT_CURATED_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'sunlit_dispatchhall_org';
+    role: 'CURATED_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'sunlit_dispatchhall_curated_oauth';
+    scopeName: 'SESSION:ROLE:CURATED_READER';
+  };
+  postProcessors:
+  [
+    relationalMapper
+    {
+      test::sunlitfossil::connection::DispatchHallCuratedTargets
+    }
+  ];
+}
+
+RelationalDatabaseConnection test::sunlitfossil::connection::DispatchHallArchiveConnection
+{
+  store: test::sunlitfossil::store::SpecimenDispatchDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'SUNLIT_DISPATCHHALL_DB';
+    account: 'sunlit_dispatchhall_account';
+    warehouse: 'SUNLIT_ARCHIVE_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'sunlit_dispatchhall_org';
+    role: 'ARCHIVE_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'sunlit_dispatchhall_archive_oauth';
+    scopeName: 'SESSION:ROLE:ARCHIVE_READER';
+  };
+  postProcessors:
+  [
+    relationalMapper
+    {
+      test::sunlitfossil::connection::DispatchHallArchiveTargets
+    }
+  ];
+}

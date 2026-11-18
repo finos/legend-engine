@@ -1,0 +1,61 @@
+name: kindly-gecko-4
+title: "Herpetarium Occupant Register — Processing-Milestoned Shared Relation, Single-Table Specialisations and Derived Size Bands"
+description: |
+  A non-financial relational EMIT model over a nature-centre herpetarium. One processing-milestoned
+  occupant relation holds every terrarium occupant, so a re-measured occupant lands as a later
+  version of the same occupant code and its superseded version disappears from the register at
+  processing dates it was no longer current. A root class mapping keyed on the occupant code binds
+  the relation through a declared main-table alias and assembles five distinct transform shapes over
+  it: direct columns, a literal register stamp, a nested upper-cased concatenation of the species and
+  its terrarium, a two-arm snout-vent band chain and a note-length measurement that stays null for an
+  occupant carrying no care note. Two specialisations of the same relation — the gecko occupant with
+  its basking lamp and shed cycle and the skink occupant with its burrow substrate — extend that root
+  implementation behind their own row filters rather than reading a second table, and three derived
+  properties evaluate a requested size floor and fall back to a caller-supplied label when the lamp
+  or substrate column is absent. Assertion-backed coverage: two mapping test suites read the relation
+  as of one processing date, the first asserting that the out-of-range version is absent while every
+  transform and the derived size band resolve, the second asserting that the specialisation filter
+  excludes the sibling rows of the shared relation while inherited columns still resolve.
+modelSources:
+  model:
+    root: kindly-gecko-4
+    files:
+      - test/kindlygecko4/domain/TerrariumDomain.pure
+      - test/kindlygecko4/mapping/TerrariumMapping.pure
+      - test/kindlygecko4/store/HerpetariumDb.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-single-table-inheritance
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-dyna-function
+  - store:relational-filter
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-transform
+  - derived-property
+  - dyna-function
+  - h2
+  - herpetarium
+  - mapping-test
+  - milestoning
+  - out-of-range-row
+  - point-in-time-query
+  - processing-temporal
+  - relational
+  - single-table-inheritance
+  - store-filter

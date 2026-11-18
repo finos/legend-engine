@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coppercanyon3::mapping::CanopyMapping
+(
+  *test::coppercanyon3::domain::PlantingSite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coppercanyon3::store::CanopyDB]canopy.planting_site.site_code
+    )
+    ~mainTable [test::coppercanyon3::store::CanopyDB]canopy.planting_site
+    siteCode: [test::coppercanyon3::store::CanopyDB]canopy.planting_site.site_code,
+    districtName: [test::coppercanyon3::store::CanopyDB]canopy.planting_site.district_name,
+    surfaceType: [test::coppercanyon3::store::CanopyDB]canopy.planting_site.surface_type
+  }
+
+  *test::coppercanyon3::domain::TreeSpecimen[specimen]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coppercanyon3::store::CanopyDB]canopy.tree_specimen.tag_code
+    )
+    ~mainTable [test::coppercanyon3::store::CanopyDB]canopy.tree_specimen
+    tagCode: rtrim([test::coppercanyon3::store::CanopyDB]canopy.tree_specimen.tag_code),
+    speciesName: [test::coppercanyon3::store::CanopyDB]canopy.tree_specimen.species_name,
+    trunkCm: [test::coppercanyon3::store::CanopyDB]canopy.tree_specimen.trunk_cm,
+    plantedYear: [test::coppercanyon3::store::CanopyDB]canopy.tree_specimen.planted_year,
+    districtName: [test::coppercanyon3::store::CanopyDB]@Site_Specimen | [test::coppercanyon3::store::CanopyDB]canopy.planting_site.district_name,
+    girthBand: case(
+                 and(
+                   isNotEmpty([test::coppercanyon3::store::CanopyDB]canopy.tree_specimen.species_name),
+                   greaterThan(
+                     length(trim([test::coppercanyon3::store::CanopyDB]canopy.tree_specimen.species_name)),
+                     3
+                   )
+                 ),
+                 case(
+                   greaterThanEqual([test::coppercanyon3::store::CanopyDB]canopy.tree_specimen.trunk_cm, 60),
+                   'BROAD',
+                   'SLENDER'
+                 ),
+                 sqlNull()
+               )
+  }
+
+  testSuites:
+  [
+    siteBindingSuite:
+    {
+      function: |test::coppercanyon3::domain::PlantingSite.all()->project(
+        [
+          s|$s.siteCode,
+          s|$s.districtName,
+          s|$s.surfaceType
+        ],
+        [
+          'Site',
+          'District',
+          'Surface'
+        ]
+      )->sort([asc('Site')]);
+      tests:
+      [
+        allSites:
+        {
+          doc: 'Reads the planting-site binding over its own main table to verify the primary-key and main-table alias wiring.';
+          data:
+          [
+            test::coppercanyon3::store::CanopyDB:
+              Relational
+              #{
+                canopy.planting_site:
+                  'site_code,district_name,surface_type\n'+
+                  'PS-01,Riverside Terrace,PERMEABLE\n'+
+                  'PS-02,Old Quarry Row,SEALED\n';
+              }#
+          ];
+          asserts:
+          [
+            twoSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"PS-01","District":"Riverside Terrace","Surface":"PERMEABLE"},{"Site":"PS-02","District":"Old Quarry Row","Surface":"SEALED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

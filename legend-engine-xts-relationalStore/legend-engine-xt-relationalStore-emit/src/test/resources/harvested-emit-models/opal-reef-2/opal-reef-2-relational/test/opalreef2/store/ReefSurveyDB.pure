@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::opalreef2::store::ReefSurveyDB
+(
+  Schema tidepool
+  (
+    Table pool
+    (
+      pool_id INTEGER PRIMARY KEY,
+      pool_code VARCHAR(16) NOT NULL,
+      shore_zone VARCHAR(32) NOT NULL,
+      exposure_class VARCHAR(32) NOT NULL
+    )
+    Table census
+    (
+      census_id INTEGER PRIMARY KEY,
+      census_code VARCHAR(16) NOT NULL,
+      species_name VARCHAR(64) NOT NULL,
+      tally_n INTEGER NOT NULL,
+      survey_on DATE NOT NULL,
+      surveyor_name VARCHAR(32) NOT NULL,
+      method_c VARCHAR(32) NOT NULL,
+      pool_id INTEGER NOT NULL
+    )
+  )
+
+  Join Census_Pool(tidepool.census.pool_id = tidepool.pool.pool_id)
+)

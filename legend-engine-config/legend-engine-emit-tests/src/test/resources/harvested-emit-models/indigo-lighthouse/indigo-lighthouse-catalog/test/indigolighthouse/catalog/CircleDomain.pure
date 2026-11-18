@@ -1,0 +1,38 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::indigolighthouse::catalog::*;
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A curatorial grouping of people who assemble one exhibit, versioned over processing time.'} test::indigolighthouse::catalog::ExhibitCircle
+{
+  {meta::pure::profiles::doc.doc = 'Display name of the exhibit circle.'} circleName: String[1];
+  {meta::pure::profiles::doc.doc = 'Circle this circle was split out of, when it was.'} parentCircle: ExhibitCircle[0..1];
+  {meta::pure::profiles::doc.doc = 'Current lifecycle state of the circle.'} state: CircleState[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A person taking part in an exhibit circle in a stated role.'} test::indigolighthouse::catalog::CircleMember
+{
+  {meta::pure::profiles::doc.doc = 'Name the member is credited under.'} memberName: String[1];
+  {meta::pure::profiles::doc.doc = 'Role the member holds inside the circle.'} role: CircleRole[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A published stand-in label that hides the real name of the member it masks.'} test::indigolighthouse::catalog::MaskedLabel
+{
+  {meta::pure::profiles::doc.doc = 'Label shown to the public in place of the member name.'} displayLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Member whose name this label stands in for.'} masks: CircleMember[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A branch of the curatorial subject tree, held purely as versioned reference vocabulary.'} test::indigolighthouse::catalog::TaxonomyBranch
+{
+}

@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulwharf5::mapping::BerthBaseMapping
+(
+  *test::wistfulwharf5::domain::MooringBerth[berth]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulwharf5::store::WharfDb]harbour.mooring_berth.berth_id
+    )
+    ~mainTable [test::wistfulwharf5::store::WharfDb]harbour.mooring_berth
+    berthCode: [test::wistfulwharf5::store::WharfDb]harbour.mooring_berth.berth_code,
+    berthName: [test::wistfulwharf5::store::WharfDb]harbour.mooring_berth.berth_name,
+    pontoonName: toUpper([test::wistfulwharf5::store::WharfDb]harbour.mooring_berth.pontoon_name),
+    berthLengthM: [test::wistfulwharf5::store::WharfDb]harbour.mooring_berth.berth_length_m
+  }
+
+  *test::wistfulwharf5::domain::HarbourWatch[watch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulwharf5::store::WharfDb]harbour.harbour_watch.watch_id
+    )
+    ~mainTable [test::wistfulwharf5::store::WharfDb]harbour.harbour_watch
+    watchCode: [test::wistfulwharf5::store::WharfDb]harbour.harbour_watch.watch_code,
+    watchLeadName: [test::wistfulwharf5::store::WharfDb]harbour.harbour_watch.watch_lead_name,
+    watchName: [test::wistfulwharf5::store::WharfDb]harbour.harbour_watch.watch_name
+  }
+)

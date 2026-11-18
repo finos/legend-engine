@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::emberorchard::domain::*;
+
+Profile test::emberorchard::domain::OrchardProfile
+{
+  stereotypes: [registered, provisional];
+  tags: [unit, steward, cadence];
+}
+
+Class <<OrchardProfile.registered>> {meta::pure::profiles::doc.doc = 'A nursery specimen tracked on the orchard propagation register, documented property by property so the register can be published without a separate data dictionary.', OrchardProfile.steward = 'orchard-propagation-desk', OrchardProfile.cadence = 'daily'} test::emberorchard::domain::SpecimenRecord
+{
+  {meta::pure::profiles::doc.doc = 'Register-wide identity of the specimen.'} specimenCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Planting block the specimen stands in.'} blockCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Row within the planting block.'} rowCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Everyday name the nursery sells the specimen under.'} commonName: String[1];
+  {meta::pure::profiles::doc.doc = 'Botanical name recorded on the propagation label.'} botanicalName: String[1];
+  {meta::pure::profiles::doc.doc = 'Cultivar name, absent for seed-grown stock.'} cultivarName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Rootstock the scion was grafted onto, absent for ungrafted stock.'} rootstockCode: String[0..1];
+  {meta::pure::profiles::doc.doc = 'How the specimen was propagated.'} propagationMethod: String[1];
+  {meta::pure::profiles::doc.doc = 'Germination batch the specimen was raised in.'} germinationBatch: String[1];
+  {meta::pure::profiles::doc.doc = 'Date the seed or cutting was set.'} sownOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = 'Date the specimen was moved to its container, absent while still in the seed tray.'} transplantedOn: StrictDate[0..1];
+  {meta::pure::profiles::doc.doc = 'Container the specimen is currently grown in.', OrchardProfile.unit = 'litre'} containerSize: String[1];
+  {meta::pure::profiles::doc.doc = 'Substrate blend the container was filled with.'} substrateMix: String[1];
+  {meta::pure::profiles::doc.doc = 'Measured canopy height.', OrchardProfile.unit = 'centimetre'} canopyHeightCm: Float[1];
+  {meta::pure::profiles::doc.doc = 'Measured stem caliper at the graft union.', OrchardProfile.unit = 'millimetre'} stemCaliperMm: Float[1];
+  {meta::pure::profiles::doc.doc = 'Leaf count taken at the last inspection.'} leafCount: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Depth the root zone occupies in the container.', OrchardProfile.unit = 'centimetre'} rootZoneDepthCm: Float[1];
+  {meta::pure::profiles::doc.doc = 'Vigour grade assigned by the propagation desk.'} vigourGrade: String[1];
+  {meta::pure::profiles::doc.doc = 'Hardiness zone the specimen is rated for.'} hardinessZone: String[1];
+  {meta::pure::profiles::doc.doc = 'Sun exposure the growing position provides.'} sunExposure: String[1];
+  {meta::pure::profiles::doc.doc = 'Pruning cycle the specimen is scheduled on.'} pruningCycle: String[1];
+  {meta::pure::profiles::doc.doc = 'Date of the most recent bench inspection, absent for newly registered stock.'} lastInspectedOn: StrictDate[0..1];
+  {meta::pure::profiles::doc.doc = 'Inspector who signed the most recent bench inspection.'} inspectorCode: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Free-text health note kept against the specimen.'} healthNote: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Tier of the nursery the specimen is held on.'} nurseryTier: String[1];
+  {meta::pure::profiles::doc.doc = 'Whether the specimen has been released for sale.'} saleReadyFlag: String[1];
+  {meta::pure::profiles::doc.doc = 'Whether the specimen has been retired from the register.'} retiredFlag: String[1];
+  {meta::pure::profiles::doc.doc = 'Instant the register row was last written.'} updatedAt: DateTime[1];
+}
+
+Class test::emberorchard::domain::IrrigationAllocation
+{
+  allocationId: Integer[1];
+  blockCode: String[1];
+  litresPerDay: Float[1];
+  scheduleCode: String[1];
+}

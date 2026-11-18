@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::amberquokka3::service::RefugeStayDigest
+{
+  pattern: '/amberquokka3/v1/refugeStayDigest/{asOfDate}/{windowDays}';
+  title: 'Mountain Refuge Stay Digest';
+  owners:
+  [
+    'alpine-refuge-register'
+  ];
+  documentation: 'Stay digest read at one bitemporal coordinate: permitted stays that arrived inside a caller-sized window ending at the requested instant are grouped by stay kind, with the guest-night total computed as the day difference between arrival and departure multiplied by the party size, and the number of contributing stays counted alongside it.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], windowDays: Integer[1]|let processingInstant = $asOfDate;
+      let businessInstant = $asOfDate;
+      test::amberquokka3::domain::OccupancySpell.all($processingInstant, $businessInstant)->filter(
+        s|(($s.permitCode->isEmpty()->not()) && ($s.arrivalDate >= $asOfDate->adjust(-$windowDays, meta::pure::functions::date::DurationUnit.DAYS))) && ($s.arrivalDate <= $asOfDate)
+      )->groupBy(
+        [
+          s|$s.stayKind
+        ],
+        [
+          agg(s|dateDiff($s.arrivalDate, $s.departureDate, meta::pure::functions::date::DurationUnit.DAYS) * $s.guestCount, y|$y->sum()),
+          agg(s|$s.guestCount, y|$y->count())
+        ],
+        [
+          'Stay/Kind',
+          'Guest/Nights',
+          'Stay/Count'
+        ]
+      )->sort(
+        [
+          asc('Stay/Kind')
+        ]
+      );};
+    mapping: test::amberquokka3::mapping::RefugeMapping;
+    runtime: test::amberquokka3::runtime::RefugeRuntime;
+  }
+  testSuites:
+  [
+    refugeStayDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          refugeRegisterConnection:
+            Relational
+            #{
+              refuges.occupancy_spell:
+                'spell_code,room_code,stay_kind,guest_party,arrival_date,departure_date,guest_count,permit_code,in_z,out_z,from_z,thru_z\n'+
+                'S-1,D-1,GROUP,Alpine Club,2026-05-20,2026-05-23,9,PRM-1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-2,D-1,SOLO,I. Larch,2026-05-28,2026-05-29,1,,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-3,D-2,GROUP,School Trip,2026-04-02,2026-04-05,14,PRM-2,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-5,D-4,SOLO,R. Aster,2026-05-01,2026-05-02,2,PRM-4,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-6,D-1,GROUP,Ski Tour,2026-01-10,2026-01-14,8,PRM-5,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-8,D-2,GROUP,Late Fix,2026-05-05,2026-05-07,4,PRM-7,2026-01-01,9999-12-31,2026-01-01,2026-03-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        digestOverTheRequestedWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            windowDays = 45
+          ]
+          asserts:
+          [
+            oneRowPerStayKind:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stay/Kind":"group","Guest/Nights":27,"Stay/Count":1},{"Stay/Kind":"solo","Guest/Nights":2,"Stay/Count":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

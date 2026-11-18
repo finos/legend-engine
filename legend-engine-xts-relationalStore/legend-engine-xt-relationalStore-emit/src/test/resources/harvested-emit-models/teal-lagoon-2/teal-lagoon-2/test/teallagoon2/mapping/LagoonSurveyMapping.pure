@@ -1,0 +1,242 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::teallagoon2::mapping::LagoonSurveyMapping
+(
+  *test::teallagoon2::domain::SectorWarden[warden]: Relational
+  {
+    ~primaryKey
+    (
+      [test::teallagoon2::store::LagoonSurveyStore]lagoon.sector_warden.warden_code
+    )
+    ~mainTable [test::teallagoon2::store::LagoonSurveyStore]lagoon.sector_warden
+    wardenCode: [test::teallagoon2::store::LagoonSurveyStore]lagoon.sector_warden.warden_code,
+    wardenName: [test::teallagoon2::store::LagoonSurveyStore]lagoon.sector_warden.warden_name,
+    radioCall: toUpper([test::teallagoon2::store::LagoonSurveyStore]lagoon.sector_warden.radio_call)
+  }
+
+  *test::teallagoon2::domain::LagoonSector[sector]: Relational
+  {
+    ~primaryKey
+    (
+      [test::teallagoon2::store::LagoonSurveyStore]lagoon.lagoon_sector.sector_code
+    )
+    ~mainTable [test::teallagoon2::store::LagoonSurveyStore]lagoon.lagoon_sector
+    sectorCode: [test::teallagoon2::store::LagoonSurveyStore]lagoon.lagoon_sector.sector_code,
+    sectorName: [test::teallagoon2::store::LagoonSurveyStore]lagoon.lagoon_sector.sector_name
+  }
+
+  *test::teallagoon2::domain::MeadowZone[meadow]: Relational
+  {
+    ~primaryKey
+    (
+      [test::teallagoon2::store::LagoonSurveyStore]lagoon.meadow_zone.meadow_code
+    )
+    ~mainTable [test::teallagoon2::store::LagoonSurveyStore]lagoon.meadow_zone
+    meadowCode: [test::teallagoon2::store::LagoonSurveyStore]lagoon.meadow_zone.meadow_code,
+    meadowName: [test::teallagoon2::store::LagoonSurveyStore]lagoon.meadow_zone.meadow_name
+  }
+
+  *test::teallagoon2::domain::SeagrassPatch[patch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::teallagoon2::store::LagoonSurveyStore]lagoon.seagrass_patch.patch_code
+    )
+    ~mainTable [test::teallagoon2::store::LagoonSurveyStore]lagoon.seagrass_patch
+    patchCode: [test::teallagoon2::store::LagoonSurveyStore]lagoon.seagrass_patch.patch_code,
+    patchName: rtrim([test::teallagoon2::store::LagoonSurveyStore]lagoon.seagrass_patch.patch_name),
+    patchLabel: concat(
+                  toUpper([test::teallagoon2::store::LagoonSurveyStore]lagoon.seagrass_patch.patch_name),
+                  concat(
+                    ' [',
+                    concat([test::teallagoon2::store::LagoonSurveyStore]lagoon.seagrass_patch.patch_code, ']')
+                  )
+                ),
+    plantedYear: [test::teallagoon2::store::LagoonSurveyStore]lagoon.seagrass_patch.planted_year,
+    shootDensity: [test::teallagoon2::store::LagoonSurveyStore]lagoon.seagrass_patch.shoot_density,
+    mappedOn: [test::teallagoon2::store::LagoonSurveyStore]lagoon.seagrass_patch.mapped_on,
+    patrolNote: [test::teallagoon2::store::LagoonSurveyStore]lagoon.seagrass_patch.patrol_note,
+    meadowName: [test::teallagoon2::store::LagoonSurveyStore]@Patch_Meadow | [test::teallagoon2::store::LagoonSurveyStore]lagoon.meadow_zone.meadow_name,
+    sectorName: [test::teallagoon2::store::LagoonSurveyStore]@Patch_Meadow > @Meadow_Sector | [test::teallagoon2::store::LagoonSurveyStore]lagoon.lagoon_sector.sector_name,
+    wardenName: [test::teallagoon2::store::LagoonSurveyStore]@Patch_Meadow > @Meadow_Sector > @Sector_Warden | [test::teallagoon2::store::LagoonSurveyStore]lagoon.sector_warden.warden_name
+  }
+
+  *test::teallagoon2::domain::SurveyVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::teallagoon2::store::LagoonSurveyStore]lagoon.survey_visit.visit_id
+    )
+    ~mainTable [test::teallagoon2::store::LagoonSurveyStore]lagoon.survey_visit
+    visitId: [test::teallagoon2::store::LagoonSurveyStore]lagoon.survey_visit.visit_id,
+    visitCode: concat('SV-', toString([test::teallagoon2::store::LagoonSurveyStore]lagoon.survey_visit.visit_id)),
+    visitedOn: [test::teallagoon2::store::LagoonSurveyStore]lagoon.survey_visit.visited_on,
+    shootTally: [test::teallagoon2::store::LagoonSurveyStore]lagoon.survey_visit.shoot_tally,
+    waterTempC: [test::teallagoon2::store::LagoonSurveyStore]lagoon.survey_visit.water_temp_c,
+    visibilityCode: toUpper([test::teallagoon2::store::LagoonSurveyStore]lagoon.survey_visit.visibility_code),
+    tideState: [test::teallagoon2::store::LagoonSurveyStore]lagoon.survey_visit.tide_state,
+    surveyRound: [test::teallagoon2::store::LagoonSurveyStore]lagoon.survey_visit.survey_round,
+    patchName: [test::teallagoon2::store::LagoonSurveyStore]@Visit_Patch | [test::teallagoon2::store::LagoonSurveyStore]lagoon.seagrass_patch.patch_name,
+    meadowName: [test::teallagoon2::store::LagoonSurveyStore]@Visit_Patch > @Patch_Meadow | [test::teallagoon2::store::LagoonSurveyStore]lagoon.meadow_zone.meadow_name,
+    wardenName: [test::teallagoon2::store::LagoonSurveyStore]@Visit_Patch > @Patch_Meadow > @Meadow_Sector > @Sector_Warden | [test::teallagoon2::store::LagoonSurveyStore]lagoon.sector_warden.warden_name
+  }
+
+  testSuites:
+  [
+    patchRosterSuite:
+    {
+      function: |test::teallagoon2::domain::SeagrassPatch.all()->project(
+        [
+          p|$p.patchCode,
+          p|$p.patchLabel,
+          p|$p.meadowName->toOne(),
+          p|$p.sectorName->toOne(),
+          p|$p.wardenName->toOne()
+        ],
+        [
+          'Patch',
+          'Label',
+          'Meadow',
+          'Sector',
+          'Warden'
+        ]
+      )->sort([asc('Patch')]);
+      tests:
+      [
+        patchRoster:
+        {
+          doc: 'Every mapped patch assembles its label from the upper-cased patch name and the patch code, and reaches its meadow one hop away, its sector two hops away and its warden three hops away along the patch-to-meadow-to-sector-to-warden join path; two patches share one sector so the same warden is reached by two distinct paths.';
+          data:
+          [
+            test::teallagoon2::store::LagoonSurveyStore:
+              Relational
+              #{
+                lagoon.seagrass_patch:
+                  'patch_code,patch_name,meadow_code,planted_year,shoot_density,mapped_on,patrol_note\n'+
+                  'SP-01,Eelgrass Shoal North,MZ-01,2019,412.5,2020-04-11,marker buoy\n'+
+                  'SP-02,Widgeon Flat West,MZ-02,2021,255.0,2022-05-02,drone survey\n'+
+                  'SP-03,Bar Fringe East,MZ-03,2022,180.0,2023-03-14,\n';
+
+                lagoon.meadow_zone:
+                  'meadow_code,meadow_name,sector_code\n'+
+                  'MZ-01,Eelgrass Shoal,SC-01\n'+
+                  'MZ-02,Widgeon Flat,SC-02\n'+
+                  'MZ-03,Bar Fringe,SC-02\n';
+
+                lagoon.lagoon_sector:
+                  'sector_code,sector_name,warden_code\n'+
+                  'SC-01,North Spit,W-01\n'+
+                  'SC-02,South Flats,W-02\n';
+
+                lagoon.sector_warden:
+                  'warden_code,warden_name,radio_call\n'+
+                  'W-01,Ines Marsh,lag-1\n'+
+                  'W-02,Otto Reed,lag-2\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch":"SP-01","Label":"EELGRASS SHOAL NORTH [SP-01]","Meadow":"Eelgrass Shoal","Sector":"North Spit","Warden":"Ines Marsh"},{"Patch":"SP-02","Label":"WIDGEON FLAT WEST [SP-02]","Meadow":"Widgeon Flat","Sector":"South Flats","Warden":"Otto Reed"},{"Patch":"SP-03","Label":"BAR FRINGE EAST [SP-03]","Meadow":"Bar Fringe","Sector":"South Flats","Warden":"Otto Reed"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    visitTraceSuite:
+    {
+      function: |test::teallagoon2::domain::SurveyVisit.all()->project(
+        [
+          v|$v.visitCode,
+          v|$v.patchName->toOne(),
+          v|$v.meadowName->toOne(),
+          v|$v.wardenName->toOne(),
+          v|$v.shootTally,
+          v|$v.visibilityCode
+        ],
+        [
+          'Visit',
+          'Patch',
+          'Meadow',
+          'Warden',
+          'Tally',
+          'Visibility'
+        ]
+      )->sort([asc('Visit')]);
+      tests:
+      [
+        visitTrace:
+        {
+          doc: 'Each survey visit builds its visit code from the visit identifier, upper-cases the recorded visibility and walks the full four-hop visit-to-patch-to-meadow-to-sector-to-warden path to the warden who is accountable for the patch.';
+          data:
+          [
+            test::teallagoon2::store::LagoonSurveyStore:
+              Relational
+              #{
+                lagoon.survey_visit:
+                  'visit_id,patch_code,visited_on,shoot_tally,water_temp_c,visibility_code,tide_state,survey_round\n'+
+                  '1,SP-01,2026-05-12,62,15.5,clear,EBB,2\n'+
+                  '2,SP-02,2026-05-19,48,14.0,hazy,EBB,2\n'+
+                  '3,SP-03,2026-07-01,55,15.0,clear,EBB,2\n';
+
+                lagoon.seagrass_patch:
+                  'patch_code,patch_name,meadow_code,planted_year,shoot_density,mapped_on,patrol_note\n'+
+                  'SP-01,Eelgrass Shoal North,MZ-01,2019,412.5,2020-04-11,marker buoy\n'+
+                  'SP-02,Widgeon Flat West,MZ-02,2021,255.0,2022-05-02,drone survey\n'+
+                  'SP-03,Bar Fringe East,MZ-03,2022,180.0,2023-03-14,\n';
+
+                lagoon.meadow_zone:
+                  'meadow_code,meadow_name,sector_code\n'+
+                  'MZ-01,Eelgrass Shoal,SC-01\n'+
+                  'MZ-02,Widgeon Flat,SC-02\n'+
+                  'MZ-03,Bar Fringe,SC-02\n';
+
+                lagoon.lagoon_sector:
+                  'sector_code,sector_name,warden_code\n'+
+                  'SC-01,North Spit,W-01\n'+
+                  'SC-02,South Flats,W-02\n';
+
+                lagoon.sector_warden:
+                  'warden_code,warden_name,radio_call\n'+
+                  'W-01,Ines Marsh,lag-1\n'+
+                  'W-02,Otto Reed,lag-2\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"SV-1","Patch":"Eelgrass Shoal North","Meadow":"Eelgrass Shoal","Warden":"Ines Marsh","Tally":62,"Visibility":"CLEAR"},{"Visit":"SV-2","Patch":"Widgeon Flat West","Meadow":"Widgeon Flat","Warden":"Otto Reed","Tally":48,"Visibility":"HAZY"},{"Visit":"SV-3","Patch":"Bar Fringe East","Meadow":"Bar Fringe","Warden":"Otto Reed","Tally":55,"Visibility":"CLEAR"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

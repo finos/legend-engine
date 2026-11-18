@@ -1,0 +1,30 @@
+name: amber-hatchery-4-generation
+title: "Amber Hatchery 4 — associated propagation classes, composite-scoped JSON-schema generation & generation specification"
+description: |
+  A plant-propagation nursery model in which an identifier class, a producer house class, a
+  wide cutting-record class and a composite digest class express the same graph twice — once
+  by value through the digest's owned properties and once by reference through a bidirectional
+  association between the house and its cuttings. A JSON-schema file generation scoped solely
+  to the composite digest walks the related types, and a generation specification collects it
+  so the whole chain is resolved by qualified path at build time.
+modelSources:
+  model:
+    root: amber-hatchery-4-generation
+    files:
+      - test/amberhatchery4/domain/Propagation.pure
+      - test/amberhatchery4/generation/DigestJsonSchema.pure
+      - test/amberhatchery4/generation/PropagationGenerationSpecification.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - file-generation
+  - generation-specification
+  - json-schema
+  - nursery
+  - propagation

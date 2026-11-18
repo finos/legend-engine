@@ -1,0 +1,66 @@
+name: teal-glacier-3
+title: "Teal Glacier 3 — Alpine Footbridge Register Behind A Catalogued Entry Point And A Keyed Endpoint"
+description: |
+  An alpine footbridge inspection register whose two extents are mapped onto one schema: the bridge
+  extent reads its own aliased relation and reaches the district name across the single declared join
+  rather than carrying it, while the district extent reads that same relation in its own right, so the
+  relation is planned once as a join target and once as an extent. Each class mapping pins the columns
+  that identify an instance and the alias its column reads are qualified against. A derived property
+  computes the span label off the mapped code and span after the row is instantiated, so the projected
+  column is resolved in post-processing rather than pushed into the statement. Two endpoints publish the
+  register as explicit column contracts carrying no predicate of their own: the bridge endpoint declares
+  an environment key so one query body is planned under a caller-selected binding, and the district
+  endpoint is bound directly. A catalogued entry point binds the mapping and runtime pair, features both
+  endpoints as executables, publishes the layout that draws the three declared classes, and lists the
+  roster class the districts staff walk-outs from, which is published for discovery without a store
+  binding of its own. A local in-process warehouse supplies the execution binding, and both the mapping
+  suites and the endpoint suites assert a single keyed row.
+modelSources:
+  model:
+    root: teal-glacier-3
+    files:
+      - test/tealglacier3/connection/TrailConnections.pure
+      - test/tealglacier3/dataspace/TrailDataSpace.pure
+      - test/tealglacier3/diagram/TrailDiagram.pure
+      - test/tealglacier3/domain/TrailDomain.pure
+      - test/tealglacier3/mapping/TrailMapping.pure
+      - test/tealglacier3/runtime/TrailRuntimes.pure
+      - test/tealglacier3/service/BridgeRegisterService.pure
+      - test/tealglacier3/service/DistrictRegisterService.pure
+      - test/tealglacier3/store/TrailDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:derived-property
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - alpine-trail-register
+  - data-space
+  - derived-property
+  - diagram
+  - h2
+  - inner-join
+  - local-h2
+  - main-table-alias
+  - mapping-test
+  - multi-execution
+  - plan-generation
+  - primary-key
+  - project
+  - service-test
+  - tabular-data-set

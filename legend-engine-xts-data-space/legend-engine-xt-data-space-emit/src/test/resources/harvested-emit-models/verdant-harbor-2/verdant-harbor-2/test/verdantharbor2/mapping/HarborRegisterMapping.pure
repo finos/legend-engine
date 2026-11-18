@@ -1,0 +1,119 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantharbor2::mapping::HarborRegisterMapping
+(
+  *test::verdantharbor2::domain::BerthSlot[berth]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantharbor2::store::HarborRegisterDB]harbor.berth_slot.berth_id
+    )
+    ~mainTable [test::verdantharbor2::store::HarborRegisterDB]harbor.berth_slot
+    berthId: [test::verdantharbor2::store::HarborRegisterDB]harbor.berth_slot.berth_id,
+    berthCode: [test::verdantharbor2::store::HarborRegisterDB]harbor.berth_slot.berth_code,
+    berthName: [test::verdantharbor2::store::HarborRegisterDB]harbor.berth_slot.berth_name,
+    draftLimitM: [test::verdantharbor2::store::HarborRegisterDB]harbor.berth_slot.draft_limit_m,
+    openedOn: [test::verdantharbor2::store::HarborRegisterDB]harbor.berth_slot.opened_on,
+    surveyedAt: [test::verdantharbor2::store::HarborRegisterDB]harbor.berth_slot.surveyed_at,
+    litFlag: [test::verdantharbor2::store::HarborRegisterDB]harbor.berth_slot.lit_flag
+  }
+
+  *test::verdantharbor2::domain::CraneUnit[crane]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantharbor2::store::HarborRegisterDB]harbor.crane_unit.crane_id
+    )
+    ~mainTable [test::verdantharbor2::store::HarborRegisterDB]harbor.crane_unit
+    craneId: [test::verdantharbor2::store::HarborRegisterDB]harbor.crane_unit.crane_id,
+    craneCode: [test::verdantharbor2::store::HarborRegisterDB]harbor.crane_unit.crane_code,
+    craneModel: [test::verdantharbor2::store::HarborRegisterDB]harbor.crane_unit.crane_model,
+    liftTonnes: [test::verdantharbor2::store::HarborRegisterDB]harbor.crane_unit.lift_tonnes,
+    commissionedOn: [test::verdantharbor2::store::HarborRegisterDB]harbor.crane_unit.commissioned_on,
+    inspectedAt: [test::verdantharbor2::store::HarborRegisterDB]harbor.crane_unit.inspected_at,
+    railMountedFlag: [test::verdantharbor2::store::HarborRegisterDB]harbor.crane_unit.rail_mounted_flag
+  }
+
+  *test::verdantharbor2::domain::TideReading[tide]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantharbor2::store::HarborRegisterDB]harbor.tide_reading.reading_id
+    )
+    ~mainTable [test::verdantharbor2::store::HarborRegisterDB]harbor.tide_reading
+    readingId: [test::verdantharbor2::store::HarborRegisterDB]harbor.tide_reading.reading_id,
+    gaugeCode: [test::verdantharbor2::store::HarborRegisterDB]harbor.tide_reading.gauge_code,
+    waterLevelM: [test::verdantharbor2::store::HarborRegisterDB]harbor.tide_reading.water_level_m,
+    observedOn: [test::verdantharbor2::store::HarborRegisterDB]harbor.tide_reading.observed_on,
+    recordedAt: [test::verdantharbor2::store::HarborRegisterDB]harbor.tide_reading.recorded_at,
+    provisionalFlag: [test::verdantharbor2::store::HarborRegisterDB]harbor.tide_reading.provisional_flag
+  }
+
+  *test::verdantharbor2::domain::DredgeSurvey[dredge]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantharbor2::store::HarborRegisterDB]harbor.dredge_survey.survey_id
+    )
+    ~mainTable [test::verdantharbor2::store::HarborRegisterDB]harbor.dredge_survey
+    surveyId: [test::verdantharbor2::store::HarborRegisterDB]harbor.dredge_survey.survey_id,
+    channelCode: [test::verdantharbor2::store::HarborRegisterDB]harbor.dredge_survey.channel_code,
+    clearedVolumeM3: [test::verdantharbor2::store::HarborRegisterDB]harbor.dredge_survey.cleared_volume_m3,
+    surveyedOn: [test::verdantharbor2::store::HarborRegisterDB]harbor.dredge_survey.surveyed_on,
+    siltNote: [test::verdantharbor2::store::HarborRegisterDB]harbor.dredge_survey.silt_note
+  }
+
+  testSuites:
+  [
+    dredgeSurveyKeySuite:
+    {
+      function: |test::verdantharbor2::domain::DredgeSurvey.all()->filter(s|$s.channelCode->toOne()->startsWith('CH-'))->project([s|$s.surveyId, s|$s.channelCode, s|$s.clearedVolumeM3, s|$s.surveyedOn, s|$s.siltNote], ['SurveyId', 'ChannelCode', 'ClearedVolumeM3', 'SurveyedOn', 'SiltNote'])->sort([asc('SurveyId')]);
+      tests:
+      [
+        keyedSurveysAndNullPayload:
+        {
+          doc: 'Each survey resolves through its own main-table binding and single-column numeric key, the survey whose optional payload columns are all empty still resolves its identity, and the row whose channel code falls outside the recognised prefix is dropped by the predicate.';
+          data:
+          [
+            test::verdantharbor2::store::HarborRegisterDB:
+              Relational
+              #{
+                harbor.dredge_survey:
+                  'survey_id,channel_code,cleared_volume_m3,surveyed_on,silt_note\n'+
+                  '9001,CH-01,1250.5,2026-02-01,inner approach swept\n'+
+                  '9002,CH-02,880.25,2026-02-08,outer bar trimmed\n'+
+                  '9003,CH-03,,,\n'+
+                  '9004,XX-09,410.0,2026-02-15,disused cut\n';
+              }#
+          ];
+          asserts:
+          [
+            threePrefixedSurveys:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SurveyId":9001,"ChannelCode":"CH-01","ClearedVolumeM3":1250.5,"SurveyedOn":"2026-02-01","SiltNote":"inner approach swept"},{"SurveyId":9002,"ChannelCode":"CH-02","ClearedVolumeM3":880.25,"SurveyedOn":"2026-02-08","SiltNote":"outer bar trimmed"},{"SurveyId":9003,"ChannelCode":"CH-03","ClearedVolumeM3":null,"SurveyedOn":null,"SiltNote":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,61 @@
+name: frosted-glacier
+title: "Frosted Glacier — Remote Cryosphere Feed (service store, external-format binding, conditional model-to-model transforms)"
+description: |
+  A tall glacier-monitoring taxonomy with profiles, enumerations and a three-level
+  inheritance chain, sourced from a service-store endpoint whose complex response is
+  typed by an external-format binding over a model unit. Three model-to-model set
+  implementations build the domain instances from the deserialised feed, one of them
+  through a nine-arm conditional that classifies the balance regime and falls through
+  to no value at all when neither a code nor a remark is supplied. A single relational
+  set implementation routes a stored morphology code through an enumeration mapping so
+  the project keeps one store-backed execution path alongside the in-memory one.
+
+modelSources:
+  model:
+    root: frosted-glacier
+    files:
+      - test/frostedglacier/api/GlacierReadingFeed.pure
+      - test/frostedglacier/connection/GlacierConnections.pure
+      - test/frostedglacier/domain/GlacierTaxonomy.pure
+      - test/frostedglacier/external/GlacierFeedBinding.pure
+      - test/frostedglacier/mapping/GlacierFeedM2M.pure
+      - test/frostedglacier/mapping/GlacierRegistryMapping.pure
+      - test/frostedglacier/runtime/GlacierRuntimes.pure
+      - test/frostedglacier/service/StationMassBalanceFeed.pure
+      - test/frostedglacier/store/GlacierFeedApi.pure
+      - test/frostedglacier/store/GlacierRegistryDb.pure
+
+features:
+  - execution:external-format-binding
+  - execution:service
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:relational-main-table-alias
+  - query:collection-op
+  - query:filter
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:service-store
+stores:
+  - relational
+  - service-store
+complexity: advanced
+tags:
+  - class-inheritance
+  - conditional-transform
+  - derived-property
+  - enumeration-mapping
+  - external-format-binding
+  - glacier-monitoring
+  - graph-fetch
+  - h2
+  - model-to-model
+  - service-store

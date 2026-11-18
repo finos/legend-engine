@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection demo::mapleapiary2::connection::ApiaryAcceptanceConnection
+{
+  store: demo::mapleapiary2::store::ApiaryDatabase;
+  type: Snowflake;
+  quoteIdentifiers: true;
+  specification: Snowflake
+  {
+    name: 'APIARY_DB';
+    account: 'apiary_control_account';
+    warehouse: 'APIARY_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    role: 'APIARY_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'APIARY_OAUTH';
+    scopeName: 'SESSION:ROLE:APIARY_READER';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'HIVE_EVENT'; to: 'HIVE_EVENT_ACCEPT';},
+        schema {from: 'WORK_ITEM'; to: 'WORK_ITEM_ACCEPT';},
+        schema {from: 'PRESENTATION'; to: 'PRESENTATION_ACCEPT';},
+        table {from: 'COLONY_EVENT_ALL_VERSIONS'; to: 'COLONY_EVENT_ACCEPT'; schemaFrom: 'HIVE_EVENT'; schemaTo: 'HIVE_EVENT_ACCEPT';},
+        table {from: 'SITUATION_ALL_VERSIONS'; to: 'COLONY_EVENT_ACCEPT'; schemaFrom: 'HIVE_EVENT'; schemaTo: 'HIVE_EVENT_ACCEPT';},
+        table {from: 'TASK_VERSION'; to: 'TASK_VERSION_ACCEPT'; schemaFrom: 'WORK_ITEM'; schemaTo: 'WORK_ITEM_ACCEPT';}
+      ];
+    }
+  ];
+}

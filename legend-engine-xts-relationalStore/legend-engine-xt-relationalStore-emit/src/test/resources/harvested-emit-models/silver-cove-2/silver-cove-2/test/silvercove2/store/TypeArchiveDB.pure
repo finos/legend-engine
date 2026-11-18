@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::silvercove2::store::TypeArchiveDB
+(
+  Schema archive
+  (
+    Table type_face
+    (
+      face_id INTEGER PRIMARY KEY,
+      face_code VARCHAR(40) NOT NULL,
+      face_name VARCHAR(120) NOT NULL,
+      designer_name VARCHAR(120) NOT NULL,
+      city_code VARCHAR(20) NOT NULL,
+      release_year INTEGER NOT NULL
+    )
+    Table matrix_plate
+    (
+      matrix_id INTEGER PRIMARY KEY,
+      matrix_code VARCHAR(40) NOT NULL,
+      face_code VARCHAR(40) NOT NULL,
+      point_size INTEGER NOT NULL,
+      width_units INTEGER NOT NULL,
+      alloy_code VARCHAR(20) NOT NULL,
+      case_code VARCHAR(20) NOT NULL
+    )
+    Table specimen_sheet
+    (
+      specimen_id INTEGER PRIMARY KEY,
+      specimen_code VARCHAR(40) NOT NULL,
+      sheet_title VARCHAR(160) NOT NULL,
+      matrix_code VARCHAR(40) NOT NULL,
+      face_code VARCHAR(40) NOT NULL,
+      press_name VARCHAR(120) NOT NULL,
+      printed_on DATE NOT NULL
+    )
+    Table foundry_city
+    (
+      city_id INTEGER PRIMARY KEY,
+      city_code VARCHAR(20) NOT NULL,
+      city_name VARCHAR(120) NOT NULL
+    )
+    Table storage_case
+    (
+      case_id INTEGER PRIMARY KEY,
+      case_code VARCHAR(20) NOT NULL,
+      case_name VARCHAR(120) NOT NULL,
+      city_code VARCHAR(20) NOT NULL
+    )
+    Table alloy_ref
+    (
+      alloy_id INTEGER PRIMARY KEY,
+      alloy_code VARCHAR(20) NOT NULL,
+      alloy_name VARCHAR(120) NOT NULL
+    )
+  )
+
+  Join Face_City(archive.type_face.city_code = archive.foundry_city.city_code)
+  Join Matrix_Face(archive.matrix_plate.face_code = archive.type_face.face_code)
+  Join Matrix_Case(archive.matrix_plate.case_code = archive.storage_case.case_code)
+  Join Matrix_Alloy(archive.matrix_plate.alloy_code = archive.alloy_ref.alloy_code)
+  Join Case_City(archive.storage_case.city_code = archive.foundry_city.city_code)
+  Join Specimen_Matrix(archive.specimen_sheet.matrix_code = archive.matrix_plate.matrix_code)
+  Join Specimen_Face(archive.specimen_sheet.face_code = archive.type_face.face_code)
+)

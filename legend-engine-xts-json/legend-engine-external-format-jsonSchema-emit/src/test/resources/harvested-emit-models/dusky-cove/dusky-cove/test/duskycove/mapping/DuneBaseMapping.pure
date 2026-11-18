@@ -1,0 +1,340 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskycove::mapping::DuneBaseMapping
+(
+  include mapping test::duskycove::mapping::DuneEnumMappings
+
+  *test::duskycove::domain::PlantingPlot[plot]: Relational
+  {
+    ~filter [test::duskycove::store::DunePlantingDatabase]PlantedPlot
+    ~primaryKey
+    (
+      [test::duskycove::store::DunePlantingDatabase]dune.planting_plot.plot_id
+    )
+    ~mainTable [test::duskycove::store::DunePlantingDatabase]dune.planting_plot
+    registerCode: [test::duskycove::store::DunePlantingDatabase]dune.planting_plot.register_code,
+    stewardNote: case(
+                   isNotEmpty([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.steward_note),
+                   rtrim([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.steward_note),
+                   sqlNull()
+                 ),
+    plotCode: [test::duskycove::store::DunePlantingDatabase]dune.planting_plot.plot_code,
+    plotName: case(
+                isNotEmpty([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.plot_name),
+                rtrim([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.plot_name),
+                concat('UNNAMED PLOT ', [test::duskycove::store::DunePlantingDatabase]dune.planting_plot.plot_code)
+              ),
+    sandClass: EnumerationMapping SandMapping: case(
+                 equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.sand_code, 'M'),
+                 'M',
+                 case(
+                   equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.sand_code, 'S'),
+                   'S',
+                   case(
+                     equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.sand_code, 'F'),
+                     'F',
+                     'Z'
+                   )
+                 )
+               ),
+    exposureClass: EnumerationMapping ExposureMapping: case(
+                     equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.exposure_code, 'H'),
+                     'H',
+                     case(
+                       equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.exposure_code, 'D'),
+                       'D',
+                       case(
+                         equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.exposure_code, 'B'),
+                         'B',
+                         'U'
+                       )
+                     )
+                   ),
+    stabilityIndex: [test::duskycove::store::DunePlantingDatabase]dune.planting_plot.stability_index,
+    vigourLabel: case(
+      equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.vigour_code, 'V1'),
+      'ESTABLISHED SWARD',
+      case(
+        equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.vigour_code, 'V2'),
+        'STRONG SWARD',
+        case(
+          equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.vigour_code, 'V3'),
+          'STEADY SWARD',
+          case(
+            equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.vigour_code, 'V4'),
+            'THINNING SWARD',
+            case(
+              equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.vigour_code, 'V5'),
+              'PATCHY SWARD',
+              case(
+                equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.vigour_code, 'V6'),
+                'BROKEN SWARD',
+                case(
+                  equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.vigour_code, 'V7'),
+                  'FAILING SWARD',
+                  case(
+                    equal([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.vigour_code, 'V8'),
+                    'LOST SWARD',
+                    'UNRECORDED VIGOUR'
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    approachNote: case(
+                    isNotEmpty([test::duskycove::store::DunePlantingDatabase]dune.planting_plot.approach_note),
+                    concat(
+                      [test::duskycove::store::DunePlantingDatabase]dune.planting_plot.approach_note,
+                      concat(' via ', [test::duskycove::store::DunePlantingDatabase]@Plot_Transect | [test::duskycove::store::DunePlantingDatabase]dune.planting_transect.transect_name)
+                    ),
+                    'NO MAPPED APPROACH'
+                  ),
+    transectPlotCount: [test::duskycove::store::DunePlantingDatabase]@Plot_Transect > (INNER) [test::duskycove::store::DunePlantingDatabase]@Transect_Tally | [test::duskycove::store::DunePlantingDatabase]dune.transect_plot_tally_vw.plot_count,
+    placardLabel: [test::duskycove::store::DunePlantingDatabase]@Plot_Placard | [test::duskycove::store::DunePlantingDatabase]dune.plot_placard_vw.placard_label,
+    reserveSectorCount: [test::duskycove::store::DunePlantingDatabase]@Plot_Transect > @Transect_Sector > @Sector_Reserve > @Reserve_Tally | [test::duskycove::store::DunePlantingDatabase]reserve.reserve_sector_tally_vw.sector_count
+  }
+
+  *test::duskycove::domain::PlantingTransect[transect]: Relational
+  {
+    ~filter [test::duskycove::store::DunePlantingDatabase]NamedTransect
+    ~primaryKey
+    (
+      [test::duskycove::store::DunePlantingDatabase]dune.planting_transect.transect_code
+    )
+    ~mainTable [test::duskycove::store::DunePlantingDatabase]dune.planting_transect
+    registerCode: [test::duskycove::store::DunePlantingDatabase]dune.planting_transect.register_code,
+    stewardNote: case(
+                   isNotEmpty([test::duskycove::store::DunePlantingDatabase]dune.planting_transect.steward_note),
+                   rtrim([test::duskycove::store::DunePlantingDatabase]dune.planting_transect.steward_note),
+                   sqlNull()
+                 ),
+    transectCode: [test::duskycove::store::DunePlantingDatabase]dune.planting_transect.transect_code,
+    transectName: rtrim([test::duskycove::store::DunePlantingDatabase]dune.planting_transect.transect_name),
+    transectLengthMeters: [test::duskycove::store::DunePlantingDatabase]dune.planting_transect.transect_length_m
+  }
+
+  *test::duskycove::domain::DuneSector[sector]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskycove::store::DunePlantingDatabase]reserve.dune_sector.sector_code
+    )
+    ~mainTable [test::duskycove::store::DunePlantingDatabase]reserve.dune_sector
+    sectorCode: [test::duskycove::store::DunePlantingDatabase]reserve.dune_sector.sector_code,
+    sectorName: toUpper([test::duskycove::store::DunePlantingDatabase]reserve.dune_sector.sector_name)
+  }
+
+  *test::duskycove::domain::CoastalReserve[coastalReserve]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskycove::store::DunePlantingDatabase]reserve.coastal_reserve.reserve_code
+    )
+    ~mainTable [test::duskycove::store::DunePlantingDatabase]reserve.coastal_reserve
+    reserveCode: [test::duskycove::store::DunePlantingDatabase]reserve.coastal_reserve.reserve_code,
+    reserveName: rtrim([test::duskycove::store::DunePlantingDatabase]reserve.coastal_reserve.reserve_name)
+  }
+
+  test::duskycove::domain::Plot_Transect: Relational
+  {
+    AssociationMapping
+    (
+      plots[transect, plot]: [test::duskycove::store::DunePlantingDatabase]@Plot_Transect,
+      transect[plot, transect]: [test::duskycove::store::DunePlantingDatabase]@Plot_Transect
+    )
+  }
+
+  test::duskycove::domain::Transect_Sector: Relational
+  {
+    AssociationMapping
+    (
+      transects[sector, transect]: [test::duskycove::store::DunePlantingDatabase]@Transect_Sector,
+      sector[transect, sector]: [test::duskycove::store::DunePlantingDatabase]@Transect_Sector
+    )
+  }
+
+  test::duskycove::domain::Sector_Reserve: Relational
+  {
+    AssociationMapping
+    (
+      sectors[coastalReserve, sector]: [test::duskycove::store::DunePlantingDatabase]@Sector_Reserve,
+      reserve[sector, coastalReserve]: [test::duskycove::store::DunePlantingDatabase]@Sector_Reserve
+    )
+  }
+
+  testSuites:
+  [
+    plotDigestSuite:
+    {
+      function: |test::duskycove::domain::PlantingPlot.all()->project(
+        [
+          p|$p.plotCode,
+          p|$p.plotName,
+          p|$p.vigourLabel,
+          p|$p.sandClass,
+          p|$p.exposureClass,
+          p|$p.stewardLabel(),
+          p|$p.stabilityBand(),
+          p|$p.plantingDigest(),
+          p|$p.approachNote,
+          p|$p.transectPlotCount->toOne(),
+          p|$p.placardLabel->toOne(),
+          p|$p.reserveSectorCount->toOne(),
+          p|$p.patrolLabel('quadrat')
+        ],
+        [
+          'Plot',
+          'Name',
+          'Vigour',
+          'Sand',
+          'Exposure',
+          'Steward',
+          'Band',
+          'Digest',
+          'Approach',
+          'TransectPlots',
+          'Placard',
+          'ReserveSectors',
+          'Patrol'
+        ]
+      )->sort([asc('Plot')]);
+      tests:
+      [
+        plotDigest:
+        {
+          doc: 'Projects the planted plot population through all eight vigour arms plus the unrecorded fallback (scenarios conditional-arm-1-hit .. conditional-arm-8-hit and conditional-fallback-null), the unnamed-plot and missing-approach sentinels, the null steward note folded onto the unvisited label, the eight-step stability banding function, the nested planting digest, the parameterised patrol label, the sand source value that matches no vocabulary entry and lands on the unclassed catch-all, the one-hop inner-joined and two-hop view-backed tallies and the four-hop reserve sector tally; the retired plot is dropped by the class-mapping filter.';
+          data:
+          [
+            test::duskycove::store::DunePlantingDatabase:
+              Relational
+              #{
+                dune.planting_plot:
+                  'plot_id,plot_code,plot_name,transect_code,sand_code,exposure_code,stability_index,vigour_code,approach_note,register_code,steward_note\n'+
+                  '1,DC-101,Marram Verge Plot,TR-1,M,H,96,V1,Verge Path,DC-101,spring visit\n'+
+                  '2,DC-102,Sea Holly Plot,TR-1,S,D,82,V2,Holly Spur,DC-102,spring visit\n'+
+                  '3,DC-103,Lyme Grass Plot,TR-2,F,B,67,V3,Lyme Walk,DC-103,recheck cover\n'+
+                  '4,DC-104,Sand Sedge Plot,TR-2,M,U,51,V4,Sedge Track,DC-104,\n'+
+                  '5,DC-105,Slack Hollow Plot,TR-2,Q,H,38,V5,Hollow Route,DC-105,cover thinning\n'+
+                  '6,DC-106,,TR-3,M,D,22,V6,,DC-106,\n'+
+                  '7,DC-107,Thrift Ledge Plot,TR-3,S,B,11,V7,Ledge Line,DC-107,storm scour\n'+
+                  '8,DC-108,Blowout Rim Plot,TR-3,F,H,0,V8,Rim Cut,DC-108,rim collapsed\n'+
+                  '9,DC-109,Spare Verge Plot,TR-3,M,D,45,V9,Verge Loop,DC-109,vigour under review\n'+
+                  '10,DC-110,Retired Plot,TR-3,S,D,30,RETIRED,Old Track,DC-110,decommissioned\n';
+
+                dune.planting_transect:
+                  'transect_code,transect_name,sector_code,transect_length_m,register_code,steward_note\n'+
+                  'TR-1,Marram Verge Transect,SC-1,5200,DC-TR1,surveyed\n'+
+                  'TR-2,Lower Slack Transect,SC-1,3100,DC-TR2,surveyed\n'+
+                  'TR-3,Foredune Link,SC-2,4400,DC-TR3,\n';
+
+                reserve.dune_sector:
+                  'sector_code,sector_name,reserve_code\n'+
+                  'SC-1,North Dune Sector,RS-1\n'+
+                  'SC-2,South Dune Sector,RS-1\n'+
+                  'SC-3,Spit Sector,RS-2\n';
+
+                reserve.coastal_reserve:
+                  'reserve_code,reserve_name\n'+
+                  'RS-1,Dusky Cove Coastal Reserve\n'+
+                  'RS-2,Outer Spit Coastal Reserve\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"DC-101","Name":"Marram Verge Plot","Vigour":"ESTABLISHED SWARD","Sand":"Mobile","Exposure":"Sheltered","Steward":"SPRING VISIT","Band":"ANCHORED","Digest":"ANCHORED / DC-1","Approach":"Verge Path via Marram Verge Transect","TransectPlots":2,"Placard":"DUNE-TR-1","ReserveSectors":2,"Patrol":"QUADRAT PATROL DC-101"},{"Plot":"DC-102","Name":"Sea Holly Plot","Vigour":"STRONG SWARD","Sand":"SemiFixed","Exposure":"Moderate","Steward":"SPRING VISIT","Band":"HOLDING","Digest":"HOLDING / DC-1","Approach":"Holly Spur via Marram Verge Transect","TransectPlots":2,"Placard":"DUNE-TR-1","ReserveSectors":2,"Patrol":"QUADRAT PATROL DC-102"},{"Plot":"DC-103","Name":"Lyme Grass Plot","Vigour":"STEADY SWARD","Sand":"Fixed","Exposure":"Blasted","Steward":"RECHECK COVER","Band":"KNITTING","Digest":"KNITTING / LYME GRA","Approach":"Lyme Walk via Lower Slack Transect","TransectPlots":3,"Placard":"DUNE-TR-2","ReserveSectors":2,"Patrol":"QUADRAT PATROL DC-103"},{"Plot":"DC-104","Name":"Sand Sedge Plot","Vigour":"THINNING SWARD","Sand":"Mobile","Exposure":"Unrecorded","Steward":"UNVISITED","Band":"THIN COVER","Digest":"THIN COVER / SAND SED","Approach":"Sedge Track via Lower Slack Transect","TransectPlots":3,"Placard":"DUNE-TR-2","ReserveSectors":2,"Patrol":"QUADRAT PATROL DC-104"},{"Plot":"DC-105","Name":"Slack Hollow Plot","Vigour":"PATCHY SWARD","Sand":"Unclassed","Exposure":"Sheltered","Steward":"COVER THINNING","Band":"SHIFTING","Digest":"SHIFTING / SLACK HO","Approach":"Hollow Route via Lower Slack Transect","TransectPlots":3,"Placard":"DUNE-TR-2","ReserveSectors":2,"Patrol":"QUADRAT PATROL DC-105"},{"Plot":"DC-106","Name":"UNNAMED PLOT DC-106","Vigour":"BROKEN SWARD","Sand":"Mobile","Exposure":"Moderate","Steward":"UNVISITED","Band":"SCOURING","Digest":"SCOURING / UNNAMED ","Approach":"NO MAPPED APPROACH","TransectPlots":5,"Placard":"DUNE-TR-3","ReserveSectors":2,"Patrol":"QUADRAT PATROL DC-106"},{"Plot":"DC-107","Name":"Thrift Ledge Plot","Vigour":"FAILING SWARD","Sand":"SemiFixed","Exposure":"Blasted","Steward":"STORM SCOUR","Band":"BLOWOUT","Digest":"BLOWOUT / THRIFT L","Approach":"Ledge Line via Foredune Link","TransectPlots":5,"Placard":"DUNE-TR-3","ReserveSectors":2,"Patrol":"QUADRAT PATROL DC-107"},{"Plot":"DC-108","Name":"Blowout Rim Plot","Vigour":"LOST SWARD","Sand":"Fixed","Exposure":"Sheltered","Steward":"RIM COLLAPSED","Band":"BARE SAND","Digest":"BARE SAND / BLOWOUT ","Approach":"Rim Cut via Foredune Link","TransectPlots":5,"Placard":"DUNE-TR-3","ReserveSectors":2,"Patrol":"QUADRAT PATROL DC-108"},{"Plot":"DC-109","Name":"Spare Verge Plot","Vigour":"UNRECORDED VIGOUR","Sand":"Mobile","Exposure":"Moderate","Steward":"VIGOUR UNDER REVIEW","Band":"THIN COVER","Digest":"THIN COVER / SPARE VE","Approach":"Verge Loop via Foredune Link","TransectPlots":5,"Placard":"DUNE-TR-3","ReserveSectors":2,"Patrol":"QUADRAT PATROL DC-109"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    transectRosterSuite:
+    {
+      function: |test::duskycove::domain::PlantingTransect.all()->project(
+        [
+          t|$t.transectCode,
+          t|$t.transectName,
+          t|$t.transectLengthMeters,
+          t|$t.longTransect(),
+          t|$t.stewardLabel(),
+          t|$t.sector.sectorName,
+          t|$t.sector.reserve.reserveName
+        ],
+        [
+          'Transect',
+          'Name',
+          'Length',
+          'Long',
+          'Steward',
+          'Sector',
+          'Reserve'
+        ]
+      )->sort([asc('Transect')]);
+      tests:
+      [
+        transectRoster:
+        {
+          doc: 'Walks the stewardship hierarchy from the transect through the dune sector to the coastal reserve over the cross-schema joins mapped as association implementations, hitting both transect-length arms and the unvisited steward sentinel; the unnamed transect is dropped by the class-mapping filter.';
+          data:
+          [
+            test::duskycove::store::DunePlantingDatabase:
+              Relational
+              #{
+                dune.planting_transect:
+                  'transect_code,transect_name,sector_code,transect_length_m,register_code,steward_note\n'+
+                  'TR-1,Marram Verge Transect,SC-1,5200,DC-TR1,surveyed\n'+
+                  'TR-2,Lower Slack Transect,SC-1,3100,DC-TR2,\n'+
+                  'TR-3,,SC-2,4400,DC-TR3,unnamed transect\n';
+
+                reserve.dune_sector:
+                  'sector_code,sector_name,reserve_code\n'+
+                  'SC-1,North Dune Sector,RS-1\n'+
+                  'SC-2,South Dune Sector,RS-2\n';
+
+                reserve.coastal_reserve:
+                  'reserve_code,reserve_name\n'+
+                  'RS-1,Dusky Cove Coastal Reserve\n'+
+                  'RS-2,Outer Spit Coastal Reserve\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Transect":"TR-1","Name":"Marram Verge Transect","Length":5200,"Long":true,"Steward":"SURVEYED","Sector":"NORTH DUNE SECTOR","Reserve":"Dusky Cove Coastal Reserve"},{"Transect":"TR-2","Name":"Lower Slack Transect","Length":3100,"Long":false,"Steward":"UNVISITED","Sector":"NORTH DUNE SECTOR","Reserve":"Dusky Cove Coastal Reserve"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,208 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::olivedelta::mapping::ReefMapping
+(
+  *test::olivedelta::domain::DiveTeam[team]: Relational
+  {
+    ~primaryKey
+    (
+      [test::olivedelta::store::ReefDB]reef.dive_team.team_code
+    )
+    ~mainTable [test::olivedelta::store::ReefDB]reef.dive_team
+    teamCode: [test::olivedelta::store::ReefDB]reef.dive_team.team_code,
+    teamName: [test::olivedelta::store::ReefDB]reef.dive_team.team_name,
+    shoreBase: [test::olivedelta::store::ReefDB]reef.dive_team.shore_base
+  }
+
+  *test::olivedelta::domain::SurveySite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::olivedelta::store::ReefDB]reef.survey_site.site_code
+    )
+    ~mainTable [test::olivedelta::store::ReefDB]reef.survey_site
+    siteCode: [test::olivedelta::store::ReefDB]reef.survey_site.site_code,
+    siteName: [test::olivedelta::store::ReefDB]reef.survey_site.site_name,
+    lagoonZone: [test::olivedelta::store::ReefDB]reef.survey_site.lagoon_zone
+  }
+
+  *test::olivedelta::domain::CoralColony[colony]: Relational
+  {
+    ~primaryKey
+    (
+      [test::olivedelta::store::ReefDB]reef.coral_colony.colony_code
+    )
+    ~mainTable [test::olivedelta::store::ReefDB]reef.coral_colony
+    colonyCode: [test::olivedelta::store::ReefDB]reef.coral_colony.colony_code,
+    growthForm: [test::olivedelta::store::ReefDB]reef.coral_colony.growth_form,
+    diameterCm: [test::olivedelta::store::ReefDB]reef.coral_colony.diameter_cm,
+    displayTag: concat(
+                  concat(
+                    toUpper(trim([test::olivedelta::store::ReefDB]reef.coral_colony.growth_form)),
+                    '-'
+                  ),
+                  [test::olivedelta::store::ReefDB]reef.coral_colony.colony_code
+                )
+  }
+
+  *test::olivedelta::domain::BleachCheck[check]: Relational
+  {
+    ~primaryKey
+    (
+      [test::olivedelta::store::ReefDB]monitor.bleach_check.check_code
+    )
+    ~mainTable [test::olivedelta::store::ReefDB]monitor.bleach_check
+    checkCode: [test::olivedelta::store::ReefDB]monitor.bleach_check.check_code,
+    bleachPercent: [test::olivedelta::store::ReefDB]monitor.bleach_check.bleach_percent,
+    siteName: [test::olivedelta::store::ReefDB]@Check_Site | [test::olivedelta::store::ReefDB]reef.survey_site.site_name
+  }
+
+  test::olivedelta::domain::SiteColonies: Relational
+  {
+    AssociationMapping
+    (
+      colonies[site, colony]: [test::olivedelta::store::ReefDB]@Site_Colony,
+      site[colony, site]: [test::olivedelta::store::ReefDB]@Site_Colony
+    )
+  }
+
+  test::olivedelta::domain::TeamSites: Relational
+  {
+    AssociationMapping
+    (
+      sites[team, site]: [test::olivedelta::store::ReefDB]@Site_Team,
+      team[site, team]: [test::olivedelta::store::ReefDB]@Site_Team
+    )
+  }
+
+  testSuites:
+  [
+    siteColonySuite:
+    {
+      function: |test::olivedelta::domain::SurveySite.all()->project(
+  [
+    s|$s.siteCode,
+    s|$s.lagoonZone,
+    s|$s.colonies.displayTag,
+    s|$s.colonies.diameterCm
+  ],
+  [
+    'SiteCode',
+    'LagoonZone',
+    'ColonyTag',
+    'DiameterCm'
+  ]
+)->sort(
+  [
+    asc('SiteCode'),
+    asc('ColonyTag')
+  ]
+);
+      tests:
+      [
+        coloniesPerSite:
+        {
+          doc: 'Each surveyed site reaches its tagged colonies through the association implementation, with the display tag composed from the trimmed and upper-cased growth form.';
+          data:
+          [
+            test::olivedelta::store::ReefDB:
+              Relational
+              #{
+                reef.survey_site:
+                  'site_code,site_name,lagoon_zone,team_code\n'+
+                  'SS-01,Outer Spur,NORTH,DT-01\n'+
+                  'SS-02,Inner Flat,SOUTH,DT-02\n';
+
+                reef.coral_colony:
+                  'colony_code,site_code,growth_form,diameter_cm\n'+
+                  'CC-01,SS-01, branching ,64\n'+
+                  'CC-02,SS-01,massive,120\n'+
+                  'CC-03,SS-02,plating,38\n';
+              }#
+          ];
+          asserts:
+          [
+            threeTaggedColonies:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SiteCode":"SS-01","LagoonZone":"NORTH","ColonyTag":"BRANCHING-CC-01","DiameterCm":64},{"SiteCode":"SS-01","LagoonZone":"NORTH","ColonyTag":"MASSIVE-CC-02","DiameterCm":120},{"SiteCode":"SS-02","LagoonZone":"SOUTH","ColonyTag":"PLATING-CC-03","DiameterCm":38}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    bleachCheckSuite:
+    {
+      function: |test::olivedelta::domain::BleachCheck.all(%2026-06-01)->project(
+  [
+    c|$c.checkCode,
+    c|$c.bleachPercent,
+    c|$c.siteName
+  ],
+  [
+    'CheckCode',
+    'BleachPercent',
+    'SiteName'
+  ]
+)->sort(
+  [
+    asc('CheckCode')
+  ]
+);
+      tests:
+      [
+        inRangeChecksOnly:
+        {
+          doc: 'Carries one observation open at the processing date and one already superseded before it, so the out-of-range row is excluded by the processing milestone.';
+          data:
+          [
+            test::olivedelta::store::ReefDB:
+              Relational
+              #{
+                reef.survey_site:
+                  'site_code,site_name,lagoon_zone,team_code\n'+
+                  'SS-01,Outer Spur,NORTH,DT-01\n'+
+                  'SS-02,Inner Flat,SOUTH,DT-02\n';
+
+                monitor.bleach_check:
+                  'check_code,site_code,bleach_percent,in_z,out_z\n'+
+                  'BC-01,SS-01,12,2026-01-01,9999-12-31\n'+
+                  'BC-02,SS-02,45,2026-01-01,2026-03-01\n';
+              }#
+          ];
+          asserts:
+          [
+            oneOpenCheck:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"BC-01","BleachPercent":12,"SiteName":"Outer Spur"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import demo::cobaltcove::payload::*;
+
+Class {meta::pure::profiles::doc.doc = 'Wire shape of one row of the district dock-audit response.'} demo::cobaltcove::payload::StationAuditRow
+{
+  stationCode: String[1];
+  districtCode: String[1];
+  districtName: String[1];
+  capacity: Integer[1];
+  capacityBand: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Wire shape of one row of the single-station detail response.'} demo::cobaltcove::payload::StationDetailRow
+{
+  stationCode: String[1];
+  capacity: Integer[1];
+  capacityBand: String[1];
+  blockedInspections: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Wire shape of one row of the inspection log response.'} demo::cobaltcove::payload::InspectionLogRow
+{
+  inspectionRef: String[1];
+  conditionLabel: String[1];
+  faultCount: Integer[1];
+  stationCode: String[1];
+}
+
+###ExternalFormat
+Binding demo::cobaltcove::binding::StationAuditBinding
+{
+  contentType: 'application/json';
+  modelIncludes:
+  [
+    demo::cobaltcove::payload::StationAuditRow
+  ];
+}
+
+Binding demo::cobaltcove::binding::StationDetailBinding
+{
+  contentType: 'application/json';
+  modelIncludes:
+  [
+    demo::cobaltcove::payload::StationDetailRow
+  ];
+}
+
+Binding demo::cobaltcove::binding::InspectionLogBinding
+{
+  contentType: 'application/json';
+  modelIncludes:
+  [
+    demo::cobaltcove::payload::InspectionLogRow
+  ];
+}

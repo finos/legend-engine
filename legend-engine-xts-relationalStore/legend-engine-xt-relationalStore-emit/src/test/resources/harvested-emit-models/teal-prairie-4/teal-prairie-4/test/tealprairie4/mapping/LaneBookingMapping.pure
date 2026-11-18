@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealprairie4::mapping::LaneBookingMapping
+(
+  *test::tealprairie4::domain::LaneBooking[booking]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie4::store::AquaticsDb]aquatics.lane_booking.booking_id
+    )
+    ~mainTable [test::tealprairie4::store::AquaticsDb]aquatics.lane_booking
+    bookingCode: [test::tealprairie4::store::AquaticsDb]aquatics.lane_booking.booking_code,
+    slotCode: [test::tealprairie4::store::AquaticsDb]aquatics.lane_booking.slot_code,
+    swimmerLabel: [test::tealprairie4::store::AquaticsDb]aquatics.lane_booking.swimmer_label,
+    bookingTag: concat('BOOKING-', concat([test::tealprairie4::store::AquaticsDb]aquatics.lane_booking.slot_code, concat('-', toString([test::tealprairie4::store::AquaticsDb]aquatics.lane_booking.booking_id)))),
+    bookedOn: [test::tealprairie4::store::AquaticsDb]aquatics.lane_booking.booked_on
+  }
+
+  testSuites:
+  [
+    laneBookingRegisterSuite:
+    {
+      function: |test::tealprairie4::domain::LaneBooking.all()->project(
+      [
+        b|$b.bookingCode,
+        b|$b.slotCode,
+        b|$b.swimmerLabel,
+        b|$b.bookingTag
+      ],
+      [
+        'Booking',
+        'Slot',
+        'Swimmer',
+        'Tag'
+      ]
+    )->sort([asc('Booking')]);
+      tests:
+      [
+        theNestedTagIsBuiltFromTheSlotAndTheKey:
+        {
+          doc: 'The booking tag is assembled by nested concatenation over the slot code and the stringified key, so the register asserts the whole derived string rather than its parts.';
+          data:
+          [
+            test::tealprairie4::store::AquaticsDb:
+              Relational
+              #{
+                aquatics.lane_booking:
+                    'booking_id,booking_code,slot_code,swimmer_label,booked_on\n'+
+                    '1,BK-001,LS-001,Morning Lane Group,2026-04-28\n'+
+                    '2,BK-002,LS-003,Evening Lane Group,2026-04-29\n';
+              }#
+          ];
+          asserts:
+          [
+            twoBookingsCarryTheirAssembledTag:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Booking":"BK-001","Slot":"LS-001","Swimmer":"Morning Lane Group","Tag":"BOOKING-LS-001-1"},{"Booking":"BK-002","Slot":"LS-003","Swimmer":"Evening Lane Group","Tag":"BOOKING-LS-003-2"}]';
+                  }#;
+              }#
+          ];
+        },
+        aSingleBookingKeepsItsOwnKeyInTheTag:
+        {
+          doc: 'One booking read alone still carries its own key inside the tag, so the stringified key is taken per row rather than from the row count.';
+          data:
+          [
+            test::tealprairie4::store::AquaticsDb:
+              Relational
+              #{
+                aquatics.lane_booking:
+                    'booking_id,booking_code,slot_code,swimmer_label,booked_on\n'+
+                    '11,BK-011,LS-002,Saturday Squad,2026-05-09\n';
+              }#
+          ];
+          asserts:
+          [
+            theOneBookingTag:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Booking":"BK-011","Slot":"LS-002","Swimmer":"Saturday Squad","Tag":"BOOKING-LS-002-11"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

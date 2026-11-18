@@ -1,0 +1,49 @@
+name: quiet-summit-2
+title: "Quiet Summit 2 - data space over four single-execution projection services on a multi-table relational mapping"
+description: |
+  An alpine ridge observation network. Four weather-post types are mapped onto four tables of one
+  relational store through explicit main-table aliases and primary keys, and each type is published
+  by its own single-execution service returning a flat tabular projection. A data space groups the
+  mapping with a warehouse-backed and an in-process execution context, carries profile stereotypes
+  and tagged values, and advertises an email support target.
+modelSources:
+  model:
+    root: quiet-summit-2
+    files:
+      - test/quietsummit2/connection/SummitH2Connection.pure
+      - test/quietsummit2/connection/SummitWarehouseConnection.pure
+      - test/quietsummit2/dataspace/SummitDataSpace.pure
+      - test/quietsummit2/domain/SummitDomain.pure
+      - test/quietsummit2/mapping/SummitMapping.pure
+      - test/quietsummit2/runtime/SummitH2Runtime.pure
+      - test/quietsummit2/runtime/SummitWarehouseRuntime.pure
+      - test/quietsummit2/service/GustReadings.pure
+      - test/quietsummit2/service/SensorInventory.pure
+      - test/quietsummit2/service/SnowSamples.pure
+      - test/quietsummit2/service/StationRoster.pure
+      - test/quietsummit2/store/SummitDB.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - h2
+  - main-table-alias
+  - primary-key
+  - profile
+  - project
+  - service
+  - snowflake

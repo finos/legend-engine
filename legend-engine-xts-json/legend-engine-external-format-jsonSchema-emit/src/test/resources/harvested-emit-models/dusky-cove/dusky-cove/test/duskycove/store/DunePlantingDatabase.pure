@@ -1,0 +1,117 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskycove::store::DunePlantingDatabase
+(
+  Schema dune
+  (
+    Table planting_plot
+    (
+      plot_id INTEGER PRIMARY KEY,
+      plot_code VARCHAR(16),
+      plot_name VARCHAR(128),
+      transect_code VARCHAR(16),
+      sand_code VARCHAR(8),
+      exposure_code VARCHAR(8),
+      stability_index INTEGER,
+      vigour_code VARCHAR(8),
+      approach_note VARCHAR(256),
+      register_code VARCHAR(16),
+      steward_note VARCHAR(256)
+    )
+    Table plot_retirement
+    (
+      plot_id INTEGER PRIMARY KEY,
+      plot_code VARCHAR(16),
+      plot_name VARCHAR(128),
+      retirement_code VARCHAR(8),
+      register_code VARCHAR(16),
+      steward_note VARCHAR(256)
+    )
+    Table planting_transect
+    (
+      transect_code VARCHAR(16) PRIMARY KEY,
+      transect_name VARCHAR(128),
+      sector_code VARCHAR(16),
+      transect_length_m INTEGER,
+      register_code VARCHAR(16),
+      steward_note VARCHAR(256)
+    )
+    Table plot_survey
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      survey_id INTEGER PRIMARY KEY,
+      plot_id INTEGER,
+      surveyor_name VARCHAR(128),
+      method_code VARCHAR(8),
+      marram_code VARCHAR(8),
+      surveyed_on DATE,
+      stability_index INTEGER,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+
+    View transect_plot_tally_vw
+    (
+      ~groupBy (dune.planting_plot.transect_code)
+      transect_code: dune.planting_plot.transect_code PRIMARY KEY,
+      plot_count: count(dune.planting_plot.plot_id),
+      max_stability: max(dune.planting_plot.stability_index)
+    )
+    View plot_placard_vw
+    (
+      plot_id: dune.planting_plot.plot_id PRIMARY KEY,
+      plot_code: dune.planting_plot.plot_code,
+      placard_label: concat('DUNE-', toUpper(dune.planting_plot.transect_code))
+    )
+  )
+
+  Schema reserve
+  (
+    Table dune_sector
+    (
+      sector_code VARCHAR(16) PRIMARY KEY,
+      sector_name VARCHAR(128),
+      reserve_code VARCHAR(16)
+    )
+    Table coastal_reserve
+    (
+      reserve_code VARCHAR(16) PRIMARY KEY,
+      reserve_name VARCHAR(128)
+    )
+
+    View reserve_sector_tally_vw
+    (
+      ~groupBy (reserve.dune_sector.reserve_code)
+      reserve_code: reserve.dune_sector.reserve_code PRIMARY KEY,
+      sector_count: count(reserve.dune_sector.sector_code)
+    )
+  )
+
+  Filter PlantedPlot(dune.planting_plot.vigour_code != 'RETIRED' and dune.planting_plot.stability_index >= 0)
+  Filter NamedTransect(dune.planting_transect.transect_name != '')
+
+  Join Plot_Transect(dune.planting_plot.transect_code = dune.planting_transect.transect_code)
+  Join Transect_Sector(dune.planting_transect.sector_code = reserve.dune_sector.sector_code)
+  Join Sector_Reserve(reserve.dune_sector.reserve_code = reserve.coastal_reserve.reserve_code)
+  Join Reserve_Tally(reserve.coastal_reserve.reserve_code = reserve.reserve_sector_tally_vw.reserve_code)
+  Join Transect_Tally(dune.planting_transect.transect_code = dune.transect_plot_tally_vw.transect_code and dune.transect_plot_tally_vw.plot_count > 0)
+  Join Plot_Placard(dune.planting_plot.plot_id = dune.plot_placard_vw.plot_id)
+  Join Survey_Plot(dune.plot_survey.plot_id = dune.planting_plot.plot_id)
+)

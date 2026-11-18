@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::noblecavern8::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A drawn plan of one passage leg, read through a store view so the sketch register never exposes its base table.'} test::noblecavern8::domain::PassageSketch
+{
+  sketchRef: String[1];
+  scaleRatio: Decimal[1];
+  gridOffset: Float[1];
+  drawnAt: DateTime[1];
+  sketchLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A survey marker left beside a station, read through a store view over the marker register.'} test::noblecavern8::domain::SurveyMarker
+{
+  markerRef: String[1];
+  cairnHeight: Decimal[0..1];
+  placedAt: DateTime[1];
+  markerLabel: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A passage leg and the plan sketches drawn of it, joined from the sketch view onto the leg table.'} test::noblecavern8::domain::PassageLegSketches
+{
+  sketchedLeg: PassageLeg[1];
+  sketches: PassageSketch[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A sketch and the crew that drew it, matched on the crew code and on the open-version sentinel of the sketch row.'} test::noblecavern8::domain::PassageSketchCrew
+{
+  sketchCrew: SurveyCrew[0..1];
+  crewSketches: PassageSketch[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A station reading and the markers left beside it, joined from the marker view onto the reading table.'} test::noblecavern8::domain::StationReadingMarkers
+{
+  markedReading: StationReading[1];
+  markers: SurveyMarker[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A marker and the crew that placed it, matched on the crew code and on the open-version sentinel of the marker row.'} test::noblecavern8::domain::SurveyMarkerCrew
+{
+  markerCrew: SurveyCrew[0..1];
+  crewMarkers: SurveyMarker[*];
+}

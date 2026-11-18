@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::opallantern3::mapping::LanternStructureMapping
+(
+  *test::opallantern3::domain::LampUnit[lamp_unit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opallantern3::store::LanternDb]lantern.lamp_unit.unit_code,
+      [test::opallantern3::store::LanternDb]lantern.lamp_unit.in_z
+    )
+    ~mainTable [test::opallantern3::store::LanternDb]lantern.lamp_unit
+    unitCode: [test::opallantern3::store::LanternDb]lantern.lamp_unit.unit_code,
+    stationName: [test::opallantern3::store::LanternDb]lantern.lamp_unit.station_name,
+    lensGrade: [test::opallantern3::store::LanternDb]lantern.lamp_unit.lens_grade,
+    focalHeightMetres: [test::opallantern3::store::LanternDb]lantern.lamp_unit.focal_height_m,
+    ratedCandela: [test::opallantern3::store::LanternDb]lantern.lamp_unit.rated_candela,
+    commissionedOn: [test::opallantern3::store::LanternDb]lantern.lamp_unit.commissioned_on,
+    surveyedAt: [test::opallantern3::store::LanternDb]lantern.lamp_unit.surveyed_at
+  }
+
+  *test::opallantern3::domain::LampKeeper[lamp_keeper]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opallantern3::store::LanternDb]lantern.lamp_keeper.keeper_code,
+      [test::opallantern3::store::LanternDb]lantern.lamp_keeper.in_z
+    )
+    ~mainTable [test::opallantern3::store::LanternDb]lantern.lamp_keeper
+    keeperCode: [test::opallantern3::store::LanternDb]lantern.lamp_keeper.keeper_code,
+    keeperName: [test::opallantern3::store::LanternDb]lantern.lamp_keeper.keeper_name,
+    districtName: [test::opallantern3::store::LanternDb]lantern.lamp_keeper.district_name
+  }
+
+  test::opallantern3::domain::Unit_Keeper: Relational
+  {
+    AssociationMapping
+    (
+      keeper[lamp_unit, lamp_keeper]: [test::opallantern3::store::LanternDb]@Lantern_Unit_Keeper,
+      keptUnits[lamp_keeper, lamp_unit]: [test::opallantern3::store::LanternDb]@Lantern_Unit_Keeper
+    )
+  }
+)

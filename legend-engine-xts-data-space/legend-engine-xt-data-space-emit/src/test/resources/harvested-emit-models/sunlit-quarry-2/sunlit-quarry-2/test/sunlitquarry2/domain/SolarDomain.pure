@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::sunlitquarry2::domain::Orientation
+{
+  SOUTH,
+  EAST,
+  WEST,
+  NORTH
+}
+
+Enum test::sunlitquarry2::domain::HealthState
+{
+  OK,
+  WATCH,
+  FAULT
+}
+
+Enum test::sunlitquarry2::domain::InverterClass
+{
+  STRING_TIED,
+  MICRO,
+  HYBRID
+}
+
+Class test::sunlitquarry2::domain::SolarSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+}
+
+Class test::sunlitquarry2::domain::District
+{
+  districtCode: String[1];
+  districtName: String[1];
+  wardenName: String[1];
+}
+
+Class test::sunlitquarry2::domain::PanelString
+{
+  stringCode: String[1];
+  orientation: test::sunlitquarry2::domain::Orientation[0..1];
+  health: test::sunlitquarry2::domain::HealthState[0..1];
+  panelCount: Integer[1];
+  tiltDeg: Integer[0..1];
+  tiltBand: String[0..1];
+  yieldTotalKwh: Integer[0..1];
+  readingCount: Integer[0..1];
+  inverterModel: String[0..1];
+  wardenName: String[0..1];
+}
+
+Class test::sunlitquarry2::domain::Inverter
+{
+  inverterCode: String[1];
+  kind: test::sunlitquarry2::domain::InverterClass[0..1];
+  ratingKw: Integer[1];
+}
+
+Class test::sunlitquarry2::domain::ReadingVersion
+{
+  versionId: Integer[1];
+  stringCode: String[1];
+  yieldKwh: Integer[1];
+}
+
+Association test::sunlitquarry2::domain::Site_String
+{
+  strings: test::sunlitquarry2::domain::PanelString[*];
+  site: test::sunlitquarry2::domain::SolarSite[0..1];
+}
+
+Association test::sunlitquarry2::domain::District_Site
+{
+  sites: test::sunlitquarry2::domain::SolarSite[*];
+  district: test::sunlitquarry2::domain::District[0..1];
+}

@@ -1,0 +1,117 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskybeacon6::service::LampWatchRegisterByStation
+{
+  pattern: '/duskybeacon6/v1/{station}/lamp-watch-register';
+  title: 'Dusky Beacon - Lamp Watch Register By Station';
+  documentation: 'Dispatches the same kept-watch register through two station-keyed executions, one bound to the coast station runtime and one to the harbour station runtime, so the shared query body is resolved against whichever station connection the caller is routed to.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'lamp-watch-register',
+    'coast-beacon-keepers'
+  ];
+  execution: Multi
+  {
+    query: {lampCode: String[1], minBurnHours: Integer[1]|test::duskybeacon6::domain::LampWatch.all()->filter(
+      w|($w.lampCode == $lampCode) && (($w.watchState == 'KEPT') && ($w.burnHours > $minBurnHours))
+    )->project(
+      [
+        w|$w.watchCode,
+        w|$w.keeperName,
+        w|$w.burnHours,
+        w|$w.sightedKm
+      ],
+      [
+        'WatchCode',
+        'Keeper',
+        'BurnHours',
+        'SightedKm'
+      ]
+    )->sort(
+      [
+        asc('WatchCode')
+      ]
+    )};
+    key: 'station';
+    executions['coast']:
+    {
+      mapping: test::duskybeacon6::mapping::BeaconMapping;
+      runtime: test::duskybeacon6::runtime::BeaconCoastRuntime;
+    }
+    executions['harbour']:
+    {
+      mapping: test::duskybeacon6::mapping::BeaconMapping;
+      runtime: test::duskybeacon6::runtime::BeaconHarbourRuntime;
+    }
+  }
+  testSuites:
+  [
+    lampWatchByStationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconCoastConnection:
+            Relational
+            #{
+              beacon.lamp_watch:
+                'watch_id,watch_code,lamp_code,keeper_name,watch_state,burn_hours,sighted_km,logged_on\n'+
+                '1,WT-01,LP-NORTH,Ada Fathom,KEPT,9,28.5,2026-03-01\n'+
+                '2,WT-02,LP-NORTH,Bram Shoal,KEPT,4,17.25,2026-03-02\n'+
+                '3,WT-03,LP-SOUTH,Cai Larkin,KEPT,15,41.5,2026-03-03\n';
+            }#,
+          beaconHarbourConnection:
+            Relational
+            #{
+              beacon.lamp_watch:
+                'watch_id,watch_code,lamp_code,keeper_name,watch_state,burn_hours,sighted_km,logged_on\n'+
+                '1,WT-01,LP-NORTH,Ada Fathom,KEPT,9,28.5,2026-03-01\n'+
+                '2,WT-02,LP-NORTH,Bram Shoal,KEPT,4,17.25,2026-03-02\n'+
+                '3,WT-03,LP-SOUTH,Cai Larkin,KEPT,15,41.5,2026-03-03\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothStationExecutionsResolveTheSameKeptWatch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['coast', 'harbour'];
+          parameters:
+          [
+            lampCode = 'LP-NORTH',
+            minBurnHours = 5
+          ]
+          asserts:
+          [
+            oneKeptWatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"WatchCode":"WT-01","Keeper":"Ada Fathom","BurnHours":9,"SightedKm":28.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

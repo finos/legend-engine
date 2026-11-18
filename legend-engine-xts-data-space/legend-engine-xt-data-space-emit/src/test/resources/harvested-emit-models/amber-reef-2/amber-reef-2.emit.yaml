@@ -1,0 +1,36 @@
+name: amber-reef-2
+title: "Amber Reef - reef trail discovery surface with a documentation text element"
+description: |
+  A reef monitoring model whose domain layer declares the trail sites, habitat zones,
+  monitoring dives, recorded colonies, observer teams and species labels, mixing required,
+  optional and to-many property bounds. A packageable text element carries the register's
+  prose documentation with an explicit content type and contributes no runtime behaviour, and
+  a data space publishes the domain as a discovery surface with a named execution context, a
+  default runtime and an owning support email address.
+
+modelSources:
+  model:
+    root: amber-reef-2
+    files:
+      - test/amberreef2/connection/IncomingDiveLogConnection.pure
+      - test/amberreef2/dataspace/ReefTrailDataSpace.pure
+      - test/amberreef2/doc/ReefOverview.pure
+      - test/amberreef2/domain/ReefDomain.pure
+      - test/amberreef2/mapping/ReefDiveM2M.pure
+      - test/amberreef2/runtime/ReefDiveRuntime.pure
+
+features:
+  - execution:data-space
+  - grammar:text-element
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - data-space
+  - documentation
+  - m2m
+  - reef-monitoring
+  - text-element

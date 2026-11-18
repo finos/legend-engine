@@ -1,0 +1,208 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarhatchery2::mapping::HatcheryCoreMapping
+(
+  *test::cedarhatchery2::domain::StockLot[stock_lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.stock_lot.lot_id
+    )
+    ~mainTable [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.stock_lot
+    lotCode: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.stock_lot.lot_code,
+    fishCount: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.stock_lot.fish_count,
+    meanLengthMm: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.stock_lot.mean_length_mm,
+    speciesName: [test::cedarhatchery2::store::HatcheryCoreDb]@StockLot_Species | [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.species.species_name,
+    racewayName: [test::cedarhatchery2::store::HatcheryCoreDb]@StockLot_Raceway | [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.raceway.raceway_name
+  }
+
+  *test::cedarhatchery2::domain::Species[species]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.species.species_code
+    )
+    ~mainTable [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.species
+    speciesCode: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.species.species_code,
+    speciesName: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.species.species_name,
+    familyName: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.species.family_name
+  }
+
+  *test::cedarhatchery2::domain::Raceway[raceway]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.raceway.raceway_code
+    )
+    ~mainTable [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.raceway
+    racewayCode: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.raceway.raceway_code,
+    racewayName: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.raceway.raceway_name,
+    waterSource: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.raceway.water_source
+  }
+
+  *test::cedarhatchery2::domain::FeedPlan[feed_plan]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.feed_plan.feed_code
+    )
+    ~mainTable [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.feed_plan
+    feedCode: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.feed_plan.feed_code,
+    feedName: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.feed_plan.feed_name,
+    pelletSizeMm: [test::cedarhatchery2::store::HatcheryCoreDb]hatchery.feed_plan.pellet_size_mm
+  }
+
+  test::cedarhatchery2::domain::StockLot_Species: Relational
+  {
+    AssociationMapping
+    (
+      species[stock_lot, species]: [test::cedarhatchery2::store::HatcheryCoreDb]@StockLot_Species,
+      speciesLots[species, stock_lot]: [test::cedarhatchery2::store::HatcheryCoreDb]@StockLot_Species
+    )
+  }
+
+  test::cedarhatchery2::domain::StockLot_Raceway: Relational
+  {
+    AssociationMapping
+    (
+      raceway[stock_lot, raceway]: [test::cedarhatchery2::store::HatcheryCoreDb]@StockLot_Raceway,
+      racewayLots[raceway, stock_lot]: [test::cedarhatchery2::store::HatcheryCoreDb]@StockLot_Raceway
+    )
+  }
+
+  test::cedarhatchery2::domain::StockLot_FeedPlan: Relational
+  {
+    AssociationMapping
+    (
+      feedPlan[stock_lot, feed_plan]: [test::cedarhatchery2::store::HatcheryCoreDb]@StockLot_FeedPlan,
+      feedPlanLots[feed_plan, stock_lot]: [test::cedarhatchery2::store::HatcheryCoreDb]@StockLot_FeedPlan
+    )
+  }
+
+  testSuites:
+  [
+    lotBoardAsOfSuite:
+    {
+      function: |test::cedarhatchery2::domain::StockLot.all(%2026-06-01)->project(
+        [
+          l|$l.lotCode,
+          l|$l.speciesName,
+          l|$l.racewayName,
+          l|$l.feedPlan.feedName,
+          l|$l.fishCount,
+          l|$l.meanLengthMm
+        ],
+        [
+          'Lot',
+          'Species',
+          'Raceway',
+          'Feed Plan',
+          'Fish Count',
+          'Mean Length'
+        ]
+      )->distinct()->sort(
+        [
+          asc('Lot')
+        ]
+      )->limit(10);
+      tests:
+      [
+        supersededLotIsOutOfRangeAtTheQueriedInstant:
+        {
+          doc: 'Reads the lot set at one processing instant, resolving two join-reached lookup columns and one association-implemented feed plan hop, and proves that a lot whose processing window closed before that instant is out of range and absent from the result.';
+          data:
+          [
+            test::cedarhatchery2::store::HatcheryCoreDb:
+              Relational
+              #{
+                hatchery.stock_lot:
+                  'lot_id,lot_code,species_code,raceway_code,feed_code,fish_count,mean_length_mm,in_z,out_z\n'+
+                  'L-01,LOT-ALPHA,SP-TR,RW-01,FD-STD,1200,88.5,2026-01-01,9999-12-31\n'+
+                  'L-02,LOT-BRAVO,SP-CH,RW-02,FD-HI,800,102.25,2026-01-01,9999-12-31\n'+
+                  'L-03,LOT-CHARLIE,SP-TR,RW-01,FD-STD,450,64.75,2026-01-01,2026-04-01\n';
+                hatchery.species:
+                  'species_code,species_name,family_name\n'+
+                  'SP-TR,Speckled Trout,Salmonidae\n'+
+                  'SP-CH,Mountain Char,Salmonidae\n';
+                hatchery.raceway:
+                  'raceway_code,raceway_name,water_source\n'+
+                  'RW-01,North Raceway,SPRING\n'+
+                  'RW-02,South Raceway,WELL\n';
+                hatchery.feed_plan:
+                  'feed_code,feed_name,pellet_size_mm\n'+
+                  'FD-STD,Standard Pellet,3.5\n'+
+                  'FD-HI,High Energy Pellet,4.25\n';
+              }#
+          ];
+          asserts:
+          [
+            inRangeLotsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"LOT-ALPHA","Species":"Speckled Trout","Raceway":"North Raceway","Feed Plan":"Standard Pellet","Fish Count":1200,"Mean Length":88.5},{"Lot":"LOT-BRAVO","Species":"Mountain Char","Raceway":"South Raceway","Feed Plan":"High Energy Pellet","Fish Count":800,"Mean Length":102.25}]';
+                  }#;
+              }#
+          ];
+        },
+        stillBelievedLotIsInRangeAtTheSameInstant:
+        {
+          doc: 'Repeats the same point-in-time read with the third lot still believed at the queried instant, so the row that was out of range in the first test now resolves through the same joins and association hop.';
+          data:
+          [
+            test::cedarhatchery2::store::HatcheryCoreDb:
+              Relational
+              #{
+                hatchery.stock_lot:
+                  'lot_id,lot_code,species_code,raceway_code,feed_code,fish_count,mean_length_mm,in_z,out_z\n'+
+                  'L-01,LOT-ALPHA,SP-TR,RW-01,FD-STD,1200,88.5,2026-01-01,9999-12-31\n'+
+                  'L-02,LOT-BRAVO,SP-CH,RW-02,FD-HI,800,102.25,2026-01-01,9999-12-31\n'+
+                  'L-03,LOT-CHARLIE,SP-TR,RW-01,FD-STD,450,64.75,2026-01-01,9999-12-31\n';
+                hatchery.species:
+                  'species_code,species_name,family_name\n'+
+                  'SP-TR,Speckled Trout,Salmonidae\n'+
+                  'SP-CH,Mountain Char,Salmonidae\n';
+                hatchery.raceway:
+                  'raceway_code,raceway_name,water_source\n'+
+                  'RW-01,North Raceway,SPRING\n'+
+                  'RW-02,South Raceway,WELL\n';
+                hatchery.feed_plan:
+                  'feed_code,feed_name,pellet_size_mm\n'+
+                  'FD-STD,Standard Pellet,3.5\n'+
+                  'FD-HI,High Energy Pellet,4.25\n';
+              }#
+          ];
+          asserts:
+          [
+            allThreeLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"LOT-ALPHA","Species":"Speckled Trout","Raceway":"North Raceway","Feed Plan":"Standard Pellet","Fish Count":1200,"Mean Length":88.5},{"Lot":"LOT-BRAVO","Species":"Mountain Char","Raceway":"South Raceway","Feed Plan":"High Energy Pellet","Fish Count":800,"Mean Length":102.25},{"Lot":"LOT-CHARLIE","Species":"Speckled Trout","Raceway":"North Raceway","Feed Plan":"Standard Pellet","Fish Count":450,"Mean Length":64.75}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Class <<temporal.bitemporal>> {doc.doc = 'A grafted tree standing in a community orchard plot. Its description is effective over business time and corrected over processing time, so a reader must fix both an as-of date and a knowledge date to resolve one version of the tree, and a correction issued later never rewrites what an earlier reader saw.'} test::emberorchard2::domain::GraftedTree
+[
+  treeTagPresent: $this.treeTag->isNotEmpty(),
+  graftHeightPositive
+  (
+    ~function: $this.graftHeightCm > 0
+    ~message: 'A grafted tree must record the height its union was worked at.'
+  )
+]
+{
+  treeTag: String[1];
+  cultivarName: String[1];
+  plotCode: String[1];
+  workedOn: StrictDate[1];
+  unionKind: test::emberorchard2::domain::GraftUnion[1];
+  vigour: test::emberorchard2::domain::CanopyVigour[1];
+  graftHeightCm: Integer[1];
+  inspectorNote: String[0..1];
+  nurseryBase: test::emberorchard2::domain::NurseryBase[0..1];
+  graftCaption()
+  {
+    if($this.vigour == test::emberorchard2::domain::CanopyVigour.DORMANT,
+       | $this.treeTag + '/' + $this.cultivarName + '/HELD',
+       | if($this.unionKind == test::emberorchard2::domain::GraftUnion.BARK_INLAY,
+            | $this.treeTag + '/' + $this.cultivarName + '/INLAY WATCH',
+            | $this.treeTag + '/' + $this.cultivarName + '/WORKING'))
+  }: String[1];
+  vigourInstruction()
+  {
+    if($this.vigour == test::emberorchard2::domain::CanopyVigour.STRONG,
+       | 'THIN THE LEADER',
+       | if($this.vigour == test::emberorchard2::domain::CanopyVigour.STEADY,
+            | 'LEAVE STANDING',
+            | if($this.vigour == test::emberorchard2::domain::CanopyVigour.SLOW,
+                 | 'FEED AND MULCH',
+                 | 'LIFT AND REPLACE')))
+  }: String[1];
+  unionSettled(asOf: StrictDate[1])
+  {
+    ($this.vigour != test::emberorchard2::domain::CanopyVigour.DORMANT) &&
+      (dateDiff($this.workedOn, $asOf, meta::pure::functions::date::DurationUnit.DAYS) >= 0)
+  }: Boolean[1];
+}
+
+Class <<temporal.bitemporal>> {doc.doc = 'A nursery batch of seedling bases a scion can be worked onto. The batch description is effective over business time and corrected over processing time, so a re-measured root depth is a correction at a knowledge date rather than a new batch.'} test::emberorchard2::domain::NurseryBase
+[
+  baseCodePresent: $this.baseCode->isNotEmpty(),
+  rootDepthPositive
+  (
+    ~function: $this.rootDepthCm > 0
+    ~message: 'A nursery base batch must record a positive root depth.'
+  )
+]
+{
+  baseCode: String[1];
+  baseSpecies: String[1];
+  rootDepthCm: Integer[1];
+  vigour: test::emberorchard2::domain::CanopyVigour[1];
+  baseSummary()
+  {
+    if($this.rootDepthCm >= 40,
+       | $this.baseCode + '/DEEP',
+       | if($this.vigour == test::emberorchard2::domain::CanopyVigour.DORMANT,
+            | $this.baseCode + '/SHALLOW HELD',
+            | $this.baseCode + '/SHALLOW'))
+  }: String[1];
+  liftableOn(asOf: StrictDate[1])
+  {
+    ($this.vigour == test::emberorchard2::domain::CanopyVigour.DORMANT) &&
+      ($asOf->monthNumber() <= 3)
+  }: Boolean[1];
+}
+
+Class <<temporal.bitemporal>> {doc.doc = 'A pruning round recorded against a grafted tree. The round as planned is effective over business time while the count of cuts actually made is corrected over processing time, so the planned round and the corrected round are distinguishable rather than merged.'} test::emberorchard2::domain::PruningRound
+[
+  roundCodePresent: $this.roundCode->isNotEmpty(),
+  cutCountNotNegative
+  (
+    ~function: $this.cutCount >= 0
+    ~message: 'A pruning round cannot record a negative count of cuts.'
+  )
+]
+{
+  roundCode: String[1];
+  treeTag: String[1];
+  cutCount: Integer[1];
+  plannedOn: StrictDate[1];
+  vigour: test::emberorchard2::domain::CanopyVigour[1];
+  cutBand(threshold: Integer[1])
+  {
+    if($this.cutCount >= $threshold,
+       | 'HEAVY',
+       | if($this.cutCount >= ($threshold / 2),
+            | 'MODERATE',
+            | 'LIGHT'))
+  }: String[1];
+  roundCaption()
+  {
+    if($this.vigour == test::emberorchard2::domain::CanopyVigour.SLOW,
+       | $this.roundCode + '/' + $this.treeTag + '/RESTORATIVE',
+       | $this.roundCode + '/' + $this.treeTag + '/ROUTINE')
+  }: String[1];
+  daysSincePlanned(asOf: StrictDate[1])
+  {
+    dateDiff($this.plannedOn, $asOf, meta::pure::functions::date::DurationUnit.DAYS)
+  }: Integer[1];
+}

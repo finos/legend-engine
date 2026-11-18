@@ -1,0 +1,62 @@
+name: teal-hatchery-2
+title: "Teal Hatchery 2 - a wetland rearing pond register published through two tested services and a data space"
+description: |
+  A wetland conservation centre rearing amphibian larvae. Rearing ponds, the
+  larva batches stocked into them, the feed deliveries booked against those
+  batches, the water readings taken on each pond and the already aggregated
+  season yield are all landed in one relational PondRegisterDb. The register
+  holds standing and archived batches in two separate tables, and an operation
+  mapping unions the two set implementations behind a single batch class, so a
+  query never has to know which table a batch came from. Every class is bound
+  with a primary key over an aliased main table, and the pond-to-reading
+  association is implemented relationally. A warm-pond service keeps only the
+  ponds carrying a reading at or above a requested temperature, capped and in
+  pond order, and a batch register service publishes the unioned batches with
+  the survival index the class derives from the stocked and mortality tallies.
+  Both services carry test suites over seeded relational fixtures, the mapping
+  carries its own yield test suite, and a data space publishes the register from
+  a single rearing execution context.
+modelSources:
+  model:
+    root: teal-hatchery-2
+    files:
+      - test/tealhatchery2/connection/PondConnection.pure
+      - test/tealhatchery2/dataspace/PondDataSpace.pure
+      - test/tealhatchery2/domain/PondDomain.pure
+      - test/tealhatchery2/mapping/PondRegisterMapping.pure
+      - test/tealhatchery2/runtime/PondRuntime.pure
+      - test/tealhatchery2/service/PondServices.pure
+      - test/tealhatchery2/store/PondRegisterDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:derived-property
+  - mapping:operation-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+tags:
+  - data-space
+  - derived-property
+  - h2
+  - operation-mapping
+  - rearing-pond-register
+  - relational-mapping
+  - service-test
+  - snowflake
+  - union
+stores:
+  - relational
+complexity: advanced

@@ -1,0 +1,190 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::amberquokka3::service::RefugeStayExtract
+{
+  pattern: '/amberquokka3/v1/refugeStays/{asOfDate}/{minGuests}';
+  title: 'Mountain Refuge Stay Extract';
+  owners:
+  [
+    'alpine-refuge-register',
+    'valley-trail-platform'
+  ];
+  documentation: 'Refuge stay extract read at one bitemporal coordinate: the requested instant is bound to a processing and a business local variable, the refuge extent is selected at that pair, qualifying refuges are those above the tree-line altitude holding a room of more than five bunks with a permitted stay of at least the requested party size, of a requested stay kind and arriving inside a sixty-day window before the instant, and the qualifying refuges are projected through instant-parameterized zone, room and stay chains before a distinct reduction and a three-key sort.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], minGuests: Integer[1], stayKinds: String[*]|let processingInstant = $asOfDate;
+      let businessInstant = $asOfDate;
+      test::amberquokka3::domain::MountainRefuge.all($processingInstant, $businessInstant)->filter(
+        r|($r.altitudeM >= 2000) && ($r.rooms($processingInstant, $businessInstant)->exists(
+          m|($m.bunkCount > 5) && ($m.spells($processingInstant, $businessInstant)->exists(
+            s|(($s.guestCount >= $minGuests) && ($s.stayKind->in($stayKinds))) && (($s.arrivalDate >= $asOfDate->adjust(-60, meta::pure::functions::date::DurationUnit.DAYS)) && ($s.permitCode->isEmpty()->not()))
+          ))
+        ))
+      )->project(
+        [
+          r|$r.refugeCode,
+          r|$r.refugeName,
+          r|$r.wardenCode,
+          r|$r.altitudeM,
+          r|$r.zone.zoneName,
+          r|$r.zone.terrainKind,
+          r|$r.rooms($processingInstant, $businessInstant).roomCode,
+          r|$r.rooms($processingInstant, $businessInstant).heatingKind,
+          r|$r.rooms($processingInstant, $businessInstant).spells($processingInstant, $businessInstant).spellCode,
+          r|$r.rooms($processingInstant, $businessInstant).spells($processingInstant, $businessInstant).guestCount
+        ],
+        [
+          'Refuge/Code',
+          'Refuge/Name',
+          'Refuge/Warden',
+          'Refuge/Altitude',
+          'Zone/Name',
+          'Zone/Terrain',
+          'Room/Code',
+          'Room/Heating',
+          'Spell/Code',
+          'Spell/Guests'
+        ]
+      )->distinct()->sort(
+        [
+          asc('Refuge/Code'),
+          asc('Room/Code'),
+          asc('Spell/Code')
+        ]
+      );};
+    mapping: test::amberquokka3::mapping::RefugeMapping;
+    runtime: test::amberquokka3::runtime::RefugeRuntime;
+  }
+  testSuites:
+  [
+    refugeStaySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          refugeRegisterConnection:
+            Relational
+            #{
+              refuges.valley_zone:
+                'zone_code,zone_name,terrain_kind\n'+
+                'VZ-1,North Cirque,ALPINE\n'+
+                'VZ-2,South Basin,SUBALPINE\n';
+              refuges.mountain_refuge:
+                'refuge_code,refuge_name,warden_code,altitude_m,zone_code,in_z,out_z,from_z,thru_z\n'+
+                'R-1,Cirque Hut,warden-a,2410,VZ-1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'R-2,Basin Hut,warden-b,1980,VZ-2,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'R-3,Col Bivouac,warden-c,2650,VZ-9,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'R-4,Old Snow Hut,warden-d,2100,VZ-1,2026-01-01,9999-12-31,2026-01-01,2026-03-01\n'+
+                'R-5,Ridge Hut,warden-e,2300,VZ-1,2026-01-01,2026-02-01,2026-01-01,9999-12-31\n';
+              refuges.dorm_room:
+                'room_code,refuge_code,room_label,heating_kind,bunk_count,in_z,out_z,from_z,thru_z\n'+
+                'D-1,R-1,Cirque Dorm A,wood-stove,12,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'D-2,R-1,Cirque Dorm B,unheated,6,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'D-3,R-2,Basin Dorm,gas,10,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'D-4,R-4,Old Dorm,unheated,8,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'D-5,R-3,Bivouac Dorm,unheated,4,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'D-6,R-5,Ridge Dorm,gas,9,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+              refuges.occupancy_spell:
+                'spell_code,room_code,stay_kind,guest_party,arrival_date,departure_date,guest_count,permit_code,in_z,out_z,from_z,thru_z\n'+
+                'S-1,D-1,GROUP,Alpine Club,2026-05-20,2026-05-23,9,PRM-1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-2,D-1,SOLO,I. Larch,2026-05-28,2026-05-29,1,,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-3,D-2,GROUP,School Trip,2026-04-02,2026-04-05,14,PRM-2,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-4,D-3,GROUP,Trail Crew,2026-05-30,2026-06-02,6,PRM-3,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-5,D-4,SOLO,R. Aster,2026-05-01,2026-05-02,2,PRM-4,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-6,D-1,GROUP,Ski Tour,2026-01-10,2026-01-14,8,PRM-5,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-7,D-5,GROUP,Col Traverse,2026-05-25,2026-05-27,7,PRM-6,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-9,D-4,GROUP,Winter Course,2026-01-20,2026-01-25,11,PRM-8,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'S-10,D-6,GROUP,Ridge Traverse,2026-01-15,2026-01-18,10,PRM-9,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentInstantQualifyingRefuges:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            minGuests = 5,
+            stayKinds = ['group']
+          ]
+          asserts:
+          [
+            qualifyingRefugesOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-1","Room/Heating":"WOOD-STOVE","Spell/Code":"S-1","Spell/Guests":9},{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-1","Room/Heating":"WOOD-STOVE","Spell/Code":"S-2","Spell/Guests":1},{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-1","Room/Heating":"WOOD-STOVE","Spell/Code":"S-6","Spell/Guests":8},{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-2","Room/Heating":"UNHEATED","Spell/Code":"S-3","Spell/Guests":14}]';
+                  }#;
+              }#
+          ]
+        },
+        instantInsideTheEarlyBusinessRange:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-02-15,
+            minGuests = 5,
+            stayKinds = ['group']
+          ]
+          asserts:
+          [
+            theRefugeStillInsideItsBusinessRangeIsIncluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-1","Room/Heating":"WOOD-STOVE","Spell/Code":"S-1","Spell/Guests":9},{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-1","Room/Heating":"WOOD-STOVE","Spell/Code":"S-2","Spell/Guests":1},{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-1","Room/Heating":"WOOD-STOVE","Spell/Code":"S-6","Spell/Guests":8},{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-2","Room/Heating":"UNHEATED","Spell/Code":"S-3","Spell/Guests":14},{"Refuge/Code":"R-4","Refuge/Name":"Old Snow Hut","Refuge/Warden":"warden-d","Refuge/Altitude":2100,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-4","Room/Heating":"UNHEATED","Spell/Code":"S-5","Spell/Guests":2},{"Refuge/Code":"R-4","Refuge/Name":"Old Snow Hut","Refuge/Warden":"warden-d","Refuge/Altitude":2100,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-4","Room/Heating":"UNHEATED","Spell/Code":"S-9","Spell/Guests":11}]';
+                  }#;
+              }#
+          ]
+        },
+        instantInsideTheSupersededProcessingRange:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-01-20,
+            minGuests = 5,
+            stayKinds = ['group']
+          ]
+          asserts:
+          [
+            theRefugeCorrectedOutLaterIsStillVisible:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-1","Room/Heating":"WOOD-STOVE","Spell/Code":"S-1","Spell/Guests":9},{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-1","Room/Heating":"WOOD-STOVE","Spell/Code":"S-2","Spell/Guests":1},{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-1","Room/Heating":"WOOD-STOVE","Spell/Code":"S-6","Spell/Guests":8},{"Refuge/Code":"R-1","Refuge/Name":"Cirque Hut","Refuge/Warden":"warden-a","Refuge/Altitude":2410,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-2","Room/Heating":"UNHEATED","Spell/Code":"S-3","Spell/Guests":14},{"Refuge/Code":"R-4","Refuge/Name":"Old Snow Hut","Refuge/Warden":"warden-d","Refuge/Altitude":2100,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-4","Room/Heating":"UNHEATED","Spell/Code":"S-5","Spell/Guests":2},{"Refuge/Code":"R-4","Refuge/Name":"Old Snow Hut","Refuge/Warden":"warden-d","Refuge/Altitude":2100,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-4","Room/Heating":"UNHEATED","Spell/Code":"S-9","Spell/Guests":11},{"Refuge/Code":"R-5","Refuge/Name":"Ridge Hut","Refuge/Warden":"warden-e","Refuge/Altitude":2300,"Zone/Name":"North Cirque","Zone/Terrain":"alpine","Room/Code":"D-6","Room/Heating":"GAS","Spell/Code":"S-10","Spell/Guests":10}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

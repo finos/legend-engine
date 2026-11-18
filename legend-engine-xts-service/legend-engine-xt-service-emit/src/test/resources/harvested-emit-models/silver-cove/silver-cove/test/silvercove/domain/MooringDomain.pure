@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::silvercove::domain::*;
+import demo::silvercove::profile::*;
+
+Class {meta::pure::profiles::doc.doc = 'One published mooring-register entry for the cove, assembled entirely out of transforms over a submitted document. The reference pair identifies the entry, so both members carry the platform equality key stereotype, and every field records the width or numeric shape the register publishes it at.'} demo::silvercove::domain::MooringDetail
+{
+  <<meta::pure::profiles::equality.Key>> {FieldShape.fieldLength = '50'} mooringRef: String[1];
+  <<meta::pure::profiles::equality.Key>> {FieldShape.fieldLength = '20'} berthCode: String[1];
+  {FieldShape.fieldLength = '30'} registerCode: String[1];
+  {FieldShape.fieldLength = '20'} harbourCode: String[1];
+  {FieldShape.fieldLength = '120'} vesselName: String[1];
+  {FieldShape.numericPrecision = '6', FieldShape.numericScale = '0'} lengthMetres: Integer[1];
+  arrivedOn: StrictDate[1];
+  {FieldShape.fieldLength = '30'} mooringKind: String[0..1];
+  {FieldShape.numericPrecision = '4', FieldShape.numericScale = '0'} bollardCount: Integer[0..1];
+  departedOn: StrictDate[0..1];
+  recordedAt: DateTime[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The published envelope a consumer reads: it carries at most one register entry, so a submission the register declines surfaces as an envelope with no entry inside rather than as an absent envelope.'} demo::silvercove::domain::MooringEnvelope
+{
+  detail: MooringDetail[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The crew a register batch was worked by. Auxiliary to the published register: it is part of the batch graph a consumer walks, not of the transformed entry.'} demo::silvercove::domain::MooringCrew
+{
+  <<meta::pure::profiles::equality.Key>> {FieldShape.fieldLength = '20'} crewCode: String[1];
+  certifications: String[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The window a register batch covers, carrying the open and close dates, the batch identifier, the notes the harbour master logged against it and the crew that worked it. Auxiliary to the published register in the same way as the crew class.'} demo::silvercove::domain::MooringBatchWindow
+{
+  <<meta::pure::profiles::equality.Key>> {FieldShape.fieldLength = '30'} batchId: String[1];
+  openDate: StrictDate[1];
+  closeDate: StrictDate[0..1];
+  noteLines: String[*];
+  crew: MooringCrew[0..1];
+}

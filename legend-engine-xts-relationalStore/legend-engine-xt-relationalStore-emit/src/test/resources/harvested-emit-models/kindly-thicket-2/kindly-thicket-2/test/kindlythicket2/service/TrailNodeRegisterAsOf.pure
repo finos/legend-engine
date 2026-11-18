@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlythicket2::service::TrailNodeRegisterAsOf
+{
+  pattern: '/kindlythicket2/v1/trail-nodes/as-of';
+  title: 'Trail Node Register As Of';
+  owners:
+  [
+    'thicket-trail-stewardship'
+  ];
+  documentation: 'Projects the whole extent of the milestoned trail-node hierarchy at a fixed far-future instant into a rectangular five-level register, pairing the descriptive name of each level with the identifier of the node that carries it. The extent is resolved in memory through the model-to-model mapping, so nodes whose version sits beyond the requested instant fall out of the register.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::kindlythicket2::domain::TrailNode.all(%2035-12-31)->project(
+      [
+        x|$x.reserveName,
+        x|$x.reserveCode,
+        x|$x.districtName,
+        x|$x.districtCode,
+        x|$x.corridorName,
+        x|$x.corridorCode,
+        x|$x.sectorName,
+        x|$x.sectorCode,
+        x|$x.segmentName,
+        x|$x.segmentCode,
+        x|$x.nodeCode,
+        x|$x.nodeLabel
+      ],
+      [
+        'ReserveName',
+        'ReserveCode',
+        'DistrictName',
+        'DistrictCode',
+        'CorridorName',
+        'CorridorCode',
+        'SectorName',
+        'SectorCode',
+        'SegmentName',
+        'SegmentCode',
+        'NodeCode',
+        'NodeLabel'
+      ]
+    )->sort(
+      [
+        asc('NodeCode')
+      ]
+    );
+    mapping: test::kindlythicket2::mapping::ThicketM2M;
+    runtime: test::kindlythicket2::runtime::TrailNodeRuntime;
+  }
+  testSuites:
+  [
+    trailNodeRegisterAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketH2Connection:
+            Relational
+            #{
+              reserve.trail_node:
+                'node_code,node_label,reserve_name,reserve_code,district_name,district_code,corridor_name,corridor_code,sector_name,sector_code,segment_name,segment_code,spur_name,spur_code,station_name,station_code,waypoint_name,waypoint_code,from_z,thru_z\n'+
+                'TN-1,Fern Hollow Head,Kindly Thicket Reserve,RS-1,North Bracken District,DS-1,Hollow Corridor,CR-1,Lower Fern Sector,SC-0,Fern Hollow Segment,SG-1,Badger Spur,SP-1,Hollow Station,ST-1,Fern Marker,WP-1,2026-01-01,2028-01-01\n'+
+                'TN-1,Fern Hollow Head,Kindly Thicket Reserve,RS-1,North Bracken District,DS-1,Hollow Corridor,CR-1,Middle Fern Sector,SC-9,Fern Hollow Segment,SG-1,Badger Spur,SP-1,Hollow Station,ST-1,Fern Marker,WP-1,2028-01-01,2031-01-01\n'+
+                'TN-1,Fern Hollow Head,Kindly Thicket Reserve,RS-1,North Bracken District,DS-1,Hollow Corridor,CR-1,Upper Fern Sector,SC-1,Fern Hollow Segment,SG-1,Badger Spur,SP-1,Hollow Station,ST-1,Fern Marker,WP-1,2031-01-01,9999-12-31\n'+
+                'TN-2,Bramble Gate,Kindly Thicket Reserve,RS-1,South Bramble District,DS-2,Bramble Corridor,CR-2,Gate Sector,SC-2,Bramble Gate Segment,SG-2,,,,,,,2026-01-01,9999-12-31\n'+
+                'TN-3,Closed Coppice Head,Kindly Thicket Reserve,RS-1,East Coppice District,DS-3,Coppice Corridor,CR-3,Coppice Sector,SC-3,Coppice Head Segment,SG-3,,,,,,,2026-01-01,2030-01-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        inRangeNodesOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rectangularRegister:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReserveName":"Kindly Thicket Reserve","ReserveCode":"RS-1","DistrictName":"North Bracken District","DistrictCode":"DS-1","CorridorName":"Hollow Corridor","CorridorCode":"CR-1","SectorName":"Upper Fern Sector","SectorCode":"SC-1","SegmentName":"Fern Hollow Segment","SegmentCode":"SG-1","NodeCode":"TN-1","NodeLabel":"Fern Hollow Head"},{"ReserveName":"Kindly Thicket Reserve","ReserveCode":"RS-1","DistrictName":"South Bramble District","DistrictCode":"DS-2","CorridorName":"Bramble Corridor","CorridorCode":"CR-2","SectorName":"Gate Sector","SectorCode":"SC-2","SegmentName":"Bramble Gate Segment","SegmentCode":"SG-2","NodeCode":"TN-2","NodeLabel":"Bramble Gate"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

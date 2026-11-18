@@ -1,0 +1,65 @@
+name: western-cavern
+title: "Cave Survey Register — Batch-Keyed Extents, Navigable Associations and an Eight-Armed Conditional Grade Band"
+description: |
+  A speleological survey register held in one relational store of six sibling
+  tables, each keyed on a domain identifier plus a batch boundary so the same
+  identifier recurs across batches. Six class mappings pin their main table
+  alias explicitly and declare that composite key themselves rather than
+  relying on the table key; five named equality joins are declared once in the
+  store and reused by five association mappings, so every association end is a
+  single join hop and traversal generates the join in either direction. The
+  mapping layer exercises direct columns, a join-reached column on two extents,
+  a literal-defaulted register name and an eight-armed conditional grade band
+  guarded by a null sentinel, so a null grade returns SQL null rather than the
+  final fallback. Five single-execution services read the register: one narrows
+  the extent on a three-way conjunction including a negation and then narrows
+  the tabular result again on a parameter, one projects and then filters on a
+  four-way conjunction before sorting, two aggregate per station, and one
+  projects the graded legs above a length floor. A data space packages the
+  mapping and runtime pair as the default execution context.
+modelSources:
+  model:
+    root: western-cavern
+    files:
+      - test/westerncavern/connection/CavernSurveyConnection.pure
+      - test/westerncavern/data/CavernSurveyData.pure
+      - test/westerncavern/dataspace/CavernSurveyDataSpace.pure
+      - test/westerncavern/domain/CavernDomain.pure
+      - test/westerncavern/mapping/CavernSurveyMapping.pure
+      - test/westerncavern/runtime/CavernSurveyRuntime.pure
+      - test/westerncavern/service/ClimateServices.pure
+      - test/westerncavern/service/LegServices.pure
+      - test/westerncavern/store/CavernSurveyDatabase.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - cave-survey
+  - composite-primary-key
+  - conditional-grade-band
+  - data-space
+  - group-by
+  - h2
+  - main-table-alias
+  - named-join
+  - null-sentinel
+  - service
+  - sybase

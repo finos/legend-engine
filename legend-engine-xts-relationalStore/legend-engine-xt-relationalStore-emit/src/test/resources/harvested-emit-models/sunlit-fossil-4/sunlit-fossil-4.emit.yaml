@@ -1,0 +1,39 @@
+name: sunlit-fossil-4
+title: "Sunlit Fossil 4 - A Single Service Whose Whole Contract Is A Four-Aggregate Rollup Behind A Quarry And Bed Pair"
+description: |
+  A fossil-quarry collection register in which one single-execution service is the entire
+  contract. The service fetches the logged-find extent and rolls it up behind the quarry and bed
+  pair the specimens were lifted from, carrying four aggregates over three different measures: the
+  summed specimen count, the summed matrix mass, the largest single find behind the summary and
+  the number of logged finds standing behind it. The aggregated result is then ordered on both
+  grouping keys so the published grain is one deterministic row per quarry and bed. Updates
+  activate automatically, so the query body is the deployed artefact with no gating step. The
+  fixture carries two quarries, each split across a marl bed with several logged finds and a shale
+  bed with a single find, so a multi-row group, a single-row group, two quarries whose specimen
+  totals coincide but whose masses do not, and a whole-number and a fractional mass total are all
+  asserted from one execution.
+modelSources:
+  model:
+    root: sunlit-fossil-4
+    files:
+      - test/sunlitfossil4/connection/QuarryH2Connection.pure
+      - test/sunlitfossil4/data/QuarrySeasonData.pure
+      - test/sunlitfossil4/domain/QuarryDomain.pure
+      - test/sunlitfossil4/mapping/QuarryMapping.pure
+      - test/sunlitfossil4/runtime/QuarryRuntime.pure
+      - test/sunlitfossil4/service/BedTallyService.pure
+      - test/sunlitfossil4/store/QuarryDatabase.pure
+features:
+  - execution:service
+  - query:group-by
+stores: []
+complexity: basic
+tags:
+  - aggregation
+  - fossil-quarry
+  - group-by
+  - h2
+  - relational
+  - service-test
+  - sort
+  - tabular-data-set

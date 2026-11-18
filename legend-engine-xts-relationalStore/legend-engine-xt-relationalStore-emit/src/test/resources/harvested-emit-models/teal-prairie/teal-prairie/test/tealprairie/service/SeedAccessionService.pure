@@ -1,0 +1,168 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealprairie::service::SeedAccessionService
+{
+  pattern: '/prairie/v1/accessions/{fromDate}/{toDate}';
+  documentation: 'Binds two local temporal points to the current date, then aggregates prairie seed accessions in an event-date window into a wide key set combining calendar decompositions, four levels of the classification hierarchy and five temporally parameterised lookups.';
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], toDate: StrictDate[1], currentDate: StrictDate[1]|
+      let businessPoint = $currentDate;
+      let processingPoint = $currentDate;
+      test::tealprairie::domain::SeedCollection.all()->filter(
+        c|($c.eventDate <= $toDate) && (($c.eventDate >= $fromDate) && ($c.feedName == 'PRAIRIE_FEED'))
+      )->groupBy(
+        [
+          c|$c.collectionRef,
+          c|$c.feedName,
+          c|$c.eventDate,
+          c|$c.eventDate->year(),
+          c|$c.eventDate->monthNumber(),
+          c|$c.eventDate->dayOfMonth(),
+          c|$c.eventDate->firstDayOfMonth(),
+          c|$c.taxon.taxonLabel,
+          c|$c.taxon.genus.genusLabel,
+          c|$c.taxon.genus.family.familyLabel,
+          c|$c.taxon.genus.family.taxonOrder.orderLabel,
+          c|$c.habitat($businessPoint).patchName,
+          c|$c.habitat($businessPoint).patchZone,
+          c|$c.habitat($businessPoint).patchZone->toOne()->toLower(),
+          c|$c.storeRoom($businessPoint).roomCode,
+          c|$c.programme($businessPoint).programmeName,
+          c|$c.viability($businessPoint).gradeCode,
+          c|$c.custodian($processingPoint, $businessPoint).custodianName,
+          c|$c.custodian($processingPoint, $businessPoint).custodianDesk
+        ],
+        [
+          agg(c|$c.seedWeightGrams, y|$y->sum())
+        ],
+        [
+          'CollectionRef',
+          'FeedName',
+          'EventDate',
+          'ReportYear',
+          'ReportMonth',
+          'ReportDay',
+          'ReportMonthStart',
+          'TaxonLabel',
+          'GenusLabel',
+          'FamilyLabel',
+          'OrderLabel',
+          'PatchName',
+          'PatchZone',
+          'PatchZoneTag',
+          'RoomCode',
+          'ProgrammeName',
+          'ViabilityGrade',
+          'CustodianName',
+          'CustodianDesk',
+          'TotalSeedGrams'
+        ]
+      )->distinct()->sort(
+        [
+          asc('CollectionRef')
+        ]
+      );
+    };
+    mapping: test::tealprairie::mapping::SeedVaultMapping;
+    runtime: test::tealprairie::runtime::SeedVaultRuntime;
+  }
+  testSuites:
+  [
+    accessionAggregateSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedVaultConnection:
+            Relational
+            #{
+              taxonomy.taxon_order:
+                'order_id,order_label\n'+
+                'O-1,Poales\n';
+
+              taxonomy.family:
+                'family_id,family_label,order_id\n'+
+                'F-1,Grass Family,O-1\n';
+
+              taxonomy.genus:
+                'genus_id,genus_label,family_id\n'+
+                'G-1,Bluestem,F-1\n';
+
+              taxonomy.taxon_name:
+                'taxon_id,taxon_label,genus_id\n'+
+                'T-1,Little Bluestem,G-1\n';
+
+              seedvault.habitat_patch:
+                'patch_id,patch_name,patch_zone,from_z,thru_z\n'+
+                'P-1,Retired Meadow Patch,WEST_TERRACE,2019-01-01,2020-01-01\n'+
+                'P-1,Tallgrass Meadow Patch,NORTH_TERRACE,2020-01-02,9999-12-31\n';
+
+              seedvault.store_room:
+                'room_id,room_code,room_wing,from_z,thru_z\n'+
+                'R-1,COLD-ROOM-2,East Wing,2020-01-02,9999-12-31\n';
+
+              seedvault.conservation_programme:
+                'programme_id,programme_name,programme_tier,from_z,thru_z\n'+
+                'PR-1,Tallgrass Restoration,TIER_TWO,2020-01-02,9999-12-31\n';
+
+              seedvault.viability_check:
+                'check_id,grade_code,method_code,from_z,thru_z\n'+
+                'V-1,GRADE_A,TETRAZOLIUM,2020-01-02,9999-12-31\n';
+
+              seedvault.seed_custodian:
+                'custodian_id,custodian_name,custodian_desk,from_z,thru_z,in_z,out_z\n'+
+                'CU-1,Rowan Fescue,Prairie Curation Desk,2020-01-02,9999-12-31,2020-01-02,9999-12-31\n';
+
+              seedvault.seed_collection:
+                'collection_id,collection_ref,feed_name,event_date,seed_weight_g,taxon_id,patch_id,room_id,programme_id,check_id,custodian_id\n'+
+                'C-01,ACC-0001,PRAIRIE_FEED,2026-03-14,120.5,T-1,P-1,R-1,PR-1,V-1,CU-1\n'+
+                'C-02,ACC-0002,PRAIRIE_FEED,2025-01-05,80.0,T-1,P-1,R-1,PR-1,V-1,CU-1\n'+
+                'C-03,ACC-0003,UPLAND_FEED,2026-03-20,60.25,T-1,P-1,R-1,PR-1,V-1,CU-1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        windowedAccession:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-01-01,
+            toDate = %2026-06-30,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            aggregatedAccession:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CollectionRef":"ACC-0001","FeedName":"PRAIRIE_FEED","EventDate":"2026-03-14","ReportYear":2026,"ReportMonth":3,"ReportDay":14,"ReportMonthStart":"2026-03-01","TaxonLabel":"Little Bluestem","GenusLabel":"Bluestem","FamilyLabel":"Grass Family","OrderLabel":"Poales","PatchName":"Tallgrass Meadow Patch","PatchZone":"NORTH_TERRACE","PatchZoneTag":"north_terrace","RoomCode":"COLD-ROOM-2","ProgrammeName":"Tallgrass Restoration","ViabilityGrade":"GRADE_A","CustodianName":"Rowan Fescue","CustodianDesk":"Prairie Curation Desk","TotalSeedGrams":120.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

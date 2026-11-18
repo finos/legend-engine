@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::sunlitridge5::connection::NurseryGreenhouseConnection
+{
+  store: test::sunlitridge5::store::NurseryDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'SUNLIT_NURSERY_DB';
+    account: 'sunlit_nursery_acct';
+    warehouse: 'SUNLIT_NURSERY_GREENHOUSE_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'SUNLIT_NURSERY_GREENHOUSE_READER';
+    privateKeyVaultReference: 'sunlitnursery.greenhouse.privateKey';
+    passPhraseVaultReference: 'sunlitnursery.greenhouse.passPhrase';
+  };
+}
+
+RelationalDatabaseConnection test::sunlitridge5::connection::NurseryFieldConnection
+{
+  store: test::sunlitridge5::store::NurseryDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'SUNLIT_NURSERY_DB';
+    account: 'sunlit_nursery_acct';
+    warehouse: 'SUNLIT_NURSERY_FIELD_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'SUNLIT_NURSERY_FIELD_READER';
+    privateKeyVaultReference: 'sunlitnursery.field.privateKey';
+    passPhraseVaultReference: 'sunlitnursery.field.passPhrase';
+  };
+}
+
+RelationalDatabaseConnection test::sunlitridge5::connection::NurseryCatalogueConnection
+{
+  store: test::sunlitridge5::store::NurseryDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'SUNLIT_NURSERY_DB';
+    account: 'sunlit_nursery_acct';
+    warehouse: 'SUNLIT_NURSERY_CATALOGUE_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'SUNLIT_NURSERY_CATALOGUE_READER';
+    privateKeyVaultReference: 'sunlitnursery.catalogue.privateKey';
+    passPhraseVaultReference: 'sunlitnursery.catalogue.passPhrase';
+  };
+}

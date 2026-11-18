@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralharbor3::mapping::NurseryMapping
+(
+  test::coralharbor3::domain::GrowthStage: EnumerationMapping GrowthStageMap
+  {
+    SEEDLING: ['SDL'],
+    VEGETATIVE: ['VEG'],
+    FLOWERING: ['FLW'],
+    DORMANT: ['DRM']
+  }
+
+  test::coralharbor3::domain::IrrigationMode: EnumerationMapping IrrigationModeMap
+  {
+    DRIP: ['DRP'],
+    MIST: ['MST'],
+    FLOOD: ['FLD'],
+    MANUAL: ['MAN']
+  }
+
+  *test::coralharbor3::domain::PlantBatch[batch_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralharbor3::store::NurseryDB]nursery.plant_batch.batch_id
+    )
+    ~mainTable [test::coralharbor3::store::NurseryDB]nursery.plant_batch
+    batchCode: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.batch_code,
+    cultivar: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.cultivar,
+    sownOn: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.sown_on,
+    stage: EnumerationMapping GrowthStageMap: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.stage_code,
+    irrigation: EnumerationMapping IrrigationModeMap: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.irrigation_code,
+    benchCode: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.bench_code,
+    propagator: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.propagator,
+    pottedOn: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.potted_on,
+    trayCount: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.tray_count,
+    heightCm: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.height_cm,
+    mediumCode: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.medium_code,
+    houseCode: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.house_code,
+    seedLot: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.seed_lot,
+    germinationRate: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.germination_rate,
+    hardenedOn: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.hardened_on,
+    labelNote: [test::coralharbor3::store::NurseryDB]nursery.plant_batch.label_note
+  }
+)

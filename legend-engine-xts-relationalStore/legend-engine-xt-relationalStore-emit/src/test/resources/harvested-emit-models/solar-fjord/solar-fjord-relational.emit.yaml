@@ -1,0 +1,64 @@
+name: solar-fjord-relational
+title: "Solar Fjord — Unioned Harvest Channels Behind a Multi-Execution Board"
+description: |
+  A non-financial kelp-farming model over a single-schema relational store with
+  two harvest channels. An operation mapping unions a filtered line-harvest set
+  implementation and a shore-gather set implementation, each reaching its farm
+  site over its own inner join and deriving a grade label from nested string
+  dyna functions alongside a literal channel marker. A multi-execution service
+  keyed by fjord arm filters and projects the unioned lots, and the physical
+  targets are redirected by a relational mapper post-processor on the governed
+  connection.
+
+modelSources:
+  model:
+    root: solar-fjord-relational
+    files:
+      - test/solarfjord/connection/FjordConnection.pure
+      - test/solarfjord/domain/Domain.pure
+      - test/solarfjord/mapping/FjordMapping.pure
+      - test/solarfjord/runtime/FjordRuntime.pure
+      - test/solarfjord/service/HarvestBoards.pure
+      - test/solarfjord/store/FjordDatabase.pure
+
+features:
+  - connection:mapper-postprocessor
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:operation-mapping
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - mapping:router-union
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - db2
+  - delegated-kerberos
+  - h2
+  - inner-join
+  - mapping-test
+  - multi-execution
+  - operation-mapping
+  - relational-mapper
+  - service-test
+  - store-filter
+  - string-transform
+  - union

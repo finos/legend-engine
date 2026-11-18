@@ -1,0 +1,210 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedquokka::service::SightingProfile
+{
+  pattern: '/reserve-tracking/v1/sighting/{zone}/{reserveCode}/{trackerTag}/{seasonLabel}/{observerCode}';
+  title: 'Reserve Tracking - Single Sighting Profile';
+  documentation: 'Selects one remote sighting round by reserve, tracker, season and lead observer, then graph-fetches and serialises three of its properties. Multi-executed by tracking zone over two endpoints of the same remote API.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['reserve-tracking', 'quokka-survey'] };
+  execution: Multi
+  {
+    query: {reserveCode: String[1], trackerTag: String[1], seasonLabel: String[1], observerCode: String[1]|test::frostedquokka::domain::SightingRecord.all()->filter(
+      s|((($s.reserveCode->toOne() == $reserveCode) && ($s.trackerTag->toOne() == $trackerTag)) && ($s.seasonLabel->toOne() == $seasonLabel)) && ($s.observerCode->toOne() == $observerCode)
+    )->toOne()->graphFetch(
+      #{
+        test::frostedquokka::domain::SightingRecord
+        {
+          habitatZone,
+          burrowCode,
+          healthNote
+        }
+      }#
+    )->serialize(
+      #{
+        test::frostedquokka::domain::SightingRecord
+        {
+          habitatZone,
+          burrowCode,
+          healthNote
+        }
+      }#
+    )};
+    key: 'zone';
+    executions['north']:
+    {
+      mapping: test::frostedquokka::mapping::SightingLookupMapping;
+      runtime: test::frostedquokka::runtime::NorthTrackingRuntime;
+    }
+    executions['south']:
+    {
+      mapping: test::frostedquokka::mapping::SightingLookupMapping;
+      runtime: test::frostedquokka::runtime::SouthTrackingRuntime;
+    }
+  }
+}
+
+Service test::frostedquokka::service::SightingProfileNorth
+{
+  pattern: '/reserve-tracking/v1/north-sighting/{reserveCode}/{trackerTag}/{seasonLabel}/{observerCode}';
+  title: 'Reserve Tracking - Single Sighting Profile (North Zone)';
+  documentation: 'Single-execution counterpart of the zone-keyed profile service, pinned to the northern endpoint. Carries the executed graph-fetch serialization test suites over replayed remote responses.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['reserve-tracking', 'quokka-survey'] };
+  execution: Single
+  {
+    query: {reserveCode: String[1], trackerTag: String[1], seasonLabel: String[1], observerCode: String[1]|test::frostedquokka::domain::SightingRecord.all()->filter(
+      s|((($s.reserveCode->toOne() == $reserveCode) && ($s.trackerTag->toOne() == $trackerTag)) && ($s.seasonLabel->toOne() == $seasonLabel)) && ($s.observerCode->toOne() == $observerCode)
+    )->toOne()->graphFetch(
+      #{
+        test::frostedquokka::domain::SightingRecord
+        {
+          habitatZone,
+          burrowCode,
+          healthNote
+        }
+      }#
+    )->serialize(
+      #{
+        test::frostedquokka::domain::SightingRecord
+        {
+          habitatZone,
+          burrowCode,
+          healthNote
+        }
+      }#
+    )};
+    mapping: test::frostedquokka::mapping::SightingLookupMapping;
+    runtime: test::frostedquokka::runtime::NorthTrackingRuntime;
+  }
+  testSuites:
+  [
+    northZoneSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          northTrackingConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/reserve-tracking/sightings/RSV-01/TRK-77/2025-SPRING/OBS-9';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"sightingId":"SGT-5001","reserveCode":"RSV-01","trackerTag":"TRK-77","seasonLabel":"2025-SPRING","burrowCode":"BRW-14","habitatZone":"heath-thicket","weatherNote":"overcast","forageNote":"browsing on sedge","healthNote":"coat frosted, alert","observerCode":"OBS-9","auditNote":"round closed by lead observer","observerTags":["OBS-9","OBS-4"]}';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        northProfileGraph:
+        {
+          parameters:
+          [
+            reserveCode = 'RSV-01',
+            trackerTag = 'TRK-77',
+            seasonLabel = '2025-SPRING',
+            observerCode = 'OBS-9'
+          ]
+          asserts:
+          [
+            treePropertiesOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"habitatZone":"heath-thicket","burrowCode":"BRW-14","healthNote":"coat frosted, alert"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    southZoneSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          northTrackingConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/reserve-tracking/sightings/RSV-02/TRK-31/2025-AUTUMN/OBS-2';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"sightingId":"SGT-5002","reserveCode":"RSV-02","trackerTag":"TRK-31","seasonLabel":"2025-AUTUMN","burrowCode":"BRW-08","habitatZone":"dune-scrub","weatherNote":"clear","forageNote":"grazing on tussock","observerCode":"OBS-2","auditNote":"round closed by relief observer","observerTags":["OBS-2"]}';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        southProfileGraphWithAbsentNode:
+        {
+          parameters:
+          [
+            reserveCode = 'RSV-02',
+            trackerTag = 'TRK-31',
+            seasonLabel = '2025-AUTUMN',
+            observerCode = 'OBS-2'
+          ]
+          asserts:
+          [
+            absentTreeProperty:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"habitatZone":"dune-scrub","burrowCode":"BRW-08","healthNote":null}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

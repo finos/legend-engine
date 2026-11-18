@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarcove3::service::DocksByTierService
+{
+  pattern: '/solarcove/v1/docks-by-tier';
+  title: 'Docks By Deployment Tier';
+  ownership: DID { identifier: 'bike-share-platform' };
+  documentation: 'Multi-execution service keyed by deployment tier, returning the published bike-share dock roster over the model-to-model runtime. Retained for parse, compile and execution-plan coverage of the multi-execution service feature.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: |test::solarcove3::domain::Dock.all()->graphFetch(
+  #{
+    test::solarcove3::domain::Dock{
+      dockId,
+      stationCode,
+      zone,
+      statusCode,
+      tier
+    }
+  }#
+    )->serialize(
+  #{
+    test::solarcove3::domain::Dock{
+      dockId,
+      stationCode,
+      zone,
+      statusCode,
+      tier
+    }
+  }#
+    );
+    key: 'tier';
+    executions['dev']:
+    {
+      mapping: test::solarcove3::mapping::DockFromReading;
+      runtime: test::solarcove3::runtime::DockRuntime;
+    }
+    executions['prod']:
+    {
+      mapping: test::solarcove3::mapping::DockFromReading;
+      runtime: test::solarcove3::runtime::DockRuntime;
+    }
+  }
+}
+
+
+###Service
+Service test::solarcove3::service::DocksByRegionService
+{
+  pattern: '/solarcove/v1/docks-by-region';
+  title: 'Docks By Operator Region';
+  ownership: DID { identifier: 'bike-share-platform' };
+  documentation: 'Multi-execution service keyed by operator region, returning the published bike-share dock roster over the model-to-model runtime. Retained for parse, compile and execution-plan coverage of the multi-execution service feature.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: |test::solarcove3::domain::Dock.all()->graphFetch(
+  #{
+    test::solarcove3::domain::Dock{
+      dockId,
+      stationCode,
+      zone,
+      operatorName
+    }
+  }#
+    )->serialize(
+  #{
+    test::solarcove3::domain::Dock{
+      dockId,
+      stationCode,
+      zone,
+      operatorName
+    }
+  }#
+    );
+    key: 'region';
+    executions['east']:
+    {
+      mapping: test::solarcove3::mapping::DockFromReading;
+      runtime: test::solarcove3::runtime::DockRuntime;
+    }
+    executions['west']:
+    {
+      mapping: test::solarcove3::mapping::DockFromReading;
+      runtime: test::solarcove3::runtime::DockRuntime;
+    }
+  }
+}

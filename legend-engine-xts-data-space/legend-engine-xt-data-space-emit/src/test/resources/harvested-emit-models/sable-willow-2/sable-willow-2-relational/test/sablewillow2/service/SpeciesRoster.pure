@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sablewillow2::service::SpeciesRoster
+{
+  pattern: '/rehab/v1/species';
+  title: 'Sable Willow 2 - Species Reference Roster';
+  ownership: DID { identifier: 'wildlife-rehabilitation-register' };
+  documentation: 'Publishes the untimelined species reference register through the reporting runtime, projecting the register onto three labelled columns without narrowing it.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::sablewillow2::domain::Species.all()->project(
+      [
+        s|$s.commonName,
+        s|$s.familyName,
+        s|$s.habitatSuitability
+      ],
+      [
+        'Common Name',
+        'Family Name',
+        'Habitat Suitability'
+      ]
+    )->sort(
+      [
+        asc('Common Name')
+      ]
+    );
+    mapping: test::sablewillow2::mapping::RehabMapping;
+    runtime: test::sablewillow2::runtime::RehabReportingRuntime;
+  }
+  testSuites:
+  [
+    speciesRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          rehabReportingConnection:
+            Reference
+            #{
+              test::sablewillow2::data::RehabTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        wholeRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            fiveReferenceRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Common Name":"Barn owl","Family Name":"Tytonidae","Habitat Suitability":"WOODLAND"},{"Common Name":"Common kingfisher","Family Name":"Alcedinidae","Habitat Suitability":"RIVERBANK"},{"Common Name":"Common swift","Family Name":"Apodidae","Habitat Suitability":"AVIARY"},{"Common Name":"Eurasian otter","Family Name":"Mustelidae","Habitat Suitability":"WETLAND"},{"Common Name":"West European hedgehog","Family Name":"Erinaceidae","Habitat Suitability":"SCRUB"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

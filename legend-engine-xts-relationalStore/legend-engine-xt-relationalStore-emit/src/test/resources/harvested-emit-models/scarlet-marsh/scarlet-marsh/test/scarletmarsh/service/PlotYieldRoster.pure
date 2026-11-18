@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletmarsh::service::PlotYieldRoster
+{
+  pattern: '/orchard/v1/plot-roster';
+  title: 'Community Orchard - Plot Roster';
+  documentation: 'Roster of live plots for an optional district guard, resolving each plot parent through the target-bound join, de-duplicated, ordered by plot code and capped.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'community-orchard',
+    'orchard-planning'
+  ];
+  execution: Single
+  {
+    query: {districts: String[*]|test::scarletmarsh::domain::OrchardPlot.all()->filter(
+      p|($districts->isEmpty()) || ($p.district->in($districts))
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.plotLabel,
+        p|$p.district,
+        p|$p.parentPlotLabel
+      ],
+      [
+        'Plot/Code',
+        'Plot/Label',
+        'Plot/District',
+        'Plot/Parent'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Plot/Code')
+      ]
+    )->limit(5)};
+    mapping: test::scarletmarsh::mapping::OrchardCrossMapping;
+    runtime: test::scarletmarsh::runtime::OrchardCrossRuntime;
+  }
+  testSuites:
+  [
+    plotYieldRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          orchardConnection:
+            Relational
+            #{
+              orchard.plot:
+                'plot_code,plot_label,district,plot_state,parent_plot_code\n'+
+                'P-1,Riverbend Row,North,LIVE,\n'+
+                'P-2,Kiln Lane Row,East,LIVE,P-1\n'+
+                'P-3,Fallow Corner,East,RETIRED,\n'+
+                'P-4,Hollow Lane Row,East,LIVE,P-2\n';
+            }#,
+          pickingConnection:
+            Relational
+            #{
+              picking.harvest_ticket:
+                'ticket_code,plot_ref,crates,picked_on\n'+
+                'T-1,P-1,12,2026-09-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        easternPlotsOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            districts = ['East']
+          ]
+          asserts:
+          [
+            twoLiveEasternPlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot/Code":"P-2","Plot/Label":"Kiln Lane Row","Plot/District":"East","Plot/Parent":"Riverbend Row"},{"Plot/Code":"P-4","Plot/Label":"Hollow Lane Row","Plot/District":"East","Plot/Parent":"Kiln Lane Row"}]';
+                  }#;
+              }#
+          ]
+        },
+        unguardedDistricts:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            districts = []
+          ]
+          asserts:
+          [
+            threeLivePlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot/Code":"P-1","Plot/Label":"Riverbend Row","Plot/District":"North","Plot/Parent":null},{"Plot/Code":"P-2","Plot/Label":"Kiln Lane Row","Plot/District":"East","Plot/Parent":"Riverbend Row"},{"Plot/Code":"P-4","Plot/Label":"Hollow Lane Row","Plot/District":"East","Plot/Parent":"Kiln Lane Row"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::goldenridge2::mapping::RidgeBaseMapping
+(
+  *demo::goldenridge2::domain::SheetRecord[sheet]: Relational
+  {
+    ~filter [demo::goldenridge2::store::HerbariumDB]EffectiveSheets
+    ~distinct
+    ~primaryKey
+    (
+      [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.sheet_id
+    )
+    ~mainTable [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record
+    sheetId: [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.sheet_id,
+    voucherCode: [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.voucher_code,
+    taxonCode: [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.taxon_code,
+    taxonName: [demo::goldenridge2::store::HerbariumDB]@Sheet_Taxon | [demo::goldenridge2::store::HerbariumDB]herbarium.taxon_ref.taxon_name,
+    collectorCode: [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.collector_code,
+    mountCount: [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.mount_count,
+    vigourScore: [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.vigour_score,
+    vigourBand: case(
+                  lessThan([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.vigour_score, 10),
+                  'BAND_1',
+                  case(
+                    lessThan([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.vigour_score, 20),
+                    'BAND_2',
+                    case(
+                      lessThan([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.vigour_score, 30),
+                      'BAND_3',
+                      case(
+                        lessThan([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.vigour_score, 40),
+                        'BAND_4',
+                        case(
+                          lessThan([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.vigour_score, 50),
+                          'BAND_5',
+                          case(
+                            lessThan([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.vigour_score, 60),
+                            'BAND_6',
+                            case(
+                              lessThan([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.vigour_score, 70),
+                              'BAND_7',
+                              case(
+                                lessThan([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.vigour_score, 80),
+                                'BAND_8',
+                                sqlNull()
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                ),
+    handlingNote: case(
+                    equal([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.handling_code, 'X'),
+                    'ESCORTED',
+                    case(
+                      greaterThan([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.vigour_score, 90),
+                      'OPEN',
+                      sqlNull()
+                    )
+                  ),
+    voucherLabel: case(
+                    equal([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.handling_code, 'X'),
+                    concat('CARE-', toUpper(trim([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.voucher_code))),
+                    concat('STD-', toUpper([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.voucher_code))
+                  ),
+    sheetsOnVoucher: [demo::goldenridge2::store::HerbariumDB]@Sheet_Dupe | [demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw.sheet_count,
+    intakeOnVoucher: [demo::goldenridge2::store::HerbariumDB]@Sheet_Dupe > (OUTER) [demo::goldenridge2::store::HerbariumDB]@Dupe_Rollup | [demo::goldenridge2::store::HerbariumDB]accession.batch_rollup_vw.lot_total
+  }
+
+  *demo::goldenridge2::domain::TaxonTally[taxonTally]: Relational
+  {
+    ~groupBy
+    (
+      [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.taxon_code
+    )
+    ~primaryKey
+    (
+      [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.taxon_code
+    )
+    ~mainTable [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record
+    taxonCode: [demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.taxon_code,
+    mountedTotal: sum([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.mount_count),
+    peakVigour: max([demo::goldenridge2::store::HerbariumDB]herbarium.sheet_record.vigour_score)
+  }
+)

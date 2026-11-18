@@ -1,0 +1,31 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A marked square of the kelp forest surveyed by divers, versioned over the business timeline as the survey record is restated.'} test::gildedcove3::domain::KelpPlot
+{
+  plotCode: String[1];
+  bedCode: String[1];
+  canopyClass: String[1];
+  plotLabel: String[1];
+  frondCount: Integer[1];
+  surveyedOn: StrictDate[1];
+  bedName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named stretch of the kelp forest holding several surveyed plots.'} test::gildedcove3::domain::KelpBed
+{
+  bedCode: String[1];
+  bedName: String[1];
+}

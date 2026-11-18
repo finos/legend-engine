@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::hazelwharf::store::WharfDatabase
+(
+  Schema marine
+  (
+    Table berth
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      berth_id INTEGER PRIMARY KEY,
+      berth_code VARCHAR(24) NOT NULL,
+      berth_label VARCHAR(60) NOT NULL,
+      berth_status VARCHAR(24) NOT NULL,
+      steward_id INTEGER,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+
+    Table mooring_visit
+    (
+      visit_id INTEGER PRIMARY KEY,
+      berth_id INTEGER NOT NULL,
+      visit_code VARCHAR(24) NOT NULL,
+      visit_kind VARCHAR(24) NOT NULL
+    )
+
+    Table sample_lot
+    (
+      lot_id INTEGER PRIMARY KEY,
+      visit_id INTEGER NOT NULL,
+      lot_code VARCHAR(24) NOT NULL,
+      crate_tag VARCHAR(24)
+    )
+
+    Table berth_steward
+    (
+      steward_id INTEGER PRIMARY KEY,
+      steward_name VARCHAR(60) NOT NULL,
+      station_id INTEGER NOT NULL
+    )
+
+    Table monitoring_station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_name VARCHAR(60) NOT NULL,
+      registry_id INTEGER NOT NULL
+    )
+
+    Table station_registry
+    (
+      registry_id INTEGER PRIMARY KEY,
+      registry_code VARCHAR(24) NOT NULL,
+      registry_name VARCHAR(60) NOT NULL
+    )
+  )
+
+  Join Berth_Visit(marine.berth.berth_id = marine.mooring_visit.berth_id)
+  Join Visit_Lot(marine.mooring_visit.visit_id = marine.sample_lot.visit_id)
+  Join Berth_Steward(marine.berth.steward_id = marine.berth_steward.steward_id)
+  Join Steward_Station(marine.berth_steward.station_id = marine.monitoring_station.station_id)
+  Join Station_Registry(marine.monitoring_station.registry_id = marine.station_registry.registry_id)
+)

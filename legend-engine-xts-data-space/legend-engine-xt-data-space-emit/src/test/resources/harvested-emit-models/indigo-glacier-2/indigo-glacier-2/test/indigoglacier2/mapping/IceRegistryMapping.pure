@@ -1,0 +1,212 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigoglacier2::mapping::IceRegistryMapping
+(
+  *test::indigoglacier2::domain::GlacierSite: Relational
+  {
+    ~filter [test::indigoglacier2::store::IceRegistryDb]OpenSiteFilter
+    ~primaryKey
+    (
+      [test::indigoglacier2::store::IceRegistryDb]registry.glacier_site.site_code
+    )
+    ~mainTable [test::indigoglacier2::store::IceRegistryDb]registry.glacier_site
+    siteCode: [test::indigoglacier2::store::IceRegistryDb]registry.glacier_site.site_code,
+    siteName: [test::indigoglacier2::store::IceRegistryDb]registry.glacier_site.site_name,
+    valleyName: [test::indigoglacier2::store::IceRegistryDb]registry.glacier_site.valley_name,
+    openedOn: [test::indigoglacier2::store::IceRegistryDb]registry.glacier_site.opened_on
+  }
+
+  *test::indigoglacier2::domain::FieldCrew: Relational
+  {
+    ~filter [test::indigoglacier2::store::IceRegistryDb]ActiveCrewFilter
+    ~primaryKey
+    (
+      [test::indigoglacier2::store::IceRegistryDb]registry.field_crew.crew_code
+    )
+    ~mainTable [test::indigoglacier2::store::IceRegistryDb]registry.field_crew
+    crewCode: [test::indigoglacier2::store::IceRegistryDb]registry.field_crew.crew_code,
+    crewName: [test::indigoglacier2::store::IceRegistryDb]registry.field_crew.crew_name,
+    homeHut: [test::indigoglacier2::store::IceRegistryDb]registry.field_crew.home_hut,
+    crewSize: [test::indigoglacier2::store::IceRegistryDb]registry.field_crew.crew_size
+  }
+
+  *test::indigoglacier2::domain::StakePost: Relational
+  {
+    ~filter [test::indigoglacier2::store::IceRegistryDb]StandingStakeFilter
+    ~primaryKey
+    (
+      [test::indigoglacier2::store::IceRegistryDb]registry.stake_post.stake_code,
+      [test::indigoglacier2::store::IceRegistryDb]registry.stake_post.site_code
+    )
+    ~mainTable [test::indigoglacier2::store::IceRegistryDb]registry.stake_post
+    stakeCode: [test::indigoglacier2::store::IceRegistryDb]registry.stake_post.stake_code,
+    siteCode: [test::indigoglacier2::store::IceRegistryDb]registry.stake_post.site_code,
+    installedAt: [test::indigoglacier2::store::IceRegistryDb]registry.stake_post.installed_at,
+    postHeight: [test::indigoglacier2::store::IceRegistryDb]registry.stake_post.post_height
+  }
+
+  testSuites:
+  [
+    openSiteSuite:
+    {
+      function: |test::indigoglacier2::domain::GlacierSite.all()->project(
+        [
+          s|$s.siteCode,
+          s|$s.siteName,
+          s|$s.valleyName,
+          s|$s.openedOn
+        ],
+        [
+          'SiteCode',
+          'SiteName',
+          'ValleyName',
+          'OpenedOn'
+        ]
+      )->sort([asc('SiteCode')]);
+      tests:
+      [
+        onlyNamedOpenSitesSurface:
+        {
+          doc: 'The site filter conjoins an open state with a non-null name, so a shut site and an open site without a name are both dropped.';
+          data:
+          [
+            test::indigoglacier2::store::IceRegistryDb:
+              Relational
+              #{
+                registry.glacier_site:
+                  'site_code,site_name,valley_name,opened_on,site_state\n'+
+                  'GS-1,Blue Tongue,Upper Corrie,2025-06-01,OPEN\n'+
+                  'GS-2,Grey Shelf,Lower Corrie,2025-06-03,SHUT\n'+
+                  'GS-3,,Scree Basin,2025-06-07,OPEN\n'+
+                  'GS-4,White Saddle,Scree Basin,2025-07-11,OPEN\n';
+              }#
+          ];
+          asserts:
+          [
+            twoNamedOpenSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SiteCode":"GS-1","SiteName":"Blue Tongue","ValleyName":"Upper Corrie","OpenedOn":"2025-06-01"},{"SiteCode":"GS-4","SiteName":"White Saddle","ValleyName":"Scree Basin","OpenedOn":"2025-07-11"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    activeCrewSuite:
+    {
+      function: |test::indigoglacier2::domain::FieldCrew.all()->project(
+        [
+          c|$c.crewCode,
+          c|$c.crewName,
+          c|$c.crewSize
+        ],
+        [
+          'CrewCode',
+          'CrewName',
+          'CrewSize'
+        ]
+      )->sort([asc('CrewCode')]);
+      tests:
+      [
+        soloAndRetiredCrewsDropped:
+        {
+          doc: 'An active crew needs at least two members; a lone active surveyor and a retired crew are both excluded.';
+          data:
+          [
+            test::indigoglacier2::store::IceRegistryDb:
+              Relational
+              #{
+                registry.field_crew:
+                  'crew_code,crew_name,home_hut,crew_size,crew_state\n'+
+                  'FC-1,Moraine Walkers,Col Hut,4,ACTIVE\n'+
+                  'FC-2,Lone Prober,Col Hut,1,ACTIVE\n'+
+                  'FC-3,Old Rope Team,Tarn Hut,5,RETIRED\n'+
+                  'FC-4,Serac Watch,Tarn Hut,2,ACTIVE\n';
+              }#
+          ];
+          asserts:
+          [
+            twoActiveCrews:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CrewCode":"FC-1","CrewName":"Moraine Walkers","CrewSize":4},{"CrewCode":"FC-4","CrewName":"Serac Watch","CrewSize":2}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    standingStakeSuite:
+    {
+      function: |test::indigoglacier2::domain::StakePost.all()->project(
+        [
+          k|$k.stakeCode,
+          k|$k.siteCode,
+          k|$k.installedAt,
+          k|$k.postHeight
+        ],
+        [
+          'StakeCode',
+          'SiteCode',
+          'InstalledAt',
+          'PostHeight'
+        ]
+      )->sort([asc('StakeCode'), asc('SiteCode')]);
+      tests:
+      [
+        compositeKeyStandingStakes:
+        {
+          doc: 'Stakes are keyed by stake and site together; the same stake code on two sites yields two rows, while a toppled post and a buried post of zero height are excluded.';
+          data:
+          [
+            test::indigoglacier2::store::IceRegistryDb:
+              Relational
+              #{
+                registry.stake_post:
+                  'stake_code,site_code,installed_at,post_height,post_state\n'+
+                  'SK-1,GS-1,2025-06-02 09:15:00,2.5,STANDING\n'+
+                  'SK-1,GS-4,2025-07-12 10:40:00,1.75,STANDING\n'+
+                  'SK-2,GS-1,2025-06-02 11:00:00,2.0,TOPPLED\n'+
+                  'SK-3,GS-4,2025-07-12 12:30:00,0.0,STANDING\n';
+              }#
+          ];
+          asserts:
+          [
+            twoStandingStakes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StakeCode":"SK-1","SiteCode":"GS-1","InstalledAt":"2025-06-02T09:15:00.000000000+0000","PostHeight":2.5},{"StakeCode":"SK-1","SiteCode":"GS-4","InstalledAt":"2025-07-12T10:40:00.000000000+0000","PostHeight":1.75}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

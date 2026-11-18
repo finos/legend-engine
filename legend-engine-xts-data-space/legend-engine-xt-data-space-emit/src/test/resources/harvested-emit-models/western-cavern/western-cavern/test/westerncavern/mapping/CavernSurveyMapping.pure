@@ -1,0 +1,364 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westerncavern::mapping::CavernSurveyMapping
+(
+  test::westerncavern::domain::CaveSystem[cave_system_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.cave_system.system_code,
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.cave_system.batch_id
+    )
+    ~mainTable [test::westerncavern::store::CavernSurveyDatabase]speleo.cave_system
+    systemCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.cave_system.system_code,
+    batchId: [test::westerncavern::store::CavernSurveyDatabase]speleo.cave_system.batch_id,
+    systemName: [test::westerncavern::store::CavernSurveyDatabase]speleo.cave_system.system_name,
+    regionName: [test::westerncavern::store::CavernSurveyDatabase]speleo.cave_system.region_name,
+    discoveredOn: [test::westerncavern::store::CavernSurveyDatabase]speleo.cave_system.discovered_on,
+    mappedLengthMetres: [test::westerncavern::store::CavernSurveyDatabase]speleo.cave_system.mapped_length_metres,
+    systemNote: [test::westerncavern::store::CavernSurveyDatabase]speleo.cave_system.system_note,
+    registerName: 'Western Cavern Survey Register'
+  }
+
+  test::westerncavern::domain::Passage[passage_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.passage.passage_code,
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.passage.batch_id
+    )
+    ~mainTable [test::westerncavern::store::CavernSurveyDatabase]speleo.passage
+    passageCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.passage.passage_code,
+    batchId: [test::westerncavern::store::CavernSurveyDatabase]speleo.passage.batch_id,
+    systemCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.passage.system_code,
+    passageName: [test::westerncavern::store::CavernSurveyDatabase]speleo.passage.passage_name,
+    passageLengthMetres: [test::westerncavern::store::CavernSurveyDatabase]speleo.passage.passage_length_metres,
+    passageWidthMetres: [test::westerncavern::store::CavernSurveyDatabase]speleo.passage.passage_width_metres,
+    hazardNote: [test::westerncavern::store::CavernSurveyDatabase]speleo.passage.hazard_note
+  }
+
+  test::westerncavern::domain::SurveyRun[survey_run_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_run.run_code,
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_run.batch_id
+    )
+    ~mainTable [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_run
+    runCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_run.run_code,
+    batchId: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_run.batch_id,
+    systemCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_run.system_code,
+    runName: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_run.run_name,
+    runDate: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_run.run_date,
+    leadSurveyor: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_run.lead_surveyor,
+    instrumentNote: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_run.instrument_note
+  }
+
+  test::westerncavern::domain::SurveyLeg[survey_leg_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.leg_code,
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.batch_id
+    )
+    ~mainTable [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg
+    legCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.leg_code,
+    batchId: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.batch_id,
+    runCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.run_code,
+    passageCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.passage_code,
+    legLengthMetres: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.leg_length_metres,
+    depthChangeMetres: [test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.depth_change_metres,
+    gradeLabel: case(isNull([test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.grade_code), sqlNull(),
+      case(equal([test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.grade_code, 1), 'SKETCH_ONLY',
+      case(equal([test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.grade_code, 2), 'ROUGH_TAPE',
+      case(equal([test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.grade_code, 3), 'COMPASS_TAPE',
+      case(equal([test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.grade_code, 4), 'CALIBRATED_TAPE',
+      case(equal([test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.grade_code, 5), 'PRECISE_COMPASS',
+      case(equal([test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.grade_code, 6), 'THEODOLITE',
+      case(equal([test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.grade_code, 7), 'LASER_SCAN',
+      case(equal([test::westerncavern::store::CavernSurveyDatabase]speleo.survey_leg.grade_code, 8), 'CONTROLLED_TRAVERSE',
+      'UNGRADED'))))))))),
+    surveyedPassageName: [test::westerncavern::store::CavernSurveyDatabase]@Passage_SurveyLeg | speleo.passage.passage_name,
+    registerName: 'Western Cavern Survey Register'
+  }
+
+  test::westerncavern::domain::ClimateStation[climate_station_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_station.station_code,
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_station.batch_id
+    )
+    ~mainTable [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_station
+    stationCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_station.station_code,
+    batchId: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_station.batch_id,
+    passageCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_station.passage_code,
+    stationName: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_station.station_name,
+    installedOn: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_station.installed_on,
+    sensorNote: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_station.sensor_note
+  }
+
+  test::westerncavern::domain::ClimateReading[climate_reading_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_reading.reading_code,
+      [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_reading.batch_id
+    )
+    ~mainTable [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_reading
+    readingCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_reading.reading_code,
+    batchId: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_reading.batch_id,
+    stationCode: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_reading.station_code,
+    readingDate: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_reading.reading_date,
+    airTemperatureCelsius: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_reading.air_temperature_celsius,
+    humidityPercent: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_reading.humidity_percent,
+    dripRatePerMinute: [test::westerncavern::store::CavernSurveyDatabase]speleo.climate_reading.drip_rate_per_minute,
+    stationLabel: [test::westerncavern::store::CavernSurveyDatabase]@ClimateStation_ClimateReading | speleo.climate_station.station_name
+  }
+
+  test::westerncavern::domain::CaveSystem_Passage: Relational
+  {
+    AssociationMapping
+    (
+      parentSystem[passage_set, cave_system_set]: [test::westerncavern::store::CavernSurveyDatabase]@System_Passage,
+      passages[cave_system_set, passage_set]: [test::westerncavern::store::CavernSurveyDatabase]@System_Passage
+    )
+  }
+
+  test::westerncavern::domain::CaveSystem_SurveyRun: Relational
+  {
+    AssociationMapping
+    (
+      surveyedSystem[survey_run_set, cave_system_set]: [test::westerncavern::store::CavernSurveyDatabase]@System_SurveyRun,
+      surveyRuns[cave_system_set, survey_run_set]: [test::westerncavern::store::CavernSurveyDatabase]@System_SurveyRun
+    )
+  }
+
+  test::westerncavern::domain::SurveyRun_SurveyLeg: Relational
+  {
+    AssociationMapping
+    (
+      parentRun[survey_leg_set, survey_run_set]: [test::westerncavern::store::CavernSurveyDatabase]@SurveyRun_SurveyLeg,
+      legs[survey_run_set, survey_leg_set]: [test::westerncavern::store::CavernSurveyDatabase]@SurveyRun_SurveyLeg
+    )
+  }
+
+  test::westerncavern::domain::Passage_SurveyLeg: Relational
+  {
+    AssociationMapping
+    (
+      surveyedPassage[survey_leg_set, passage_set]: [test::westerncavern::store::CavernSurveyDatabase]@Passage_SurveyLeg,
+      passageLegs[passage_set, survey_leg_set]: [test::westerncavern::store::CavernSurveyDatabase]@Passage_SurveyLeg
+    )
+  }
+
+  test::westerncavern::domain::ClimateStation_ClimateReading: Relational
+  {
+    AssociationMapping
+    (
+      hostStation[climate_reading_set, climate_station_set]: [test::westerncavern::store::CavernSurveyDatabase]@ClimateStation_ClimateReading,
+      readings[climate_station_set, climate_reading_set]: [test::westerncavern::store::CavernSurveyDatabase]@ClimateStation_ClimateReading
+    )
+  }
+
+  testSuites:
+  [
+    cavernSurveyMappingSuite:
+    {
+      function: |test::westerncavern::domain::SurveyLeg.all()->project(
+        [
+          l|$l.legCode,
+          l|$l.batchId,
+          l|$l.runCode,
+          l|$l.legLengthMetres,
+          l|$l.depthChangeMetres,
+          l|$l.gradeLabel,
+          l|$l.surveyedPassageName,
+          l|$l.registerName
+        ],
+        [
+          'Leg Code',
+          'Batch',
+          'Run Code',
+          'Leg Length',
+          'Depth Change',
+          'Grade Label',
+          'Passage Name',
+          'Register'
+        ]
+      )->sort(
+        [
+          asc('Leg Code')
+        ]
+      );
+      tests:
+      [
+        everyGradeArmAndTheNullFallbackResolve:
+        {
+          doc: 'Reads all nine survey legs so each of the eight conditional grade arms is hit once and the ninth row proves the null-sentinel fallback, while the same projection also proves the join-reached passage name, the literal-defaulted register name and the optional depth column propagating null.';
+          data:
+          [
+            test::westerncavern::store::CavernSurveyDatabase:
+              Relational
+              #{
+                speleo.cave_system:
+                  'system_code,batch_id,system_name,region_name,discovered_on,mapped_length_metres,system_note\n'+
+                  'CS-01,1,Western Cavern System,Western Uplands,2026-01-05,4210.5,First register entry\n'+
+                  'CS-01,2,Western Cavern System,Western Uplands,2026-01-05,4325.0,\n'+
+                  'CS-02,1,Lantern Hollow System,Northern Downs,2026-02-11,880.25,Shallow phreatic maze\n';
+                speleo.passage:
+                  'passage_code,batch_id,system_code,passage_name,passage_length_metres,passage_width_metres,hazard_note\n'+
+                  'PG-01,1,CS-01,Cathedral Gallery,410.5,12.5,Loose boulder slope\n'+
+                  'PG-02,1,CS-01,Whisper Crawl,120.0,0.8,\n'+
+                  'PG-03,1,CS-02,Lantern Rift,75.25,3.0,\n';
+                speleo.survey_run:
+                  'run_code,batch_id,system_code,run_name,run_date,lead_surveyor,instrument_note\n'+
+                  'SR-01,1,CS-01,Spring Traverse,2026-03-01,Fenwick Party,Laser set A\n'+
+                  'SR-02,1,CS-01,Autumn Traverse,2026-09-14,Ollerton Party,\n'+
+                  'SR-03,1,CS-02,Lantern Recon,2026-04-02,Marsden Party,\n'+
+                  'SR-04,1,CS-02,Sump Probe,2026-05-05,Ferris Party,\n';
+                speleo.survey_leg:
+                  'leg_code,batch_id,run_code,passage_code,leg_length_metres,depth_change_metres,grade_code\n'+
+                  'SL-01,1,SR-01,PG-01,40.5,-3.25,1\n'+
+                  'SL-02,1,SR-01,PG-01,55.0,2.5,2\n'+
+                  'SL-03,1,SR-01,PG-01,61.75,-1.5,3\n'+
+                  'SL-04,1,SR-01,PG-02,18.25,0.75,4\n'+
+                  'SL-05,1,SR-02,PG-01,72.5,-6.0,5\n'+
+                  'SL-06,1,SR-02,PG-01,33.0,1.25,6\n'+
+                  'SL-07,1,SR-02,PG-02,49.5,-2.0,7\n'+
+                  'SL-08,1,SR-03,PG-03,25.75,4.5,8\n'+
+                  'SL-09,1,SR-03,PG-03,12.5,,\n';
+                speleo.climate_station:
+                  'station_code,batch_id,passage_code,station_name,installed_on,sensor_note\n'+
+                  'CT-01,1,PG-01,Cathedral Drip Post,2026-01-20,Thermistor pair\n'+
+                  'CT-02,1,PG-02,Crawl Air Post,2026-02-02,\n';
+                speleo.climate_reading:
+                  'reading_code,batch_id,station_code,reading_date,air_temperature_celsius,humidity_percent,drip_rate_per_minute\n'+
+                  'CR-01,1,CT-01,2026-03-02,8.5,92.5,14\n'+
+                  'CR-02,1,CT-01,2026-03-03,9.25,,18\n'+
+                  'CR-03,1,CT-01,2026-03-04,7.75,88.0,\n'+
+                  'CR-04,1,CT-02,2026-03-02,6.5,95.25,4\n'+
+                  'CR-05,2,CT-02,2026-03-03,6.75,94.0,6\n';
+              }#
+          ];
+          asserts:
+          [
+            gradeArmsResolve:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Leg Code":"SL-01","Batch":1,"Run Code":"SR-01","Leg Length":40.5,"Depth Change":-3.25,"Grade Label":"SKETCH_ONLY","Passage Name":"Cathedral Gallery","Register":"Western Cavern Survey Register"},{"Leg Code":"SL-02","Batch":1,"Run Code":"SR-01","Leg Length":55.0,"Depth Change":2.5,"Grade Label":"ROUGH_TAPE","Passage Name":"Cathedral Gallery","Register":"Western Cavern Survey Register"},{"Leg Code":"SL-03","Batch":1,"Run Code":"SR-01","Leg Length":61.75,"Depth Change":-1.5,"Grade Label":"COMPASS_TAPE","Passage Name":"Cathedral Gallery","Register":"Western Cavern Survey Register"},{"Leg Code":"SL-04","Batch":1,"Run Code":"SR-01","Leg Length":18.25,"Depth Change":0.75,"Grade Label":"CALIBRATED_TAPE","Passage Name":"Whisper Crawl","Register":"Western Cavern Survey Register"},{"Leg Code":"SL-05","Batch":1,"Run Code":"SR-02","Leg Length":72.5,"Depth Change":-6.0,"Grade Label":"PRECISE_COMPASS","Passage Name":"Cathedral Gallery","Register":"Western Cavern Survey Register"},{"Leg Code":"SL-06","Batch":1,"Run Code":"SR-02","Leg Length":33.0,"Depth Change":1.25,"Grade Label":"THEODOLITE","Passage Name":"Cathedral Gallery","Register":"Western Cavern Survey Register"},{"Leg Code":"SL-07","Batch":1,"Run Code":"SR-02","Leg Length":49.5,"Depth Change":-2.0,"Grade Label":"LASER_SCAN","Passage Name":"Whisper Crawl","Register":"Western Cavern Survey Register"},{"Leg Code":"SL-08","Batch":1,"Run Code":"SR-03","Leg Length":25.75,"Depth Change":4.5,"Grade Label":"CONTROLLED_TRAVERSE","Passage Name":"Lantern Rift","Register":"Western Cavern Survey Register"},{"Leg Code":"SL-09","Batch":1,"Run Code":"SR-03","Leg Length":12.5,"Depth Change":null,"Grade Label":null,"Passage Name":"Lantern Rift","Register":"Western Cavern Survey Register"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    cavernAssociationSuite:
+    {
+      function: |test::westerncavern::domain::SurveyRun.all()->project(
+        [
+          r|$r.runCode,
+          r|$r.batchId,
+          r|$r.legs.legCode,
+          r|$r.surveyedSystem.systemCode,
+          r|$r.surveyedSystem.batchId
+        ],
+        [
+          'Run Code',
+          'Run Batch',
+          'Leg Code',
+          'System Code',
+          'System Batch'
+        ]
+      )->sort(
+        [
+          asc('Run Code'),
+          asc('Leg Code'),
+          asc('System Batch')
+        ]
+      );
+      tests:
+      [
+        compositeKeyAndAssociationCardinalitiesResolve:
+        {
+          doc: 'Traverses the run-to-leg association from every run so a run with three matches, a run with two and a run with none are all observable, and reads the cave system extent twice over one identifier that recurs across two batches so the composite key drives row identity.';
+          data:
+          [
+            test::westerncavern::store::CavernSurveyDatabase:
+              Relational
+              #{
+                speleo.cave_system:
+                  'system_code,batch_id,system_name,region_name,discovered_on,mapped_length_metres,system_note\n'+
+                  'CS-01,1,Western Cavern System,Western Uplands,2026-01-05,4210.5,First register entry\n'+
+                  'CS-01,2,Western Cavern System,Western Uplands,2026-01-05,4325.0,\n'+
+                  'CS-02,1,Lantern Hollow System,Northern Downs,2026-02-11,880.25,Shallow phreatic maze\n';
+                speleo.passage:
+                  'passage_code,batch_id,system_code,passage_name,passage_length_metres,passage_width_metres,hazard_note\n'+
+                  'PG-01,1,CS-01,Cathedral Gallery,410.5,12.5,Loose boulder slope\n'+
+                  'PG-02,1,CS-01,Whisper Crawl,120.0,0.8,\n'+
+                  'PG-03,1,CS-02,Lantern Rift,75.25,3.0,\n';
+                speleo.survey_run:
+                  'run_code,batch_id,system_code,run_name,run_date,lead_surveyor,instrument_note\n'+
+                  'SR-01,1,CS-01,Spring Traverse,2026-03-01,Fenwick Party,Laser set A\n'+
+                  'SR-02,1,CS-01,Autumn Traverse,2026-09-14,Ollerton Party,\n'+
+                  'SR-03,1,CS-02,Lantern Recon,2026-04-02,Marsden Party,\n'+
+                  'SR-04,1,CS-02,Sump Probe,2026-05-05,Ferris Party,\n';
+                speleo.survey_leg:
+                  'leg_code,batch_id,run_code,passage_code,leg_length_metres,depth_change_metres,grade_code\n'+
+                  'SL-01,1,SR-01,PG-01,40.5,-3.25,1\n'+
+                  'SL-02,1,SR-01,PG-01,55.0,2.5,2\n'+
+                  'SL-03,1,SR-01,PG-01,61.75,-1.5,3\n'+
+                  'SL-04,1,SR-01,PG-02,18.25,0.75,4\n'+
+                  'SL-05,1,SR-02,PG-01,72.5,-6.0,5\n'+
+                  'SL-06,1,SR-02,PG-01,33.0,1.25,6\n'+
+                  'SL-07,1,SR-02,PG-02,49.5,-2.0,7\n'+
+                  'SL-08,1,SR-03,PG-03,25.75,4.5,8\n'+
+                  'SL-09,1,SR-03,PG-03,12.5,,\n';
+                speleo.climate_station:
+                  'station_code,batch_id,passage_code,station_name,installed_on,sensor_note\n'+
+                  'CT-01,1,PG-01,Cathedral Drip Post,2026-01-20,Thermistor pair\n'+
+                  'CT-02,1,PG-02,Crawl Air Post,2026-02-02,\n';
+                speleo.climate_reading:
+                  'reading_code,batch_id,station_code,reading_date,air_temperature_celsius,humidity_percent,drip_rate_per_minute\n'+
+                  'CR-01,1,CT-01,2026-03-02,8.5,92.5,14\n'+
+                  'CR-02,1,CT-01,2026-03-03,9.25,,18\n'+
+                  'CR-03,1,CT-01,2026-03-04,7.75,88.0,\n'+
+                  'CR-04,1,CT-02,2026-03-02,6.5,95.25,4\n'+
+                  'CR-05,2,CT-02,2026-03-03,6.75,94.0,6\n';
+              }#
+          ];
+          asserts:
+          [
+            traversalAndKeyResolve:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Run Code":"SR-01","Run Batch":1,"Leg Code":"SL-01","System Code":"CS-01","System Batch":1},{"Run Code":"SR-01","Run Batch":1,"Leg Code":"SL-01","System Code":"CS-01","System Batch":2},{"Run Code":"SR-01","Run Batch":1,"Leg Code":"SL-02","System Code":"CS-01","System Batch":1},{"Run Code":"SR-01","Run Batch":1,"Leg Code":"SL-02","System Code":"CS-01","System Batch":2},{"Run Code":"SR-01","Run Batch":1,"Leg Code":"SL-03","System Code":"CS-01","System Batch":1},{"Run Code":"SR-01","Run Batch":1,"Leg Code":"SL-03","System Code":"CS-01","System Batch":2},{"Run Code":"SR-01","Run Batch":1,"Leg Code":"SL-04","System Code":"CS-01","System Batch":1},{"Run Code":"SR-01","Run Batch":1,"Leg Code":"SL-04","System Code":"CS-01","System Batch":2},{"Run Code":"SR-02","Run Batch":1,"Leg Code":"SL-05","System Code":"CS-01","System Batch":1},{"Run Code":"SR-02","Run Batch":1,"Leg Code":"SL-05","System Code":"CS-01","System Batch":2},{"Run Code":"SR-02","Run Batch":1,"Leg Code":"SL-06","System Code":"CS-01","System Batch":1},{"Run Code":"SR-02","Run Batch":1,"Leg Code":"SL-06","System Code":"CS-01","System Batch":2},{"Run Code":"SR-02","Run Batch":1,"Leg Code":"SL-07","System Code":"CS-01","System Batch":1},{"Run Code":"SR-02","Run Batch":1,"Leg Code":"SL-07","System Code":"CS-01","System Batch":2},{"Run Code":"SR-03","Run Batch":1,"Leg Code":"SL-08","System Code":"CS-02","System Batch":1},{"Run Code":"SR-03","Run Batch":1,"Leg Code":"SL-09","System Code":"CS-02","System Batch":1},{"Run Code":"SR-04","Run Batch":1,"Leg Code":null,"System Code":"CS-02","System Batch":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

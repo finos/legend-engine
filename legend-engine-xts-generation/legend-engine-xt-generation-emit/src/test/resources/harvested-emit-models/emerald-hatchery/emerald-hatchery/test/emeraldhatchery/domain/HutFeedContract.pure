@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::emeraldhatchery::domain::*;
+import meta::pure::profiles::*;
+
+Profile demo::emeraldhatchery::domain::FeedContract
+{
+  stereotypes: [published];
+  tags: [wireType, exampleBearing, consumerNote, ordinal];
+}
+
+Class <<FeedContract.published>> {doc.doc = 'One alpine hut as the booking feed publishes it to downstream consumers.'} demo::emeraldhatchery::domain::HutSummary
+{
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Stable key of the hut across every feed cycle.', FeedContract.ordinal = '1', doc.doc = 'Opaque hut key held stable across feed cycles.'} hutKey: String[0..1];
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Display label; never parse it.', FeedContract.ordinal = '2', doc.doc = 'Human readable hut label for display only.'} hutLabel: String[0..1];
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Valley the hut is reached from.', FeedContract.ordinal = '3', doc.doc = 'Name of the valley the approach walk starts in.'} approachValley: String[0..1];
+  {FeedContract.wireType = 'integer', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Metres above sea level, rounded.', FeedContract.ordinal = '4', doc.doc = 'Hut altitude in whole metres above sea level.'} altitudeMetres: Integer[0..1];
+  {FeedContract.wireType = 'boolean', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Absent means the warden roster is unknown.', FeedContract.ordinal = '5', doc.doc = 'Whether a warden is resident for the published window.'} wardenResident: Boolean[0..1];
+}
+
+Class <<FeedContract.published>> {doc.doc = 'A block of bunks a hut offers for one night of the published window.'} demo::emeraldhatchery::domain::BunkAllocation
+{
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Key of the hut the bunks belong to.', FeedContract.ordinal = '1', doc.doc = 'Hut key the allocation was published against.'} hutKey: String[0..1];
+  {FeedContract.wireType = 'date', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Night the bunks are offered for.', FeedContract.ordinal = '2', doc.doc = 'Calendar night the bunk block is offered for.'} stayNight: StrictDate[0..1];
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Dormitory or private room grouping.', FeedContract.ordinal = '3', doc.doc = 'Sleeping arrangement grouping the bunks sit in.'} roomGrouping: String[0..1];
+  {FeedContract.wireType = 'integer', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Bunks still unclaimed at publication time.', FeedContract.ordinal = '4', doc.doc = 'Count of bunks unclaimed when the cycle was published.'} bunksUnclaimed: Integer[0..1];
+  {FeedContract.wireType = 'integer', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Total bunks in the block.', FeedContract.ordinal = '5', doc.doc = 'Total bunks the block contains regardless of state.'} bunksOffered: Integer[0..1];
+}
+
+Class <<FeedContract.published>> {doc.doc = 'A confirmed stay as the feed reports it, flattened to scalars only.'} demo::emeraldhatchery::domain::StayReservation
+{
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Key of the stay; unique inside a feed cycle.', FeedContract.ordinal = '1', doc.doc = 'Opaque key of the reported stay.'} stayKey: String[0..1];
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Key of the hut being stayed at.', FeedContract.ordinal = '2', doc.doc = 'Hut key the stay was recorded against.'} hutKey: String[0..1];
+  {FeedContract.wireType = 'date', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'First night of the stay.', FeedContract.ordinal = '3', doc.doc = 'First night covered by the stay.'} firstNight: StrictDate[0..1];
+  {FeedContract.wireType = 'integer', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Consecutive nights held.', FeedContract.ordinal = '4', doc.doc = 'Number of consecutive nights the stay holds.'} nightsHeld: Integer[0..1];
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Held, walked-in or released.', FeedContract.ordinal = '5', doc.doc = 'Coarse state the stay was in at publication.'} stayState: String[0..1];
+}
+
+Class <<FeedContract.published>> {doc.doc = 'The arriving walking party attached to a reported stay.'} demo::emeraldhatchery::domain::ArrivingParty
+{
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Key of the stay the party arrives for.', FeedContract.ordinal = '1', doc.doc = 'Stay key the arriving party belongs to.'} stayKey: String[0..1];
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Club or group label supplied on arrival.', FeedContract.ordinal = '2', doc.doc = 'Walking club or group label the party gave.'} groupLabel: String[0..1];
+  {FeedContract.wireType = 'integer', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Walkers expected in the party.', FeedContract.ordinal = '3', doc.doc = 'Expected head count of the walking party.'} walkerCount: Integer[0..1];
+  {FeedContract.wireType = 'boolean', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Whether a guide accompanies the party.', FeedContract.ordinal = '4', doc.doc = 'Whether a certified mountain guide walks with the party.'} guideAccompanied: Boolean[0..1];
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Language the party asked to be met in.', FeedContract.ordinal = '5', doc.doc = 'Preferred language the party asked to be greeted in.'} greetingLanguage: String[0..1];
+}
+
+Class <<FeedContract.published>> {doc.doc = 'One valley shuttle leg published alongside the hut window.'} demo::emeraldhatchery::domain::ShuttleLeg
+{
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Key of the shuttle leg.', FeedContract.ordinal = '1', doc.doc = 'Opaque key of the published shuttle leg.'} legKey: String[0..1];
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Stop the leg departs from.', FeedContract.ordinal = '2', doc.doc = 'Valley stop the leg departs from.'} departureStop: String[0..1];
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Trailhead the leg arrives at.', FeedContract.ordinal = '3', doc.doc = 'Trailhead the leg sets walkers down at.'} arrivalTrailhead: String[0..1];
+  {FeedContract.wireType = 'datetime', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Scheduled departure instant.', FeedContract.ordinal = '4', doc.doc = 'Scheduled departure instant of the leg.'} departureInstant: DateTime[0..1];
+  {FeedContract.wireType = 'integer', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Seats left when published.', FeedContract.ordinal = '5', doc.doc = 'Seats unclaimed on the leg when the cycle was published.'} seatsUnclaimed: Integer[0..1];
+}
+
+Class <<FeedContract.published>> {doc.doc = 'A forecast window the hut window was published against.'} demo::emeraldhatchery::domain::WeatherWindow
+{
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Key of the hut the window applies to.', FeedContract.ordinal = '1', doc.doc = 'Hut key the forecast window applies to.'} hutKey: String[0..1];
+  {FeedContract.wireType = 'date', FeedContract.exampleBearing = 'yes', FeedContract.consumerNote = 'Day the window opens.', FeedContract.ordinal = '2', doc.doc = 'First day covered by the forecast window.'} windowOpens: StrictDate[0..1];
+  {FeedContract.wireType = 'date', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Day the window closes.', FeedContract.ordinal = '3', doc.doc = 'Last day covered by the forecast window.'} windowCloses: StrictDate[0..1];
+  {FeedContract.wireType = 'string', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Coarse outlook wording.', FeedContract.ordinal = '4', doc.doc = 'Coarse outlook wording chosen by the forecaster.'} outlookWording: String[0..1];
+  {FeedContract.wireType = 'float', FeedContract.exampleBearing = 'no', FeedContract.consumerNote = 'Freezing level in metres.', FeedContract.ordinal = '5', doc.doc = 'Freezing level in metres over the window.'} freezingLevelMetres: Float[0..1];
+}

@@ -1,0 +1,166 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::zephyrharbor::mapping::HarbourInboundM2M
+(
+  *test::zephyrharbor::domain::StationDigest[digest]: Pure
+  {
+    ~src test::zephyrharbor::source::IncomingStationFeed
+    ~filter $src.feedRef->startsWith('FD-')
+    digestId: $src.feedRef,
+    readinessBand: if($src.coverText->isEmpty(),
+                     | 'UNREPORTED',
+                     | if($src.coverText->toOne()->parseFloat() >= 90.0,
+                       | 'CANOPY_CLOSED',
+                       | if($src.coverText->toOne()->parseFloat() >= 70.0,
+                         | 'CANOPY_DENSE',
+                         | if($src.coverText->toOne()->parseFloat() >= 50.0,
+                           | 'CANOPY_BROKEN',
+                           | if($src.coverText->toOne()->parseFloat() >= 25.0,
+                             | 'BED_SPARSE',
+                             | 'BED_BARE'
+                           )
+                         )
+                       )
+                     )
+                   ),
+    berthLabel: if($src.berthText->isEmpty(),
+                   | 'UNBERTHED',
+                   | $src.berthText->toOne()->toUpper()
+                 ),
+    noteLine: test::zephyrharbor::function::noteLine($src.noteText)
+  }
+
+  testSuites:
+  [
+    digestSuite:
+    {
+      function: |test::zephyrharbor::domain::StationDigest.all()->graphFetch(
+        #{
+          test::zephyrharbor::domain::StationDigest
+          {
+            digestId,
+            readinessBand,
+            berthLabel,
+            noteLine
+          }
+        }#
+      )->serialize(
+        #{
+          test::zephyrharbor::domain::StationDigest
+          {
+            digestId,
+            readinessBand,
+            berthLabel,
+            noteLine
+          }
+        }#
+      );
+      tests:
+      [
+        denseArm:
+        {
+          doc: 'An inbound record whose text cover reading lands on the dense arm and which carries several notes, so the note collection collapses to its lead line with a continuation marker.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrharbor::source::IncomingStationFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef": "FD-100", "coverText": "82.5", "berthText": "berth-a1", "noteText": ["kelp line intact", "buoy repainted"]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            denseRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestId":"FD-100","readinessBand":"CANOPY_DENSE","berthLabel":"BERTH-A1","noteLine":"kelp line intact (+more)"}';
+                  }#;
+              }#
+          ];
+        },
+        unreportedArm:
+        {
+          doc: 'An inbound record with no cover text and no berth text at all, so both the sentinel readiness arm and the sentinel berth arm are taken and the note line stays absent.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrharbor::source::IncomingStationFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef": "FD-200", "noteText": []}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            unreportedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestId":"FD-200","readinessBand":"UNREPORTED","berthLabel":"UNBERTHED","noteLine":null}';
+                  }#;
+              }#
+          ];
+        },
+        bareArm:
+        {
+          doc: 'An inbound record whose cover text is below every graded threshold, taking the terminal arm of the readiness ladder with a single note.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrharbor::source::IncomingStationFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef": "FD-300", "coverText": "3.0", "berthText": "berth-f1", "noteText": ["scoured bed"]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            bareRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestId":"FD-300","readinessBand":"BED_BARE","berthLabel":"BERTH-F1","noteLine":"scoured bed"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

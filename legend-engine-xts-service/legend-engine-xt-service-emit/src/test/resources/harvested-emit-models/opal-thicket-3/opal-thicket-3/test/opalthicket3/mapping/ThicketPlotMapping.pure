@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::opalthicket3::mapping::ThicketPlotMapping
+(
+  *test::opalthicket3::domain::ThicketPlot[thicket_plot]: Pure
+  {
+    ~src test::opalthicket3::domain::PlotIntakeEnvelope
+    plotId: $src.plot.plotRef,
+    plotName: $src.plot.plotLabel->toUpper(),
+    surveyedOn: $src.plot.capturedOn,
+    batchLabel: $src.batchLabel,
+    canopyHeightM: $src.plot.canopyHeightM,
+    canopyCoverPct: $src.plot.canopyCoverPct,
+    stemCount: $src.plot.stemTally,
+    saplingCount: $src.plot.saplingTally,
+    shrubCount: $src.plot.shrubTally,
+    deadwoodCount: $src.plot.deadwoodTally,
+    soilMoisturePct: $src.plot.soilMoisturePct,
+    soilPh: $src.plot.soilPh,
+    leafLitterDepthCm: $src.plot.leafLitterDepthCm,
+    slopeDegrees: $src.plot.slopeDegrees,
+    aspectDegrees: $src.plot.aspectDegrees,
+    elevationM: $src.plot.elevationM,
+    plotAreaSqM: $src.plot.plotAreaSqM,
+    dominantSpecies: $src.plot.dominantSpecies,
+    secondarySpecies: $src.plot.secondarySpecies,
+    understoryClass: 'unclassified',
+    regenerationClass: $src.plot.regenerationClass,
+    disturbanceNote: if($src.plot.disturbanceNote->isEmpty(),
+                        | 'none recorded',
+                        | $src.plot.disturbanceNote->toOne()->trim()),
+    surveyorAlias: $src.plot.surveyorAlias,
+    transectCode: $src.plot.transectCode,
+    gridReference: $src.plot.gridBlock + '-' + $src.plot.gridCell,
+    isProtected: $src.plot.protectedFlag,
+    lastBurnYear: $src.plot.lastBurnYear,
+    observationWindowDays: $src.plot.windowDays,
+    bandTags: $src.bandTags
+  }
+
+  testSuites:
+  [
+    thicketPlotTransformSuite:
+    {
+      function: |test::opalthicket3::domain::ThicketPlot.all()->graphFetch(
+        #{
+          test::opalthicket3::domain::ThicketPlot{
+            plotId,
+            plotName,
+            surveyedOn,
+            batchLabel,
+            canopyHeightM,
+            stemCount,
+            understoryClass,
+            regenerationClass,
+            disturbanceNote,
+            gridReference,
+            isProtected,
+            lastBurnYear,
+            bandTags
+          }
+        }#
+      )->serialize(
+        #{
+          test::opalthicket3::domain::ThicketPlot{
+            plotId,
+            plotName,
+            surveyedOn,
+            batchLabel,
+            canopyHeightM,
+            stemCount,
+            understoryClass,
+            regenerationClass,
+            disturbanceNote,
+            gridReference,
+            isProtected,
+            lastBurnYear,
+            bandTags
+          }
+        }#
+      );
+      tests:
+      [
+        surveyedPlot:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::opalthicket3::domain::PlotIntakeEnvelope:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"batchLabel":"spring-transect","plot":{"plotRef":41,"plotLabel":"north ledge thicket","capturedOn":"2026-03-14","canopyHeightM":12.4,"canopyCoverPct":68.5,"stemTally":214,"saplingTally":38,"shrubTally":97,"deadwoodTally":12,"soilMoisturePct":41.2,"soilPh":6.4,"leafLitterDepthCm":3.8,"slopeDegrees":11.5,"aspectDegrees":215.0,"elevationM":384.0,"plotAreaSqM":400.0,"dominantSpecies":"hazel","secondarySpecies":"blackthorn","regenerationClass":"advancing","disturbanceNote":"  browsing pressure  ","surveyorAlias":"transect-lead-a","transectCode":"T-19","gridBlock":"NR","gridCell":"0417","protectedFlag":true,"lastBurnYear":2019,"windowDays":21},"bandTags":["understorey","edge"]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"plotId":41,"plotName":"NORTH LEDGE THICKET","surveyedOn":"2026-03-14","batchLabel":"spring-transect","canopyHeightM":12.4,"stemCount":214,"understoryClass":"unclassified","regenerationClass":"advancing","disturbanceNote":"browsing pressure","gridReference":"NR-0417","isProtected":true,"lastBurnYear":2019,"bandTags":["understorey","edge"]}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

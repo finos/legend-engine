@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldisle3::mapping::IsleCensusMapping
+(
+  *test::emeraldisle3::domain::ColonyPlot: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldisle3::store::IsleCensusDB]isle.colony_plot.plot_id
+    )
+    ~mainTable [test::emeraldisle3::store::IsleCensusDB]isle.colony_plot
+    plotId: [test::emeraldisle3::store::IsleCensusDB]isle.colony_plot.plot_id,
+    plotCode: [test::emeraldisle3::store::IsleCensusDB]isle.colony_plot.plot_code,
+    habitatCode: [test::emeraldisle3::store::IsleCensusDB]isle.colony_plot.habitat_code,
+    wardenNote: [test::emeraldisle3::store::IsleCensusDB]isle.colony_plot.warden_note,
+    nestCount: [test::emeraldisle3::store::IsleCensusDB]isle.colony_plot.nest_count,
+    surveyStatus: [test::emeraldisle3::store::IsleCensusDB]isle.colony_plot.survey_status
+  }
+
+  testSuites:
+  [
+    colonyPlotAsOfSuite:
+    {
+      function: |test::emeraldisle3::domain::ColonyPlot.all(%2035-06-01T00:00:00)->project(
+        [
+          p|$p.plotCode,
+          p|$p.habitatCode,
+          p|$p.nestBand(),
+          p|$p.nestCount,
+          p|$p.surveyStatus
+        ],
+        [
+          'PlotCode',
+          'HabitatCode',
+          'NestBand',
+          'NestCount',
+          'SurveyStatus'
+        ]
+      )->sort([asc('PlotCode')]);
+      tests:
+      [
+        onlyVersionsContainingTheInstant:
+        {
+          doc: 'The plot register is resolved at a pinned instant, so a version that closed before it and a version that opens after it are both dropped while the containing versions survive and carry their derived nest band.';
+          data:
+          [
+            test::emeraldisle3::store::IsleCensusDB:
+              Relational
+              #{
+                isle.colony_plot:
+                  'plot_id,plot_code,habitat_code,warden_note,nest_count,survey_status,bus_from_z,bus_thru_z\n'+
+                  '1,PL-01,CLIFF,ledge boardwalk clear,120,OPEN,2020-01-01 00:00:00,2030-01-01 00:00:00\n'+
+                  '2,PL-02,BURROW,burrow ledge stable,64,OPEN,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '3,PL-03,STACK,stack ledge slipped,15,WATCH,2040-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '4,PL-04,MEADOW,ab,0,OPEN,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            containingVersionsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PL-02","HabitatCode":"BURROW","NestBand":"MEDIUM","NestCount":64,"SurveyStatus":"OPEN"}, {"PlotCode":"PL-04","HabitatCode":"MEADOW","NestBand":"SMALL","NestCount":0,"SurveyStatus":"OPEN"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

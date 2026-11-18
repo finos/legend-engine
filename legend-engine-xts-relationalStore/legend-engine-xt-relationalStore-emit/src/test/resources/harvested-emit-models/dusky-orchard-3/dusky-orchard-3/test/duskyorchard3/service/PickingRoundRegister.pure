@@ -1,0 +1,169 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::duskyorchard3::service::PickingRoundRegister
+{
+  pattern: '/duskyorchard3/picking-round-register/{shiftEstate}';
+  title: 'Dusky Orchard - Picking Round Register';
+  ownership: UserList { users: ['orchard-yard-desk'] };
+  documentation: 'Publishes the picking rounds whose variety is a member of the accepted literal set and whose crate count and gross mass clear the reporting floors, flattening each survivor together with the orchard and the crew reached through two separate joins and a banded crate-load label. The same query and mapping are planned under two keyed estates that differ only in the runtime and connection they resolve through.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {|demo::duskyorchard3::domain::PickingRound.all()->filter(
+      r|(['RUSSET', 'PIPPIN']->contains($r.varietyLabel)) && (($r.crateCount >= 8) && ($r.grossMassKg > 100.0))
+    )->project(
+      [
+        r|$r.roundCode,
+        r|$r.orchard.orchardName,
+        r|$r.orchard.regionName,
+        r|$r.crew.crewName,
+        r|$r.crew.shiftCode,
+        r|$r.varietyLabel,
+        r|$r.gradeLabel,
+        r|$r.crateCount,
+        r|$r.grossMassKg,
+        r|$r.avgCrateMassKg,
+        r|if($r.crateCount >= 15,
+             | 'BULK',
+             | 'STANDARD')
+      ],
+      [
+        'RoundCode',
+        'Orchard',
+        'Region',
+        'Crew',
+        'Shift',
+        'Variety',
+        'Grade',
+        'Crates',
+        'GrossMassKg',
+        'AvgCrateMassKg',
+        'CrateLoad'
+      ]
+    )->distinct()->sort(
+      [
+        asc('RoundCode')
+      ]
+    )->limit(10)};
+    key: 'shiftEstate';
+    executions['day']:
+    {
+      mapping: demo::duskyorchard3::mapping::OrchardMapping;
+      runtime: demo::duskyorchard3::runtime::OrchardDayRuntime;
+    }
+    executions['night']:
+    {
+      mapping: demo::duskyorchard3::mapping::OrchardMapping;
+      runtime: demo::duskyorchard3::runtime::OrchardNightRuntime;
+    }
+  }
+  testSuites:
+  [
+    dayEstateRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          orchardDay:
+            Relational
+            #{
+              orchardyard.orchard:
+                'orchard_code,orchard_name,region_name\n'+
+                'OR-1,Bramble Rise,Northvale\n'+
+                'OR-2,Hollow Row,Southmere\n';
+              orchardyard.pick_crew:
+                'crew_code,crew_name,shift_code\n'+
+                'PC-1,Lantern Crew,day\n'+
+                'PC-2,Kestrel Crew,night\n';
+              orchardyard.picking_round:
+                'round_code,picked_on,variety_code,grade_code,crate_count,gross_mass_kg,orchard_code,crew_code\n'+
+                'PR-0001,2026-09-03,russet,a,12,240.0,OR-1,PC-1\n'+
+                'PR-0002,2026-09-04,pippin,b,8,150.0,OR-1,PC-2\n'+
+                'PR-0003,2026-09-05,russet,a,20,410.0,OR-2,PC-1\n'+
+                'PR-0004,2026-09-06,quince,c,3,45.0,OR-2,PC-2\n'+
+                'PR-0005,2026-09-07,pippin,a,15,300.0,OR-1,PC-1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        dayKeyAcceptedVarieties:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['day'];
+          asserts:
+          [
+            unacceptedVarietyIsExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RoundCode":"PR-0001","Orchard":"Bramble Rise","Region":"Northvale","Crew":"Lantern Crew","Shift":"DAY","Variety":"RUSSET","Grade":"A","Crates":12,"GrossMassKg":240.0,"AvgCrateMassKg":20.0,"CrateLoad":"STANDARD"},{"RoundCode":"PR-0002","Orchard":"Bramble Rise","Region":"Northvale","Crew":"Kestrel Crew","Shift":"NIGHT","Variety":"PIPPIN","Grade":"B","Crates":8,"GrossMassKg":150.0,"AvgCrateMassKg":18.75,"CrateLoad":"STANDARD"},{"RoundCode":"PR-0003","Orchard":"Hollow Row","Region":"Southmere","Crew":"Lantern Crew","Shift":"DAY","Variety":"RUSSET","Grade":"A","Crates":20,"GrossMassKg":410.0,"AvgCrateMassKg":20.5,"CrateLoad":"BULK"},{"RoundCode":"PR-0005","Orchard":"Bramble Rise","Region":"Northvale","Crew":"Lantern Crew","Shift":"DAY","Variety":"PIPPIN","Grade":"A","Crates":15,"GrossMassKg":300.0,"AvgCrateMassKg":20.0,"CrateLoad":"BULK"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    nightEstateRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          orchardNight:
+            Relational
+            #{
+              orchardyard.orchard:
+                'orchard_code,orchard_name,region_name\n'+
+                'OR-2,Hollow Row,Southmere\n';
+              orchardyard.pick_crew:
+                'crew_code,crew_name,shift_code\n'+
+                'PC-2,Kestrel Crew,night\n';
+              orchardyard.picking_round:
+                'round_code,picked_on,variety_code,grade_code,crate_count,gross_mass_kg,orchard_code,crew_code\n'+
+                'PR-0004,2026-09-06,quince,c,3,45.0,OR-2,PC-2\n'+
+                'PR-0006,2026-09-08,pippin,b,10,220.0,OR-2,PC-2\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        nightKeyAcceptedVarieties:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['night'];
+          asserts:
+          [
+            belowFloorRoundIsExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RoundCode":"PR-0006","Orchard":"Hollow Row","Region":"Southmere","Crew":"Kestrel Crew","Shift":"NIGHT","Variety":"PIPPIN","Grade":"B","Crates":10,"GrossMassKg":220.0,"AvgCrateMassKg":22.0,"CrateLoad":"STANDARD"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

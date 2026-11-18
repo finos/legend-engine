@@ -1,0 +1,205 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::mapleaviary6::service::MillRegister
+{
+  pattern: '/mapleaviary6/v1/mill-register/{estate}';
+  title: 'Maple Aviary 6 - Estate Milling Run Register';
+  ownership: DID { identifier: 'windmill-register' };
+  documentation: 'Publishes the milling runs that still hold an uncleared sail check, dropping the withdrawn grade, and reports each run under a band the query derives from the grade, the sack count and the stone hours. The same query and mapping are planned under two keyed estates that differ only in their runtime and connection.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {|test::mapleaviary6::function::millRegister()};
+    key: 'estate';
+    executions['north']:
+    {
+      mapping: test::mapleaviary6::mapping::MillMapping;
+      runtime: test::mapleaviary6::runtime::MillNorthRuntime;
+    }
+    executions['south']:
+    {
+      mapping: test::mapleaviary6::mapping::MillMapping;
+      runtime: test::mapleaviary6::runtime::MillSouthRuntime;
+    }
+  }
+  testSuites:
+  [
+    northEstateSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          millNorth:
+            Relational
+            #{
+              mill.milling_run:
+                'run_code,mill_code,estate_name,sail_set,grain_kind,run_grade,sack_count,stone_hours,milled_on\n'+
+                'MR-01,ML-NORTH,NORTHFIELD,CANVAS,WHEAT,MILLED,42,6.5,2026-02-02\n'+
+                'MR-02,ML-NORTH,NORTHFIELD,SHUTTER,RYE,MILLED,15,6.0,2026-02-03\n'+
+                'MR-03,ML-NORTH,NORTHFIELD,CANVAS,OAT,VOID,30,4.0,2026-02-04\n'+
+                'MR-04,ML-NORTH,NORTHFIELD,CANVAS,SPELT,MILLED,9,1.5,2026-02-05\n';
+              mill.sail_check:
+                'check_code,run_code,check_grade,canvas_metres\n'+
+                'SC-01,MR-01,OPEN,4.5\n'+
+                'SC-02,MR-02,OPEN,2.0\n'+
+                'SC-03,MR-03,OPEN,1.0\n'+
+                'SC-04,MR-04,CLEARED,0.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northKeyBandedRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['north'];
+          asserts:
+          [
+            withdrawnAndClearedRunsAreDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Run":"MR-01","Mill":"ML-NORTH","Estate":"NORTHFIELD","Grain":"WHEAT","Band":"FULL-STONE","Sacks":42,"StoneHours":6.5},{"Run":"MR-02","Mill":"ML-NORTH","Estate":"NORTHFIELD","Grain":"RYE","Band":"SLOW-STONE","Sacks":15,"StoneHours":6.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    southEstateSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          millSouth:
+            Relational
+            #{
+              mill.milling_run:
+                'run_code,mill_code,estate_name,sail_set,grain_kind,run_grade,sack_count,stone_hours,milled_on\n'+
+                'MR-11,ML-SOUTH,SOUTHFIELD,SHUTTER,RYE,VOID,26,3.0,2026-02-06\n';
+              mill.sail_check:
+                'check_code,run_code,check_grade,canvas_metres\n'+
+                'SC-11,MR-11,OPEN,1.5\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        southKeyEmptyRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['south'];
+          asserts:
+          [
+            noRowsSurviveTheGradeFilter:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::mapleaviary6::service::SailRankBoard
+{
+  pattern: '/mapleaviary6/v1/sail-rank';
+  title: 'Maple Aviary 6 - Estate Sail Rank Board';
+  ownership: UserList { users: ['windmill-rank-desk'] };
+  documentation: 'Ranks the milling runs inside each estate from the heaviest sack load down, over the register that already dropped the withdrawn grade and the runs whose every sail check was cleared, so ties inside an estate share a rank.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|test::mapleaviary6::function::sailRank()};
+    mapping: test::mapleaviary6::mapping::MillMapping;
+    runtime: test::mapleaviary6::runtime::SailRankRuntime;
+  }
+  testSuites:
+  [
+    sailRankSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          millRank:
+            Relational
+            #{
+              mill.milling_run:
+                'run_code,mill_code,estate_name,sail_set,grain_kind,run_grade,sack_count,stone_hours,milled_on\n'+
+                'MR-01,ML-NORTH,NORTHFIELD,CANVAS,WHEAT,MILLED,42,6.5,2026-02-02\n'+
+                'MR-02,ML-NORTH,NORTHFIELD,SHUTTER,RYE,MILLED,15,6.0,2026-02-03\n'+
+                'MR-05,ML-WEST,WESTFIELD,CANVAS,OAT,MILLED,7,2.5,2026-02-07\n';
+              mill.sail_check:
+                'check_code,run_code,check_grade,canvas_metres\n'+
+                'SC-01,MR-01,OPEN,4.5\n'+
+                'SC-02,MR-02,OPEN,2.0\n'+
+                'SC-05,MR-05,OPEN,0.5\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rankWithinEachEstate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoEstatesRanked:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Run":"MR-01","Mill":"ML-NORTH","Estate":"NORTHFIELD","Grain":"WHEAT","Band":"FULL-STONE","Sacks":42,"StoneHours":6.5,"EstateRank":1},{"Run":"MR-02","Mill":"ML-NORTH","Estate":"NORTHFIELD","Grain":"RYE","Band":"SLOW-STONE","Sacks":15,"StoneHours":6.0,"EstateRank":2},{"Run":"MR-05","Mill":"ML-WEST","Estate":"WESTFIELD","Grain":"OAT","Band":"LIGHT-STONE","Sacks":7,"StoneHours":2.5,"EstateRank":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::mapleaviary6::service::SackBoard
+{
+  pattern: '/mapleaviary6/v1/sack-board/{minimumSacks}';
+  title: 'Maple Aviary 6 - Heaviest Sack Load Board';
+  ownership: DID { identifier: 'windmill-board' };
+  documentation: 'Publishes the runs whose sack load clears the caller-supplied floor together with the stone hours each sack consumed, ordered from the heaviest down and bounded to the leading rows.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minimumSacks: Integer[1]|test::mapleaviary6::function::sackBoard($minimumSacks)};
+    mapping: test::mapleaviary6::mapping::MillMapping;
+    runtime: test::mapleaviary6::runtime::SackBoardRuntime;
+  }
+}

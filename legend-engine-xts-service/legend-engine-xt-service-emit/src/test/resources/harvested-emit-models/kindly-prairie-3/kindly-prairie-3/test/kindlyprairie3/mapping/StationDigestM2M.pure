@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlyprairie3::mapping::StationDigestM2M
+(
+  *test::kindlyprairie3::domain::StationDigest[stationDigest]: Pure
+  {
+    ~src test::kindlyprairie3::domain::StationSheetRow
+    stationKey: $src.stationRef->trim()->toUpper(),
+    registerLabel: 'prairie grassland station register',
+    wardenLabel: $src.wardenTag() + ' / ' + $src.netHoursTally()->toString() + ' net hours',
+    visitSummary: if($src.visits->isEmpty(),
+                     | [],
+                     | $src.visits->filter(v | $v.netHours->isNotEmpty())->map(v | $v.visitCode->trim()->toUpper() + '=' + $v.netHours->toOne()->toString())->joinStrings(', ')),
+    grassBandLabel: if($src.rawGrassHeightCm->isEmpty(),
+                       | 'UNMEASURED',
+                       | if($src.rawGrassHeightCm->toOne()->trim()->parseInteger() >= 40,
+                            | 'TALL SWARD ' + $src.rawGrassHeightCm->toOne()->trim() + 'CM',
+                            | 'SHORT SWARD ' + $src.rawGrassHeightCm->toOne()->trim() + 'CM')),
+    netMetres: if($src.rawMistNetMetres->isEmpty(),
+                  | [],
+                  | $src.rawMistNetMetres->toOne()->trim()->parseInteger()),
+    transect[stationTransectRef]: $src
+  }
+
+  test::kindlyprairie3::domain::TransectRef[stationTransectRef]: Pure
+  {
+    ~src test::kindlyprairie3::domain::StationSheetRow
+    transectCode: if($src.rawTransectCount->isEmpty(),
+                     | 'UNTRANSECTED',
+                     | 'TRANSECTS-' + $src.rawTransectCount->toOne()->trim())
+  }
+
+  testSuites:
+  [
+    stationWardenSuite:
+    {
+      function: |test::kindlyprairie3::domain::StationDigest.all()->graphFetch(
+        #{
+          test::kindlyprairie3::domain::StationDigest{
+            stationKey,
+            wardenLabel,
+            grassBandLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::kindlyprairie3::domain::StationDigest{
+            stationKey,
+            wardenLabel,
+            grassBandLabel
+          }
+        }#
+      );
+      tests:
+      [
+        tallShortAndUnmeasuredStationsHitEverySwardArm:
+        {
+          doc: 'A tall-sward station, a short-sward station and an unmeasured station cover every sward arm while the warden label folds the tallied net hours in from a derived source property.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::kindlyprairie3::domain::StationSheetRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stationRef":" st-11 ","registryCode":"Prairie-Stations","rawTransectCount":" 4 ","rawMistNetMetres":" 72 ","rawGrassHeightCm":" 55 ","rawWarden":" nrb ","visits":[{"visitCode":" v-1 ","netHours":6},{"visitCode":"v-2","netHours":4}]},{"stationRef":"st-12","registryCode":"prairie-stations","rawGrassHeightCm":"18","visits":[{"visitCode":"v-9"}]},{"stationRef":"st-13","registryCode":"prairie-stations","visits":[]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            threeStationDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stationKey":"ST-11","wardenLabel":"NRB / 10 net hours","grassBandLabel":"TALL SWARD 55CM"},{"stationKey":"ST-12","wardenLabel":"UNWARDENED / 0 net hours","grassBandLabel":"SHORT SWARD 18CM"},{"stationKey":"ST-13","wardenLabel":"UNWARDENED / 0 net hours","grassBandLabel":"UNMEASURED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

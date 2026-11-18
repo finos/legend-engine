@@ -1,0 +1,267 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silvergecko2::mapping::VivariumMapping
+(
+  test::silvergecko2::domain::DietKind: EnumerationMapping DietCodeMapping
+  {
+    INSECTIVORE: ['INS'],
+    HERBIVORE: ['HERB'],
+    OMNIVORE: ['OMNI']
+  }
+
+  *test::silvergecko2::domain::HabitatZone: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.habitat_zone.zone_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.habitat_zone
+    zoneCode: [test::silvergecko2::store::VivariumDb]vivarium.habitat_zone.zone_code,
+    zoneName: [test::silvergecko2::store::VivariumDb]vivarium.habitat_zone.zone_name,
+    noteText: [test::silvergecko2::store::VivariumDb]@Note_Zone | [test::silvergecko2::store::VivariumDb]vivarium.zone_note.note_text
+  }
+
+  *test::silvergecko2::domain::ZoneNote: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.zone_note.note_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.zone_note
+    noteCode: [test::silvergecko2::store::VivariumDb]vivarium.zone_note.note_code,
+    noteText: [test::silvergecko2::store::VivariumDb]vivarium.zone_note.note_text,
+    zoneName: [test::silvergecko2::store::VivariumDb]@Note_Zone | [test::silvergecko2::store::VivariumDb]vivarium.habitat_zone.zone_name
+  }
+
+  *test::silvergecko2::domain::Enclosure: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.enclosure.enclosure_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.enclosure
+    enclosureCode: [test::silvergecko2::store::VivariumDb]vivarium.enclosure.enclosure_code,
+    enclosureName: [test::silvergecko2::store::VivariumDb]vivarium.enclosure.enclosure_name,
+    humidityPct: [test::silvergecko2::store::VivariumDb]vivarium.enclosure.humidity_pct,
+    zoneName: [test::silvergecko2::store::VivariumDb]@Enclosure_Zone | [test::silvergecko2::store::VivariumDb]vivarium.habitat_zone.zone_name
+  }
+
+  *test::silvergecko2::domain::Substrate: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.substrate.substrate_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.substrate
+    substrateCode: [test::silvergecko2::store::VivariumDb]vivarium.substrate.substrate_code,
+    substrateName: [test::silvergecko2::store::VivariumDb]vivarium.substrate.substrate_name,
+    enclosureName: [test::silvergecko2::store::VivariumDb]@Substrate_Enclosure | [test::silvergecko2::store::VivariumDb]vivarium.enclosure.enclosure_name
+  }
+
+  *test::silvergecko2::domain::HeatLamp: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.heat_lamp.lamp_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.heat_lamp
+    lampCode: [test::silvergecko2::store::VivariumDb]vivarium.heat_lamp.lamp_code,
+    watts: [test::silvergecko2::store::VivariumDb]vivarium.heat_lamp.watts,
+    enclosureName: [test::silvergecko2::store::VivariumDb]@Lamp_Enclosure | [test::silvergecko2::store::VivariumDb]vivarium.enclosure.enclosure_name
+  }
+
+  *test::silvergecko2::domain::Species: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.species.species_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.species
+    speciesCode: [test::silvergecko2::store::VivariumDb]vivarium.species.species_code,
+    speciesName: [test::silvergecko2::store::VivariumDb]vivarium.species.species_name,
+    dietKind: EnumerationMapping DietCodeMapping: [test::silvergecko2::store::VivariumDb]vivarium.species.diet_code
+  }
+
+  *test::silvergecko2::domain::ShiftTeam: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.shift_team.team_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.shift_team
+    teamCode: [test::silvergecko2::store::VivariumDb]vivarium.shift_team.team_code,
+    teamName: [test::silvergecko2::store::VivariumDb]vivarium.shift_team.team_name
+  }
+
+  *test::silvergecko2::domain::Keeper: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.keeper.keeper_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.keeper
+    keeperCode: [test::silvergecko2::store::VivariumDb]vivarium.keeper.keeper_code,
+    keeperName: [test::silvergecko2::store::VivariumDb]vivarium.keeper.keeper_name,
+    teamName: [test::silvergecko2::store::VivariumDb]@Keeper_Team | [test::silvergecko2::store::VivariumDb]vivarium.shift_team.team_name
+  }
+
+  *test::silvergecko2::domain::Resident: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.resident.resident_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.resident
+    residentCode: [test::silvergecko2::store::VivariumDb]vivarium.resident.resident_code,
+    residentName: [test::silvergecko2::store::VivariumDb]vivarium.resident.resident_name,
+    hatchedOn: [test::silvergecko2::store::VivariumDb]vivarium.resident.hatched_on,
+    lengthMillimetres: [test::silvergecko2::store::VivariumDb]vivarium.resident.length_mm,
+    enclosureName: [test::silvergecko2::store::VivariumDb]@Resident_Enclosure | [test::silvergecko2::store::VivariumDb]vivarium.enclosure.enclosure_name,
+    speciesName: [test::silvergecko2::store::VivariumDb]@Resident_Species | [test::silvergecko2::store::VivariumDb]vivarium.species.species_name,
+    displayLabel: concat(concat([test::silvergecko2::store::VivariumDb]vivarium.resident.resident_code, ' / '), [test::silvergecko2::store::VivariumDb]vivarium.resident.resident_name),
+    registerKind: 'RESIDENT REGISTER'
+  }
+
+  *test::silvergecko2::domain::Supplier: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.supplier.supplier_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.supplier
+    supplierCode: [test::silvergecko2::store::VivariumDb]vivarium.supplier.supplier_code,
+    supplierName: [test::silvergecko2::store::VivariumDb]vivarium.supplier.supplier_name
+  }
+
+  *test::silvergecko2::domain::FeedStock: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.feed_stock.stock_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.feed_stock
+    feedCode: [test::silvergecko2::store::VivariumDb]vivarium.feed_stock.feed_code,
+    stockName: [test::silvergecko2::store::VivariumDb]vivarium.feed_stock.stock_name,
+    supplierName: [test::silvergecko2::store::VivariumDb]@Stock_Supplier | [test::silvergecko2::store::VivariumDb]vivarium.supplier.supplier_name
+  }
+
+  testSuites:
+  [
+    residentRegisterSuite:
+    {
+      function: |test::silvergecko2::domain::Resident.all()->project(
+  [
+    r|$r.residentCode,
+    r|$r.displayLabel,
+    r|$r.registerKind,
+    r|$r.lengthMillimetres,
+    r|$r.enclosureName,
+    r|$r.speciesName
+  ],
+  [
+    'ResidentCode', 'DisplayLabel', 'RegisterKind', 'LengthMillimetres',
+    'EnclosureName', 'SpeciesName'
+  ]
+)->sort([asc('ResidentCode')]);
+      tests:
+      [
+        registerRows:
+        {
+          doc: 'Covers the concatenated display label, the model-fixed register label, the enclosure and species equality joins and a resident whose enclosure has no counterpart row, so the traversal yields no enclosure name.';
+          data:
+          [
+            test::silvergecko2::store::VivariumDb:
+              Relational
+              #{
+                vivarium.resident:
+                  'resident_id,enclosure_id,species_id,resident_code,resident_name,hatched_on,length_mm\n'+
+                  '1,1,1,RS-1,Pebble,2024-03-04,120\n'+
+                  '2,1,3,RS-2,Ochre,2023-07-19,210\n'+
+                  '3,2,2,RS-3,Willow,2025-01-08,95\n'+
+                  '4,9,1,RS-4,Cinder,2025-06-02,80\n';
+                vivarium.enclosure:
+                  'enclosure_id,zone_id,enclosure_code,enclosure_name,humidity_pct\n'+
+                  '1,1,EN-1,Sand Terrace,35\n'+
+                  '2,2,EN-2,Fern Terrace,80\n';
+                vivarium.species:
+                  'species_id,species_code,species_name,diet_code\n'+
+                  '1,SP-1,Banded Gecko,INS\n'+
+                  '2,SP-2,Leaf Skink,HERB\n'+
+                  '3,SP-3,Rock Agama,OMNI\n';
+              }#
+          ];
+          asserts:
+          [
+            joinedAndUnmatchedResidents:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ResidentCode":"RS-1","DisplayLabel":"RS-1 / Pebble","RegisterKind":"RESIDENT REGISTER","LengthMillimetres":120,"EnclosureName":"Sand Terrace","SpeciesName":"Banded Gecko"},{"ResidentCode":"RS-2","DisplayLabel":"RS-2 / Ochre","RegisterKind":"RESIDENT REGISTER","LengthMillimetres":210,"EnclosureName":"Sand Terrace","SpeciesName":"Rock Agama"},{"ResidentCode":"RS-3","DisplayLabel":"RS-3 / Willow","RegisterKind":"RESIDENT REGISTER","LengthMillimetres":95,"EnclosureName":"Fern Terrace","SpeciesName":"Leaf Skink"},{"ResidentCode":"RS-4","DisplayLabel":"RS-4 / Cinder","RegisterKind":"RESIDENT REGISTER","LengthMillimetres":80,"EnclosureName":null,"SpeciesName":"Banded Gecko"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    speciesDietSuite:
+    {
+      function: |test::silvergecko2::domain::Species.all()->project(
+  [
+    s|$s.speciesCode,
+    s|$s.dietKind
+  ],
+  [
+    'SpeciesCode', 'DietKind'
+  ]
+)->sort([asc('SpeciesCode')]);
+      tests:
+      [
+        everyDietLiteral:
+        {
+          doc: 'Covers all three declared diet literals reached through the enumeration mapping.';
+          data:
+          [
+            test::silvergecko2::store::VivariumDb:
+              Relational
+              #{
+                vivarium.species:
+                  'species_id,species_code,species_name,diet_code\n'+
+                  '1,SP-1,Banded Gecko,INS\n'+
+                  '2,SP-2,Leaf Skink,HERB\n'+
+                  '3,SP-3,Rock Agama,OMNI\n';
+              }#
+          ];
+          asserts:
+          [
+            threeMappedDietKinds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SpeciesCode":"SP-1","DietKind":"INSECTIVORE"},{"SpeciesCode":"SP-2","DietKind":"HERBIVORE"},{"SpeciesCode":"SP-3","DietKind":"OMNIVORE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

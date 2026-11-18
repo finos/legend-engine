@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyestuary4::service::AnimalProfileService
+{
+  pattern: '/rescue/v1/animals';
+  title: 'Public Wildlife Rescue Animal Profiles';
+  owners:
+  [
+    'wildlife-rescue-desk'
+  ];
+  documentation: 'Publishes stable wildlife rescue profiles by filtering the mapped intake stream, projecting its public fields, sorting by profile code and limiting the register to the first five profiles.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::duskyestuary4::domain::AnimalProfile.all()->filter(
+      p|$p.healthStatus == 'STABLE'
+    )->sortBy(p|$p.profileCode)->take(5)->graphFetch(
+      #{
+        test::duskyestuary4::domain::AnimalProfile
+        {
+          profileCode,
+          displayName,
+          speciesLabel,
+          weightPounds
+        }
+      }#
+    )->serialize(
+      #{
+        test::duskyestuary4::domain::AnimalProfile
+        {
+          profileCode,
+          displayName,
+          speciesLabel,
+          weightPounds
+        }
+      }#
+    );
+    mapping: test::duskyestuary4::mapping::ProfileMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::duskyestuary4::mapping::ProfileMapping
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          intakeRecord:
+          #{
+            JsonModelConnection
+            {
+              class: test::duskyestuary4::domain::IntakeRecord;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    stableAnimalServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          intakeRecord:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"intakeCode":"IN-17","animalName":"Moss","species":"River Otter","rescueCenter":"Dusky Estuary Care","arrivalDate":"2026-05-10","originRegion":"South Reedbank","intakeWeightKg":10.0,"healthStatus":"STABLE","microchipCode":"MC-017","intakeNote":"Found near the east sluice"}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        stableProfile:
+        {
+          asserts:
+          [
+            serviceProjection:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"profileCode":"IN-17","displayName":"Moss","speciesLabel":"River Otter","weightPounds":22.0462}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

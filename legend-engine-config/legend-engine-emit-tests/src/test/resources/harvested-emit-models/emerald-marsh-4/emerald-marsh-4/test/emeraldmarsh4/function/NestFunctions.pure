@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function test::emeraldmarsh4::function::depthBand(depth: Integer[0..1]): String[0..1]
+{
+  if($depth->isEmpty(),
+     | [],
+     | if($depth->toOne() >= 100,
+          | 'DEEP_POOL',
+          | if($depth->toOne() >= 80,
+               | 'OPEN_WATER',
+               | if($depth->toOne() >= 60,
+                    | 'REED_BED',
+                    | if($depth->toOne() >= 45,
+                         | 'SEDGE',
+                         | if($depth->toOne() >= 30,
+                              | 'WET_MEADOW',
+                              | if($depth->toOne() >= 15,
+                                   | 'MUD_FLAT',
+                                   | if($depth->toOne() >= 5,
+                                        | 'SHALLOW',
+                                        | if($depth->toOne() > 0,
+                                             | 'DAMP',
+                                             | [])))))))))
+}
+
+function test::emeraldmarsh4::function::observerAlias(observer: test::emeraldmarsh4::source::ObserverBlock[0..1]): String[0..1]
+{
+  if($observer.alias->isNotEmpty(), | $observer.alias->toOne()->trim()->toUpper(), | [])
+}
+
+function test::emeraldmarsh4::function::isGuarded(roles: String[*]): Boolean[1]
+{
+  $roles->exists(r|$r == 'LEAD') && ($roles->size() > 1)
+}
+
+function test::emeraldmarsh4::function::isCrowded(eggCount: Integer[1]): Boolean[1]
+{
+  $eggCount >= 4
+}
+
+function test::emeraldmarsh4::function::isFlooded(depthBand: String[0..1]): Boolean[1]
+{
+  $depthBand->isNotEmpty() && $depthBand->toOne()->in(['DEEP_POOL', 'OPEN_WATER'])
+}
+
+function test::emeraldmarsh4::function::nestDigest(incomingEvent: String[1]): String[1]
+{
+  test::emeraldmarsh4::domain::QualifiedNest.all()->graphFetch(
+    #{
+      test::emeraldmarsh4::domain::QualifiedNest{
+        reportRef,
+        kindLabel,
+        tier,
+        guarded,
+        flooded,
+        zoneLabel,
+        observerCount
+      }
+    }#
+  )->serialize(
+    #{
+      test::emeraldmarsh4::domain::QualifiedNest{
+        reportRef,
+        kindLabel,
+        tier,
+        guarded,
+        flooded,
+        zoneLabel,
+        observerCount
+      }
+    }#
+  )
+}

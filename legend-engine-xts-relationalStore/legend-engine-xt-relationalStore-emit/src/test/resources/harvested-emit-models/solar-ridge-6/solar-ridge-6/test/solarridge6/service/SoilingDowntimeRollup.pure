@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarridge6::service::SoilingDowntimeRollup
+{
+  pattern: '/solarridge6/v1/soiling-downtime-rollup';
+  title: 'Solar Ridge - Soiling Band Downtime Rollup';
+  ownership: UserList { users: ['ridge-array-desk'] };
+  documentation: 'Rolls the daily panel-string readings up to one row per derived soiling band, restricted to the readings taken from a given date onwards and to the inverter states named in the collection the endpoint takes. The soiling band folds the inverter state into its heaviest arm in the mapping below the service, so the aggregation surface stays a plain group-by over the derived band.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], inverterStates: String[*]|test::solarridge6::domain::ArrayReading.all()->filter(
+      r|($r.readingDate >= $fromDate) && ($r.inverterState->in($inverterStates))
+    )->groupBy(
+      [
+        r|$r.soilingLabel
+      ],
+      [
+        agg(r|$r.downtimeMinutes, y|$y->sum()),
+        agg(r|$r.stringCode, y|$y->count())
+      ],
+      [
+        'SoilingLabel',
+        'TotalDowntimeMinutes',
+        'Strings'
+      ]
+    )->sort([asc('SoilingLabel')])};
+    mapping: test::solarridge6::mapping::ArrayReadingMapping;
+    runtime: test::solarridge6::runtime::RidgeArrayRuntime;
+  }
+  testSuites:
+  [
+    soilingDowntimeRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          ridgeArray:
+            Relational
+            #{
+              ridge.array_reading:
+                'reading_date,array_code,string_code,tilt_class,inverter_state,panel_count,irradiance_wm2,output_kwh,soiling_pct,downtime_min,observer_note\n'+
+                '2032-03-04,AR-01,ST-01,Steep,ONLINE,20,880.0,40.0,2.0,0,panels rinsed at dawn\n'+
+                '2032-03-04,AR-01,ST-02,Steep,DERATED,20,860.0,30.0,9.5,45,string two derated\n'+
+                '2032-03-05,AR-02,ST-03,Shallow,ONLINE,10,700.0,15.0,1.0,0,\n'+
+                '2032-02-20,AR-02,ST-04,Shallow,OFFLINE,10,0.0,0.0,20.0,600,inverter swapped\n'+
+                '2032-03-06,AR-09,ST-09,Steep,ONLINE,15,900.0,25.0,3.0,0,outside the register\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        runningInvertersFromDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2032-03-01,
+            inverterStates = ['ONLINE', 'DERATED']
+          ]
+          asserts:
+          [
+            threeSoilingBands:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SoilingLabel":"SOIL_HEAVY_DERATED","TotalDowntimeMinutes":45,"Strings":1},{"SoilingLabel":"SOIL_LIGHT","TotalDowntimeMinutes":0,"Strings":1},{"SoilingLabel":"SOIL_MODERATE","TotalDowntimeMinutes":0,"Strings":2}]';
+                  }#;
+              }#
+          ]
+        },
+        offlineInverterCarriesTheHeaviestSoiling:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2032-02-01,
+            inverterStates = ['OFFLINE']
+          ]
+          asserts:
+          [
+            oneHeavyOfflineBand:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SoilingLabel":"SOIL_HEAVY_OFFLINE","TotalDowntimeMinutes":600,"Strings":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

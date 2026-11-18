@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sunlitridge5::service::CultivarCatalogue
+{
+  pattern: '/sunlitridge5/cultivars';
+  title: 'Sunlit Nursery - Cultivar Catalogue';
+  ownership: DID { identifier: 'sunlit-nursery-register' };
+  documentation: 'Lists every cultivar in the nursery catalogue.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::sunlitridge5::domain::Cultivar.all()->project(
+      [
+        c|$c.cultivarCode,
+        c|$c.commonName,
+        c|$c.flowerColour,
+        c|$c.hardinessZone
+      ],
+      [
+        'Cultivar',
+        'Name',
+        'Colour',
+        'Zone'
+      ]
+    );
+    mapping: test::sunlitridge5::mapping::NurseryMapping;
+    runtime: test::sunlitridge5::runtime::NurseryCatalogueRuntime;
+  }
+  testSuites:
+  [
+    cultivarSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          catalogueDb:
+            Relational
+            #{
+              catalogue.cultivar:
+                'cultivar_code,common_name,flower_colour,hardiness_zone\n'+
+                'CV-SALV-1,Meadow Sage,VIOLET,5\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        wholeCatalogue:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            everyCultivarListed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cultivar":"CV-SALV-1","Name":"Meadow Sage","Colour":"VIOLET","Zone":5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

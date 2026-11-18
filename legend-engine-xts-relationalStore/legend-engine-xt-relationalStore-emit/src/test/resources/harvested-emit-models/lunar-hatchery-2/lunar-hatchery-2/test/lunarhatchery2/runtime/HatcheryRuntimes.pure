@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Runtime
+Runtime test::lunarhatchery2::runtime::HatcheryRosterRuntime
+{
+  mappings:
+  [
+    test::lunarhatchery2::mapping::HatcheryRosterMapping
+  ];
+  connections:
+  [
+    test::lunarhatchery2::store::HatcheryDb:
+    [
+      hatcheryH2Connection: test::lunarhatchery2::connection::HatcheryH2Connection
+    ]
+  ];
+}
+
+###Runtime
+Runtime test::lunarhatchery2::runtime::HatcheryReplicaRuntime
+{
+  mappings:
+  [
+    test::lunarhatchery2::mapping::HatcheryRosterMapping
+  ];
+  connections:
+  [
+    test::lunarhatchery2::store::HatcheryDb:
+    [
+      hatcheryReplicaConnection: test::lunarhatchery2::connection::HatcheryReplicaConnection
+    ]
+  ];
+}
+
+###Runtime
+Runtime test::lunarhatchery2::runtime::HatcheryDigestRuntime
+{
+  mappings:
+  [
+    test::lunarhatchery2::mapping::HatcheryDigestM2M
+  ];
+  connections:
+  [
+    test::lunarhatchery2::store::HatcheryDb:
+    [
+      hatcheryH2Connection: test::lunarhatchery2::connection::HatcheryH2Connection
+    ],
+    ModelStore:
+    [
+      hatcheryRosterChain: test::lunarhatchery2::connection::HatcheryRosterChainConnection
+    ]
+  ];
+}
+
+###Runtime
+Runtime test::lunarhatchery2::runtime::HatcheryDigestReplicaRuntime
+{
+  mappings:
+  [
+    test::lunarhatchery2::mapping::HatcheryDigestM2M
+  ];
+  connections:
+  [
+    test::lunarhatchery2::store::HatcheryDb:
+    [
+      hatcheryReplicaConnection: test::lunarhatchery2::connection::HatcheryReplicaConnection
+    ],
+    ModelStore:
+    [
+      hatcheryRosterChain: test::lunarhatchery2::connection::HatcheryRosterChainConnection
+    ]
+  ];
+}

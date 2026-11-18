@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::cedarthicket2::data::ParkTestData
+{
+  Relational
+  #{
+    trailway.trail_run:
+      'run_id,trail_code,trail_name,event_on,snapshot_tag,distance_metres,surface_code\n'+
+      '1,TR-RIDGE,Ridge Loop,2033-05-02,MORNING,4200,GRAVEL\n'+
+      '2,TR-RIDGE,Ridge Loop,2033-05-02,MORNING,4200,GRAVEL\n'+
+      '3,TR-CEDAR,Cedar Cut,2033-05-02,MORNING,1800, boardwalk \n'+
+      '4,TR-CEDAR,Cedar Cut,2033-05-02,EVENING,1800,\n'+
+      '5,TR-MEADOW,Meadow Spur,2033-05-03,MORNING,,PACKED EARTH\n';
+
+    shelter.shelter_stay:
+      'stay_id,shelter_code,shelter_name,zone_code,party_size,nights_booked,valid_thru,registry_code,permit_ref,sequence_no\n'+
+      '11,SH-LARCH,Larch Hut,NORTH,4,2,2033-06-01 00:00:00,RG-0091,PM-77,3\n'+
+      '12,SH-BIRCH,Birch Hut,,2,1,2033-06-15 12:30:00,RG-0104,,8\n'+
+      '13,SH-ALDER,Alder Shelter,SOUTH,6,,2033-05-20 00:00:00,,,\n'+
+      '14,SH-ROWAN,Rowan Bothy,SOUTH,,4,2033-07-04 06:45:00,RG-0117,PM-81,\n';
+  }#
+}

@@ -1,0 +1,171 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import test::azurecove3::survey::*;
+
+Class <<temporal.businesstemporal>> {doc.doc = 'The wide root of the shoreline survey domain. Every schedule, record, sheet and identifier in the model hangs off this class, and its own extent is versioned on a business timeline so a plot can be re-described without losing earlier descriptions.'} test::azurecove3::survey::ShorelinePlot
+{
+  {doc.doc = 'Programme-wide plot code.'} plotCode: String[1];
+  {doc.doc = 'Name the plot is signposted under.'} plotName: String[0..1];
+  {doc.doc = 'Kind of shoreline the plot covers.'} plotType: PlotType[1];
+  {doc.doc = 'Exposure grade assigned by the survey office.'} exposureGrade: ExposureGrade[0..1];
+  {doc.doc = 'Habitat category recorded on the current sheet.'} habitatCategory: HabitatCategory[0..1];
+  {doc.doc = 'Habitat category carried over from superseded sheets.'} legacyHabitatCategory: HabitatCategoryLegacy[0..1];
+  {doc.doc = 'Access arrangement the plot may be surveyed under.'} accessOption: AccessOptionType[0..1];
+  {doc.doc = 'Channel the plot report is published through.'} reportChannel: ReportChannel[0..1];
+  {doc.doc = 'Placement of the primary shoreline marker.'} markerPlacement: MarkerPlacement[0..1];
+  {doc.doc = 'Scope of the stewardship arrangement over the plot.'} stewardshipScope: StewardshipScope[0..1];
+  {doc.doc = 'Stewardship scope as spelled on the alternate sheet.'} alternateStewardshipScope: StewardshipScopeAlternate[0..1];
+  {doc.doc = 'Dominant sediment grade from the last core.'} sedimentGrade: SedimentGrade[0..1];
+  {doc.doc = 'Tide stage the reference reading was taken at.'} referenceTideStage: TideStage[0..1];
+  {doc.doc = 'Method approved for routine survey of the plot.'} approvedMethod: SurveyMethodType[0..1];
+  {doc.doc = 'Quality flag raised against the reference reading.'} referenceQualityFlag: ReadingQualityFlag[0..1];
+  {doc.doc = 'Cove the plot sits in.'} coveName: String[0..1];
+  {doc.doc = 'District the cove is administered from.'} districtName: String[0..1];
+  {doc.doc = 'Shoreline chart sheet the plot appears on.'} chartSheet: String[0..1];
+  {doc.doc = 'Grid reference of the plot centroid.'} gridReference: String[0..1];
+  {doc.doc = 'Plot code as printed on hyphenated legacy sheets.'} 'plot-code-legacy': String[0..1];
+  {doc.doc = 'Combined cove and district label used on outreach material.'} 'cove/district-label': String[0..1];
+  {doc.doc = 'Whether the plot is currently open to field work.'} openToFieldWork: Boolean[0..1];
+  {doc.doc = 'Whether a permit is required before landing on the plot.'} permitRequired: Boolean[0..1];
+  {doc.doc = 'Whether the plot is reachable on foot at low water.'} walkableAtLowWater: Boolean[0..1];
+  {doc.doc = 'Whether the plot is fenced against grazing.'} fenced: Boolean[0..1];
+  {doc.doc = 'Whether the plot is part of the long-term reference set.'} referencePlot: Boolean[0..1];
+  {doc.doc = 'Mapped surface of the plot in hectares.'} areaHectares: Float[0..1];
+  {doc.doc = 'Length of surveyed shoreline in metres.'} shorelineLengthMetres: Float[0..1];
+  {doc.doc = 'Mean slope of the plot in degrees.'} meanSlopeDegrees: Float[0..1];
+  {doc.doc = 'Height of the plot datum above chart datum in metres.'} datumHeightMetres: Float[0..1];
+  {doc.doc = 'Share of the plot covered by vegetation, as a fraction.'} vegetationCoverFraction: Float[0..1];
+  {doc.doc = 'Day the plot was first registered.'} registeredOn: StrictDate[1];
+  {doc.doc = 'Day the plot description was last revised.'} lastRevisedOn: StrictDate[0..1];
+  {doc.doc = 'Day the plot is scheduled to be resurveyed.'} nextSurveyDueOn: StrictDate[0..1];
+  {doc.doc = 'Day the plot was retired from the programme, absent while active.'} retiredOn: StrictDate[0..1];
+  {doc.doc = 'Number of transects walked on the plot.'} transectCount: Integer[0..1];
+  {doc.doc = 'Number of permanent quadrats pegged out on the plot.'} quadratCount: Integer[0..1];
+  {doc.doc = 'Tidal range measured at the plot gauge.'} tidalRange: TidalRangeMeasure[0..1];
+  {doc.doc = 'Sediment depth measured at the plot gauge.'} sedimentDepth: SedimentDepthMeasure[0..1];
+  {doc.doc = 'Salinity value reported for the plot reference sample.'} salinity: SalinityValue[0..1];
+  {doc.doc = 'Turbidity value reported for the plot reference sample.'} turbidity: TurbidityValue[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A window during which tidal readings may be collected on a plot; both this class and the plot it hangs off are milestoned, so traversing the link is a milestoned traversal on both ends.'} test::azurecove3::survey::TidalSamplingWindow
+{
+  {doc.doc = 'First day of the window.'} openFrom: StrictDate[1];
+  {doc.doc = 'Last day of the window.'} openUntil: StrictDate[0..1];
+  {doc.doc = 'Number of readings the window calls for.'} readingTarget: Integer[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A window during which sediment cores may be taken on a plot.'} test::azurecove3::survey::SedimentSamplingWindow
+{
+  {doc.doc = 'First day of the window.'} openFrom: StrictDate[1];
+  {doc.doc = 'Last day of the window.'} openUntil: StrictDate[0..1];
+  {doc.doc = 'Number of cores the window calls for.'} coreTarget: Integer[0..1];
+  {doc.doc = 'Depth each core should reach in centimetres.'} coreDepthCm: Float[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A window during which vegetation cover is scored on a plot.'} test::azurecove3::survey::VegetationSurveyWindow
+{
+  {doc.doc = 'First day of the window.'} openFrom: StrictDate[1];
+  {doc.doc = 'Last day of the window.'} openUntil: StrictDate[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A window during which water samples may be drawn on a plot.'} test::azurecove3::survey::WaterQualityWindow
+{
+  {doc.doc = 'First day of the window.'} openFrom: StrictDate[1];
+  {doc.doc = 'Last day of the window.'} openUntil: StrictDate[0..1];
+  {doc.doc = 'Tide stage the samples must be drawn at.'} requiredTideStage: TideStage[0..1];
+  {doc.doc = 'Number of samples the window calls for.'} sampleTarget: Integer[0..1];
+  {doc.doc = 'Laboratory holding time in hours.'} holdingTimeHours: Float[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A spring-tide window: a sampling window specialisation that adds a business timeline of its own on top of a base class declared outside this module, so an inheritance edge and a milestoning stereotype meet on one class.'} test::azurecove3::survey::SpringTideWindow extends test::azurecove3::reference::SamplingWindowBase
+{
+}
+
+Class {doc.doc = 'Named specialisation of the external gauge measure base for tidal range; it adds nothing and exists only to give the measure a name.'} test::azurecove3::survey::TidalRangeMeasure extends test::azurecove3::reference::GaugeMeasureBase
+{
+}
+
+Class {doc.doc = 'Named specialisation of the external gauge measure base for sediment depth.'} test::azurecove3::survey::SedimentDepthMeasure extends test::azurecove3::reference::GaugeMeasureBase
+{
+}
+
+Class {doc.doc = 'Named specialisation of the external reading value base for salinity.'} test::azurecove3::survey::SalinityValue extends test::azurecove3::reference::ReadingValueBase
+{
+}
+
+Class {doc.doc = 'Named specialisation of the external reading value base for turbidity; the only local addition is the rate at which the reading is drifting.'} test::azurecove3::survey::TurbidityValue extends test::azurecove3::reference::ReadingValueBase
+{
+  {doc.doc = 'Change in the reading per hour of observation.'} changeRatePerHour: Float[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A habitat observation filed against a plot. It specialises an external observation feature base and carries a processing timeline, so reaching it from the business-milestoned plot crosses two temporal regimes; the body is empty because the stereotype and the inheritance edge are the whole of it.'} test::azurecove3::survey::HabitatObservation extends test::azurecove3::reference::ObservationFeatureBase
+{
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A record of who was granted access to a plot and under what arrangement.'} test::azurecove3::survey::PlotAccessRecord
+{
+  {doc.doc = 'Access arrangement granted.'} grantedOption: AccessOptionType[1];
+  {doc.doc = 'Day the arrangement takes effect.'} effectiveFrom: StrictDate[1];
+  {doc.doc = 'Warden who signed the arrangement off.'} approvedBy: String[0..1];
+  {doc.doc = 'Reason a seasonal closure overrides the arrangement.'} closureReason: ClosureReason[0..1];
+}
+
+Class {doc.doc = 'The flat reporting sheet published for a plot: a wide row of mostly optional free-text fields transcribed from the paper original.'} test::azurecove3::survey::PlotReportingSheet
+{
+  {doc.doc = 'Sheet reference printed in the header.'} sheetReference: String[1];
+  {doc.doc = 'Cove label transcribed from the sheet.'} coveLabel: String[0..1];
+  {doc.doc = 'District label transcribed from the sheet.'} districtLabel: String[0..1];
+  {doc.doc = 'Warden district office named on the sheet.'} wardenOffice: String[0..1];
+  {doc.doc = 'Surveyor named on the sheet.'} surveyorName: String[0..1];
+  {doc.doc = 'Second surveyor named on the sheet.'} secondSurveyorName: String[0..1];
+  {doc.doc = 'Weather note transcribed from the sheet.'} weatherNote: String[0..1];
+  {doc.doc = 'Sea state note transcribed from the sheet.'} seaStateNote: String[0..1];
+  {doc.doc = 'Access note transcribed from the sheet.'} accessNote: String[0..1];
+  {doc.doc = 'Vegetation note transcribed from the sheet.'} vegetationNote: String[0..1];
+  {doc.doc = 'Sediment note transcribed from the sheet.'} sedimentNote: String[0..1];
+  {doc.doc = 'Bird note transcribed from the sheet.'} birdNote: String[0..1];
+  {doc.doc = 'Invertebrate note transcribed from the sheet.'} invertebrateNote: String[0..1];
+  {doc.doc = 'Litter note transcribed from the sheet.'} litterNote: String[0..1];
+  {doc.doc = 'Erosion note transcribed from the sheet.'} erosionNote: String[0..1];
+  {doc.doc = 'Grazing note transcribed from the sheet.'} grazingNote: String[0..1];
+  {doc.doc = 'Signage note transcribed from the sheet.'} signageNote: String[0..1];
+  {doc.doc = 'Photograph reference written on the sheet.'} photographReference: String[0..1];
+  {doc.doc = 'Sample bag references written on the sheet.'} sampleBagReference: String[0..1];
+  {doc.doc = 'Laboratory note written on the sheet.'} laboratoryNote: String[0..1];
+  {doc.doc = 'Follow-up note written on the sheet.'} followUpNote: String[0..1];
+  {doc.doc = 'Sheet reference as written on hyphenated legacy paper.'} 'sheet-reference-legacy': String[0..1];
+  {doc.doc = 'Combined surveyor and warden attribution line from the sheet footer.'} 'surveyor/warden-attribution': String[0..1];
+}
+
+Class {doc.doc = 'An identifier minted for a plot by an external scheme; the class is not milestoned, giving a non-versioned contrast to the milestoned graph around it.'} test::azurecove3::survey::PlotIdentifierRecord
+{
+  {doc.doc = 'Identifier value.'} identifierValue: String[1];
+  {doc.doc = 'Scheme the identifier belongs to.'} schemeName: String[0..1];
+}
+
+Class {doc.doc = 'A contact point for the party responsible for a shoreline segment mark.'} test::azurecove3::survey::SurveyPartyContact
+{
+  {doc.doc = 'Name of the contact.'} contactName: String[1];
+  {doc.doc = 'Telephone number of the contact.'} contactTelephone: String[0..1];
+  {doc.doc = 'Whether the contact is the out-of-hours call.'} outOfHours: Boolean[0..1];
+}
+
+Class {doc.doc = 'A permanent mark set along the shoreline; marks are physical and carry no temporal semantics.'} test::azurecove3::survey::ShorelineSegmentMark
+{
+  {doc.doc = 'Mark code stamped on the post.'} markCode: String[1];
+  {doc.doc = 'Height of the mark above chart datum in metres.'} heightAboveDatumMetres: Float[0..1];
+  {doc.doc = 'Placement of the mark relative to the tide line.'} placement: MarkerPlacement[0..1];
+}

@@ -1,0 +1,51 @@
+name: jade-cavern-3
+title: "Jade Cavern 3 — point-in-time karst survey span service with a pre-projection predicate, subtype casts and a tabular post-filter"
+description: |
+  A single-execution service over a business-temporal karst survey register. Its one date
+  parameter does four jobs at once: it opens the temporal extent of the survey-leg class, it is
+  compared against the leg's declared validity start, validity end and logging date inside a
+  deeply nested boolean predicate, it is threaded into the milestoned passage property that every
+  navigated column resolves, and it is handed to a parameterised derivation that nets the resolved
+  roof height against the leg's spoil allowance. The wide column list mixes plain stored values,
+  navigated milestoned values, two casts down to concrete passage specifications whose extra
+  dimensions live on the same specification table, the parameterised derivation and an arithmetic
+  span total. A second predicate then runs over the projected rows rather than the store, keeping
+  only a graded leg whose net span falls outside the tolerated band, so the generated plan carries
+  the temporal resolution and first predicate in SQL and applies the second on the tabular result.
+  Its test data holds legs inside and outside the effective window, both specification kinds, a
+  specification whose cast has no value to read, and spans on either side of the band thresholds.
+modelSources:
+  model:
+    root: jade-cavern-3
+    files:
+      - test/jadecavern3/connection/CavernH2Connection.pure
+      - test/jadecavern3/domain/CavernDomain.pure
+      - test/jadecavern3/mapping/CavernMapping.pure
+      - test/jadecavern3/runtime/CavernRuntime.pure
+      - test/jadecavern3/service/SurveyLegSpanAsOf.pure
+      - test/jadecavern3/store/CavernDatabase.pure
+features:
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - h2
+  - karst-survey
+  - parameterised-qualified-property
+  - point-in-time
+  - post-projection-filter
+  - relational-service
+  - subtype-cast

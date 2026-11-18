@@ -1,0 +1,401 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarbeacon6::service::StationRegisterService
+{
+  pattern: '/cedarbeacon6/v1/station-register';
+  title: 'Cedar Beacon 6 - Station Register';
+  ownership: UserList { users: ['beacon-network-desk'] };
+  documentation: 'Publishes every commissioned beacon with the altitude it stands at raised by the survey margin and the calendar month it was commissioned in, so the register carries two derived columns over an unfiltered station relation.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|test::cedarbeacon6::domain::BeaconStation.all()->project(
+      [
+        s|$s.stationCode,
+        s|$s.massifCode,
+        s|$s.altitudeM + 100,
+        s|$s.commissionedOn->monthNumber()
+      ],
+      [
+        'StationCode',
+        'MassifCode',
+        'AltitudePlusMargin',
+        'CommissionMonth'
+      ]
+    )};
+    mapping: test::cedarbeacon6::mapping::StationMapping;
+    runtime: test::cedarbeacon6::runtime::StationRuntime;
+  }
+  testSuites:
+  [
+    stationRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconConnection:
+            Relational
+            #{
+              network.beacon_station:
+                'station_id,station_code,station_name,massif_code,altitude_m,commissioned_on\n'+
+                '1,ST-101,North Col Beacon,MS-NORTH,2140,2024-05-14\n'+
+                '2,ST-102,South Saddle Beacon,MS-SOUTH,1870,2025-03-02\n'+
+                '3,ST-103,East Ridge Beacon,MS-NORTH,2405,2025-11-21\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyStationCarriesBothDerivedColumns:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeStationsWithMarginAndMonth:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"ST-101","MassifCode":"MS-NORTH","AltitudePlusMargin":2240,"CommissionMonth":5},{"StationCode":"ST-102","MassifCode":"MS-SOUTH","AltitudePlusMargin":1970,"CommissionMonth":3},{"StationCode":"ST-103","MassifCode":"MS-NORTH","AltitudePlusMargin":2505,"CommissionMonth":11}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::cedarbeacon6::service::BatteryWindowRegisterService
+{
+  pattern: '/cedarbeacon6/v1/battery-window-register';
+  title: 'Cedar Beacon 6 - Battery Window Register';
+  ownership: UserList { users: ['beacon-power-desk'] };
+  documentation: 'Publishes the battery inspections that fall in the thirty days up to a requested date and that still held at least the requested charge, so the window floor is computed from the caller argument rather than stored.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], minCharge: Float[1]|test::cedarbeacon6::domain::BatteryCheck.all()->filter(
+      c|(($c.checkedOn <= $asOf) && (($c.chargePercent >= $minCharge) && ($c.checkedOn >= $asOf->adjust(-30, meta::pure::functions::date::DurationUnit.DAYS))))
+    )->project(
+      [
+        c|$c.checkCode,
+        c|$c.stationCode,
+        c|$c.chargePercent,
+        c|$c.checkedOn->year()
+      ],
+      [
+        'CheckCode',
+        'StationCode',
+        'ChargePercent',
+        'CheckYear'
+      ]
+    )};
+    mapping: test::cedarbeacon6::mapping::BatteryMapping;
+    runtime: test::cedarbeacon6::runtime::BatteryRuntime;
+  }
+  testSuites:
+  [
+    batteryWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconConnection:
+            Relational
+            #{
+              power.battery_check:
+                'check_id,check_code,station_code,checked_on,charge_percent,cell_kind\n'+
+                '1,BC-501,ST-101,2026-05-04,82.5,LITHIUM\n'+
+                '2,BC-502,ST-102,2026-05-18,31.0,LITHIUM\n'+
+                '3,BC-503,ST-103,2026-04-27,90.0,NICKEL\n'+
+                '4,BC-504,ST-101,2026-05-22,12.5,NICKEL\n'+
+                '5,BC-505,ST-102,2026-06-10,55.0,LITHIUM\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothChargedPacksInsideTheWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-31,
+            minCharge = 25.0
+          ]
+          asserts:
+          [
+            twoPacksSurviveAllThreeArms:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"BC-501","StationCode":"ST-101","ChargePercent":82.5,"CheckYear":2026},{"CheckCode":"BC-502","StationCode":"ST-102","ChargePercent":31.0,"CheckYear":2026}]';
+                  }#;
+              }#
+          ]
+        },
+        aWindowThatShiftsBackWithTheRequestedDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-10,
+            minCharge = 25.0
+          ]
+          asserts:
+          [
+            theEarlierPackNowClearsTheShiftedFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"BC-501","StationCode":"ST-101","ChargePercent":82.5,"CheckYear":2026},{"CheckCode":"BC-503","StationCode":"ST-103","ChargePercent":90.0,"CheckYear":2026}]';
+                  }#;
+              }#
+          ]
+        },
+        aChargeFloorNoPackClears:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-31,
+            minCharge = 95.0
+          ]
+          asserts:
+          [
+            noPacksAtAll:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::cedarbeacon6::service::ReadingQualityRegisterService
+{
+  pattern: '/cedarbeacon6/v1/reading-quality-register';
+  title: 'Cedar Beacon 6 - Reading Quality Register';
+  ownership: UserList { users: ['beacon-telemetry-desk'] };
+  documentation: 'Publishes the weak telemetry samples taken on or after a requested date and before the summer cutoff, so both ends of the reporting span are decided by the dates themselves rather than by a stored flag.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1]|test::cedarbeacon6::domain::SignalReading.all()->filter(
+      r|(($r.recordedOn >= $fromDate) && (($r.recordedOn < %2026-07-01) && ($r.signalStrengthDb < 42.5)))
+    )->project(
+      [
+        r|$r.readingCode,
+        r|$r.recordedOn,
+        r|$r.signalStrengthDb
+      ],
+      [
+        'ReadingCode',
+        'RecordedOn',
+        'SignalStrengthDb'
+      ]
+    )};
+    mapping: test::cedarbeacon6::mapping::ReadingMapping;
+    runtime: test::cedarbeacon6::runtime::ReadingRuntime;
+  }
+  testSuites:
+  [
+    readingQualitySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          telemetryConnection:
+            Relational
+            #{
+              telemetry.signal_reading:
+                'reading_id,reading_code,station_code,recorded_on,signal_strength_db,receiver_code\n'+
+                '1,SR-301,ST-101,2026-05-04,51.5,RX-VALLEY\n'+
+                '2,SR-302,ST-102,2026-05-18,38.25,RX-PASS\n'+
+                '3,SR-303,ST-103,2026-06-02,44.0,RX-VALLEY\n'+
+                '4,SR-304,ST-101,2026-06-19,29.75,RX-PASS\n'+
+                '5,SR-305,ST-102,2026-04-20,22.0,RX-VALLEY\n'+
+                '6,SR-306,ST-103,2026-07-15,30.5,RX-PASS\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyTheWeakSamplesInsideTheSpan:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-05-01
+          ]
+          asserts:
+          [
+            twoWeakSamples:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingCode":"SR-302","RecordedOn":"2026-05-18","SignalStrengthDb":38.25},{"ReadingCode":"SR-304","RecordedOn":"2026-06-19","SignalStrengthDb":29.75}]';
+                  }#;
+              }#
+          ]
+        },
+        aLaterStartThatDropsTheFirstWeakSample:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-06-01
+          ]
+          asserts:
+          [
+            oneWeakSample:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingCode":"SR-304","RecordedOn":"2026-06-19","SignalStrengthDb":29.75}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::cedarbeacon6::service::RouteReachRegisterService
+{
+  pattern: '/cedarbeacon6/v1/route-reach-register';
+  title: 'Cedar Beacon 6 - Route Reach Register';
+  ownership: UserList { users: ['beacon-patrol-desk'] };
+  documentation: 'Publishes the walked routes of one massif that cover at least a requested distance, so a massif with no long route reports nothing rather than falling back to the whole terrain relation.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {massifCode: String[1], minDistanceKm: Float[1]|test::cedarbeacon6::domain::PatrolRoute.all()->filter(
+      r|(($r.massifCode == $massifCode) && ($r.distanceKm >= $minDistanceKm))
+    )->project(
+      [
+        r|$r.routeCode,
+        r|$r.routeName,
+        r|$r.distanceKm,
+        r|$r.waypointCount
+      ],
+      [
+        'RouteCode',
+        'RouteName',
+        'DistanceKm',
+        'WaypointCount'
+      ]
+    )};
+    mapping: test::cedarbeacon6::mapping::RouteMapping;
+    runtime: test::cedarbeacon6::runtime::RouteRuntime;
+  }
+  testSuites:
+  [
+    routeReachSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          telemetryConnection:
+            Relational
+            #{
+              terrain.patrol_route:
+                'route_id,route_code,route_name,massif_code,distance_km,waypoint_count\n'+
+                '1,RT-201,North Col Traverse,MS-NORTH,12.5,8\n'+
+                '2,RT-202,South Saddle Loop,MS-SOUTH,6.25,4\n'+
+                '3,RT-203,East Ridge Line,MS-NORTH,9.0,6\n'+
+                '4,RT-204,North Col Short Cut,MS-NORTH,4.0,3\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theLongRoutesOfTheNorthMassif:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            massifCode = 'MS-NORTH',
+            minDistanceKm = 8.0
+          ]
+          asserts:
+          [
+            twoLongNorthRoutes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RouteCode":"RT-201","RouteName":"North Col Traverse","DistanceKm":12.5,"WaypointCount":8},{"RouteCode":"RT-203","RouteName":"East Ridge Line","DistanceKm":9.0,"WaypointCount":6}]';
+                  }#;
+              }#
+          ]
+        },
+        aMassifWithNoLongRoute:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            massifCode = 'MS-SOUTH',
+            minDistanceKm = 8.0
+          ]
+          asserts:
+          [
+            noRoutesForTheSouthMassif:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+name: teal-meadow-3
+title: "Teal Meadow 3 — A Butterfly Transect Register Whose Two Recording Slots Are Unioned By An Operation Set Implementation"
+description: |
+  A meadow reserve walks its butterfly transects twice a day and keeps the dawn walks
+  and the dusk walks in two separate relations of the same shape.
+
+  The walk class is mapped by an operation set implementation that unions the two
+  relational set implementations, so a query over the class sees both recording slots
+  as one population. Each branch declares its own primary key and main table and
+  reaches the species name across its own named equality join onto the shared species
+  relation, so the two branches contribute the same columns from different tables.
+
+  The species class itself is mapped by a second mapping that the walk mapping pulls
+  in by inclusion rather than by the walk mapping.
+
+  Two mapping test suites cover the register in Relation grammar: one projects the
+  unioned walks sorted by walk code, so both branches and both joins are visible in
+  one relation, and the other projects the species contributed by the included
+  mapping.
+modelSources:
+  model:
+    root: teal-meadow-3
+    files:
+      - test/tealmeadow3/connection/MeadowConnection.pure
+      - test/tealmeadow3/domain/MeadowDomain.pure
+      - test/tealmeadow3/mapping/SpeciesBaseMapping.pure
+      - test/tealmeadow3/mapping/WalkMapping.pure
+      - test/tealmeadow3/runtime/MeadowRuntime.pure
+      - test/tealmeadow3/store/MeadowDb.pure
+features:
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-class-mapping-extends
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: basic
+tags:
+  - butterfly-transect
+  - class-mapping-extends
+  - duckdb
+  - h2
+  - join-reached-column
+  - mapping-include
+  - mapping-test
+  - operation-mapping
+  - relation
+  - relational
+  - union

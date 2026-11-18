@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::silverreef2::store::ReefDB
+(
+  Schema reef
+  (
+    Table reef_survey
+    (
+      survey_no VARCHAR(24) PRIMARY KEY,
+      site_code VARCHAR(12) NOT NULL,
+      survey_date DATE NOT NULL,
+      health_code VARCHAR(8),
+      tide_code VARCHAR(8),
+      zone_code VARCHAR(8),
+      observer_name VARCHAR(64),
+      transect_m DECIMAL(9, 2),
+      coral_cover_pct DECIMAL(5, 2),
+      rubble_pct DECIMAL(5, 2),
+      water_temp_c DECIMAL(5, 2),
+      visibility_m INTEGER,
+      species_count INTEGER,
+      bleach_index INTEGER,
+      lagoon_name VARCHAR(48),
+      survey_note VARCHAR(96)
+    )
+
+    Table survey_depth
+    (
+      survey_no VARCHAR(24) PRIMARY KEY,
+      min_depth_m DECIMAL(6, 2) NOT NULL,
+      max_depth_m DECIMAL(6, 2) NOT NULL,
+      profile_note VARCHAR(64)
+    )
+
+    Table survey_gear
+    (
+      survey_no VARCHAR(24) PRIMARY KEY,
+      gear_kind VARCHAR(16) NOT NULL,
+      gear_serial VARCHAR(24),
+      calibrated_flag VARCHAR(4)
+    )
+
+    Table code_list
+    (
+      category_code VARCHAR(12) PRIMARY KEY,
+      code_value VARCHAR(8) PRIMARY KEY,
+      code_label VARCHAR(48) NOT NULL
+    )
+  )
+
+  Join Survey_Depth(reef.reef_survey.survey_no = reef.survey_depth.survey_no)
+  Join Survey_Gear(reef.reef_survey.survey_no = reef.survey_gear.survey_no)
+  Join Survey_HealthCode(reef.reef_survey.health_code = reef.code_list.code_value and reef.code_list.category_code = 'HEALTH')
+  Join Survey_ZoneCode(reef.reef_survey.zone_code = reef.code_list.code_value and reef.code_list.category_code = 'ZONE')
+)

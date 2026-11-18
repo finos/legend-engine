@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::quietridge2::store::RidgeMastDb
+(
+  Schema ridge
+  (
+    Table mast_artifact
+    (
+      artifact_id INTEGER PRIMARY KEY,
+      artifact_code VARCHAR(16),
+      ridge_name VARCHAR(128),
+      artifact_kind VARCHAR(16),
+      dish_diameter_cm INTEGER,
+      retired_flag VARCHAR(1)
+    )
+    Table mast_check
+    (
+      check_id INTEGER PRIMARY KEY,
+      artifact_id INTEGER,
+      check_code VARCHAR(16),
+      check_grade VARCHAR(8)
+    )
+  )
+  Join Artifact_Check(ridge.mast_artifact.artifact_id = ridge.mast_check.artifact_id)
+  Filter ActiveMast(ridge.mast_artifact.retired_flag = 'N')
+  Filter DishMastOnly(ridge.mast_artifact.artifact_kind = 'dish')
+)

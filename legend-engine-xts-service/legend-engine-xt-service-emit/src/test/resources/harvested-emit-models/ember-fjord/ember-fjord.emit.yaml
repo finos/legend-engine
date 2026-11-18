@@ -1,0 +1,41 @@
+name: ember-fjord
+title: "Ember Fjord - defaulted model-to-model transforms over a deeply nested survey document"
+description: |
+  A night-survey document arrives three levels deep, with an optional plate identifier and a
+  collection of sightings whose variability class may be absent. One flat published summary is
+  projected out of it: a two-hop traversal through the optional intermediates, three two-armed
+  conditionals over the sub-collection filtered on that class - defaulting to an empty string
+  and to a negative magnitude sentinel - and a count guarded on emptiness. A mapping test suite
+  walks the branch matrix document by document, and a store-less single-execution service
+  graph-fetches and serialises the same tree over a model-store runtime.
+modelSources:
+  model:
+    root: ember-fjord
+    files:
+      - test/emberfjord/domain/PlateSummary.pure
+      - test/emberfjord/mapping/PlateSummaryMapping.pure
+      - test/emberfjord/runtime/PlateSummaryRuntime.pure
+      - test/emberfjord/service/PlateSummaries.pure
+      - test/emberfjord/source/SurveyRunFeed.pure
+
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: basic
+tags:
+  - branch-coverage
+  - conditional-transform
+  - graph-fetch
+  - literal-default
+  - model-to-model
+  - nested-source
+  - store-less

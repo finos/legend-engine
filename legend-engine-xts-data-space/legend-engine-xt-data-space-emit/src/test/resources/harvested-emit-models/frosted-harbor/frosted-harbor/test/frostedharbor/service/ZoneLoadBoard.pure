@@ -1,0 +1,123 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedharbor::service::ZoneLoadBoard
+{
+  pattern: '/frostedharbor/v1/zoneload/{minMass}';
+  ownership: UserList { users: ['harbor-berthing-desk'] };
+  documentation: 'Queries the load root that is routed by a union across two backing populations, so each returned row carries the inherited record code, the enumeration translated from either kind label, a roster label read through a view and the literal source marker of the side it came from. A mass floor and a kind membership test narrow the result.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minMass: Integer[1]|test::frostedharbor::domain::CargoLoad.all()->filter(
+      c|($c.massKg >= $minMass) &&
+        ($c.kind->in([test::frostedharbor::domain::CargoKind.Crate, test::frostedharbor::domain::CargoKind.Drum]))
+    )->project(
+      [
+        c|$c.recordCode,
+        c|$c.kind,
+        c|$c.massKg,
+        c|$c.rosterLabel,
+        c|$c.sourceKind
+      ],
+      [
+        'Load',
+        'Kind',
+        'MassKg',
+        'Roster',
+        'Source'
+      ]
+    )->sort(
+      [
+        asc('Load')
+      ]
+    )};
+    mapping: test::frostedharbor::mapping::HarborMapping;
+    runtime: test::frostedharbor::runtime::HarborQuaysideRuntime;
+  }
+  testSuites:
+  [
+    zoneLoadSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harborQuaysideConnection:
+            Relational
+            #{
+              harbor.cargo_unit:
+                'unit_id,unit_code,assignment_id,kind_label,mass_kg,logged_by,status_code\n'+
+                '1,CU-01,1,CRATE,1200,quay-crew,A\n'+
+                '2,CU-02,1,PALLET,300,quay-crew,A\n'+
+                '3,CU-03,2,DRUM,900,quay-crew,A\n'+
+                '4,CU-04,2,CRATE,150,quay-crew,X\n';
+
+              harbor.relay_unit:
+                'unit_id,unit_code,assignment_id,kind_label,mass_kg,logged_by,status_code\n'+
+                '1,RU-01,1,DRUM,700,relay-crew,A\n'+
+                '2,RU-02,3,CRATE,450,relay-crew,A\n'+
+                '3,RU-03,3,PALLET,800,relay-crew,X\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        aboveFourHundred:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minMass = 400
+          ]
+          asserts:
+          [
+            bothSidesContributeCratesAndDrums:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Load":"CU-01","Kind":"Crate","MassKg":1200,"Roster":"ROSTER-CRATE","Source":"QUAYSIDE"},{"Load":"CU-03","Kind":"Drum","MassKg":900,"Roster":"ROSTER-DRUM","Source":"QUAYSIDE"},{"Load":"RU-01","Kind":"Drum","MassKg":700,"Roster":"RELAY-DRUM","Source":"RELAY"},{"Load":"RU-02","Kind":"Crate","MassKg":450,"Roster":"RELAY-CRATE","Source":"RELAY"}]';
+                  }#;
+              }#
+          ]
+        },
+        aboveOneThousand:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minMass = 1000
+          ]
+          asserts:
+          [
+            onlyTheHeaviestQuaysideLoadSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Load":"CU-01","Kind":"Crate","MassKg":1200,"Roster":"ROSTER-CRATE","Source":"QUAYSIDE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlyprairie3::service::RingingDigestFeed
+{
+  pattern: '/kindlyprairie3/ringingDigestFeed';
+  title: 'Kindly Prairie 3 - Ringing Digest Feed';
+  documentation: 'Publishes the ring identity and banded sward assessment of each refined ringing record through a single execution over the ringing digest transformation. The runtime is declared inline on the service and binds the inbound sheet row through a model store JSON connection.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::kindlyprairie3::domain::RingingDigest.all()->graphFetch(
+      #{
+        test::kindlyprairie3::domain::RingingDigest{
+          ringKey,
+          habitat{
+            band
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::kindlyprairie3::domain::RingingDigest{
+          ringKey,
+          habitat{
+            band
+          }
+        }
+      }#
+    );
+    mapping: test::kindlyprairie3::mapping::RingingDigestM2M;
+    runtime:
+    #{
+      mappings:
+      [
+        test::kindlyprairie3::mapping::RingingDigestM2M
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          inboundRingingSheetRows:
+          #{
+            JsonModelConnection
+            {
+              class: test::kindlyprairie3::domain::RingingSheetRow;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    tallgrassRowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inboundRingingSheetRows:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"sheetRef":" prs-301 ","registryCode":"prairie-ringing","rawRingCode":" rg-915 ","rawHabitat":" tallgrass ","rawMassGrams":"22.5","captures":[{"captureCode":"c-31","ringApplied":true}]}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        tallgrassBandIsPublishedWithTheRingKey:
+        {
+          asserts:
+          [
+            oneTallgrassDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"ringKey":"PRS-301","habitat":{"band":"TALLGRASS SWARD"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    unsurveyedRowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inboundRingingSheetRows:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"sheetRef":"prs-302","registryCode":"prairie-ringing","captures":[]}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everySwardDefaultAppliesToABareRow:
+        {
+          asserts:
+          [
+            oneUnsurveyedDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"ringKey":"PRS-302","habitat":{"band":"UNSURVEYED"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

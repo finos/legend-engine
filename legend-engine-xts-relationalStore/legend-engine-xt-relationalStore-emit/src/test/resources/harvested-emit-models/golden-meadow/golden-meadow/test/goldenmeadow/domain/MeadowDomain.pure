@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::goldenmeadow::domain::*;
+import test::goldenmeadow::profile::*;
+import meta::pure::profiles::*;
+
+Class <<temporal.businesstemporal, MeadowMeta.surveyed>> {MeadowMeta.steward = 'meadow-survey', MeadowMeta.reviewCadence = 'seasonal', doc.doc = 'A surveyed patch of meadow flora, versioned along the business window the survey office publishes it against.'} test::goldenmeadow::domain::PollinatorPatch
+{
+  {doc.doc = 'Survey-wide identifier of the patch.'} patchCode: String[1];
+  {doc.doc = 'Name the patch is published under.'} patchName: String[1];
+  {doc.doc = 'Code of the dominant flora recorded on the patch.'} floraCode: String[1];
+  {doc.doc = 'Recorded bloom index of the patch, nought when nothing is in flower.'} bloomIndex: Integer[1];
+
+  {doc.doc = 'Bloom band of the patch, cascading over the recorded bloom index down to a dormant floor.'}
+  bloomBand()
+  {
+    if($this.bloomIndex >= 90,
+       | 'PEAK',
+       | if($this.bloomIndex >= 70,
+            | 'HIGH',
+            | if($this.bloomIndex >= 50,
+                 | 'STEADY',
+                 | if($this.bloomIndex >= 30,
+                      | 'EASING',
+                      | if($this.bloomIndex >= 10,
+                           | 'SPARSE',
+                           | if($this.bloomIndex >= 1,
+                                | 'TRACE',
+                                | 'DORMANT'))))))
+  }: String[1];
+
+  {doc.doc = 'Label of the patch, folding the flora code into the published name.'}
+  displayLabel()
+  {
+    $this.patchName->trim() + ' [' + $this.floraCode->toUpper()->trim() + ']'
+  }: String[1];
+
+  {doc.doc = 'Whether the patch carries a flora code the survey recognises.'}
+  floraRecognised()
+  {
+    $this.floraCode->toUpper()->trim()->in(['CLOVER', 'VETCH', 'KNAPWEED', 'SCABIOUS'])
+  }: Boolean[1];
+
+  {doc.doc = 'Name of the crew answering for the patch on a calendar instant, resolved across the milestoned association.'}
+  stewardName(onDate: Date[1])
+  {
+    $this.crew($onDate).crewName->toOne()->trim()
+  }: String[1];
+
+  {doc.doc = 'Depot the answering crew reports to on a calendar instant, reached through the same milestoned association.'}
+  stewardDepot(onDate: Date[1])
+  {
+    $this.crew($onDate).depotCode->toOne()->toUpper()
+  }: String[1];
+}
+
+Class <<temporal.businesstemporal, MeadowMeta.governed>> {MeadowMeta.reviewCadence = 'annual', doc.doc = 'A crew on the survey roster, versioned along the business window the roster is published against.'} test::goldenmeadow::domain::StewardCrew
+{
+  {doc.doc = 'Roster identifier of the crew.'} stewardCode: String[1];
+  {doc.doc = 'Name the crew is published under.'} crewName: String[1];
+  {doc.doc = 'Depot the crew reports to.'} depotCode: String[1];
+}
+
+Association {doc.doc = 'The crew answering for a patch, milestoned on the business timeline both ends share.'} test::goldenmeadow::domain::Patch_Crew
+{
+  {doc.doc = 'The patches the crew answers for.'} stewardedPatch: PollinatorPatch[*];
+  {doc.doc = 'The crew answering for the patch.'} crew: StewardCrew[0..1];
+}

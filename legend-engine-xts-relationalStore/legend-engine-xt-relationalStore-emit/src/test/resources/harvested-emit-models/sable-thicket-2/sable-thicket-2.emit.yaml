@@ -1,0 +1,51 @@
+name: sable-thicket-2
+title: "Sable Thicket 2 — Carillon Casting Register: Four Closed Sets, Nested String Composition and a Two-Hop District Label"
+description: |
+  A bell-foundry carillon register whose single wide casting class is bound to an
+  explicitly aliased main table under a composite primary key. Two enumerations
+  are declared beside the class and two more are imported from a separate
+  reference unit, and four enumeration mappings collapse several stored
+  spellings each onto one member. Three property bindings are string
+  compositions rather than column reads — the deepest nests an upper-cased,
+  trimmed join-reached workshop name inside two concatenations — two more are
+  constants the store is never consulted for, and five properties are reached
+  through the store's function-bearing joins, two of them over a second hop to
+  the founder district. A mapping test suite seeds all four tables, including a
+  casting whose workshop code has no counterpart and one with no tuning pass, so
+  the unmatched-hop nulls and the collapsed string segment are asserted beside
+  the fully resolved rows.
+modelSources:
+  model:
+    root: sable-thicket-2
+    files:
+      - test/sablethicket2/domain/CarillonDomain.pure
+      - test/sablethicket2/mapping/CarillonMapping.pure
+      - test/sablethicket2/reference/FoundryEnums.pure
+      - test/sablethicket2/store/CarillonDB.pure
+features:
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - carillon-register
+  - composite-primary-key
+  - duckdb
+  - dyna-function
+  - enumeration-mapping
+  - inner-join
+  - main-table-alias
+  - mapping-test
+  - multi-hop-join
+  - relational
+  - string-transform

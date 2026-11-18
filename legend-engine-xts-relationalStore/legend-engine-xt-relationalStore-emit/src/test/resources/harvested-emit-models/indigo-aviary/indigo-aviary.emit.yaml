@@ -1,0 +1,56 @@
+name: indigo-aviary
+title: "Indigo Aviary — wind turbine condition register"
+description: |
+  A non-financial condition-monitoring model for wind-farm turbines, nacelles,
+  sensor observations, inspection visits, site sectors, maintenance work items
+  and downtime events. It exercises temporal reads, relational mappings,
+  inheritance, grouped views, enum decoding and tested operational queries.
+modelSources:
+  model:
+    root: indigo-aviary
+    files:
+      - test/indigoaviary/connection/AviaryConnections.pure
+      - test/indigoaviary/data/AviaryTestData.pure
+      - test/indigoaviary/domain/AviaryDomain.pure
+      - test/indigoaviary/function/AviaryFunctions.pure
+      - test/indigoaviary/mapping/AviaryBaseMapping.pure
+      - test/indigoaviary/mapping/AviaryEnumMappings.pure
+      - test/indigoaviary/mapping/AviaryMapping.pure
+      - test/indigoaviary/runtime/AviaryRuntimes.pure
+      - test/indigoaviary/service/AviaryServices.pure
+      - test/indigoaviary/store/AviaryDatabase.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - grammar:class-inheritance
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-group-by
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - condition-monitoring
+  - h2
+  - milestoning
+  - relational
+  - turbines
+  - wind-farm

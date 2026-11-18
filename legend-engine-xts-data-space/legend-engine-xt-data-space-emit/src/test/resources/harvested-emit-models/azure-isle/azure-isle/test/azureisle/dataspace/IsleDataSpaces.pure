@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace {test::azureisle::profile::IsleCatalog.steward = 'Isle Survey Office', test::azureisle::profile::IsleCatalog.cadence = 'weekly'} test::azureisle::dataspace::IsleMonitoringSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'fieldSurvey';
+      description: 'The survey model read through the field deployment.';
+      mapping: test::azureisle::mapping::IsleMapping;
+      defaultRuntime: test::azureisle::runtime::IsleFieldRuntime;
+    }
+  ];
+  defaultExecutionContext: 'fieldSurvey';
+  title: 'Azure Isle Seabird Monitoring';
+  description: 'Entry point over the nest counts, census visits and observer roster of the island seabird colonies, with the featured monitoring endpoints and the survey diagram.';
+  diagrams:
+  [
+    {
+      title: 'Survey Model';
+      diagram: test::azureisle::diagram::IsleSurveyDiagram;
+    }
+  ];
+  executables:
+  [
+    {
+      title: 'Colony count log';
+      description: 'Counts of one colony on a processing day.';
+      executable: test::azureisle::service::ColonyCountLog;
+    },
+    {
+      title: 'Reserve count log';
+      description: 'Large counts of one reserve.';
+      executable: test::azureisle::service::ReserveCountLog;
+    },
+    {
+      title: 'Colony nest totals';
+      description: 'Nest totals per colony.';
+      executable: test::azureisle::service::ColonyNestTotals;
+    },
+    {
+      title: 'Colony visit digest';
+      description: 'Latest completed visit per colony.';
+      executable: test::azureisle::service::ColonyVisitDigest;
+    },
+    {
+      title: 'Team roster';
+      description: 'Active observers of one team.';
+      executable: test::azureisle::service::TeamRoster;
+    }
+  ];
+}
+
+DataSpace {test::azureisle::profile::IsleCatalog.steward = 'Isle Review Panel', test::azureisle::profile::IsleCatalog.cadence = 'monthly'} test::azureisle::dataspace::IsleReviewSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'review';
+      description: 'The survey model read through the review deployment.';
+      mapping: test::azureisle::mapping::IsleMapping;
+      defaultRuntime: test::azureisle::runtime::IsleReviewRuntime;
+    }
+  ];
+  defaultExecutionContext: 'review';
+}
+
+DataSpace {test::azureisle::profile::IsleCatalog.steward = 'Isle Archive Desk', test::azureisle::profile::IsleCatalog.cadence = 'yearly'} test::azureisle::dataspace::IsleArchiveSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'archive';
+      description: 'The survey model read through the review deployment for archive extracts.';
+      mapping: test::azureisle::mapping::IsleMapping;
+      defaultRuntime: test::azureisle::runtime::IsleReviewRuntime;
+    }
+  ];
+  defaultExecutionContext: 'archive';
+}
+
+DataSpace {test::azureisle::profile::IsleCatalog.steward = 'Isle Volunteer Coordinator', test::azureisle::profile::IsleCatalog.cadence = 'seasonal'} test::azureisle::dataspace::IsleTrainingSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'training';
+      description: 'The survey model read through the field deployment for volunteer training.';
+      mapping: test::azureisle::mapping::IsleMapping;
+      defaultRuntime: test::azureisle::runtime::IsleFieldRuntime;
+    }
+  ];
+  defaultExecutionContext: 'training';
+}

@@ -1,0 +1,128 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealridge4::mapping::TowerDigestM2M
+(
+  test::borealridge4::domain::SlopeAspect: EnumerationMapping AspectCodeMapping
+  {
+    NORTH: ['N'],
+    EAST: ['E'],
+    SOUTH: ['S'],
+    WEST: ['W'],
+    UNSURVEYED: ['?']
+  }
+
+  test::borealridge4::domain::WatchDuty: EnumerationMapping DutyCodeMapping
+  {
+    DAWN: ['DAWN'],
+    DAY: ['DAY'],
+    DUSK: ['DUSK'],
+    IDLE: ['IDLE']
+  }
+
+  test::borealridge4::domain::BeaconHue: EnumerationMapping HueCodeMapping
+  {
+    AMBER: ['amber'],
+    CRIMSON: ['crimson'],
+    WHITE: ['white'],
+    DARK: ['dark']
+  }
+
+  *test::borealridge4::domain::TowerDigest: Pure
+  {
+    ~src test::borealridge4::domain::TowerSheetRow
+    sheetCode: $src.sheetCode,
+    aspect: EnumerationMapping AspectCodeMapping: [if($src.aspectText->isEmpty(),
+                                                     | '?',
+                                                     | if(['N', 'E', 'S', 'W']->contains($src.aspectText->toOne()->trim()->toUpper()),
+                                                          | $src.aspectText->toOne()->trim()->toUpper(),
+                                                          | '?'))]->toOne(),
+    duty: EnumerationMapping DutyCodeMapping: [if(['DAWN', 'DAY', 'DUSK']->contains($src.dutyText->toOne()->toUpper()),
+                                                 | $src.dutyText->toOne()->toUpper(),
+                                                 | 'IDLE')]->toOne(),
+    hue: EnumerationMapping HueCodeMapping: [if($src.hueText->isEmpty(), | 'dark', | $src.hueText->toOne()->toLower()->trim())]->toOne(),
+    ridgeGrade: if($src.elevationM->isEmpty(),
+                   | 'UNGRADED',
+                   | if($src.elevationM->toOne() >= 1800,
+                        | 'HIGH RIDGE',
+                        | if($src.elevationM->toOne() >= 1000, | 'MID RIDGE', | 'LOW RIDGE'))),
+    staffed: $src.staffedFlag == 'Y'
+  }
+
+  testSuites:
+  [
+    towerDigestSuite:
+    {
+      function: |test::borealridge4::domain::TowerDigest.all()->graphFetch(
+        #{
+          test::borealridge4::domain::TowerDigest
+          {
+            sheetCode,
+            aspect,
+            duty,
+            hue,
+            ridgeGrade,
+            staffed
+          }
+        }#
+      )->serialize(
+        #{
+          test::borealridge4::domain::TowerDigest
+          {
+            sheetCode,
+            aspect,
+            duty,
+            hue,
+            ridgeGrade,
+            staffed
+          }
+        }#
+      );
+      tests:
+      [
+        sheetCodesResolveToEnums:
+        {
+          doc: 'Normalises padded and lower-case aspect codes, sends an unknown aspect and a missing aspect to unsurveyed, sends an unlisted duty to idle, defaults a missing hue to dark and grades low, mid, high and missing elevations.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::borealridge4::domain::TowerSheetRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sheetCode":"TS-01","aspectText":" n ","dutyText":"dawn","hueText":"Amber ","elevationM":550,"staffedFlag":"Y"},{"sheetCode":"TS-02","aspectText":"E","dutyText":"DAY","hueText":"crimson","elevationM":1200,"staffedFlag":"N"},{"sheetCode":"TS-03","aspectText":"XQ","dutyText":"noon","elevationM":1900,"staffedFlag":"Y"},{"sheetCode":"TS-04","dutyText":"Dusk","hueText":"WHITE"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fourDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sheetCode":"TS-01","aspect":"NORTH","duty":"DAWN","hue":"AMBER","ridgeGrade":"LOW RIDGE","staffed":true},{"sheetCode":"TS-02","aspect":"EAST","duty":"DAY","hue":"CRIMSON","ridgeGrade":"MID RIDGE","staffed":false},{"sheetCode":"TS-03","aspect":"UNSURVEYED","duty":"IDLE","hue":"DARK","ridgeGrade":"HIGH RIDGE","staffed":true},{"sheetCode":"TS-04","aspect":"UNSURVEYED","duty":"DUSK","hue":"WHITE","ridgeGrade":"UNGRADED","staffed":false}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

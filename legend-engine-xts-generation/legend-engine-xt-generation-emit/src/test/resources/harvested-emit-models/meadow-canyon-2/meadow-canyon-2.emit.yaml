@@ -1,0 +1,49 @@
+name: meadow-canyon-2
+title: "Meadow Canyon 2 — heavily annotated trail-signage contract published as a document-oriented interface schema"
+description: |
+  A canyon trail-signage contract expressed purely as logical grammar plus a generation layer.
+  A network contract holds an unbounded collection of segment records; each segment record
+  holds a shared small surface value type and its own collection of waypoint notes, and the
+  waypoints reach the same shared surface type again, so several parents converge on one type
+  that the emitted schema must publish once and reference from every use site. Two specialised
+  segment forms extend the base record with their own properties while the contract also
+  references types that take no part in the hierarchy, so the artefact carries the composed and
+  the specialised style side by side. A locally declared signage profile publishes two
+  stereotypes and ten tags for description, key, requiredness, sortability, index, metadata,
+  value, example-set, unit and revision semantics, and a second profile pins numeric
+  representation per property in three different ways — double precision, thirty-two-bit and
+  sixty-four-bit integral — including across an inheritance boundary where the pinning is
+  inherited. One package-scoped document-schema generation resolves the whole graph and one
+  generation specification is its single build entry point. That same entry
+  point also drives three message-definition generations, each scoped to one
+  class — the wide network contract and the two specialised segment forms — so
+  the to-many segment, waypoint, hazard and closure collections surface as
+  nested repeated fields in the emitted interface descriptions.
+modelSources:
+  model:
+    root: meadow-canyon-2
+    files:
+      - test/meadowcanyon2/domain/SignageProfiles.pure
+      - test/meadowcanyon2/domain/TrailContract.pure
+      - test/meadowcanyon2/generation/TrailGeneration.pure
+      - test/meadowcanyon2/generation/TrailProtobufGeneration.pure
+      - test/meadowcanyon2/vocabulary/NumericPinning.pure
+features:
+  - execution:file-generation
+  - execution:file-generation-protobuf
+  - execution:generation-specification
+  - grammar:class-inheritance
+  - grammar:complex-typed-property
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - complex-typed-property
+  - file-generation
+  - generation-specification
+  - json-schema
+  - profile
+  - protobuf
+  - trail-signage

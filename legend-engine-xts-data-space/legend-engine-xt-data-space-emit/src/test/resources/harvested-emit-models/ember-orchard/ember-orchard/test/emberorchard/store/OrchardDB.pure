@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::emberorchard::store::OrchardDB
+(
+  Schema nursery
+  (
+    Table specimen_register
+    (
+      specimen_code VARCHAR(24) PRIMARY KEY,
+      block_code VARCHAR(24) NOT NULL,
+      row_code VARCHAR(24) NOT NULL,
+      common_name VARCHAR(200) NOT NULL,
+      botanical_name VARCHAR(200) NOT NULL,
+      cultivar_name VARCHAR(200),
+      rootstock_code VARCHAR(24),
+      propagation_method VARCHAR(32) NOT NULL,
+      germination_batch VARCHAR(32) NOT NULL,
+      sown_on DATE NOT NULL,
+      transplanted_on DATE,
+      container_size VARCHAR(16) NOT NULL,
+      substrate_mix VARCHAR(64) NOT NULL,
+      canopy_height_cm DOUBLE NOT NULL,
+      stem_caliper_mm DOUBLE NOT NULL,
+      leaf_count INTEGER NOT NULL,
+      root_zone_depth_cm DOUBLE NOT NULL,
+      vigour_grade VARCHAR(16) NOT NULL,
+      hardiness_zone VARCHAR(16) NOT NULL,
+      sun_exposure VARCHAR(24) NOT NULL,
+      pruning_cycle VARCHAR(24) NOT NULL,
+      last_inspected_on DATE,
+      inspector_code VARCHAR(16),
+      health_note VARCHAR(4000),
+      nursery_tier VARCHAR(16) NOT NULL,
+      sale_ready_flag VARCHAR(1) NOT NULL,
+      retired_flag VARCHAR(1) NOT NULL,
+      updated_at TIMESTAMP NOT NULL
+    )
+  )
+
+  Schema irrigation
+  (
+    Table irrigation_allocation
+    (
+      allocation_id INTEGER PRIMARY KEY,
+      block_code VARCHAR(24) NOT NULL,
+      litres_per_day DOUBLE NOT NULL,
+      schedule_code VARCHAR(24) NOT NULL
+    )
+  )
+)

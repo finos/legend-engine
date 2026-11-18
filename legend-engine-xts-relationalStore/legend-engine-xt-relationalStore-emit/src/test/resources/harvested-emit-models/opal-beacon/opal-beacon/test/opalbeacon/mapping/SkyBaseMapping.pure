@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::opalbeacon::mapping::SkyBaseMapping
+(
+  test::opalbeacon::domain::SkySector[sector]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalbeacon::store::SkyDB]SKY.SKY_SECTOR.sector_code
+    )
+    ~mainTable [test::opalbeacon::store::SkyDB]SKY.SKY_SECTOR
+    sectorCode: [test::opalbeacon::store::SkyDB]SKY.SKY_SECTOR.sector_code,
+    sectorName: [test::opalbeacon::store::SkyDB]SKY.SKY_SECTOR.sector_name
+  }
+
+  test::opalbeacon::domain::ObservingStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalbeacon::store::SkyDB]OPS.STATION.station_code
+    )
+    ~mainTable [test::opalbeacon::store::SkyDB]OPS.STATION
+    stationCode: [test::opalbeacon::store::SkyDB]OPS.STATION.station_code,
+    stationName: [test::opalbeacon::store::SkyDB]OPS.STATION.station_name,
+    domeKind: [test::opalbeacon::store::SkyDB]OPS.STATION.dome_kind
+  }
+
+  test::opalbeacon::domain::BeaconStar[star]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalbeacon::store::SkyDB]SKY.BEACON_STAR.star_code
+    )
+    ~mainTable [test::opalbeacon::store::SkyDB]SKY.BEACON_STAR
+    starCode: [test::opalbeacon::store::SkyDB]SKY.BEACON_STAR.star_code,
+    starName: [test::opalbeacon::store::SkyDB]SKY.BEACON_STAR.star_name,
+    magnitude: [test::opalbeacon::store::SkyDB]SKY.BEACON_STAR.magnitude,
+    bandCode: toUpper([test::opalbeacon::store::SkyDB]SKY.BEACON_STAR.band_code),
+    sectorName: [test::opalbeacon::store::SkyDB]@Star_Sector | [test::opalbeacon::store::SkyDB]SKY.SKY_SECTOR.sector_name,
+    teamName: [test::opalbeacon::store::SkyDB]@Star_Sector > @Sector_TeamLink > @TeamLink_Team | [test::opalbeacon::store::SkyDB]OPS.OBSERVING_TEAM.team_name,
+    registerTag: 'SKY CATALOGUE',
+    stationName: [test::opalbeacon::store::SkyDB]@Star_Sector > @Sector_TeamLink > @TeamLink_Team > @Team_Station | [test::opalbeacon::store::SkyDB]OPS.STATION.station_name,
+    domeKind: [test::opalbeacon::store::SkyDB]@Star_Sector > @Sector_TeamLink > @TeamLink_Team > @Team_Station | [test::opalbeacon::store::SkyDB]OPS.STATION.dome_kind
+  }
+
+  test::opalbeacon::domain::SurveyRun[survey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalbeacon::store::SkyDB]SKY.SURVEY_RUN.run_code
+    )
+    ~mainTable [test::opalbeacon::store::SkyDB]SKY.SURVEY_RUN
+    runCode: [test::opalbeacon::store::SkyDB]SKY.SURVEY_RUN.run_code,
+    runName: [test::opalbeacon::store::SkyDB]SKY.SURVEY_RUN.run_name,
+    sectorName: [test::opalbeacon::store::SkyDB]@Survey_Sector | [test::opalbeacon::store::SkyDB]SKY.SKY_SECTOR.sector_name,
+    stationName: [test::opalbeacon::store::SkyDB]@Survey_Sector > @Sector_TeamLink > @TeamLink_Team > @Team_Station | [test::opalbeacon::store::SkyDB]OPS.STATION.station_name
+  }
+)

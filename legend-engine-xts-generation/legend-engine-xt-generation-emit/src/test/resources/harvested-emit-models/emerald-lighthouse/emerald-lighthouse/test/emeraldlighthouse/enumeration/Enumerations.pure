@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::emeraldlighthouse::enumeration::StationUnit
+{
+  NORTH_CAPE,
+  SOUTH_SPIT,
+  EAST_LEDGE,
+  WEST_REACH,
+  OUTER_SHOAL,
+  INNER_SOUND,
+  TIDAL_FLATS,
+  GRANITE_HEAD,
+  CEDAR_POINT,
+  LONG_BAR
+}
+
+Enum test::emeraldlighthouse::enumeration::AdjustmentKind
+{
+  MANUAL_OVERRIDE
+}
+
+Enum test::emeraldlighthouse::enumeration::BeaconKind
+{
+  'Rotating-Lamp',
+  'Fixed-Lamp',
+  'Sector-Light',
+  'Fog-Signal',
+  'Radar-Beacon'
+}
+
+Enum test::emeraldlighthouse::enumeration::ReferenceKind
+{
+  CHRT,
+  TIDE,
+  WNDS,
+  LGHT
+}
+
+Enum test::emeraldlighthouse::enumeration::RequestKind
+{
+  RESUPPLY,
+  REPAIR,
+  SURVEY
+}
+
+Enum test::emeraldlighthouse::enumeration::Direction
+{
+  INBOUND,
+  OUTBOUND
+}
+
+Enum test::emeraldlighthouse::enumeration::ApprovalState
+{
+  'Pending-Review',
+  Approved,
+  Rejected,
+  Withdrawn
+}
+
+Enum test::emeraldlighthouse::enumeration::MeasureType
+{
+  LUMENS,
+  NAUTICAL_MILES,
+  HOURS,
+  LITRES
+}
+
+Enum test::emeraldlighthouse::enumeration::AgentKind
+{
+  KEEPER,
+  CONTRACTOR,
+  AUTOMATED_UNIT
+}
+
+Enum test::emeraldlighthouse::enumeration::SizingTag
+{
+  SMLL,
+  MEDM,
+  LRGE
+}
+
+Enum test::emeraldlighthouse::enumeration::BufferCategory
+{
+  'Primary-Buffer',
+  'Secondary-Buffer',
+  'No-Buffer'
+}
+
+Enum test::emeraldlighthouse::enumeration::UnitOfMeasure
+{
+  METRE,
+  Nautical_Mile,
+  KTS4,
+  LUX,
+  LITRE
+}
+
+Enum test::emeraldlighthouse::enumeration::PeriodKind
+{
+  DAILY,
+  'Weekly-Rolling',
+  MNTH
+}

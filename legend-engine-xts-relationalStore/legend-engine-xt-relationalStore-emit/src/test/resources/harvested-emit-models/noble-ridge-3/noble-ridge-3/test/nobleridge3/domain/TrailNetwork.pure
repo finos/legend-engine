@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::nobleridge3::domain::*;
+
+Class test::nobleridge3::domain::TrailSegment
+{
+  segmentCode: String[1];
+  headCode: String[1];
+  surfaceCode: String[1];
+  difficultyCode: String[1];
+  lengthMetres: Integer[1];
+  regionName: String[0..1];
+  stewardCrewName: String[0..1];
+}
+
+Class test::nobleridge3::domain::TrailHead
+{
+  headCode: String[1];
+  headName: String[1];
+  regionCode: String[1];
+  accessState: String[1];
+}
+
+Class test::nobleridge3::domain::Region
+{
+  regionCode: String[1];
+  regionName: String[1];
+  regionState: String[1];
+}
+
+Class test::nobleridge3::domain::StewardCrew
+{
+  stewardCode: String[1];
+  crewName: String[1];
+  crewState: String[1];
+}
+
+Association test::nobleridge3::domain::SegmentHeadLink
+{
+  trailHead: TrailHead[0..1];
+  trailSegments: TrailSegment[*];
+}
+
+Association test::nobleridge3::domain::HeadRegionLink
+{
+  region: Region[0..1];
+  trailHeads: TrailHead[*];
+}
+
+Association test::nobleridge3::domain::RegionStewardLink
+{
+  stewardCrew: StewardCrew[0..1];
+  stewardedRegions: Region[*];
+}

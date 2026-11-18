@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedapiary4::mapping::ApiaryMapping
+(
+  *test::frostedapiary4::domain::Hive[hive_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive.hive_id
+    )
+    ~mainTable [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive
+    hiveId: [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive.hive_id,
+    hiveName: [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive.hive_name,
+    forageZone: [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive.forage_zone,
+    frameCount: [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive.frame_count,
+    queenTag: [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive.queen_tag,
+    auditNote: coalesce([test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive.audit_note, 'no audit recorded'),
+    visits[visit_set]: [test::frostedapiary4::store::ApiaryRegisterDb]@Hive_Visit
+  }
+
+  *test::frostedapiary4::domain::Visit[visit_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive_visit.visit_id
+    )
+    ~mainTable [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive_visit
+    visitId: [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive_visit.visit_id,
+    visitKind: [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive_visit.visit_kind,
+    visitDate: [test::frostedapiary4::store::ApiaryRegisterDb]apiary.hive_visit.visit_date
+  }
+)

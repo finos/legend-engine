@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<test::indigotundra2::domain::TundraClassification.reference>> {test::indigotundra2::domain::TundraClassification.scope = 'site register', test::indigotundra2::domain::TundraClassification.steward = 'tundra survey office'} test::indigotundra2::domain::ObservationSite
+{
+  siteCode: String[1];
+  siteName: String[0..1];
+  terrain: test::indigotundra2::domain::TerrainClass[0..1];
+  moisture: test::indigotundra2::domain::MoistureRegime[0..1];
+  zoneToken() {$this.siteCode->substring(0, $this.siteCode->length() - 3)}: String[1];
+}
+
+Class <<test::indigotundra2::domain::TundraClassification.observational>> {test::indigotundra2::domain::TundraClassification.scope = 'plot register'} test::indigotundra2::domain::SurveyPlot
+{
+  plotCode: String[1];
+  <<test::indigotundra2::domain::TundraClassification.derived>> {test::indigotundra2::domain::TundraClassification.retentionWindow = 'one season'} plotLabel: String[0..1];
+  method: test::indigotundra2::domain::SurveyMethod[0..1];
+  plotPrefix()
+  {
+    if($this.plotCode->indexOf('-') == -1,
+       | $this.plotCode,
+       | $this.plotCode->substring(0, $this.plotCode->indexOf('-')))
+  }: String[1];
+  plotSuffix()
+  {
+    if($this.plotCode->indexOf('-') == -1,
+       | $this.plotCode,
+       | $this.plotCode->substring($this.plotCode->indexOf('-') + 1, $this.plotCode->length()))
+  }: String[1];
+}
+
+Class <<test::indigotundra2::domain::TundraClassification.observational>> test::indigotundra2::domain::PlotVisit
+{
+  visitRef: String[1];
+  season: test::indigotundra2::domain::SeasonWindow[0..1];
+  qualityFlag: test::indigotundra2::domain::DataQualityFlag[0..1];
+}
+
+Class test::indigotundra2::domain::FieldObserver
+{
+  observerRef: String[1];
+  role: test::indigotundra2::domain::ObserverRole[0..1];
+}
+
+Class test::indigotundra2::domain::TerrainSample
+{
+  sampleRef: String[1];
+  moisture: test::indigotundra2::domain::MoistureRegime[0..1];
+}
+
+Class test::indigotundra2::domain::LabAliquot
+{
+  aliquotRef: String[1];
+  volumeMillilitres: Integer[0..1];
+}

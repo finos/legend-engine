@@ -1,0 +1,80 @@
+name: gilded-willow-2
+title: "Gilded Willow 2 — A School Instrument Lending Register Versioned On The Processing Timeline And Published Through One Venue-Keyed Multi-Execution Endpoint"
+description: |
+  A school lends instruments to students, staff and ensembles, and each lending is
+  versioned on the processing timeline so a correction supersedes the earlier row
+  rather than overwriting it.
+
+  The lending class mapping carries every derivation kind in the model against a
+  three-table store with two equality joins and a store-level filter that keeps only
+  the rows still signed out. The overdue band and the wear label are two independent
+  four-armed nested conditionals whose fallbacks resolve to no value; the programme
+  name is a literal supplied by the mapping itself; the instrument label, family code
+  and room name are reached across the named joins; the hours per checkout is a rounded
+  division over defaulted operands; the carrying case is an embedded shape mapped
+  inside the lending row rather than as its own relation; and the borrower kind is an
+  enumeration resolved from a short stored code.
+
+  A second mapping maps the rehearsal room and is pulled in by inclusion, so the room
+  class reachable from the lending mapping is contributed entirely by the included
+  mapping. Both class mappings declare an explicit primary key and a main table.
+
+  Two mapping test suites cover every conditional arm with its own row, a row that
+  falls through both cascades, a row milestoned out of range on the processing
+  timeline and a row removed by the store filter. A venue-keyed multi-execution
+  service declares one statement against two mapping-and-runtime bindings; its query
+  resolves the point-in-time snapshot, windows the lending on date arithmetic, filters
+  on set membership and re-filters the projected rows, and its test asserts that both
+  declared venues return the same register.
+modelSources:
+  model:
+    root: gilded-willow-2
+    files:
+      - test/gildedwillow2/connection/LendingConnections.pure
+      - test/gildedwillow2/data/LendingTestData.pure
+      - test/gildedwillow2/domain/LendingDomain.pure
+      - test/gildedwillow2/mapping/LendingMapping.pure
+      - test/gildedwillow2/mapping/RoomBaseMapping.pure
+      - test/gildedwillow2/runtime/LendingRuntimes.pure
+      - test/gildedwillow2/service/CheckoutRegisterByVenue.pure
+      - test/gildedwillow2/store/LendingDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - test::gildedwillow2::store::LendingDb
+complexity: advanced
+tags:
+  - conditional-transform
+  - embedded-mapping
+  - enumeration-mapping
+  - h2
+  - instrument-lending
+  - join-reached-column
+  - mapping-include
+  - mapping-literal
+  - mapping-test
+  - multi-execution-service
+  - processing-temporal
+  - service-test
+  - store-filter

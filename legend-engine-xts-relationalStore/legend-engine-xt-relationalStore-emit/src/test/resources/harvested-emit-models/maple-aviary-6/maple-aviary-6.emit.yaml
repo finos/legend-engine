@@ -1,0 +1,51 @@
+name: maple-aviary-6
+title: "Maple Aviary 6 - windmill milling runs behind a keyed multi-execution register"
+description: >
+  A self-contained windmill estate model. Milling runs are a subtype of a shared mill event
+  and are bound, together with their sail checks, to one aliased main table with a restated
+  primary key. The executable behavior sits in a keyed multi-execution register, a windowed
+  estate rank board, a bounded ordered sack board and two mapping suites that exercise the
+  inherited bindings and the association traversal.
+modelSources:
+  model:
+    root: maple-aviary-6
+    files:
+      - test/mapleaviary6/connection/MillConnections.pure
+      - test/mapleaviary6/domain/MillDomain.pure
+      - test/mapleaviary6/function/MillQueries.pure
+      - test/mapleaviary6/mapping/MillMapping.pure
+      - test/mapleaviary6/runtime/MillRuntimes.pure
+      - test/mapleaviary6/service/MillServices.pure
+      - test/mapleaviary6/store/MillStore.pure
+tds_variant: tabular-data-set
+complexity: advanced
+stores:
+  - relational
+tags:
+  - emit
+  - h2
+  - milling
+  - multi-execution
+  - windmill
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - grammar:function
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table

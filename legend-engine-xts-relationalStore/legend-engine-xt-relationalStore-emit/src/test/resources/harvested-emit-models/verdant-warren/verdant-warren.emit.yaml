@@ -1,0 +1,50 @@
+name: verdant-warren
+title: "Verdant Warren Burrow Survey Registers — a processing-milestoned register resolved at an arbitrary instant and ranked by sorted, truncated TDS services"
+description: |
+  An intermediate non-financial EMIT model in a hedgerow burrow-survey domain. One
+  processing-milestoned relational table carries the surveys walked along each hedgerow, so a
+  resurveyed hedgerow supersedes the row it replaced and the register can be resolved at an
+  arbitrary past instant. Two derived properties fold the kits counted per burrow entrance
+  into a crowding index and default the free-text soil note onto a fixed sentinel. Three
+  single-execution TDS services resolve the register at a caller-supplied instant and then
+  rank it: one narrows by a requested collection of meadow bands and reports only the leading
+  rows by kits counted, one narrows by a crowding floor computed from the derived index, and
+  one orders every surveyor's filings by descending crowding. Every service sorts and then
+  truncates its tabular-data-set.
+modelSources:
+  model:
+    root: verdant-warren
+    files:
+      - test/verdantwarren/connection/WarrenH2Connection.pure
+      - test/verdantwarren/domain/WarrenDomain.pure
+      - test/verdantwarren/mapping/WarrenMapping.pure
+      - test/verdantwarren/runtime/WarrenH2Runtime.pure
+      - test/verdantwarren/service/WarrenRegisters.pure
+      - test/verdantwarren/store/WarrenDb.pure
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - burrow-survey
+  - derived-property
+  - h2
+  - point-in-time
+  - processing-temporal
+  - service-test
+  - sort-limit
+  - tabular-data-set

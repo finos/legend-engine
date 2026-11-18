@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::opalmeadow3::profile::*;
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'The broad habitat a restoration plot sits in.'} demo::opalmeadow3::domain::PlotHabitat
+{
+  HAY_MEADOW,
+  CHALK_GRASSLAND,
+  WET_FEN,
+  ROADSIDE_VERGE,
+  WOODLAND_EDGE
+}
+
+Enum {doc.doc = 'How far through its flowering cycle a recorded plant was when it was seen.'} demo::opalmeadow3::domain::BloomStage
+{
+  BUD,
+  OPEN,
+  SEEDING,
+  WITHERED
+}
+
+Enum <<MeadowCuration.fieldVerified>> {doc.doc = 'How a survey visit gathered its records.', MeadowCuration.surveyLead = 'botany volunteers'} demo::opalmeadow3::domain::SurveyMethod
+{
+  QUADRAT_COUNT,
+  TRANSECT_WALK,
+  TIMED_SEARCH,
+  PHOTO_PLOT
+}
+
+Enum {doc.doc = 'Local rarity band assigned to a recorded plant.'} demo::opalmeadow3::domain::RarityBand
+{
+  COMMON,
+  LOCAL,
+  SCARCE,
+  RARE
+}

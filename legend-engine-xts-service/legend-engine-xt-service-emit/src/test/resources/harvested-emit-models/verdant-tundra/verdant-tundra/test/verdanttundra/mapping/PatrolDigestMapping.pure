@@ -1,0 +1,262 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdanttundra::mapping::PatrolDigestMapping
+(
+  *test::verdanttundra::domain::PatrolDigest[patrolDigest]: Pure
+  {
+    ~src test::verdanttundra::domain::PatrolEvent
+    digestTag: test::verdanttundra::function::patrolTag('DG', $src.patrolTag),
+    rangerLabel: $src.rangerName->toUpper() + ' / ' + $src.trailCode,
+    trailKind: $src.trailKind,
+    effortBand: $src.effortBand,
+    distanceKm: $src.distanceKm,
+    sightingRate: test::verdanttundra::function::sightingRate($src.sightingCount, $src.distanceKm),
+    digestNote: test::verdanttundra::function::digestNote($src.effortBand)
+  }
+
+  testSuites:
+  [
+    patrolDigestSuite:
+    {
+      function: |test::verdanttundra::domain::PatrolDigest.all()->graphFetch(
+        #{
+          test::verdanttundra::domain::PatrolDigest{
+            digestTag,
+            rangerLabel,
+            trailKind,
+            effortBand,
+            distanceKm,
+            sightingRate,
+            digestNote
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdanttundra::domain::PatrolDigest{
+            digestTag,
+            rangerLabel,
+            trailKind,
+            effortBand,
+            distanceKm,
+            sightingRate,
+            digestNote
+          }
+        }#
+      );
+      tests:
+      [
+        bandedAndUnbandedDigests:
+        {
+          doc: 'A banded event and an unbanded event, so the note transform is observed on both the populated and the empty arm of its optional input.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdanttundra::domain::PatrolEvent:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"patrolTag":"PT-R-101","rangerName":"Wren Halloway","trailCode":"RIDGE","trailKind":"RIDGE","eventKind":"ARRIVAL","loggedOn":"2025-04-02","logYear":2025,"distanceKm":25,"effortBand":"ridge-run","sightingCount":10},{"patrolTag":"PT-R-102","rangerName":"Bram Oakley","trailCode":"MEADOW","trailKind":"MEADOW","eventKind":"REPAIR","loggedOn":"2025-04-03","logYear":2025,"distanceKm":0,"sightingCount":0}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            digestPair:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"digestTag":"DG-PT-R-101","rangerLabel":"WREN HALLOWAY / RIDGE","trailKind":"RIDGE","effortBand":"ridge-run","distanceKm":25,"sightingRate":40,"digestNote":"banded as ridge-run"},{"digestTag":"DG-PT-R-102","rangerLabel":"BRAM OAKLEY / MEADOW","trailKind":"MEADOW","effortBand":null,"distanceKm":0,"sightingRate":0,"digestNote":"unbanded patrol"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+
+###Mapping
+Mapping test::verdanttundra::mapping::PatrolBulletinMapping
+(
+  *test::verdanttundra::domain::PatrolBulletin[patrolBulletin]: Pure
+  {
+    ~src test::verdanttundra::domain::PatrolDigest
+    bulletinTag: test::verdanttundra::function::patrolTag('BN', $src.digestTag),
+    headline: test::verdanttundra::function::headline($src.rangerLabel, $src.distanceKm),
+    trailKind: $src.trailKind,
+    distanceKm: $src.distanceKm
+  }
+
+  testSuites:
+  [
+    patrolBulletinSuite:
+    {
+      function: |test::verdanttundra::domain::PatrolBulletin.all()->graphFetch(
+        #{
+          test::verdanttundra::domain::PatrolBulletin{
+            bulletinTag,
+            headline,
+            trailKind,
+            distanceKm
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdanttundra::domain::PatrolBulletin{
+            bulletinTag,
+            headline,
+            trailKind,
+            distanceKm
+          }
+        }#
+      );
+      tests:
+      [
+        headlineFromDigest:
+        {
+          doc: 'A single digest is folded into its bulletin headline.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdanttundra::domain::PatrolDigest:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestTag":"DG-PT-R-101","rangerLabel":"WREN HALLOWAY / RIDGE","trailKind":"RIDGE","effortBand":"ridge-run","distanceKm":25,"sightingRate":40,"digestNote":"banded as ridge-run"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            bulletin:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"bulletinTag":"BN-DG-PT-R-101","headline":"WREN HALLOWAY / RIDGE covered 25km","trailKind":"RIDGE","distanceKm":25}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+
+###Mapping
+Mapping test::verdanttundra::mapping::PatrolUnionMapping
+(
+  include mapping test::verdanttundra::mapping::PatrolBulletinMapping
+
+  *test::verdanttundra::domain::PatrolDigest: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(longPatrolDigest, shortPatrolDigest)
+  }
+
+  test::verdanttundra::domain::PatrolDigest[longPatrolDigest]: Pure
+  {
+    ~src test::verdanttundra::domain::PatrolEvent
+    ~filter $src.distanceKm >= 20
+    digestTag: test::verdanttundra::function::patrolTag('LONG', $src.patrolTag),
+    rangerLabel: $src.rangerName->toUpper() + ' / ' + $src.trailCode,
+    trailKind: $src.trailKind,
+    effortBand: $src.effortBand,
+    distanceKm: $src.distanceKm,
+    sightingRate: test::verdanttundra::function::sightingRate($src.sightingCount, $src.distanceKm),
+    digestNote: 'long patrol: ' + test::verdanttundra::function::digestNote($src.effortBand)
+  }
+
+  test::verdanttundra::domain::PatrolDigest[shortPatrolDigest]: Pure
+  {
+    ~src test::verdanttundra::domain::PatrolEvent
+    ~filter $src.distanceKm < 20
+    digestTag: test::verdanttundra::function::patrolTag('SHORT', $src.patrolTag),
+    rangerLabel: $src.rangerName->toUpper() + ' / ' + $src.trailCode,
+    trailKind: $src.trailKind,
+    effortBand: $src.effortBand,
+    distanceKm: $src.distanceKm,
+    sightingRate: test::verdanttundra::function::sightingRate($src.sightingCount, $src.distanceKm),
+    digestNote: 'short patrol: ' + test::verdanttundra::function::digestNote($src.effortBand)
+  }
+
+  testSuites:
+  [
+    unionDigestSuite:
+    {
+      function: |test::verdanttundra::domain::PatrolDigest.all()->graphFetch(
+        #{
+          test::verdanttundra::domain::PatrolDigest{
+            digestTag,
+            distanceKm,
+            digestNote
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdanttundra::domain::PatrolDigest{
+            digestTag,
+            distanceKm,
+            digestNote
+          }
+        }#
+      );
+      tests:
+      [
+        longUnionArm:
+        {
+          doc: 'An event above the twenty-kilometre split, so the union surfaces the long-patrol branch.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdanttundra::domain::PatrolEvent:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"patrolTag":"PT-R-201","rangerName":"Iris Fenwick","trailCode":"VALLEY","trailKind":"VALLEY","eventKind":"DEPARTURE","loggedOn":"2025-05-02","logYear":2025,"distanceKm":30,"effortBand":"long-haul","sightingCount":6}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            longDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestTag":"LONG-PT-R-201","distanceKm":30,"digestNote":"long patrol: banded as long-haul"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

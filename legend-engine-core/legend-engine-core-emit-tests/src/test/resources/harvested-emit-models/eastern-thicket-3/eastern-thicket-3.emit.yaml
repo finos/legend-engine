@@ -1,0 +1,39 @@
+name: eastern-thicket-3
+title: "Eastern Thicket — An Arboretum Register Milestoned On The Round That Recorded It"
+description: |
+  A model-only arboretum thicket register. A profile carries the warden stereotypes
+  and tags that annotate the estate, three enumerations describe the canopy layer, the
+  soil texture and the reason a stand was cut back, and a shared record class is
+  extended by the plot, stand and canopy-observation classes so identity is declared
+  once. The plot, the stand and the canopy observation are processing-temporal, so the
+  three associations that link them are milestoned on the round that recorded the row,
+  while the crew, trail, probe and visit links stay unmilestoned alongside them. The
+  group carries no store and no query, so it is proven by compilation of the domain
+  shapes alone.
+
+modelSources:
+  model:
+    root: eastern-thicket-3
+    files:
+      - test/eastern-thicket-3/domain/ThicketAssociations.pure
+      - test/eastern-thicket-3/domain/ThicketDomain.pure
+
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:milestoned-association
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - arboretum-survey
+  - association
+  - class-inheritance
+  - enumeration
+  - milestoned-association
+  - model-only
+  - processing-temporal
+  - profile

@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A surveyed chamber of the cave system.'} test::sunlitcavern2::domain::CaveChamber
+{
+  chamberId: Integer[1];
+  chamberName: String[1];
+  passageGrade: String[1];
+  floorDepthM: Float[1];
+  surveyedOn: StrictDate[1];
+  gatedFlag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A humidity probe reading taken inside one chamber.'} test::sunlitcavern2::domain::ChamberReading
+{
+  readingId: Integer[1];
+  chamberId: Integer[1];
+  humidityPct: Float[1];
+  recordedOn: StrictDate[1];
+  probeLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Latest reading date and reading count per chamber, sourced from a grouped inline view.'} test::sunlitcavern2::domain::ChamberLatest
+{
+  chamberId: Integer[1];
+  latestReadingOn: StrictDate[1];
+  readingCount: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A rigged access route leading into the cave system.'} test::sunlitcavern2::domain::AccessRoute
+{
+  routeId: Integer[1];
+  routeLabel: String[1];
+  ropeMetres: Float[1];
+  openedOn: StrictDate[1];
+  riggedFlag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A bat roost counted during a cave biota survey.'} test::sunlitcavern2::domain::BatRoost
+{
+  roostId: Integer[1];
+  colonyName: String[1];
+  individuals: Float[1];
+  countedOn: StrictDate[1];
+  maternityFlag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A surface weather station log entry paired with the cave climate series.'} test::sunlitcavern2::domain::ClimateLog
+{
+  logId: Integer[1];
+  stationLabel: String[1];
+  airTempC: Float[1];
+  loggedOn: StrictDate[1];
+  calibratedFlag: String[1];
+}

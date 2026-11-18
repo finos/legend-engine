@@ -1,0 +1,243 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emberlantern2::mapping::LanternWorkshopMapping
+(
+  *test::emberlantern2::domain::LanternBatch[batch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberlantern2::store::LanternDB]workshop.lantern_batch.batch_id
+    )
+    ~mainTable [test::emberlantern2::store::LanternDB]workshop.lantern_batch
+    batchCode: [test::emberlantern2::store::LanternDB]workshop.lantern_batch.batch_code,
+    workshopCode: [test::emberlantern2::store::LanternDB]workshop.lantern_batch.workshop_code,
+    unitCount: [test::emberlantern2::store::LanternDB]workshop.lantern_batch.unit_count,
+    glazeRatio: [test::emberlantern2::store::LanternDB]workshop.lantern_batch.glaze_ratio,
+    wickGrade: [test::emberlantern2::store::LanternDB]workshop.lantern_batch.wick_grade,
+    firedOn: [test::emberlantern2::store::LanternDB]workshop.lantern_batch.fired_on
+  }
+
+  *test::emberlantern2::domain::WorkshopSite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberlantern2::store::LanternDB]workshop.workshop_site.site_id
+    )
+    ~mainTable [test::emberlantern2::store::LanternDB]workshop.workshop_site
+    workshopCode: [test::emberlantern2::store::LanternDB]workshop.workshop_site.workshop_code,
+    siteName: [test::emberlantern2::store::LanternDB]workshop.workshop_site.site_name,
+    regionCode: [test::emberlantern2::store::LanternDB]workshop.workshop_site.region_code
+  }
+
+  *test::emberlantern2::domain::KilnRun[run]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberlantern2::store::LanternDB]workshop.kiln_run.run_id
+    )
+    ~mainTable [test::emberlantern2::store::LanternDB]workshop.kiln_run
+    batchCode: [test::emberlantern2::store::LanternDB]workshop.kiln_run.batch_code,
+    kilnCode: [test::emberlantern2::store::LanternDB]workshop.kiln_run.kiln_code,
+    peakTempC: [test::emberlantern2::store::LanternDB]workshop.kiln_run.peak_temp_c
+  }
+
+  *test::emberlantern2::domain::BatchNote[note]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberlantern2::store::LanternDB]archive.batch_note.note_id
+    )
+    ~mainTable [test::emberlantern2::store::LanternDB]archive.batch_note
+    batchCode: [test::emberlantern2::store::LanternDB]archive.batch_note.batch_code,
+    noteText: [test::emberlantern2::store::LanternDB]archive.batch_note.note_text,
+    notedOn: [test::emberlantern2::store::LanternDB]archive.batch_note.noted_on
+  }
+
+  test::emberlantern2::domain::Batch_Site: Relational
+  {
+    AssociationMapping
+    (
+      site[batch, site]: [test::emberlantern2::store::LanternDB]@Batch_Site,
+      batchesAtSite[site, batch]: [test::emberlantern2::store::LanternDB]@Batch_Site
+    )
+  }
+
+  test::emberlantern2::domain::Batch_KilnRun: Relational
+  {
+    AssociationMapping
+    (
+      kilnRuns[batch, run]: [test::emberlantern2::store::LanternDB]@Batch_KilnRun,
+      firedBatch[run, batch]: [test::emberlantern2::store::LanternDB]@Batch_KilnRun
+    )
+  }
+
+  test::emberlantern2::domain::Batch_Note: Relational
+  {
+    AssociationMapping
+    (
+      notes[batch, note]: [test::emberlantern2::store::LanternDB]@Batch_Note,
+      notedBatch[note, batch]: [test::emberlantern2::store::LanternDB]@Batch_Note
+    )
+  }
+
+  testSuites:
+  [
+    siteTraversalSuite:
+    {
+      function: |test::emberlantern2::domain::LanternBatch.all(%2026-04-01)->project(
+        [
+          b|$b.batchCode,
+          b|$b.site.siteName,
+          b|$b.site.regionCode,
+          b|$b.unitCount
+        ],
+        [
+          'Batch Code',
+          'Site Name',
+          'Region Code',
+          'Unit Count'
+        ]
+      )->sort(
+        [
+          asc('Batch Code')
+        ]
+      );
+      tests:
+      [
+        versionsVisibleAtInstant:
+        {
+          doc: 'Only the version whose processing window contains the requested instant survives, and each surviving version resolves its site through the association join.';
+          data:
+          [
+            test::emberlantern2::store::LanternDB:
+              Relational
+              #{
+      workshop.lantern_batch:
+        'batch_id,batch_code,workshop_code,unit_count,glaze_ratio,wick_grade,fired_on,in_z,out_z\n'+
+        '1,B-100,WS-1,120,0.45,G1,2026-01-10,2026-01-01,2026-03-01\n'+
+        '1,B-100,WS-1,150,0.55,G1,2026-02-10,2026-03-01,9999-12-31\n'+
+        '2,B-200,WS-2,80,0.3,G2,2026-02-20,2026-02-01,9999-12-31\n'+
+        '3,B-300,WS-1,40,0.1,G3,2026-01-05,2026-01-01,2026-02-01\n'+
+        '4,B-400,WS-2,200,0.75,G2,2026-05-01,2026-06-01,9999-12-31\n';
+
+      workshop.workshop_site:
+        'site_id,workshop_code,site_name,region_code,in_z,out_z\n'+
+        '1,WS-1,Ember Lane Workshop,R-N,2026-01-01,9999-12-31\n'+
+        '2,WS-2,Harbour Glassworks,R-S,2026-01-01,9999-12-31\n';
+
+      workshop.kiln_run:
+        'run_id,batch_code,kiln_code,peak_temp_c,in_z,out_z\n'+
+        '1,B-100,K-1,980,2026-01-01,9999-12-31\n'+
+        '2,B-100,K-2,1040,2026-01-01,9999-12-31\n'+
+        '3,B-200,K-1,760,2026-01-01,2026-03-01\n'+
+        '4,B-300,K-3,880,2026-01-01,9999-12-31\n';
+
+      archive.batch_note:
+        'note_id,batch_code,note_text,noted_on,in_z,out_z\n'+
+        '1,B-100,Second firing recorded,2026-02-11,2026-01-01,9999-12-31\n'+
+        '2,B-200,Wick grade re-checked,2026-02-21,2026-01-01,9999-12-31\n'+
+        '3,B-300,Batch withdrawn from run,2026-01-06,2026-01-01,2026-02-01\n';
+              }#
+          ];
+          asserts:
+          [
+            traversedRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch Code":"B-100","Site Name":"Ember Lane Workshop","Region Code":"R-N","Unit Count":150},{"Batch Code":"B-200","Site Name":"Harbour Glassworks","Region Code":"R-S","Unit Count":80}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    collectionFanOutSuite:
+    {
+      function: |test::emberlantern2::domain::LanternBatch.all(%2026-04-01)->filter(
+        b|$b.batchCode == 'B-100'
+      )->project(
+        [
+          b|$b.batchCode,
+          b|$b.kilnRuns.kilnCode,
+          b|$b.kilnRuns.peakTempC,
+          b|$b.notes.noteText
+        ],
+        [
+          'Batch Code',
+          'Kiln Code',
+          'Peak Temp C',
+          'Note Text'
+        ]
+      )->sort(
+        [
+          asc('Kiln Code')
+        ]
+      );
+      tests:
+      [
+        collectionEndsFanOutRows:
+        {
+          doc: 'Both collection ends are traversed at the requested instant, so the two kiln runs visible then fan the batch out to one row each while the single open note repeats across them.';
+          data:
+          [
+            test::emberlantern2::store::LanternDB:
+              Relational
+              #{
+      workshop.lantern_batch:
+        'batch_id,batch_code,workshop_code,unit_count,glaze_ratio,wick_grade,fired_on,in_z,out_z\n'+
+        '1,B-100,WS-1,120,0.45,G1,2026-01-10,2026-01-01,2026-03-01\n'+
+        '1,B-100,WS-1,150,0.55,G1,2026-02-10,2026-03-01,9999-12-31\n'+
+        '2,B-200,WS-2,80,0.3,G2,2026-02-20,2026-02-01,9999-12-31\n'+
+        '3,B-300,WS-1,40,0.1,G3,2026-01-05,2026-01-01,2026-02-01\n'+
+        '4,B-400,WS-2,200,0.75,G2,2026-05-01,2026-06-01,9999-12-31\n';
+
+      workshop.workshop_site:
+        'site_id,workshop_code,site_name,region_code,in_z,out_z\n'+
+        '1,WS-1,Ember Lane Workshop,R-N,2026-01-01,9999-12-31\n'+
+        '2,WS-2,Harbour Glassworks,R-S,2026-01-01,9999-12-31\n';
+
+      workshop.kiln_run:
+        'run_id,batch_code,kiln_code,peak_temp_c,in_z,out_z\n'+
+        '1,B-100,K-1,980,2026-01-01,9999-12-31\n'+
+        '2,B-100,K-2,1040,2026-01-01,9999-12-31\n'+
+        '3,B-200,K-1,760,2026-01-01,2026-03-01\n'+
+        '4,B-300,K-3,880,2026-01-01,9999-12-31\n';
+
+      archive.batch_note:
+        'note_id,batch_code,note_text,noted_on,in_z,out_z\n'+
+        '1,B-100,Second firing recorded,2026-02-11,2026-01-01,9999-12-31\n'+
+        '2,B-200,Wick grade re-checked,2026-02-21,2026-01-01,9999-12-31\n'+
+        '3,B-300,Batch withdrawn from run,2026-01-06,2026-01-01,2026-02-01\n';
+              }#
+          ];
+          asserts:
+          [
+            fannedRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch Code":"B-100","Kiln Code":"K-1","Peak Temp C":980,"Note Text":"Second firing recorded"},{"Batch Code":"B-100","Kiln Code":"K-2","Peak Temp C":1040,"Note Text":"Second firing recorded"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

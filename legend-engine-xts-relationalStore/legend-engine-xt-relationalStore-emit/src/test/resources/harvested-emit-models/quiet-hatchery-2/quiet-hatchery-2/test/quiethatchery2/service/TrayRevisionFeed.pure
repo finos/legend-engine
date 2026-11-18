@@ -1,0 +1,164 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quiethatchery2::service::TrayRevisionFeed
+{
+  pattern: '/quiethatchery/v1/trays/revisions';
+  title: 'Tray Revision Feed';
+  owners:
+  [
+    'hatchery-records',
+    'incubation-watch'
+  ];
+  documentation: 'Resolves tray readings with two temporal arguments — a processing instant and a recording date supplied as separate parameters — and projects the wide raw reading alongside a year extracted from the incoming recording date, so a change of either instant moves both the row set and the derived column.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|test::quiethatchery2::domain::TrayRevision.all($processingDate, $businessDate)->project(
+      [
+        r|$businessDate->toOne()->year(),
+        r|$r.basisCode,
+        r|$r.trayCode,
+        r|$r.batchCode,
+        r|$r.recordDate,
+        r|$r.tallyMethod,
+        r|$r.earlyBand,
+        r|$r.lateBand,
+        r|$r.observationKind,
+        r|$r.eggCount,
+        r|$r.fryCount,
+        r|$r.trayNote
+      ],
+      [
+        'Report Year',
+        'Basis',
+        'Tray',
+        'Batch',
+        'Recorded On',
+        'Tally Method',
+        'Early Band',
+        'Late Band',
+        'Observation',
+        'Eggs',
+        'Fry',
+        'Note'
+      ]
+    )->sort(
+      [
+        asc('Tray')
+      ]
+    )};
+    mapping: test::quiethatchery2::mapping::TrayMapping;
+    runtime: test::quiethatchery2::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    revisionFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              hatchery.tray_revision:
+                'basis_code,tray_code,batch_code,record_date,tally_method,early_band,late_band,observation_kind,egg_count,fry_count,tray_note,in_z,out_z,from_z,thru_z\n'+
+                'PRIMARY,TR-01,BA-01,2026-06-01,HC,EA,LA,DIR,1200,900,steady warm run,2026-06-10,9999-12-31,2026-01-01,9999-12-31\n'+
+                'PRIMARY,TR-01,BA-01,2026-06-01,SS,EA,MI,INF,1180,880,superseded count,2026-06-01,2026-06-10,2026-01-01,9999-12-31\n'+
+                'REVIEW,TR-02,BA-02,2026-06-01,VE,MI,LA,DIR,,,,2026-06-10,9999-12-31,2026-01-01,9999-12-31\n'+
+                'PRIMARY,TR-03,BA-03,2026-06-01,ZZ,EA,LA,DIR,500,400,unmapped tally,2026-06-10,9999-12-31,2026-01-01,9999-12-31\n'+
+                'PRIMARY,TR-04,BA-04,2026-05-01,HC,EA,LA,DIR,700,600,recording window closed,2026-06-10,9999-12-31,2026-01-01,2026-04-01\n';
+              hatchery.hatch_pond:
+                'pond_code,pond_name,district_code,from_z,thru_z\n'+
+                'P-01,North Pond,D-01,2026-01-01,9999-12-31\n';
+              hatchery.hatch_district:
+                'district_code,district_name,from_z,thru_z\n'+
+                'D-01,Upper Valley,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        openVersionsAtBothInstants:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-15,
+            businessDate = %2026-06-01
+          ]
+          asserts:
+          [
+            threeVisibleVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Report Year":2026,"Basis":"PRIMARY","Tray":"TR-01","Batch":"BA-01","Recorded On":"2026-06-01","Tally Method":"HEADCOUNT","Early Band":"EARLY","Late Band":"LATE","Observation":"DIRECT","Eggs":1200,"Fry":900,"Note":"steady warm run"},{"Report Year":2026,"Basis":"REVIEW","Tray":"TR-02","Batch":"BA-02","Recorded On":"2026-06-01","Tally Method":"VOLUME_ESTIMATE","Early Band":"MIDDLE","Late Band":"LATE","Observation":"DIRECT","Eggs":null,"Fry":null,"Note":null},{"Report Year":2026,"Basis":"PRIMARY","Tray":"TR-03","Batch":"BA-03","Recorded On":"2026-06-01","Tally Method":null,"Early Band":"EARLY","Late Band":"LATE","Observation":"DIRECT","Eggs":500,"Fry":400,"Note":"unmapped tally"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierProcessingInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-05,
+            businessDate = %2026-06-01
+          ]
+          asserts:
+          [
+            onlySupersededVersion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Report Year":2026,"Basis":"PRIMARY","Tray":"TR-01","Batch":"BA-01","Recorded On":"2026-06-01","Tally Method":"SAMPLE_SCALE","Early Band":"EARLY","Late Band":"MIDDLE","Observation":"INFERRED","Eggs":1180,"Fry":880,"Note":"superseded count"}]';
+                  }#;
+              }#
+          ]
+        },
+        instantsBeforeAnyVersion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2019-01-01,
+            businessDate = %2019-01-01
+          ]
+          asserts:
+          [
+            noVisibleVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::jadeestuary::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Plumage stages recorded for a bird handled at an estuary ringing net.'} test::jadeestuary::domain::PlumageKind
+{
+  JUVENILE,
+  IMMATURE,
+  ADULT,
+  WORN
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Handling effort bands composed from the measured wing length and the session slot.'} test::jadeestuary::domain::EffortBand
+{
+  LIGHT,
+  STEADY,
+  HEAVY
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Moult stages composed from the recorded moult letter and whether moult is active.'} test::jadeestuary::domain::MoultStage
+{
+  PRIMARY_MOULT,
+  SECONDARY_MOULT,
+  BODY_MOULT,
+  NO_MOULT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Net lane grades composed from the lane open flag and the span it was rigged across.'} test::jadeestuary::domain::LaneGrade
+{
+  LANE_OPEN,
+  LANE_PARTIAL,
+  LANE_CLOSED
+}
+
+Class {meta::pure::profiles::doc.doc = 'The mesh rigged into a net lane, carried inline on the lane relation itself.'} test::jadeestuary::domain::LaneMesh
+{
+  meshCode: String[1];
+  meshLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A mist-net lane rigged across the estuary flats.'} test::jadeestuary::domain::NetLane
+{
+  laneCode: String[1];
+  laneName: String[1];
+  mesh: LaneMesh[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A person authorised to ring birds at the estuary nets.'} test::jadeestuary::domain::RingHolder
+{
+  holderCode: String[1];
+  holderName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A ring holder whose permit details are assembled from a second relation.'} test::jadeestuary::domain::CertifiedHolder extends RingHolder
+{
+  permitGrade: String[0..1];
+  issuedOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A counted net round on a lane, served either from the per-round detail or from the day rollup.'} test::jadeestuary::domain::LaneTally
+{
+  tallyCode: String[1];
+  laneCode: String[1];
+  tallyDay: StrictDate[0..1];
+  catchCount: Integer[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A ringing record versioned over the period it was the accepted record of its bird, with its plumage label, effort band, moult stage, lane grade and reference names all derived from its measurements and its join reach.'} test::jadeestuary::domain::RingRecord
+{
+  recordCode: String[1];
+  recordName: String[1];
+  wingMm: Integer[1];
+  massG: Float[1];
+  plumageLabel: String[0..1];
+  plumage: PlumageKind[0..1];
+  effort: EffortBand[0..1];
+  moult: MoultStage[0..1];
+  laneGrade: LaneGrade[0..1];
+  noteText: String[0..1];
+  surveySource: String[1];
+  massPerWing: Float[0..1];
+  wingIndex: Integer[0..1];
+  tagLength: Integer[0..1];
+  tagKey: String[0..1];
+  ringedFlag: String[0..1];
+  stationName: String[0..1];
+  zoneName: String[0..1];
+  wardenTeam: String[0..1];
+  baseName: String[0..1];
+  laneLogCount: Integer[0..1];
+  laneCatchTotal: Integer[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a ringing record to the ring holder who handled the bird.'} test::jadeestuary::domain::Record_Holder
+{
+  holder: RingHolder[0..1];
+  records: RingRecord[*];
+}

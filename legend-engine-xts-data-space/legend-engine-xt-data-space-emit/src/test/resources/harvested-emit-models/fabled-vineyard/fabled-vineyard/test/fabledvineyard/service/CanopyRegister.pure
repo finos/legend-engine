@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::fabledvineyard::service::CanopyRegister
+{
+  pattern: '/fabledvineyard/v1/canopy-register';
+  title: 'Fabled Vineyard - Canopy Register';
+  documentation: 'Flat register of the canopy readings, projecting the reading key, the observer, the measured leaf area, the shoot count and the reading date, with the ordered result truncated so the projection and the trailing limit are both visible in the plan.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'vineyard-canopy-crew'
+  ];
+  execution: Single
+  {
+    query: {|test::fabledvineyard::domain::CanopyReading.all()->project(
+      [
+        c|$c.readingCode,
+        c|$c.observerName,
+        c|$c.leafAreaM2,
+        c|$c.shootCount,
+        c|$c.readingOn
+      ],
+      [
+        'Reading',
+        'Observer',
+        'LeafArea',
+        'Shoots',
+        'ReadingOn'
+      ]
+    )->sort(
+      [
+        asc('Reading')
+      ]
+    )->limit(5);};
+    mapping: test::fabledvineyard::mapping::VineyardMapping;
+    runtime: test::fabledvineyard::runtime::VineyardWarehouseRuntime;
+  }
+  testSuites:
+  [
+    canopyRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          warehouseConnection:
+            Relational
+            #{
+              vineyard.canopy_reading:
+                'reading_code,observer_name,leaf_area_m2,shoot_count,reading_on,recorded_at\n'+
+                'CR-01,Ines Marlow,3.75,18,2024-06-14,2024-06-14 09:15:00\n'+
+                'CR-02,Osric Vale,2.5,11,2024-06-21,\n'+
+                'CR-03,,,,,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        nullBearingCanopyRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeCanopyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"CR-01","Observer":"Ines Marlow","LeafArea":3.75,"Shoots":18,"ReadingOn":"2024-06-14"},{"Reading":"CR-02","Observer":"Osric Vale","LeafArea":2.5,"Shoots":11,"ReadingOn":"2024-06-21"},{"Reading":"CR-03","Observer":null,"LeafArea":null,"Shoots":null,"ReadingOn":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::emberlantern2::connection::LanternH2Connection
+{
+  store: test::emberlantern2::store::LanternDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists workshop;',
+      'drop schema if exists archive;',
+      'create schema workshop;',
+      'create schema archive;',
+      'create table workshop.lantern_batch (batch_id integer not null, batch_code varchar(24) not null, workshop_code varchar(24) not null, unit_count integer not null, glaze_ratio double not null, wick_grade varchar(8) not null, fired_on date not null, in_z date not null, out_z date, primary key (batch_id, in_z));',
+      'create table workshop.workshop_site (site_id integer not null, workshop_code varchar(24) not null, site_name varchar(120) not null, region_code varchar(24) not null, in_z date not null, out_z date, primary key (site_id, in_z));',
+      'create table workshop.kiln_run (run_id integer not null, batch_code varchar(24) not null, kiln_code varchar(24) not null, peak_temp_c integer not null, in_z date not null, out_z date, primary key (run_id, in_z));',
+      'create table archive.batch_note (note_id integer not null, batch_code varchar(24) not null, note_text varchar(200) not null, noted_on date not null, in_z date not null, out_z date, primary key (note_id, in_z));'
+      ];
+  };
+  auth: DefaultH2
+  {
+  };
+}
+
+###Connection
+RelationalDatabaseConnection test::emberlantern2::connection::CatalogueH2Connection
+{
+  store: test::emberlantern2::store::CatalogueDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists catalogue;',
+      'create schema catalogue;',
+      'create table catalogue.glaze_recipe (recipe_id integer not null, wick_grade varchar(8) not null, recipe_name varchar(120) not null, blend_ratio double not null, in_z date not null, out_z date, primary key (recipe_id, in_z));'
+      ];
+  };
+  auth: DefaultH2
+  {
+  };
+}
+
+###Connection
+RelationalDatabaseConnection test::emberlantern2::connection::LanternWarehouseConnection
+{
+  store: test::emberlantern2::store::LanternDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'EXAMPLE_LANTERN_DB';
+    account: 'example_lantern_account';
+    warehouse: 'EXAMPLE_LANTERN_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'example_lantern_org';
+    role: 'WORKSHOP_READER';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'EXAMPLE_LANTERN_USER';
+    privateKeyVaultReference: 'example-lantern-private-key';
+    passPhraseVaultReference: 'example-lantern-pass-phrase';
+  };
+}

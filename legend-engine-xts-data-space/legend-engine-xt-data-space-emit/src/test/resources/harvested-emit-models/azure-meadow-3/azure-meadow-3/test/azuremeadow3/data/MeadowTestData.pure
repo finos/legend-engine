@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::azuremeadow3::data::MeadowTestData
+{
+  Relational
+  #{
+    meadowside.parcel_book:
+      'parcel_id,parcel_code,parcel_name,terrace_code,parcel_kind,access_code,plot_tally\n'+
+      '1,P-01,Upper Hay Parcel,T-1,ALPINE,TRACK,4\n'+
+      '2,P-02,Middle Hay Parcel,T-1,ALPINE,FOOT,2\n'+
+      '3,P-03,Lower Hay Parcel,T-2,MEADOW,TRACK,6\n'+
+      '4,P-04,Spring Hay Parcel,T-2,ALPINE,WINCH,3\n'+
+      '5,P-05,Ridge Hay Parcel,,ALPINE,ZZZ,1\n';
+    meadowside.alpine_parcel_detail:
+      'parcel_id,slope_pct,aspect_kind\n'+
+      '1,18.5,south facing\n'+
+      '2,24.0,east facing\n'+
+      '4,31.5,north facing\n';
+    terraceside.terrace_book:
+      'terrace_code,terrace_name,keeper_code\n'+
+      'T-1,Upper Terrace,K-1\n'+
+      'T-2,Lower Terrace,\n';
+    terraceside.keeper_roster:
+      'keeper_code,keeper_name\n'+
+      'K-1,Upper Meadow Keeper\n'+
+      'K-2,Lower Meadow Keeper\n';
+    meadowside.hay_cut:
+      'cut_id,cut_code,parcel_code,sward_code,dry_code,bale_tally,moisture_pct,stem_len_cm,cut_note,cut_on,from_z,thru_z\n'+
+      '1,MC-01,P-01,MEADOW,FIELD,5,12.0,40.0,first cut walk,2031-06-05,2031-01-01,9999-12-31\n'+
+      '2,MC-02,P-01,HERB,BARN,15,14.0,44.0,second cut walk,2031-06-06,2031-01-01,9999-12-31\n'+
+      '3,MC-03,P-02,SEDGE,WRAPPED,25,16.0,48.0,third cut walk,2031-06-07,2031-01-01,9999-12-31\n'+
+      '4,MC-04,P-02,ZZZ,FIELD,35,18.0,52.0,fourth cut walk,2031-06-08,2031-01-01,9999-12-31\n'+
+      '5,MC-05,P-03,MEADOW,BARN,45,20.0,56.0,fifth cut walk,2031-06-09,2031-01-01,9999-12-31\n'+
+      '6,MC-06,P-03,HERB,WRAPPED,55,22.0,60.0,sixth cut walk,2031-06-10,2031-01-01,9999-12-31\n'+
+      '7,MC-07,P-04,SEDGE,FIELD,65,24.0,64.0,seventh cut walk,2031-06-11,2031-01-01,9999-12-31\n'+
+      '8,MC-08,P-04,MEADOW,BARN,75,26.0,68.0,eighth cut walk,2031-06-12,2031-01-01,9999-12-31\n'+
+      '9,MC-09,P-05,HERB,WRAPPED,95,28.0,72.0,ninth cut walk,2031-06-13,2031-01-01,9999-12-31\n'+
+      '10,MC-10,P-01,MEADOW,FIELD,8,10.0,36.0,closed cut walk,2029-06-05,2029-01-01,2029-12-31\n';
+  }#
+}

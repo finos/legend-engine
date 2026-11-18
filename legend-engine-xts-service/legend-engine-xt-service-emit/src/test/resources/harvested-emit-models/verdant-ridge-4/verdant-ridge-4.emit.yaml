@@ -1,0 +1,44 @@
+name: verdant-ridge-4
+title: "Verdant Ridge 4 - store-less kiln firing log flattening a nested intake envelope onto inherited classes through enumeration-mapped codes"
+description: |
+  A store-less pottery-studio firing log in which one nested intake envelope - a batch label, a wide
+  firing record and a repeating rack-tag collection with its own piece collection - is flattened by a
+  single model-to-model mapping onto a kiln firing class and a fired piece class, each specialising a
+  base studio-record class. Five enumerations close the atmosphere, glaze, clay body, cone grade and
+  piece form vocabularies, and five enumeration mappings translate the inbound codes onto them, one of
+  them leaving an enumeration value with no source code so the unmapped path stays visible. The
+  transforms upper-case the kiln label, join the shelf block and slot into one shelf reference, default
+  an absent warp note to a fixed phrase while trimming it when present, and fold an absent or
+  unrecognised cone code onto the unknown grade through nested conditionals. A JSON model connection
+  and a runtime bind the mapping, and a single-execution service publishes the graph-fetched firing.
+  Assertion-backed coverage: a Mapping test and a Service test over the same envelope.
+modelSources:
+  model:
+    root: verdant-ridge-4
+    files:
+      - test/verdantridge4/connection/FiringIntakeConnection.pure
+      - test/verdantridge4/domain/KilnFirings.pure
+      - test/verdantridge4/mapping/KilnFiringMapping.pure
+      - test/verdantridge4/runtime/KilnRuntime.pure
+      - test/verdantridge4/service/PublishKilnFiring.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - class-inheritance
+  - enumeration-mapping
+  - kiln-firing-log
+  - model-to-model
+  - nested-envelope
+  - nested-target-collection
+  - service-test
+  - unmapped-enum-value

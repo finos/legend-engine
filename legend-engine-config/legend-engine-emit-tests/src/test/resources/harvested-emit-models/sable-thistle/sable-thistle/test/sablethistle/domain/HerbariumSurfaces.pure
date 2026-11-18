@@ -1,0 +1,47 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::sablethistle::domain::*;
+import meta::pure::profiles::*;
+import meta::external::query::graphQL::binding::*;
+
+Class {doc.doc = 'One mounted herbarium sheet as it is held in the collection: an identifier, the date it was accessioned, two curator contact strings and a set of mandatory handling flags that every fixture row must decide.'} test::sablethistle::domain::SpecimenSheet
+{
+  sheetCode: String[1];
+  accessionedOn: StrictDate[1];
+  curatorHandle: String[1];
+  curatorRoom: String[1];
+  mounted: Boolean[1];
+  digitised: Boolean[1];
+  quarantined: Boolean[1];
+  fragile: Boolean[1];
+  loanable: Boolean[1];
+}
+
+Class <<GraphQL.Query>> {doc.doc = 'Stateless read surface over the specimen sheets. The single parameterised property is a declared query contract with no implementation: it names one mandatory lookup key and a to-many result, so a binding generator treats it as a read entry point.'} test::sablethistle::domain::SpecimenReadSurface
+{
+  sheetsByCurator(handle: String[1])
+  {
+    []
+  }: SpecimenSheet[*];
+}
+
+Class <<GraphQL.Mutation>> {doc.doc = 'Stateless write surface over the specimen sheets. Its parameterised property takes one sheet and returns exactly one, narrowing the multiplicity of the accepted instance after checking that the sheet carries a code, so the read and write surfaces impose different result shapes on a consumer.'} test::sablethistle::domain::SpecimenWriteSurface
+{
+  acceptSheet(sheet: SpecimenSheet[1])
+  {
+    $sheet->filter(s | $s.sheetCode->length() > 0)->toOne()
+  }: SpecimenSheet[1];
+}

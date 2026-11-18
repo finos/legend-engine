@@ -1,0 +1,49 @@
+name: copper-tundra-3
+title: "Copper Tundra 3 - Point-In-Time Census Extent Behind A Wide Rollup And A Deduplicated Hierarchy Projection"
+description: |
+  A cold-ground nature-reserve census model whose two single-execution services are the whole
+  contract: both resolve the same business-temporal census class at the business date handed in
+  as their only parameter, so the parameter becomes a milestoning coordinate rather than an
+  ordinary predicate argument. One service keeps the observations recorded on or after a fixed
+  instant whose region code is one of three, then rolls two summed measures up behind a
+  twenty-seven column grouping key and publishes twenty-nine aliased columns whose names differ
+  from the properties beneath them. The other keeps only the rows whose certificate still runs
+  on or after the evaluation date - a day-granularity comparison against the current date, so
+  the plan has to materialise it at execution time - projects the seven hierarchy label and note
+  columns, and deduplicates them, because the milestoned extent repeats one hierarchy per
+  censused enclosure. Fixture windows straddle the business date in both directions.
+modelSources:
+  model:
+    root: copper-tundra-3
+    files:
+      - test/coppertundra3/connection/CensusH2Connection.pure
+      - test/coppertundra3/data/CensusSeasonData.pure
+      - test/coppertundra3/domain/CensusDomain.pure
+      - test/coppertundra3/mapping/CensusMapping.pure
+      - test/coppertundra3/runtime/CensusRuntime.pure
+      - test/coppertundra3/service/CensusHierarchyService.pure
+      - test/coppertundra3/service/CensusRollupService.pure
+      - test/coppertundra3/store/CensusDatabase.pure
+features:
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:date-arithmetic
+  - query:distinct
+  - query:filter
+  - query:group-by
+  - query:project
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - date-arithmetic
+  - deduplication
+  - group-by
+  - h2
+  - point-in-time
+  - relational
+  - reserve-census
+  - service-test
+  - tabular-data-set
+  - wide-group-by

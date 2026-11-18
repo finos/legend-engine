@@ -1,0 +1,374 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emberaviary::mapping::AviaryBaseMapping
+(
+  include mapping test::emberaviary::mapping::AviaryEnumMappings
+
+  *test::emberaviary::domain::WardenTeam[team]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberaviary::store::AviaryDB]reference.warden_team.warden_team_code
+    )
+    ~mainTable [test::emberaviary::store::AviaryDB]reference.warden_team
+    wardenTeamCode: [test::emberaviary::store::AviaryDB]reference.warden_team.warden_team_code,
+    teamName: [test::emberaviary::store::AviaryDB]reference.warden_team.team_name,
+    regionName: [test::emberaviary::store::AviaryDB]reference.warden_team.region_name
+  }
+
+  *test::emberaviary::domain::Habitat[habitat]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberaviary::store::AviaryDB]reference.habitat.habitat_code
+    )
+    ~mainTable [test::emberaviary::store::AviaryDB]reference.habitat
+    habitatCode: [test::emberaviary::store::AviaryDB]reference.habitat.habitat_code,
+    habitatName: [test::emberaviary::store::AviaryDB]reference.habitat.habitat_name,
+    canopyCode: [test::emberaviary::store::AviaryDB]reference.habitat.canopy_code,
+    boxCount: [test::emberaviary::store::AviaryDB]@Habitat_BoxSummary | [test::emberaviary::store::AviaryDB]field.habitat_box_view.box_count,
+    tallestMountCm: [test::emberaviary::store::AviaryDB]@Habitat_BoxSummary | [test::emberaviary::store::AviaryDB]field.habitat_box_view.tallest_mount_cm,
+    teamName: [test::emberaviary::store::AviaryDB]@Habitat_Team | [test::emberaviary::store::AviaryDB]reference.warden_team.team_name,
+    regionName: [test::emberaviary::store::AviaryDB]@Habitat_Team | [test::emberaviary::store::AviaryDB]reference.warden_team.region_name
+  }
+
+  *test::emberaviary::domain::Observer[observer]: Relational
+  {
+    ~filter [test::emberaviary::store::AviaryDB]ActiveObserver
+    ~primaryKey
+    (
+      [test::emberaviary::store::AviaryDB]reference.observer.observer_code
+    )
+    ~mainTable [test::emberaviary::store::AviaryDB]reference.observer
+    observerCode: [test::emberaviary::store::AviaryDB]reference.observer.observer_code,
+    observerName: [test::emberaviary::store::AviaryDB]reference.observer.observer_name,
+    role: EnumerationMapping RoleMapping: case
+          (
+            equal(toUpper(trim([test::emberaviary::store::AviaryDB]reference.observer.role_code)), 'WARDEN'),
+            'WARDEN',
+            case
+            (
+              equal(toUpper(trim([test::emberaviary::store::AviaryDB]reference.observer.role_code)), 'VOLUNTEER'),
+              'VOLUNTEER',
+              'TRAINEE'
+            )
+          ),
+    roleLabel: case
+               (
+                 equal(toUpper(trim([test::emberaviary::store::AviaryDB]reference.observer.role_code)), 'WARDEN'),
+                 concat('Warden of ', toUpper(trim([test::emberaviary::store::AviaryDB]reference.observer.observer_name))),
+                 case
+                 (
+                   equal(toUpper(trim([test::emberaviary::store::AviaryDB]reference.observer.role_code)), 'VOLUNTEER'),
+                   'Volunteer recorder',
+                   'Trainee recorder'
+                 )
+               )
+  }
+
+  *test::emberaviary::domain::NestBox[box]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberaviary::store::AviaryDB]field.nest_box.box_code
+    )
+    ~mainTable [test::emberaviary::store::AviaryDB]field.nest_box
+    boxCode: [test::emberaviary::store::AviaryDB]field.nest_box.box_code,
+    boxName: [test::emberaviary::store::AviaryDB]field.nest_box.box_name,
+    mountHeightCm: [test::emberaviary::store::AviaryDB]field.nest_box.mount_height_cm,
+    installedOn: [test::emberaviary::store::AviaryDB]field.nest_box.installed_on,
+    lastRepairedOn: [test::emberaviary::store::AviaryDB]field.nest_box.last_repaired_on,
+    habitatName: [test::emberaviary::store::AviaryDB]@Box_Habitat | [test::emberaviary::store::AviaryDB]reference.habitat.habitat_name,
+    regionName: [test::emberaviary::store::AviaryDB]@Box_Habitat > @Habitat_Team | [test::emberaviary::store::AviaryDB]reference.warden_team.region_name,
+    visitCount: [test::emberaviary::store::AviaryDB]@Box_VisitSummary | [test::emberaviary::store::AviaryDB]field.box_visit_view.visit_count,
+    totalChicks: [test::emberaviary::store::AviaryDB]@Box_VisitSummary | [test::emberaviary::store::AviaryDB]field.box_visit_view.total_chicks,
+    mostEggs: [test::emberaviary::store::AviaryDB]@Box_VisitSummary | [test::emberaviary::store::AviaryDB]field.box_visit_view.most_eggs,
+    mountLabel: case
+                (
+                  greaterThanEqual([test::emberaviary::store::AviaryDB]field.nest_box.mount_height_cm, 400),
+                  concat('CANOPY-', toUpper(trim([test::emberaviary::store::AviaryDB]field.nest_box.box_name))),
+                  case
+                  (
+                    greaterThanEqual(plus([test::emberaviary::store::AviaryDB]field.nest_box.mount_height_cm, 20), 250),
+                    concat('MID-', toUpper(trim([test::emberaviary::store::AviaryDB]field.nest_box.box_name))),
+                    case
+                    (
+                      isNull([test::emberaviary::store::AviaryDB]field.nest_box.last_repaired_on),
+                      'LOW-UNREPAIRED',
+                      case
+                      (
+                        lessThan(divide([test::emberaviary::store::AviaryDB]field.nest_box.mount_height_cm, 10), 8),
+                        'GROUND-REPAIRED',
+                        'LOW-REPAIRED'
+                      )
+                    )
+                  )
+                )
+  }
+
+  *test::emberaviary::domain::BoxVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberaviary::store::AviaryDB]field.box_visit.visit_code
+    )
+    ~mainTable [test::emberaviary::store::AviaryDB]field.box_visit
+    visitCode: [test::emberaviary::store::AviaryDB]field.box_visit.visit_code,
+    visitedOn: [test::emberaviary::store::AviaryDB]field.box_visit.visited_on,
+    chickCount: [test::emberaviary::store::AviaryDB]field.box_visit.chick_count,
+    eggCount: [test::emberaviary::store::AviaryDB]field.box_visit.egg_count,
+    condition: EnumerationMapping ConditionMapping: toUpper(trim([test::emberaviary::store::AviaryDB]field.box_visit.condition_code)),
+    ringMode: EnumerationMapping RingModeMapping: toUpper(trim([test::emberaviary::store::AviaryDB]field.box_visit.ring_mode_code)),
+    stage: EnumerationMapping StageMapping: case
+           (
+             greaterThan([test::emberaviary::store::AviaryDB]field.box_visit.chick_count, 0),
+             'C',
+             case
+             (
+               greaterThan([test::emberaviary::store::AviaryDB]field.box_visit.egg_count, 0),
+               'E',
+               case
+               (
+                 equal(toUpper(trim([test::emberaviary::store::AviaryDB]field.box_visit.ring_mode_code)), 'RC'),
+                 'F',
+                 'X'
+               )
+             )
+           ),
+    conditionNote: case
+                   (
+                     equal(toUpper(trim([test::emberaviary::store::AviaryDB]field.box_visit.condition_code)), 'DAMAGED'),
+                     concat('REPAIR-', toUpper(trim([test::emberaviary::store::AviaryDB]field.box_visit.box_code))),
+                     case
+                     (
+                       and
+                       (
+                         equal(toUpper(trim([test::emberaviary::store::AviaryDB]field.box_visit.condition_code)), 'WEATHERED'),
+                         greaterThan([test::emberaviary::store::AviaryDB]field.box_visit.chick_count, 0)
+                       ),
+                       'watch occupied box',
+                       case
+                       (
+                         or
+                         (
+                           greaterThan([test::emberaviary::store::AviaryDB]field.box_visit.egg_count, 0),
+                           greaterThan([test::emberaviary::store::AviaryDB]field.box_visit.chick_count, 0)
+                         ),
+                         'box in use',
+                         sqlNull()
+                       )
+                     )
+                   ),
+    boxName: [test::emberaviary::store::AviaryDB]@Visit_Box | [test::emberaviary::store::AviaryDB]field.nest_box.box_name,
+    habitatName: [test::emberaviary::store::AviaryDB]@Visit_Box > @Box_Habitat | [test::emberaviary::store::AviaryDB]reference.habitat.habitat_name,
+    canopyCode: [test::emberaviary::store::AviaryDB]@Visit_Box > @Box_Habitat | [test::emberaviary::store::AviaryDB]reference.habitat.canopy_code,
+    regionName: [test::emberaviary::store::AviaryDB]@Visit_Box > @Box_Habitat > @Habitat_Team | [test::emberaviary::store::AviaryDB]reference.warden_team.region_name,
+    observerName: [test::emberaviary::store::AviaryDB]@Visit_Observer | [test::emberaviary::store::AviaryDB]reference.observer.observer_name
+  }
+
+  testSuites:
+  [
+    visitReachSuite:
+    {
+      function: |test::emberaviary::domain::BoxVisit.all()->project(
+  [
+    v|$v.visitCode,
+    v|$v.boxName,
+    v|$v.habitatName,
+    v|$v.regionName,
+    v|$v.observerName,
+    v|$v.conditionNote
+  ],
+  [
+    'VisitCode',
+    'BoxName',
+    'HabitatName',
+    'RegionName',
+    'ObserverName',
+    'ConditionNote'
+  ]
+)->sort(
+  [
+    asc('VisitCode')
+  ]
+);
+      tests:
+      [
+        threeHopReachAndEveryConditionArm:
+        {
+          doc: 'Walks a visit to its box, the box to the habitat it hangs in and the habitat on to the region its warden team covers, so the three-hop join path is exercised, while the condition transform hits the repair arm, the occupied weathered arm, the in-use arm and the arm that leaves the note unset.';
+          data:
+          [
+            test::emberaviary::store::AviaryDB:
+              Relational
+              #{
+                reference.warden_team:
+                  'warden_team_code,team_name,region_name\n'+
+                  'WT-N,North Wardens,Northern Reserve\n'+
+                  'WT-S,South Wardens,Southern Reserve\n';
+                reference.habitat:
+                  'habitat_code,habitat_name,warden_team_code,canopy_code\n'+
+                  'HB-01,Alder Carr,WT-N,CLOSED\n'+
+                  'HB-02,Birch Heath,WT-S,OPEN\n';
+                reference.observer:
+                  'observer_code,observer_name,role_code,retired_flag\n'+
+                  'OB-01,Rowan Field,WARDEN,N\n'+
+                  'OB-02,Sage Lane,VOLUNTEER,N\n';
+                field.nest_box:
+                  'box_code,box_name,habitat_code,mount_height_cm,installed_on,last_repaired_on\n'+
+                  'BX-01,Alder Box One,HB-01,420,2022-02-01,2025-03-01\n'+
+                  'BX-02,Birch Box Two,HB-02,180,2023-03-02,\n';
+                field.box_visit:
+                  'visit_code,box_code,observer_code,visited_on,chick_count,egg_count,condition_code,ring_mode_code,visit_note\n'+
+                  'VS-01,BX-01,OB-01,2026-04-01,3,0,DAMAGED,NR,brood ringed\n'+
+                  'VS-02,BX-01,OB-01,2026-04-08,2,1,WEATHERED,RC,second brood\n'+
+                  'VS-03,BX-02,OB-02,2026-04-09,0,4,SOUND,NN,clutch counted\n'+
+                  'VS-04,BX-02,OB-02,2026-04-16,0,0,SOUND,NN,box empty\n';
+              }#
+          ];
+          asserts:
+          [
+            everyVisitReachesItsRegion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VisitCode":"VS-01","BoxName":"Alder Box One","HabitatName":"Alder Carr","RegionName":"Northern Reserve","ObserverName":"Rowan Field","ConditionNote":"REPAIR-BX-01"},{"VisitCode":"VS-02","BoxName":"Alder Box One","HabitatName":"Alder Carr","RegionName":"Northern Reserve","ObserverName":"Rowan Field","ConditionNote":"watch occupied box"},{"VisitCode":"VS-03","BoxName":"Birch Box Two","HabitatName":"Birch Heath","RegionName":"Southern Reserve","ObserverName":"Sage Lane","ConditionNote":"box in use"},{"VisitCode":"VS-04","BoxName":"Birch Box Two","HabitatName":"Birch Heath","RegionName":"Southern Reserve","ObserverName":"Sage Lane","ConditionNote":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    boxSummarySuite:
+    {
+      function: |test::emberaviary::domain::NestBox.all()->project(
+  [
+    b|$b.boxCode,
+    b|$b.mountLabel,
+    b|$b.heightBand(),
+    b|$b.visitCount,
+    b|$b.totalChicks,
+    b|$b.mostEggs
+  ],
+  [
+    'BoxCode',
+    'MountLabel',
+    'HeightBand',
+    'VisitCount',
+    'TotalChicks',
+    'MostEggs'
+  ]
+)->sort(
+  [
+    asc('BoxCode')
+  ]
+);
+      tests:
+      [
+        viewBackedTotalsAndEveryMountArm:
+        {
+          doc: 'Reads the grouped visit view through the view-backed totals for a box visited twice, a box visited once and a box never visited, and hits the canopy, mid-trunk, unrepaired-low and repaired-ground arms of the mount transform alongside the derived height band.';
+          data:
+          [
+            test::emberaviary::store::AviaryDB:
+              Relational
+              #{
+                field.nest_box:
+                  'box_code,box_name,habitat_code,mount_height_cm,installed_on,last_repaired_on\n'+
+                  'BX-01,Alder Box One,HB-01,420,2022-02-01,2025-03-01\n'+
+                  'BX-02,Birch Box Two,HB-02,240,2023-03-02,2025-04-02\n'+
+                  'BX-03,Cedar Box Three,HB-02,150,2024-04-03,\n'+
+                  'BX-04,Dogwood Box Four,HB-02,60,2024-05-04,2025-06-04\n';
+                field.box_visit:
+                  'visit_code,box_code,observer_code,visited_on,chick_count,egg_count,condition_code,ring_mode_code,visit_note\n'+
+                  'VS-01,BX-01,OB-01,2026-04-01,3,0,DAMAGED,NR,brood ringed\n'+
+                  'VS-02,BX-01,OB-01,2026-04-08,2,1,WEATHERED,RC,second brood\n'+
+                  'VS-03,BX-02,OB-02,2026-04-09,0,4,SOUND,NN,clutch counted\n';
+              }#
+          ];
+          asserts:
+          [
+            totalsPerBoxAndEveryMountArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BoxCode":"BX-01","MountLabel":"CANOPY-ALDER BOX ONE","HeightBand":"CANOPY","VisitCount":2,"TotalChicks":5,"MostEggs":1},{"BoxCode":"BX-02","MountLabel":"MID-BIRCH BOX TWO","HeightBand":"LOW-TRUNK","VisitCount":1,"TotalChicks":0,"MostEggs":4},{"BoxCode":"BX-03","MountLabel":"LOW-UNREPAIRED","HeightBand":"LOW-TRUNK","VisitCount":null,"TotalChicks":null,"MostEggs":null},{"BoxCode":"BX-04","MountLabel":"GROUND-REPAIRED","HeightBand":"GROUND","VisitCount":null,"TotalChicks":null,"MostEggs":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    observerRoleSuite:
+    {
+      function: |test::emberaviary::domain::Observer.all()->project(
+  [
+    o|$o.observerCode,
+    o|$o.observerName,
+    o|$o.roleLabel
+  ],
+  [
+    'ObserverCode',
+    'ObserverName',
+    'RoleLabel'
+  ]
+)->sort(
+  [
+    asc('ObserverCode')
+  ]
+);
+      tests:
+      [
+        retiredObserverFilteredOutAndEveryRoleArm:
+        {
+          doc: 'The set filter keeps the retired observer out of the extent, and the remaining rows hit the warden, volunteer and trainee arms of the role transform.';
+          data:
+          [
+            test::emberaviary::store::AviaryDB:
+              Relational
+              #{
+                reference.observer:
+                  'observer_code,observer_name,role_code,retired_flag\n'+
+                  'OB-01,Rowan Field,WARDEN,N\n'+
+                  'OB-02,Sage Lane,VOLUNTEER,N\n'+
+                  'OB-03,Tansy Brook,TRAINEE,N\n'+
+                  'OB-04,Willow Mere,WARDEN,Y\n';
+              }#
+          ];
+          asserts:
+          [
+            threeActiveObserversLabelled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ObserverCode":"OB-01","ObserverName":"Rowan Field","RoleLabel":"Warden of ROWAN FIELD"},{"ObserverCode":"OB-02","ObserverName":"Sage Lane","RoleLabel":"Volunteer recorder"},{"ObserverCode":"OB-03","ObserverName":"Tansy Brook","RoleLabel":"Trainee recorder"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

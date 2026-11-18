@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::easternthicket3::domain::*;
+
+Association {meta::pure::profiles::doc.doc = 'Milestoned link between a thicket plot and the stands growing in it.'} test::easternthicket3::domain::PlotStands
+{
+  plot: ThicketPlot[0..1];
+  stands: ShrubStand[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Milestoned link between a stand and the canopy observations recorded against it.'} test::easternthicket3::domain::StandCanopyNotes
+{
+  stand: ShrubStand[0..1];
+  canopyNotes: CanopyNote[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Link between a warden crew and the trail segments it walks.'} test::easternthicket3::domain::CrewTrails
+{
+  crew: WardenCrew[0..1];
+  segments: TrailSegment[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Link between a trail segment and the soil probes sunk alongside it.'} test::easternthicket3::domain::SegmentProbes
+{
+  segment: TrailSegment[0..1];
+  probes: SoilProbe[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Milestoned link between a thicket plot and the pruning visits it received.'} test::easternthicket3::domain::PlotPruningVisits
+{
+  visitedPlot: ThicketPlot[0..1];
+  pruningVisits: PruningVisit[*];
+}

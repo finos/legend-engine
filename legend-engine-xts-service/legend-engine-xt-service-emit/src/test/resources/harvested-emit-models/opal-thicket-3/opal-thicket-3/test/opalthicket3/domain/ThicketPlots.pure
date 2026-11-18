@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::opalthicket3::domain::*;
+
+Class test::opalthicket3::domain::PlotIntakeRecord
+{
+  plotRef: Integer[1];
+  plotLabel: String[1];
+  capturedOn: StrictDate[1];
+  canopyHeightM: Float[1];
+  canopyCoverPct: Float[1];
+  stemTally: Integer[1];
+  saplingTally: Integer[1];
+  shrubTally: Integer[1];
+  deadwoodTally: Integer[1];
+  soilMoisturePct: Float[1];
+  soilPh: Float[1];
+  leafLitterDepthCm: Float[1];
+  slopeDegrees: Float[1];
+  aspectDegrees: Float[1];
+  elevationM: Float[1];
+  plotAreaSqM: Float[1];
+  dominantSpecies: String[1];
+  secondarySpecies: String[1];
+  regenerationClass: String[1];
+  disturbanceNote: String[0..1];
+  surveyorAlias: String[1];
+  transectCode: String[1];
+  gridBlock: String[1];
+  gridCell: String[1];
+  protectedFlag: Boolean[1];
+  lastBurnYear: Integer[0..1];
+  windowDays: Integer[1];
+}
+
+Class test::opalthicket3::domain::PlotIntakeEnvelope
+{
+  batchLabel: String[1];
+  plot: PlotIntakeRecord[1];
+  bandTags: String[*];
+}
+
+Class test::opalthicket3::domain::HabitatSurvey
+{
+  plotId: Integer[1];
+  plotName: String[1];
+  surveyedOn: StrictDate[1];
+  batchLabel: String[1];
+}
+
+Class test::opalthicket3::domain::ThicketPlot extends HabitatSurvey
+{
+  canopyHeightM: Float[1];
+  canopyCoverPct: Float[1];
+  stemCount: Integer[1];
+  saplingCount: Integer[1];
+  shrubCount: Integer[1];
+  deadwoodCount: Integer[1];
+  soilMoisturePct: Float[1];
+  soilPh: Float[1];
+  leafLitterDepthCm: Float[1];
+  slopeDegrees: Float[1];
+  aspectDegrees: Float[1];
+  elevationM: Float[1];
+  plotAreaSqM: Float[1];
+  dominantSpecies: String[1];
+  secondarySpecies: String[1];
+  understoryClass: String[1];
+  regenerationClass: String[1];
+  disturbanceNote: String[1];
+  surveyorAlias: String[1];
+  transectCode: String[1];
+  gridReference: String[1];
+  isProtected: Boolean[1];
+  lastBurnYear: Integer[0..1];
+  observationWindowDays: Integer[1];
+  bandTags: String[*];
+}

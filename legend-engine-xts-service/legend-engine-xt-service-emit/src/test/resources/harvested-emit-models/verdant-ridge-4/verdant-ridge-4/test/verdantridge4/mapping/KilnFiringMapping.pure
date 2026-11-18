@@ -1,0 +1,189 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantridge4::mapping::KilnFiringMapping
+(
+  test::verdantridge4::domain::Atmosphere: EnumerationMapping AtmosphereMapping
+  {
+    OXIDISING: ['OX', 'OXI'],
+    REDUCING: ['RED', 'REDUCE'],
+    NEUTRAL: ['NEU']
+  }
+
+  test::verdantridge4::domain::GlazeKind: EnumerationMapping GlazeKindMapping
+  {
+    CELADON: ['CEL'],
+    TENMOKU: ['TEN'],
+    SHINO: ['SHI']
+  }
+
+  test::verdantridge4::domain::ClayBody: EnumerationMapping ClayBodyMapping
+  {
+    STONEWARE: ['STONE'],
+    PORCELAIN: ['PORC'],
+    EARTHENWARE: ['EARTH']
+  }
+
+  test::verdantridge4::domain::ConeGrade: EnumerationMapping ConeGradeMapping
+  {
+    CONE_06: ['C06'],
+    CONE_08: ['C08'],
+    CONE_10: ['C10'],
+    UNKNOWN: ['CONE_UNKNOWN']
+  }
+
+  test::verdantridge4::domain::PieceForm: EnumerationMapping PieceFormMapping
+  {
+    BOWL: ['BWL'],
+    VASE: ['VSE'],
+    PLATE: ['PLT'],
+    TILE: ['TIL']
+  }
+
+  *test::verdantridge4::domain::KilnFiring[kiln_firing]: Pure
+  {
+    ~src test::verdantridge4::domain::FiringIntakeEnvelope
+    firingId: $src.firing.firingRef,
+    firingName: $src.firing.kilnLabel->toUpper(),
+    firedOn: $src.firing.firedOn,
+    batchLabel: $src.batchLabel,
+    atmosphere: EnumerationMapping AtmosphereMapping: $src.firing.atmosphereCode,
+    glaze: EnumerationMapping GlazeKindMapping: $src.firing.glazeCode->trim(),
+    clay: EnumerationMapping ClayBodyMapping: $src.firing.clayCode,
+    cone: EnumerationMapping ConeGradeMapping: if($src.firing.coneCode->isEmpty(),
+                                                 | 'CONE_UNKNOWN',
+                                                 | if($src.firing.coneCode->toOne()->startsWith('C'),
+                                                   | $src.firing.coneCode->toOne()->trim(),
+                                                   | 'CONE_UNKNOWN'
+                                                 )
+                                               ),
+    peakTempC: $src.firing.peakTempC,
+    holdMinutes: $src.firing.holdMinutes,
+    shelfReference: $src.firing.shelfBlock + '-' + $src.firing.shelfSlot,
+    warpNote: if($src.firing.warpNote->isEmpty(),
+                 | 'none recorded',
+                 | $src.firing.warpNote->toOne()->trim()
+               ),
+    operatorAlias: $src.firing.operatorAlias,
+    pieceCount: $src.firing.pieces->size(),
+    rackTags: $src.rackTags,
+    pieces[fired_piece]: $src.firing.pieces
+  }
+
+  test::verdantridge4::domain::FiredPiece[fired_piece]: Pure
+  {
+    ~src test::verdantridge4::domain::PieceIntakeRecord
+    pieceTag: $src.pieceTag,
+    form: EnumerationMapping PieceFormMapping: $src.formCode,
+    heightCm: $src.heightCm,
+    wallNote: if($src.wallMm->isEmpty(),
+                 | 'wall not measured',
+                 | 'wall ' + $src.wallMm->toOne()->toString() + 'mm'
+               )
+  }
+
+  testSuites:
+  [
+    kilnFiringTransformSuite:
+    {
+      function: |test::verdantridge4::domain::KilnFiring.all()->graphFetch(
+        #{
+          test::verdantridge4::domain::KilnFiring{
+            firingId,
+            firingName,
+            firedOn,
+            batchLabel,
+            atmosphere,
+            glaze,
+            clay,
+            cone,
+            peakTempC,
+            holdMinutes,
+            shelfReference,
+            warpNote,
+            operatorAlias,
+            pieceCount,
+            rackTags,
+            pieces{
+              pieceTag,
+              form,
+              heightCm,
+              wallNote
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdantridge4::domain::KilnFiring{
+            firingId,
+            firingName,
+            firedOn,
+            batchLabel,
+            atmosphere,
+            glaze,
+            clay,
+            cone,
+            peakTempC,
+            holdMinutes,
+            shelfReference,
+            warpNote,
+            operatorAlias,
+            pieceCount,
+            rackTags,
+            pieces{
+              pieceTag,
+              form,
+              heightCm,
+              wallNote
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        firedBatch:
+        {
+          doc: 'Flattens one intake envelope onto the inherited firing and piece classes, decoding the atmosphere, glaze, clay and cone codes through their enumeration mappings, folding the cone code through the nested conditional, and defaulting the piece with no measured wall.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantridge4::domain::FiringIntakeEnvelope:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"batchLabel":"autumn-glaze-run","firing":{"firingRef":57,"kilnLabel":"north ridge kiln","firedOn":"2026-04-09","peakTempC":1265.5,"holdMinutes":45,"atmosphereCode":"RED","glazeCode":" CEL ","clayCode":"STONE","coneCode":"C10","operatorAlias":"studio-lead-b","shelfBlock":"NR","shelfSlot":"0312","warpNote":"  slight lean on rim  ","pieceTally":2,"pieces":[{"pieceTag":"P-01","formCode":"BWL","heightCm":9.5,"wallMm":4},{"pieceTag":"P-02","formCode":"VSE","heightCm":21.5}]},"rackTags":["upper","door"]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"firingId":57,"firingName":"NORTH RIDGE KILN","firedOn":"2026-04-09","batchLabel":"autumn-glaze-run","atmosphere":"REDUCING","glaze":"CELADON","clay":"STONEWARE","cone":"CONE_10","peakTempC":1265.5,"holdMinutes":45,"shelfReference":"NR-0312","warpNote":"slight lean on rim","operatorAlias":"studio-lead-b","pieceCount":2,"rackTags":["upper","door"],"pieces":[{"pieceTag":"P-01","form":"BOWL","heightCm":9.5,"wallNote":"wall 4mm"},{"pieceTag":"P-02","form":"VASE","heightCm":21.5,"wallNote":"wall not measured"}]}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

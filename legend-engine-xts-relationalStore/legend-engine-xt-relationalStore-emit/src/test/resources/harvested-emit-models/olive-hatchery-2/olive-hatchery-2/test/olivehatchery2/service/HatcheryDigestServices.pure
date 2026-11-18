@@ -1,0 +1,354 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::olivehatchery2::service::BatchVigourDigest
+{
+  pattern: '/olivehatchery/v1/batch-vigour-digest';
+  title: 'Olive Hatchery - Batch Vigour Digest';
+  owners:
+  [
+    'shellfish-hatchery-rearing',
+    'inlet-site-stewardship'
+  ];
+  documentation: 'Selects rearing batches through a caller-supplied mode: nested two-arm branches inside the predicate decide which vigour band the membership test is run against, conjoined with a stocking floor. The tabular result is then extended with a re-exposed band column and restricted to the published column list, so predicate, projection and result shaping all sit in one endpoint.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {mode: String[1], minStocked: Integer[1]|test::olivehatchery2::domain::LarvalBatch.all()->filter(
+      b|(if($mode == 'HEALTHY',
+             | $b.vigourLabel->in(['VIGOROUS SWIMMERS', 'STRONG SWIMMERS', 'STEADY SWIMMERS']),
+             | if($mode == 'WEAK',
+                  | $b.vigourLabel->in(['WEAK SWIMMERS', 'FALTERING SWIMMERS', 'FAILING SWIMMERS']),
+                  | $b.vigourLabel == 'UNRECORDED VIGOUR'))) && ($b.stockedCount >= $minStocked)
+    )->project(
+      [
+        col(
+          b|$b.batchCode,
+          'Batch'
+        ),
+        col(
+          b|if($b.stockedCount >= 100000, | 'FULL TANK', | 'PART TANK'),
+          'Fill'
+        ),
+        col(
+          b|meta::pure::functions::date::dateDiff($b.stockedOn, %2026-03-01, meta::pure::functions::date::DurationUnit.DAYS),
+          'AgeDays'
+        ),
+        col(
+          b|$b.vigourLabel,
+          'Vigour'
+        )
+      ]
+    )->extend(
+      meta::pure::tds::col(
+        r: TDSRow[1]|$r.getString('Vigour'),
+        'VigourBand'
+      )
+    )->restrict(
+      [
+        'Batch',
+        'Fill',
+        'AgeDays',
+        'VigourBand'
+      ]
+    )->sort([asc('Batch')])};
+    mapping: test::olivehatchery2::mapping::HatcheryRegisterMapping;
+    runtime: test::olivehatchery2::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    batchVigourDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              hatchery.larval_batch:
+                'batch_id,run_id,batch_code,tank_code,stocked_count,stocked_on,vigour_code,record_code,batch_note\n'+
+                '1,1,LB-101,TK-1,120000,2026-02-03,V1,OH-101,seeded from first run\n'+
+                '2,1,LB-102,TK-1,110000,2026-02-04,V2,OH-102,\n'+
+                '3,1,LB-103,TK-2,95000,2026-02-05,V3,OH-103,split from tank one\n'+
+                '4,2,LB-104,TK-2,88000,2026-02-17,V4,OH-104,\n'+
+                '7,2,LB-107,TK-3,52000,2026-02-20,V7,OH-107,thin walls\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        healthyBatchesAboveTheStockingFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            mode = 'HEALTHY',
+            minStocked = 90000
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"LB-101","Fill":"FULL TANK","AgeDays":26,"VigourBand":"VIGOROUS SWIMMERS"},{"Batch":"LB-102","Fill":"FULL TANK","AgeDays":25,"VigourBand":"STRONG SWIMMERS"},{"Batch":"LB-103","Fill":"PART TANK","AgeDays":24,"VigourBand":"STEADY SWIMMERS"}]';
+                  }#;
+              }#
+          ]
+        },
+        weakBatchesTakeTheSecondBranch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            mode = 'WEAK',
+            minStocked = 0
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"LB-107","Fill":"PART TANK","AgeDays":9,"VigourBand":"FALTERING SWIMMERS"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::olivehatchery2::service::TankSurvivalRollup
+{
+  pattern: '/olivehatchery/v1/tank-survival-rollup';
+  title: 'Olive Hatchery - Tank Survival Rollup';
+  owners:
+  [
+    'shellfish-hatchery-rearing',
+    'inlet-site-stewardship'
+  ];
+  documentation: 'Groups the dated tank readings by the rearing batch and by the calendar year and month the reading was taken in, then sums a two-arm branch that contributes the larval density only when the reading cleared the caller-supplied survival floor and a zero literal otherwise, so the branch is evaluated inside the grouped scan.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minSurvival: Integer[1]|test::olivehatchery2::domain::TankReading.all()->groupBy(
+      [
+        r|$r.readBatch.batchCode,
+        r|$r.readOn->year(),
+        r|$r.readOn->monthNumber()
+      ],
+      [
+        agg(r|if($r.survivalPercent >= $minSurvival, | $r.larvalDensity, | 0), y|$y->sum()),
+        agg(r|$r.larvalDensity, y|$y->count())
+      ],
+      [
+        'Batch',
+        'ReadYear',
+        'ReadMonth',
+        'StrongDensity',
+        'Reads'
+      ]
+    )->sort([asc('Batch')])};
+    mapping: test::olivehatchery2::mapping::HatcheryRegisterMapping;
+    runtime: test::olivehatchery2::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    tankSurvivalRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              hatchery.tank_reading:
+                'reading_id,batch_id,read_on,larval_density,survival_pct,feed_grams\n'+
+                '1,1,2026-02-10,900,88,12.5\n'+
+                '2,1,2026-02-17,700,74,10.0\n'+
+                '3,2,2026-02-11,850,91,11.0\n';
+
+              hatchery.larval_batch:
+                'batch_id,run_id,batch_code,tank_code,stocked_count,stocked_on,vigour_code,record_code,batch_note\n'+
+                '1,1,LB-101,TK-1,120000,2026-02-03,V1,OH-101,seeded from first run\n'+
+                '2,1,LB-102,TK-1,110000,2026-02-04,V5,OH-102,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        survivalByBatchAndMonth:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minSurvival = 80
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"LB-101","ReadYear":2026,"ReadMonth":2,"StrongDensity":900,"Reads":2},{"Batch":"LB-102","ReadYear":2026,"ReadMonth":2,"StrongDensity":850,"Reads":1}]';
+                  }#;
+              }#
+          ]
+        },
+        aHigherFloorEmptiesTheBranch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minSurvival = 95
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"LB-101","ReadYear":2026,"ReadMonth":2,"StrongDensity":0,"Reads":2},{"Batch":"LB-102","ReadYear":2026,"ReadMonth":2,"StrongDensity":0,"Reads":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::olivehatchery2::service::SiteThroughputTally
+{
+  pattern: '/olivehatchery/v1/site-throughput-tally';
+  title: 'Olive Hatchery - Site Throughput Tally';
+  owners:
+  [
+    'shellfish-hatchery-rearing'
+  ];
+  documentation: 'Keeps the batches reared in one of the named halls whose stocking day, shifted forward by one day, falls in or before the caller-supplied reporting week, groups them by the hatchery site reached through the tank and hall hops, and re-exposes the grouping key under its published name before restricting to the final column list.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {reportingWeek: Integer[1]|test::olivehatchery2::domain::LarvalBatch.all()->filter(
+      b|($b.tank.hall.hallName->in(['North Rearing Hall', 'South Rearing Hall'])) && ($b.stockedOn->adjust(1, meta::pure::functions::date::DurationUnit.DAYS)->weekOfYear() <= $reportingWeek)
+    )->groupBy(
+      [
+        b|$b.tank.hall.site.siteName
+      ],
+      [
+        agg(b|$b.stockedCount, y|$y->sum()),
+        agg(b|$b.stockedCount, y|$y->count())
+      ],
+      [
+        'Site',
+        'StockedTotal',
+        'Batches'
+      ]
+    )->extend(
+      meta::pure::tds::col(
+        r: TDSRow[1]|$r.getString('Site'),
+        'SiteLabel'
+      )
+    )->restrict(
+      [
+        'SiteLabel',
+        'StockedTotal',
+        'Batches'
+      ]
+    )->sort([asc('SiteLabel')])};
+    mapping: test::olivehatchery2::mapping::HatcheryRegisterMapping;
+    runtime: test::olivehatchery2::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    siteThroughputTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              hatchery.larval_batch:
+                'batch_id,run_id,batch_code,tank_code,stocked_count,stocked_on,vigour_code,record_code,batch_note\n'+
+                '1,1,LB-101,TK-1,120000,2026-02-03,V1,OH-101,seeded from first run\n'+
+                '3,1,LB-103,TK-2,95000,2026-02-05,V3,OH-103,split from tank one\n'+
+                '6,2,LB-106,TK-3,64000,2026-02-19,V6,OH-106,\n';
+
+              facility.rearing_tank:
+                'tank_code,hall_code,volume_litres\n'+
+                'TK-1,HL-1,4000\n'+
+                'TK-2,HL-1,6000\n'+
+                'TK-3,HL-2,8000\n';
+
+              facility.hatchery_hall:
+                'hall_code,site_code,hall_name\n'+
+                'HL-1,ST-1,North Rearing Hall\n'+
+                'HL-2,ST-2,South Rearing Hall\n';
+
+              facility.hatchery_site:
+                'site_code,site_name,shoreline\n'+
+                'ST-1,Cold Inlet Hatchery,North Shore\n'+
+                'ST-2,Warm Inlet Hatchery,South Shore\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        throughputBySite:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            reportingWeek = 40
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SiteLabel":"Cold Inlet Hatchery","StockedTotal":215000,"Batches":2},{"SiteLabel":"Warm Inlet Hatchery","StockedTotal":64000,"Batches":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

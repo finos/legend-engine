@@ -1,0 +1,178 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::frostedthicket::profile::*;
+import test::frostedthicket::record::*;
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'How old a caught bird was judged to be when it was handled.'} test::frostedthicket::record::AgeClass
+{
+  NESTLING,
+  JUVENILE,
+  FIRST_WINTER,
+  ADULT,
+  UNKNOWN
+}
+
+Enum {doc.doc = 'Which taxonomic rank the recorded name sits at. Some catches are only identified to a coarse rank.'} test::frostedthicket::record::TaxonRank
+{
+  SPECIES,
+  SUBSPECIES,
+  SPECIES_PAIR,
+  GENUS
+}
+
+Enum {doc.doc = 'The lettered series a ring blank was issued under. The series decides the ring size, so it is kept on the ring record and not on the catch.'} test::frostedthicket::record::RingSeries
+{
+  SMALL_PASSERINE,
+  LARGE_PASSERINE,
+  WADER
+}
+
+Enum {doc.doc = 'How worn the feather tract looked at the moment of handling.'} test::frostedthicket::record::FeatherWear
+{
+  FRESH,
+  SLIGHT,
+  MODERATE,
+  HEAVY
+}
+
+Enum {doc.doc = 'Stage of feather replacement the bird was in.'} test::frostedthicket::record::MoultStage
+{
+  NOT_STARTED,
+  BODY_ONLY,
+  WING_ACTIVE,
+  COMPLETING,
+  FINISHED
+}
+
+Enum {doc.doc = 'How a previously ringed bird came back into the record.'} test::frostedthicket::record::RecoveryKind
+{
+  RETRAP_SAME_SITE,
+  RETRAP_OTHER_SITE,
+  SIGHTING,
+  FOUND_DEAD
+}
+
+Enum {doc.doc = 'Broad reedbed structure the catching lane was cut through.'} test::frostedthicket::record::HabitatClass
+{
+  OPEN_REED,
+  REED_WITH_SCRUB,
+  WILLOW_CARR,
+  SEDGE_MEADOW,
+  DRY_MARGIN
+}
+
+Class <<SchemaHint.example>> {doc.doc = 'One measurement taken off a bird, held as its own record so the unit and the instrument are carried with the number rather than implied by the property name. Every measurement on a catch is optional, because ringers record only what they actually measured.', SchemaHint.docs = 'shared measurement record'} test::frostedthicket::record::BodyMeasure
+{
+  {doc.doc = 'The measured number itself.', SchemaHint.scalarType = 'decimal', SchemaHint.unit = 'as stated by unitCode'} amount: Float[1];
+  {doc.doc = 'Unit the number was read in, spelled out so a schema consumer never has to guess.', SchemaHint.scalarType = 'string', SchemaHint.format = 'lower-case unit code'} unitCode: String[1];
+  {doc.doc = 'Instrument used, where it matters for comparability between ringers.'} instrument: String[0..1];
+  {doc.doc = 'Whether the reading was taken twice and agreed.'} confirmed: Boolean[0..1];
+}
+
+Class <<SchemaHint.indexed>> {doc.doc = 'A ring blank and the series it came from. Held apart from the catch so a ring that is fitted, lost and re-issued keeps one record.', SchemaHint.docs = 'ring stock record'} test::frostedthicket::record::RingRecord
+[
+  ringSeriesIsIssued: if($this.seriesCode->isNotEmpty(), | $this.seriesCode->toOne()->trim()->toUpper()->in(['SP', 'LP', 'WA']), | true)
+]
+{
+  {doc.doc = 'Code stamped on the ring.', SchemaHint.scalarType = 'string', SchemaHint.docs = 'stamped code', SchemaHint.format = 'two letters, five digits'} stampedCode: String[1];
+  {doc.doc = 'Short code of the series the blank was issued under, guarded by the constraint above.', SchemaHint.scalarType = 'string'} seriesCode: String[0..1];
+  {doc.doc = 'The series itself, once the short code has been resolved.'} series: RingSeries[1];
+  {doc.doc = 'Internal diameter of the ring.'} diameter: BodyMeasure[0..1];
+  {doc.doc = 'Day the blank was issued to the ringing group.'} issuedOn: StrictDate[0..1];
+}
+
+Class <<SchemaHint.indexed>> {doc.doc = 'The bird name a catch was recorded against, together with the rank that name sits at.', SchemaHint.docs = 'taxon record'} test::frostedthicket::record::SpeciesRecord
+[
+  rankIsRecognised: if($this.rankCode->isNotEmpty(), | $this.rankCode->toOne()->trim()->toLower()->in(['species', 'subspecies', 'pair', 'genus']), | true)
+]
+{
+  {doc.doc = 'Scientific name as written on the sheet.', SchemaHint.scalarType = 'string', SchemaHint.docs = 'scientific name'} scientificName: String[1];
+  {doc.doc = 'Name the ringing group uses in conversation.'} vernacularName: String[0..1];
+  {doc.doc = 'Rank short code, guarded by the constraint above.', SchemaHint.scalarType = 'string'} rankCode: String[0..1];
+  {doc.doc = 'Rank the recorded name sits at.'} rank: TaxonRank[1];
+}
+
+Class {doc.doc = 'How a bird looked in the hand: feather wear across the tracts a ringer scores.'} test::frostedthicket::record::PlumageRecord
+{
+  {doc.doc = 'Wear scored on the greater coverts.'} covertWear: FeatherWear[1];
+  {doc.doc = 'Wear scored on the tail.'} tailWear: FeatherWear[0..1];
+  {doc.doc = 'Whether a brood patch was present.'} broodPatch: Boolean[0..1];
+}
+
+Class {doc.doc = 'Feather replacement seen on a bird, kept apart from plumage wear because the two are scored on different scales.'} test::frostedthicket::record::MoultRecord
+{
+  {doc.doc = 'Stage the bird had reached.'} stage: MoultStage[1];
+  {doc.doc = 'Count of primaries actively growing.'} activePrimaries: Integer[0..1];
+  {doc.doc = 'Score summed across the primary tract.'} primaryScore: Integer[0..1];
+}
+
+Class <<SchemaHint.example, SchemaHint.indexed>> {doc.doc = 'One bird in the hand at one moment: the ring fitted to it, the name it was recorded against, and the optional measurements the ringer took. The measurement properties all point at the shared measurement record, so wing, tarsus and head-plus-beak are described identically.', SchemaHint.docs = 'catch record', SchemaHint.docs = 'core leaf record'} test::frostedthicket::record::CaptureRecord
+[
+  ageClassIsScored: if($this.ageCode->isNotEmpty(), | $this.ageCode->toOne()->trim()->toUpper()->in(['N', 'J', 'FW', 'AD', 'U']), | true)
+]
+{
+  {doc.doc = 'Reference the catch is filed under.', SchemaHint.scalarType = 'string', SchemaHint.docs = 'catch reference'} captureReference: String[1];
+  {doc.doc = 'Ring fitted to, or already on, the bird.'} ring: RingRecord[1];
+  {doc.doc = 'Name the catch was recorded against.'} species: SpeciesRecord[1];
+  {doc.doc = 'Age class judged in the hand.'} ageClass: AgeClass[1];
+  {doc.doc = 'Age short code, guarded by the constraint above.', SchemaHint.scalarType = 'string'} ageCode: String[0..1];
+  {doc.doc = 'Instant the bird was taken out of the holding cloth.'} handledAt: DateTime[1];
+  {doc.doc = 'Maximum wing chord.'} wingChord: BodyMeasure[0..1];
+  {doc.doc = 'Tarsus length.'} tarsus: BodyMeasure[0..1];
+  {doc.doc = 'Head plus beak length.'} headAndBeak: BodyMeasure[0..1];
+  {doc.doc = 'Mass on the balance.'} mass: BodyMeasure[0..1];
+  {doc.doc = 'How the bird looked in the hand.'} plumage: PlumageRecord[0..1];
+  {doc.doc = 'Feather replacement seen on the bird.'} moult: MoultRecord[0..1];
+}
+
+Class {doc.doc = 'A previously ringed bird coming back into the record, whether in the hand or read through a telescope.'} test::frostedthicket::record::RecoveryRecord
+{
+  {doc.doc = 'Reference the recovery is filed under.', SchemaHint.scalarType = 'string'} recoveryReference: String[1];
+  {doc.doc = 'How the bird came back into the record.'} kind: RecoveryKind[1];
+  {doc.doc = 'Ring that was read.'} ring: RingRecord[1];
+  {doc.doc = 'Day the bird was seen or handled again.'} seenOn: StrictDate[1];
+  {doc.doc = 'Straight-line distance from the ringing place.'} distance: BodyMeasure[0..1];
+}
+
+Class {doc.doc = 'The reedbed structure a catching lane was cut through, scored once per lane per season.'} test::frostedthicket::record::HabitatRecord
+{
+  {doc.doc = 'Structure class of the lane.'} structure: HabitatClass[1];
+  {doc.doc = 'Standing water depth in the lane.'} waterDepth: BodyMeasure[0..1];
+  {doc.doc = 'Mean reed height around the lane.'} reedHeight: BodyMeasure[0..1];
+  {doc.doc = 'Whether the lane had been cut that winter.'} cutThisWinter: Boolean[0..1];
+}
+
+Class {doc.doc = 'Whoever held the permit for a set of catches, and the endorsements they held at the time.'} test::frostedthicket::record::ObserverRecord
+{
+  {doc.doc = 'Name the permit holder signs as.', SchemaHint.scalarType = 'string', SchemaHint.docs = 'permit holder'} signsAs: String[1];
+  {doc.doc = 'Endorsements held, one per entry.'} endorsements: String[*];
+  {doc.doc = 'Day the permit was last renewed.'} renewedOn: StrictDate[0..1];
+}
+
+Class {doc.doc = 'Conditions a set of catches was made under, recorded once per visit because they change the catch rate more than anything else.'} test::frostedthicket::record::WeatherRecord
+{
+  {doc.doc = 'Tenths of cloud cover.'} cloudTenths: Integer[0..1];
+  {doc.doc = 'Wind strength on the ringers scale.'} windForce: Integer[0..1];
+  {doc.doc = 'Air temperature at first light.'} temperature: BodyMeasure[0..1];
+  {doc.doc = 'Whether rain stopped catching at any point.'} rainStoppedCatching: Boolean[0..1];
+}
+
+Class {doc.doc = 'Free text a ringer added to a record, kept as its own class so the text can be dropped from an extract without touching the record it hangs off.'} test::frostedthicket::record::RemarkRecord
+{
+  {doc.doc = 'The text itself.', SchemaHint.'field-remark' = 'free text, not parsed'} text: String[1];
+  {doc.doc = 'Instant the text was added.'} addedAt: DateTime[0..1];
+}

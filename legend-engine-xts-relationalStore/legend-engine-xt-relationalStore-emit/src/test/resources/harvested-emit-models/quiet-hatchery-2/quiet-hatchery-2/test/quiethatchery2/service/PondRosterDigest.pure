@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quiethatchery2::service::PondRosterDigest
+{
+  pattern: '/quiethatchery/v1/ponds/roster';
+  title: 'Pond Roster Digest';
+  owners:
+  [
+    'hatchery-records',
+    'incubation-watch'
+  ];
+  documentation: 'Resolves the rearing ponds with a single recording date, so it sees only the state standing as of that date. The projection mixes mapped properties, a constant column, a conditional default for a pond with no recorded name and a two-level navigation into the valley the pond is grouped under, then collapses repeated shapes.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|test::quiethatchery2::domain::HatchPond.all($businessDate)->project(
+      [
+        p|$businessDate->toOne()->year(),
+        p|$p.pondCode,
+        p|if($p.pondName->isEmpty(), |'unnamed pond', |$p.pondName->toOne()),
+        p|$p.district($businessDate).districtName,
+        p|'field-log'
+      ],
+      [
+        'Report Year',
+        'Pond',
+        'Pond Name',
+        'District',
+        'Source'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Pond')
+      ]
+    )};
+    mapping: test::quiethatchery2::mapping::TrayMapping;
+    runtime: test::quiethatchery2::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    pondRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              hatchery.hatch_pond:
+                'pond_code,pond_name,district_code,from_z,thru_z\n'+
+                'P-01,North Pond,D-01,2026-01-01,9999-12-31\n'+
+                'P-02,,D-02,2026-01-01,9999-12-31\n'+
+                'P-03,South Pond,D-09,2026-01-01,9999-12-31\n'+
+                'P-04,Old Pond,D-01,2020-01-01,2021-01-01\n';
+              hatchery.hatch_district:
+                'district_code,district_name,from_z,thru_z\n'+
+                'D-01,Upper Valley,2026-01-01,9999-12-31\n'+
+                'D-02,Lower Valley,2020-01-01,2024-01-01\n';
+              hatchery.tray_revision:
+                'basis_code,tray_code,batch_code,record_date,tally_method,early_band,late_band,observation_kind,egg_count,fry_count,tray_note,in_z,out_z,from_z,thru_z\n'+
+                'PRIMARY,TR-01,BA-01,2026-06-01,HC,EA,LA,DIR,1200,900,steady warm run,2026-06-10,9999-12-31,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        pondsStandingAtDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-06-01
+          ]
+          asserts:
+          [
+            threeStandingPonds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Report Year":2026,"Pond":"P-01","Pond Name":"North Pond","District":"Upper Valley","Source":"field-log"},{"Report Year":2026,"Pond":"P-02","Pond Name":"unnamed pond","District":null,"Source":"field-log"},{"Report Year":2026,"Pond":"P-03","Pond Name":"South Pond","District":null,"Source":"field-log"}]';
+                  }#;
+              }#
+          ]
+        },
+        dateBeforeAnyPond:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2019-01-01
+          ]
+          asserts:
+          [
+            noStandingPonds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

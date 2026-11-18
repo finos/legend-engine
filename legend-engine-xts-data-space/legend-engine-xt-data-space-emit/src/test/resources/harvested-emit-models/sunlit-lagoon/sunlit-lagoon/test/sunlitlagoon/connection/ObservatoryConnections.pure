@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::sunlitlagoon::connection::RidgeH2Connection
+{
+  store: test::sunlitlagoon::store::ObservatoryDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists sky;',
+      'drop schema if exists ops;',
+      'create schema sky;',
+      'create schema ops;',
+      'create table sky.observation (observation_id integer primary key, obs_ref varchar(24), target_name varchar(64), captured_on date, seeing_arcsec double, exposure_seconds integer, program_code varchar(24), telescope_code varchar(16));',
+      'create table sky.telescope (telescope_code varchar(16) primary key, telescope_name varchar(64), aperture_mm integer, site_code varchar(16));',
+      'create table ops.site (site_code varchar(16) primary key, site_name varchar(64), altitude_m integer, status_code varchar(16), steward_id integer);',
+      'create table ops.steward (steward_id integer primary key, steward_name varchar(64), contact_code varchar(16));',
+      'create table ops.service_visit (visit_id integer primary key, visit_ref varchar(24), visit_kind varchar(24), duration_minutes integer, site_code varchar(16));'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+###Connection
+RelationalDatabaseConnection test::sunlitlagoon::connection::BasinH2Connection
+{
+  store: test::sunlitlagoon::store::ObservatoryDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists sky;',
+      'drop schema if exists ops;',
+      'create schema sky;',
+      'create schema ops;',
+      'create table sky.observation (observation_id integer primary key, obs_ref varchar(24), target_name varchar(64), captured_on date, seeing_arcsec double, exposure_seconds integer, program_code varchar(24), telescope_code varchar(16));',
+      'create table sky.telescope (telescope_code varchar(16) primary key, telescope_name varchar(64), aperture_mm integer, site_code varchar(16));',
+      'create table ops.site (site_code varchar(16) primary key, site_name varchar(64), altitude_m integer, status_code varchar(16), steward_id integer);',
+      'create table ops.steward (steward_id integer primary key, steward_name varchar(64), contact_code varchar(16));',
+      'create table ops.service_visit (visit_id integer primary key, visit_ref varchar(24), visit_kind varchar(24), duration_minutes integer, site_code varchar(16));'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+###Connection
+RelationalDatabaseConnection test::sunlitlagoon::connection::ObservatoryWarehouseConnection
+{
+  store: test::sunlitlagoon::store::ObservatoryDb;
+  type: SqlServer;
+  specification: Static
+  {
+    name: 'observatory_register';
+    host: 'example-observatory-host';
+    port: 1433;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'observatoryregisterprincipal';
+  };
+}

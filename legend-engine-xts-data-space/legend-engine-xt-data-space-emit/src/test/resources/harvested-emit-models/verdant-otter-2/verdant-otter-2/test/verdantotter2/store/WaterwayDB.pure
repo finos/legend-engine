@@ -1,0 +1,105 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::verdantotter2::store::ReachDB
+(
+  Schema navigation
+  (
+    Table reach
+    (
+      reach_code VARCHAR(24) PRIMARY KEY,
+      reach_name VARCHAR(80) NOT NULL,
+      region_name VARCHAR(60) NOT NULL,
+      summit_metres DOUBLE
+    )
+  )
+)
+
+Database demo::verdantotter2::store::PassageDB
+(
+  include demo::verdantotter2::store::ReachDB
+
+  Schema waterway
+  (
+    Table lock_chamber
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      lock_id INTEGER PRIMARY KEY,
+      lock_code VARCHAR(24) NOT NULL,
+      lock_name VARCHAR(80) NOT NULL,
+      reach_code VARCHAR(24) NOT NULL,
+      chamber_length_metres DECIMAL(9,2),
+      rise_metres DOUBLE,
+      commissioned_on DATE,
+      surveyed_at TIMESTAMP,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+    Table vessel
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      vessel_id INTEGER PRIMARY KEY,
+      vessel_code VARCHAR(24) NOT NULL,
+      vessel_name VARCHAR(80) NOT NULL,
+      reach_code VARCHAR(24) NOT NULL,
+      beam_metres DOUBLE,
+      registered_on DATE,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+    Table passage
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      passage_id INTEGER PRIMARY KEY,
+      passage_code VARCHAR(24) NOT NULL,
+      lock_code VARCHAR(24) NOT NULL,
+      vessel_code VARCHAR(24) NOT NULL,
+      crew_size INTEGER,
+      dwell_minutes DECIMAL(9,2),
+      water_level_metres DOUBLE,
+      logged_on DATE,
+      recorded_at TIMESTAMP,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+    Table keeper_shift
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      shift_id INTEGER PRIMARY KEY,
+      keeper_name VARCHAR(80) NOT NULL,
+      reach_code VARCHAR(24) NOT NULL,
+      shift_label VARCHAR(40) NOT NULL,
+      hours_on_duty DOUBLE,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+  )
+
+  Join Lock_Reach(waterway.lock_chamber.reach_code = navigation.reach.reach_code)
+  Join Vessel_Reach(waterway.vessel.reach_code = navigation.reach.reach_code)
+  Join Keeper_Reach(waterway.keeper_shift.reach_code = navigation.reach.reach_code)
+)

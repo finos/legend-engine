@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralcove::service::FenceRunAsOf
+{
+  pattern: '/dune/v1/fence-runs/{asOfDate}';
+  title: 'Dune Restoration - Fence Runs As Of';
+  documentation: 'Resolves the drift fence runs at a requested processing instant and projects the installed lengths and capture ratios for the rostered sectors built from an approved fencing material.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['dune-restoration-register'] };
+  execution: Single
+  {
+    // Plan: the third milestoned accessor resolves the fence table's own window
+    // predicate at the requested instant, and two membership tests - one over the
+    // rostered sector codes and one over the approved materials - compose with it
+    // so a run outside the window or off either list never reaches the projection.
+    // The projected six-column contract mixes strings, a fixed-precision length, a
+    // float ratio and a date, keeping the whole read a single pushed-down select
+    // four levels above the extent.
+    query: {asOfDate: StrictDate[1]|test::coralcove::domain::FenceRun.all($asOfDate)->filter(
+      f|($f.sectorCode->in(['SECT-01', 'SECT-02', 'SECT-03', 'SECT-04', 'SECT-05', 'SECT-06', 'SECT-07', 'SECT-08'])) &&
+        ($f.fenceMaterial->toOne()->in(['chestnut paling', 'brushwood', 'sand ladder', 'coir roll', 'willow hurdle']))
+    )->project(
+      [
+        f|$f.fenceCode,
+        f|$f.sectorCode,
+        f|$f.fenceMaterial,
+        f|$f.fenceLengthM,
+        f|$f.driftCaptureRatio,
+        f|$f.installedOn
+      ],
+      [
+        'Fence/Code',
+        'Fence/Sector',
+        'Fence/Material',
+        'Fence/LengthM',
+        'Fence/CaptureRatio',
+        'Fence/InstalledOn'
+      ]
+    )->sort([asc('Fence/Code')])};
+    mapping: test::coralcove::mapping::DuneMapping;
+    runtime: test::coralcove::runtime::DuneRuntime;
+  }
+  testSuites:
+  [
+    fenceRunAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          duneWarehouseConnection:
+            Relational
+            #{
+              dune.fence_run:
+                'fence_code,in_z,sector_code,fence_material,fence_length_m,drift_capture_ratio,installed_on,inspected_at,out_z\n'+
+                'CC-FR-01,2026-01-15,SECT-01,chestnut paling,180.40,0.48,2026-01-10,2026-01-10 11:00:00,9999-12-31\n'+
+                'CC-FR-02,2026-01-15,SECT-02,recycled netting,96.25,0.33,2026-01-12,2026-01-12 11:30:00,9999-12-31\n'+
+                'CC-FR-03,2026-09-01,SECT-03,chestnut paling,142.00,0.41,2026-08-28,2026-08-28 12:00:00,9999-12-31\n'+
+                'CC-FR-04,2026-01-15,SECT-12,brushwood,110.75,0.29,2026-01-13,2026-01-13 12:30:00,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        fenceRunsAtProcessingInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-05-01
+          ]
+          asserts:
+          [
+            futureWindowUnapprovedMaterialAndOffRosterSectorAreExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Fence/Code":"CC-FR-01","Fence/Sector":"SECT-01","Fence/Material":"chestnut paling","Fence/LengthM":180.40,"Fence/CaptureRatio":0.48,"Fence/InstalledOn":"2026-01-10"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

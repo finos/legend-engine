@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::meadowvineyard2::domain::*;
+import test::meadowvineyard2::profile::*;
+import test::meadowvineyard2::vocabulary::*;
+
+Class <<GraftContract.indexedField>> {GraftContract.description = 'A consignment of scion wood despatched from one nursery block, the entry point of the grafting interchange contract.', GraftContract.key = 'consignmentCode', GraftContract.required = 'consignmentCode,origin', GraftContract.metadata = 'interchange-root'} test::meadowvineyard2::domain::ConsignmentManifest
+{
+  consignmentCode: String[1];
+  origin: NurseryBlock[1];
+  scions: ScionBatch[*];
+  issuedOn: StrictDate[0..1];
+  handling: HandlingNote[0..1];
+  certification: CertificationRecord[0..1];
+  despatchNote: String[0..1];
+}
+
+Class <<GraftContract.indexedField>> {GraftContract.description = 'A grafting schedule that consumes scion batches inside one bench-working window.', GraftContract.key = 'scheduleCode', GraftContract.required = 'scheduleCode,window', GraftContract.metadata = 'interchange-root'} test::meadowvineyard2::domain::GraftingSchedule
+{
+  scheduleCode: String[1];
+  window: SeasonWindow[1];
+  scions: ScionBatch[*];
+  crew: CrewAssignment[*];
+  benchCode: String[0..1];
+}
+
+Class <<GraftContract.sortableField>> {GraftContract.description = 'A batch of scion wood shared by the consignment that despatches it and the schedule that works it.', GraftContract.key = 'batchCode', GraftContract.required = 'batchCode,unionState,rootstock', GraftContract.exampleSet = 'callused,failed', GraftContract.sortable = 'batchCode'} test::meadowvineyard2::domain::ScionBatch
+{
+  batchCode: String[1];
+  unionState: GraftUnionState[1];
+  rootstock: RootstockLot[1];
+  <<RepresentationHint.int32>> {GraftContract.unit = 'buds', GraftContract.precision = '32-bit'} budCount: Integer[1];
+  <<RepresentationHint.float64>> {GraftContract.unit = 'millimetres', GraftContract.precision = 'double'} meanCaliperMm: Float[0..1];
+  <<RepresentationHint.writeOnly>> {GraftContract.metadata = 'input-only, suppressed from the published schema'} intakeTagId: String[0..1];
+  observations: String[*];
+}
+
+Class {GraftContract.description = 'The rootstock lot a scion batch is worked onto; every field is optional even though the reference to it is mandatory.'} test::meadowvineyard2::domain::RootstockLot
+{
+  lotCode: String[0..1];
+  clonalCode: String[0..1];
+  <<RepresentationHint.float64>> {GraftContract.precision = 'double'} vigourIndex: Float[0..1];
+  liftedOn: StrictDate[0..1];
+}
+
+Class {GraftContract.description = 'A nursery block: the growing unit a consignment is despatched from.', GraftContract.key = 'blockCode'} test::meadowvineyard2::domain::NurseryBlock
+{
+  blockCode: String[1];
+  blockName: String[0..1];
+  rows: TrellisRow[*];
+  soilSeries: String[0..1];
+}
+
+Class {GraftContract.description = 'One planted row inside a nursery block.'} test::meadowvineyard2::domain::TrellisRow
+{
+  rowCode: String[0..1];
+  <<RepresentationHint.int32>> {GraftContract.unit = 'vines', GraftContract.precision = '32-bit'} vineCount: Integer[0..1];
+  aspect: String[0..1];
+}
+
+Class {GraftContract.description = 'The bench-working window a grafting schedule runs inside.'} test::meadowvineyard2::domain::SeasonWindow
+{
+  opensOn: StrictDate[0..1];
+  closesOn: StrictDate[0..1];
+  <<RepresentationHint.int32>> {GraftContract.unit = 'days', GraftContract.precision = '32-bit'} restDays: Integer[0..1];
+}
+
+Class {GraftContract.description = 'A free-text handling instruction travelling with a consignment.'} test::meadowvineyard2::domain::HandlingNote
+{
+  noteCode: String[0..1];
+  body: String[0..1];
+}
+
+Class {GraftContract.description = 'The phytosanitary certification a consignment travels under.'} test::meadowvineyard2::domain::CertificationRecord
+{
+  certificateCode: String[0..1];
+  issuedBy: String[0..1];
+  validUntil: StrictDate[0..1];
+}
+
+Class {GraftContract.description = 'A crew assigned to a bench-working session.'} test::meadowvineyard2::domain::CrewAssignment
+{
+  crewCode: String[0..1];
+  <<RepresentationHint.int32>> {GraftContract.unit = 'people', GraftContract.precision = '32-bit'} headcount: Integer[0..1];
+  shift: String[0..1];
+}

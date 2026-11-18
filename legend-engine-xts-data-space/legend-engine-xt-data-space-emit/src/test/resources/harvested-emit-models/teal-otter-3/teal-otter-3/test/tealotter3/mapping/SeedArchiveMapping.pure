@@ -1,0 +1,179 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealotter3::mapping::SeedArchiveMapping
+(
+  *test::tealotter3::domain::SeedAccession[accession_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealotter3::store::SeedVaultDb]seedarchive.accession.accession_code,
+      [test::tealotter3::store::SeedVaultDb]seedarchive.accession.collected_on
+    )
+    ~mainTable [test::tealotter3::store::SeedVaultDb]seedarchive.accession
+    accessionCode: [test::tealotter3::store::SeedVaultDb]seedarchive.accession.accession_code,
+    collectedOn: [test::tealotter3::store::SeedVaultDb]seedarchive.accession.collected_on,
+    seedCount: [test::tealotter3::store::SeedVaultDb]seedarchive.accession.seed_count,
+    viablePct: [test::tealotter3::store::SeedVaultDb]seedarchive.accession.viable_pct,
+    dried: [test::tealotter3::store::SeedVaultDb]seedarchive.accession.dried,
+    curationLabel: 'CURATED',
+    gradeLabel: concat('GRADE-', toUpper([test::tealotter3::store::SeedVaultDb]seedarchive.accession.taxon_code))
+  }
+
+  *test::tealotter3::domain::SeedTaxon[taxon_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealotter3::store::SeedVaultDb]seedarchive.taxon.taxon_code
+    )
+    ~mainTable [test::tealotter3::store::SeedVaultDb]seedarchive.taxon
+    taxonCode: [test::tealotter3::store::SeedVaultDb]seedarchive.taxon.taxon_code,
+    taxonName: [test::tealotter3::store::SeedVaultDb]seedarchive.taxon.taxon_name,
+    familyCode: [test::tealotter3::store::SeedVaultDb]seedarchive.taxon.family_code
+  }
+
+  *test::tealotter3::domain::SeedVault[vault_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealotter3::store::SeedVaultDb]seedarchive.vault.vault_code
+    )
+    ~mainTable [test::tealotter3::store::SeedVaultDb]seedarchive.vault
+    vaultCode: [test::tealotter3::store::SeedVaultDb]seedarchive.vault.vault_code,
+    vaultName: [test::tealotter3::store::SeedVaultDb]seedarchive.vault.vault_name,
+    chillDegrees: [test::tealotter3::store::SeedVaultDb]seedarchive.vault.chill_degrees
+  }
+
+  *test::tealotter3::domain::GerminationTrial[trial_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealotter3::store::SeedVaultDb]seedarchive.germination.trial_id,
+      [test::tealotter3::store::SeedVaultDb]seedarchive.germination.accession_code
+    )
+    ~mainTable [test::tealotter3::store::SeedVaultDb]seedarchive.germination
+    trialId: [test::tealotter3::store::SeedVaultDb]seedarchive.germination.trial_id,
+    germinatedPct: [test::tealotter3::store::SeedVaultDb]seedarchive.germination.germinated_pct,
+    testedOn: [test::tealotter3::store::SeedVaultDb]seedarchive.germination.tested_on,
+    taxonNameAtTrial: [test::tealotter3::store::SeedVaultDb]@Accession_Trial_J > @Accession_Taxon_J | [test::tealotter3::store::SeedVaultDb]seedarchive.taxon.taxon_name
+  }
+
+  test::tealotter3::domain::Accession_Taxon: Relational
+  {
+    AssociationMapping
+    (
+      taxon[accession_set, taxon_set]: [test::tealotter3::store::SeedVaultDb]@Accession_Taxon_J,
+      accessions[taxon_set, accession_set]: [test::tealotter3::store::SeedVaultDb]@Accession_Taxon_J
+    )
+  }
+
+  test::tealotter3::domain::Accession_Vault: Relational
+  {
+    AssociationMapping
+    (
+      vault[accession_set, vault_set]: [test::tealotter3::store::SeedVaultDb]@Accession_Vault_J,
+      storedAccessions[vault_set, accession_set]: [test::tealotter3::store::SeedVaultDb]@Accession_Vault_J
+    )
+  }
+
+  test::tealotter3::domain::Accession_Trial: Relational
+  {
+    AssociationMapping
+    (
+      trials[accession_set, trial_set]: [test::tealotter3::store::SeedVaultDb]@Accession_Trial_J,
+      trialledAccession[trial_set, accession_set]: [test::tealotter3::store::SeedVaultDb]@Accession_Trial_J
+    )
+  }
+
+  testSuites:
+  [
+    seedArchiveBindingSuite:
+    {
+      function: |test::tealotter3::domain::SeedAccession.all()->project(
+        [
+          a|$a.accessionCode,
+          a|$a.collectedOn,
+          a|$a.seedCount,
+          a|$a.curationLabel,
+          a|$a.gradeLabel,
+          a|$a.taxon.taxonName,
+          a|$a.vault.vaultName
+        ],
+        [
+          'Accession',
+          'Collected On',
+          'Seeds',
+          'Curation',
+          'Grade',
+          'Taxon Name',
+          'Vault Name'
+        ]
+      )->sort(
+        [
+          asc('Accession'),
+          asc('Collected On')
+        ]
+      );
+      tests:
+      [
+        keysAliasesAndJoinReachedColumnsResolve:
+        {
+          doc: 'Reads every mapped class binding at once so the composite key expressions, the two literal and expression derived columns, the per-class main table aliases and both lookup traversals are proven together; the accession whose vault key does not resolve still reports its own columns with an empty vault name.';
+          data:
+          [
+            test::tealotter3::store::SeedVaultDb:
+              Relational
+              #{
+                seedarchive.accession:
+                  'accession_code,collected_on,taxon_code,vault_code,seed_count,viable_pct,dried\n'+
+                  'AC-01,2026-01-04,TX-01,VL-01,1200,91.5,true\n'+
+                  'AC-01,2026-03-09,TX-01,VL-01,800,88.25,true\n'+
+                  'AC-02,2026-02-11,TX-02,VL-02,450,74.25,false\n'+
+                  'AC-03,2026-02-14,TX-03,VL-09,90,,false\n';
+                seedarchive.taxon:
+                  'taxon_code,taxon_name,family_code\n'+
+                  'TX-01,Bristle Sedge,FM-CYP\n'+
+                  'TX-02,Marsh Vetch,FM-FAB\n'+
+                  'TX-03,Dune Fescue,\n';
+                seedarchive.vault:
+                  'vault_code,vault_name,chill_degrees\n'+
+                  'VL-01,North Chill Room,-18\n'+
+                  'VL-02,South Chill Room,-20\n'+
+                  'VL-03,Dry Annex,4\n';
+                seedarchive.germination:
+                  'trial_id,accession_code,vault_code,germinated_pct,tested_on\n'+
+                  '1,AC-01,VL-01,84,2026-04-01\n'+
+                  '2,AC-01,VL-01,79,2026-05-01\n'+
+                  '3,AC-02,VL-02,61,2026-04-15\n';
+              }#
+          ];
+          asserts:
+          [
+            everyBindingResolves:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"AC-01","Collected On":"2026-01-04","Seeds":1200,"Curation":"CURATED","Grade":"GRADE-TX-01","Taxon Name":"Bristle Sedge","Vault Name":"North Chill Room"},{"Accession":"AC-01","Collected On":"2026-03-09","Seeds":800,"Curation":"CURATED","Grade":"GRADE-TX-01","Taxon Name":"Bristle Sedge","Vault Name":"North Chill Room"},{"Accession":"AC-02","Collected On":"2026-02-11","Seeds":450,"Curation":"CURATED","Grade":"GRADE-TX-02","Taxon Name":"Marsh Vetch","Vault Name":"South Chill Room"},{"Accession":"AC-03","Collected On":"2026-02-14","Seeds":90,"Curation":"CURATED","Grade":"GRADE-TX-03","Taxon Name":"Dune Fescue","Vault Name":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

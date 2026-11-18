@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::meadowdelta::store::MeadowSurveyDb
+(
+  Schema survey
+  (
+    Table ringing_record
+    (
+      record_id INTEGER PRIMARY KEY,
+      ring_code VARCHAR(24),
+      species_code VARCHAR(16),
+      zone_code VARCHAR(16),
+      ringer_alias VARCHAR(32),
+      plumage_stage INTEGER,
+      moult_code VARCHAR(8),
+      condition_code VARCHAR(8),
+      wing_mm INTEGER,
+      mass_g FLOAT,
+      caught_at TIMESTAMP,
+      release_note VARCHAR(128),
+      review_note VARCHAR(128)
+    )
+    Table species_ref
+    (
+      species_code VARCHAR(16) PRIMARY KEY,
+      common_name VARCHAR(128),
+      family_code VARCHAR(16),
+      migration_code VARCHAR(8)
+    )
+    Table family_ref
+    (
+      family_code VARCHAR(16) PRIMARY KEY,
+      family_name VARCHAR(128),
+      order_code VARCHAR(16)
+    )
+    Table taxon_order
+    (
+      order_code VARCHAR(16) PRIMARY KEY,
+      order_name VARCHAR(128),
+      lineage_code VARCHAR(16)
+    )
+    Table taxon_lineage
+    (
+      lineage_code VARCHAR(16) PRIMARY KEY,
+      lineage_name VARCHAR(128)
+    )
+    Table zone_ref
+    (
+      zone_code VARCHAR(16) PRIMARY KEY,
+      zone_name VARCHAR(128),
+      reedbed_code VARCHAR(16),
+      patrolled_at TIMESTAMP
+    )
+
+    View zone_catch_summary
+    (
+      ~groupBy (survey.ringing_record.zone_code)
+      zone_code: survey.ringing_record.zone_code PRIMARY KEY,
+      catch_count: count(survey.ringing_record.record_id),
+      max_wing: max(survey.ringing_record.wing_mm)
+    )
+  )
+
+  Join Record_Species(survey.ringing_record.species_code = survey.species_ref.species_code)
+
+  Join Species_Family(survey.species_ref.family_code = survey.family_ref.family_code)
+
+  Join Family_Order(survey.family_ref.order_code = survey.taxon_order.order_code)
+
+  Join Order_Lineage(survey.taxon_order.lineage_code = survey.taxon_lineage.lineage_code)
+
+  Join Record_Zone(survey.ringing_record.zone_code = survey.zone_ref.zone_code)
+
+  Join Record_ZoneSummary(survey.ringing_record.zone_code = survey.zone_catch_summary.zone_code)
+)

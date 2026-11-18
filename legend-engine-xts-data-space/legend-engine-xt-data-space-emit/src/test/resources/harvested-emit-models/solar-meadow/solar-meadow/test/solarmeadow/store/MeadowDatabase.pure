@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::solarmeadow::store::MeadowDatabase
+(
+  Schema habitat
+  (
+    Table meadow_plot
+    (
+      plot_code VARCHAR(16) PRIMARY KEY,
+      plot_name VARCHAR(128),
+      sward_code VARCHAR(16),
+      sown_year INTEGER,
+      area_m2 FLOAT,
+      first_survey_date DATE,
+      retire_code VARCHAR(16),
+      keeper_note VARCHAR(128)
+    )
+    Table sward_type
+    (
+      sward_code VARCHAR(16) PRIMARY KEY,
+      sward_name VARCHAR(128),
+      canopy_tier VARCHAR(16)
+    )
+    Table bloom_count
+    (
+      count_id INTEGER PRIMARY KEY,
+      plot_code VARCHAR(16),
+      taxon_code VARCHAR(16),
+      counted_on DATE,
+      stem_tally INTEGER,
+      cover_pct FLOAT
+    )
+    Table pollinator_taxon
+    (
+      taxon_code VARCHAR(16) PRIMARY KEY,
+      taxon_name VARCHAR(128),
+      guild_code VARCHAR(16),
+      forage_span INTEGER
+    )
+
+    View plot_bloom_view
+    (
+      ~groupBy (habitat.bloom_count.plot_code)
+      plot_code: habitat.bloom_count.plot_code PRIMARY KEY,
+      count_tally: count(habitat.bloom_count.count_id),
+      total_stems: sum(habitat.bloom_count.stem_tally),
+      peak_cover: max(habitat.bloom_count.cover_pct)
+    )
+  )
+
+  Filter LivePlot(habitat.meadow_plot.retire_code != 'RETIRED' and habitat.meadow_plot.area_m2 > 0.0)
+  Filter TalliedCount(habitat.bloom_count.stem_tally > 0)
+
+  Join Plot_Sward(habitat.meadow_plot.sward_code = habitat.sward_type.sward_code)
+  Join Plot_BloomView(habitat.meadow_plot.plot_code = habitat.plot_bloom_view.plot_code)
+  Join Count_Plot(habitat.bloom_count.plot_code = habitat.meadow_plot.plot_code)
+  Join Count_Taxon(habitat.bloom_count.taxon_code = habitat.pollinator_taxon.taxon_code)
+)

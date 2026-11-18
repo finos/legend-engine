@@ -1,0 +1,157 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedvineyard4::service::VineBlockRegister
+{
+  pattern: '/vineyard/v1/blocks/{processedAt}';
+  title: 'Gilded Vineyard - Vine Block Register';
+  owners:
+  [
+    'vineyard-estate-programme',
+    'vineyard-survey-desk'
+  ];
+  documentation: 'Enters the vine-block extent through the milestoned accessor with a processing date supplied as a service parameter, keeps blocks above a vine-count floor whose estate or varietal appears in the supplied sets, then projects a wide tabular row - a derived block label, the estate, the counts and measures read straight from the alias, and the canopy style reached across the section join - before ordering the result and taking a bounded slice of it.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processedAt: StrictDate[1], minVines: Integer[1], estateCodes: String[*], varietalCodes: String[*], rowLimit: Integer[1]|test::gildedvineyard4::domain::VineBlock.all($processedAt)->filter(
+      b|($b.vineCount > $minVines) && (($b.estateCode->in($estateCodes)) || ($b.varietalCode->in($varietalCodes)))
+    )->project(
+      [
+        b|test::gildedvineyard4::function::blockLabel($b.blockCode, $b.varietalCode),
+        b|$b.estateCode,
+        b|$b.vineCount,
+        b|$b.soilPh,
+        b|$b.plantedOn,
+        b|$b.canopyStyle
+      ],
+      [
+        'Block',
+        'Estate',
+        'Vines',
+        'Soil pH',
+        'Planted On',
+        'Canopy'
+      ]
+    )->sort([asc('Block')])->take($rowLimit)};
+    mapping: test::gildedvineyard4::mapping::VineyardMapping;
+    runtime: test::gildedvineyard4::runtime::VineyardRuntime;
+  }
+  testSuites:
+  [
+    blockRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vineyardWarehouseConnection:
+            Relational
+            #{
+              vineyard.trellis_section:
+                'section_id,section_code,canopy_style,estate_code,row_spacing_m,in_z,out_z\n'+
+                'S1,SC-10,VERTICAL-SHOOT,EST-N,2.5,2026-01-01,9999-12-31\n'+
+                'S2,SC-20,SPRAWL,EST-S,3.0,2026-01-01,9999-12-31\n';
+
+              vineyard.vine_block:
+                'block_id,block_code,varietal_code,estate_code,section_id,vine_count,hectares,soil_ph,planted_on,surveyed_at,warden_name,in_z,out_z\n'+
+                'B1,BL-100,VR-ALBA,EST-N,S1,4200,3.500,6.4,2019-04-01,2026-02-16 08:30:00,Wren Ash,2026-01-01,9999-12-31\n'+
+                'B2,BL-200,VR-NOIR,EST-S,S2,3100,2.250,6.8,2020-05-01,,,2026-01-01,9999-12-31\n'+
+                'B3,BL-300,VR-ALBA,EST-N,S1,1800,1.125,6.1,2021-03-01,,Rowan Vale,2026-01-01,9999-12-31\n'+
+                'B4,BL-400,VR-GRIS,EST-W,S2,5000,4.000,6.9,2018-02-01,,,2025-01-01,2025-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        boundedSliceOfTheOrderedRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processedAt = %2026-03-01,
+            minVines = 2000,
+            estateCodes = ['EST-N'],
+            varietalCodes = ['VR-NOIR'],
+            rowLimit = 1
+          ]
+          asserts:
+          [
+            onlyTheLeadingRowSurvivesTheBound:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"BL-100/VR-ALBA","Estate":"EST-N","Vines":4200,"Soil pH":6.4,"Planted On":"2019-04-01","Canopy":"VERTICAL-SHOOT"}]';
+                  }#;
+              }#
+          ]
+        },
+        wideProjectionOverBothSurvivingEstates:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processedAt = %2026-03-01,
+            minVines = 2000,
+            estateCodes = ['EST-N'],
+            varietalCodes = ['VR-NOIR'],
+            rowLimit = 10
+          ]
+          asserts:
+          [
+            outOfWindowBlockNeverAppears:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"BL-100/VR-ALBA","Estate":"EST-N","Vines":4200,"Soil pH":6.4,"Planted On":"2019-04-01","Canopy":"VERTICAL-SHOOT"},{"Block":"BL-200/VR-NOIR","Estate":"EST-S","Vines":3100,"Soil pH":6.8,"Planted On":"2020-05-01","Canopy":"SPRAWL"}]';
+                  }#;
+              }#
+          ]
+        },
+        processingDateBeforeEveryWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processedAt = %2024-01-01,
+            minVines = 2000,
+            estateCodes = ['EST-N'],
+            varietalCodes = ['VR-NOIR'],
+            rowLimit = 10
+          ]
+          asserts:
+          [
+            emptyResultRatherThanFailure:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

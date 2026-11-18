@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::noblelantern::service::WatchDigestService
+{
+  pattern: '/noble-lantern/v1/watch-digest';
+  title: 'Noble Lantern - Watch Digest';
+  owners:
+  [
+    'harbor-light-register-desk',
+    'keeper-roster-ops'
+  ];
+  documentation: 'Publishes a narrow digest of the logged keeper watches — the watch code, the station it was kept at, the keeper, the shift and the observed visibility — ordered by watch code.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::noblelantern::domain::KeeperWatch.all()->project(
+      [
+        w|$w.watchCode,
+        w|$w.stationCode,
+        w|$w.keeperName,
+        w|$w.watchShift,
+        w|$w.visibilityKm
+      ],
+      [
+        'Watch',
+        'Station',
+        'Keeper',
+        'Shift',
+        'Visibility'
+      ]
+    )->sort(
+      [
+        asc('Watch')
+      ]
+    );
+    mapping: test::noblelantern::mapping::HarborLightMapping;
+    runtime: test::noblelantern::runtime::HarborLightRuntime;
+  }
+  testSuites:
+  [
+    watchDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harborLightConnection:
+            Relational
+            #{
+              beacon.keeper_watch:
+                'watch_code,station_code,keeper_name,watch_shift,weather_note,visibility_km,wind_speed_kt,logged_on,started_at,ended_at\n'+
+                'KW-01,LS-01,Halvard Nye,NIGHT,Clear horizon,12.5,18.0,2026-04-02,2026-04-02 20:00:00,2026-04-03 04:00:00\n'+
+                'KW-02,LS-01,Marin Sault,DAY,,9.0,,2026-04-03,2026-04-03 06:00:00,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        watchDigestRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            digestPerWatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Watch":"KW-01","Station":"LS-01","Keeper":"Halvard Nye","Shift":"NIGHT","Visibility":12.5},{"Watch":"KW-02","Station":"LS-01","Keeper":"Marin Sault","Shift":"DAY","Visibility":9.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::mapleapiary2::service::ColonyExceptionEndpoint
+{
+  pattern: '/apiary/v1/{environment}/colony-exceptions/{fromDate}/{toDate}';
+  title: 'Apiary Control - Colony Exceptions (environment keyed)';
+  owners:
+  [
+    'apiary-control-platform',
+    'hive-observation-eng'
+  ];
+  documentation: 'Environment-keyed multi-execution endpoint whose key is a path segment: every execution entry names the shared mapping and differs only in the warehouse binding, so environment selection is a request-time argument.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {environment: String[1], fromDate: StrictDate[1], toDate: StrictDate[1]|demo::mapleapiary2::domain::ColonyInspectionReport.all()->filter(
+      r|($r.recordedOn >= $fromDate) && ($r.recordedOn <= $toDate) && $r.workItemRef->isNotEmpty()
+    )->project(
+      [
+        r|$r.eventRef,
+        r|$r.apiarySite,
+        r|$r.careBand,
+        r|$r.ageInDays,
+        r|$r.regionLabel,
+        r|$r.rawContent.contentKind,
+        r|$r.systemData.sourceApp
+      ],
+      [
+        'Event Reference',
+        'Apiary Site',
+        'Care Band',
+        'Age In Days',
+        'Region Label',
+        'Content Kind',
+        'Source App'
+      ]
+    )};
+    key: 'environment';
+    executions['production']:
+    {
+      mapping: demo::mapleapiary2::mapping::ApiaryMapping;
+      runtime: demo::mapleapiary2::runtime::ApiaryProductionRuntime;
+    }
+    executions['acceptance']:
+    {
+      mapping: demo::mapleapiary2::mapping::ApiaryMapping;
+      runtime: demo::mapleapiary2::runtime::ApiaryAcceptanceRuntime;
+    }
+  }
+}

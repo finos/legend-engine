@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::borealcove2::store::CompostDB
+(
+  Schema compost
+  (
+    Table site
+    (
+      site_code VARCHAR(16) PRIMARY KEY,
+      site_name VARCHAR(96),
+      ward_code VARCHAR(12),
+      site_kind VARCHAR(24),
+      status_code VARCHAR(4),
+      bin_count INTEGER,
+      note_text VARCHAR(192)
+    )
+    Table collection_bin
+    (
+      bin_id INTEGER PRIMARY KEY,
+      site_code VARCHAR(16),
+      bin_code VARCHAR(16),
+      litre_size INTEGER,
+      lid_code VARCHAR(8),
+      seal_state VARCHAR(16)
+    )
+    Table round_route
+    (
+      route_code VARCHAR(12) PRIMARY KEY,
+      route_name VARCHAR(96),
+      shift_code VARCHAR(4)
+    )
+    Table haul
+    (
+      haul_id INTEGER PRIMARY KEY,
+      route_code VARCHAR(12),
+      bin_id INTEGER,
+      crew_code VARCHAR(12),
+      haul_date DATE,
+      gross_kg DECIMAL(12, 2),
+      tare_kg DECIMAL(12, 2),
+      grade_code VARCHAR(12)
+    )
+    Table crew
+    (
+      crew_code VARCHAR(12) PRIMARY KEY,
+      crew_name VARCHAR(96),
+      depot_code VARCHAR(12)
+    )
+    Table depot
+    (
+      depot_code VARCHAR(12) PRIMARY KEY,
+      depot_name VARCHAR(96),
+      ward_code VARCHAR(12)
+    )
+    Table ward
+    (
+      ward_code VARCHAR(12) PRIMARY KEY,
+      ward_name VARCHAR(96),
+      borough_name VARCHAR(96)
+    )
+
+    View site_tag_vw
+    (
+      site_code: compost.site.site_code PRIMARY KEY,
+      site_tag: concat('SITE-', compost.site.ward_code)
+    )
+  )
+
+  Filter OpenSite(compost.site.status_code != 'X')
+  Filter SealedBin(compost.collection_bin.seal_state != 'SCRAPPED')
+
+  Join Site_Ward(compost.site.ward_code = compost.ward.ward_code)
+  Join Bin_Site(compost.collection_bin.site_code = compost.site.site_code)
+  Join Haul_Bin(compost.haul.bin_id = compost.collection_bin.bin_id)
+  Join Haul_Route(compost.haul.route_code = compost.round_route.route_code)
+  Join Haul_Crew(compost.haul.crew_code = compost.crew.crew_code)
+  Join Crew_Depot(compost.crew.depot_code = compost.depot.depot_code)
+  Join Depot_Ward(compost.depot.ward_code = compost.ward.ward_code)
+  Join Site_Tag(compost.site.site_code = compost.site_tag_vw.site_code)
+)

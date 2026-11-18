@@ -1,0 +1,155 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletthicket3::service::SeasonGradeRollup
+{
+  pattern: '/thicket/v1/season-grade-rollup';
+  title: 'Scarlet Thicket - Season Grade Rollup';
+  owners:
+  [
+    'thicket-propagation-nursery'
+  ];
+  documentation: 'Folds the collected mass of the lots that clear a viability floor into groups keyed by season, grade and the bed label reached across an association end, so the grouping keys are a mix of main-table columns and a joined name and both the grouping and the sum have to be pushed into the emitted query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minViability: Integer[1]|test::scarletthicket3::domain::SeedLot.all()->filter(
+      l|$l.viabilityPct >= $minViability
+    )->groupBy(
+      [
+        l|$l.seasonCode,
+        l|$l.gradeCode,
+        l|$l.bed.bedLabel
+      ],
+      [
+        agg(l|$l.quantityGrams, y|$y->sum())
+      ],
+      [
+        'Season',
+        'Grade',
+        'Bed',
+        'Grams'
+      ]
+    )->sort([asc('Season'), asc('Grade'), asc('Bed')]);};
+    mapping: test::scarletthicket3::mapping::ThicketMapping;
+    runtime: test::scarletthicket3::runtime::ThicketWarehouseRuntime;
+  }
+  testSuites:
+  [
+    seasonGradeRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketWarehouse: Reference
+            #{
+              test::scarletthicket3::data::ThicketFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        twoLotsInOneSeasonAndBedFoldIntoOneGroupedMass:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minViability = 60
+          ]
+          asserts:
+          [
+            threeGroupsWithTheSharedBenchGroupSummed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Season":"S-2026A","Grade":"G-A","Bed":"Bench One","Grams":730.75},{"Season":"S-2026B","Grade":"G-A","Bed":"Frame Three","Grams":220.0},{"Season":"S-2026B","Grade":"G-B","Bed":"Bench Two","Grams":150.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::scarletthicket3::service::HabitatCountBoard
+{
+  pattern: '/thicket/v1/habitat-count-board';
+  title: 'Scarlet Thicket - Habitat Count Board';
+  owners:
+  [
+    'thicket-propagation-nursery'
+  ];
+  documentation: 'Counts lots per collection habitat, where the habitat code is not a property of the lot itself but of the inline origin detail bound onto the same row, so the grouping key travels through the embedded block before reaching the emitted query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::scarletthicket3::domain::SeedLot.all()->groupBy(
+      [
+        l|$l.origin.habitatCode
+      ],
+      [
+        agg(l|$l.lotCode, y|$y->count())
+      ],
+      [
+        'Habitat',
+        'Lots'
+      ]
+    )->sort([asc('Habitat')]);};
+    mapping: test::scarletthicket3::mapping::ThicketMapping;
+    runtime: test::scarletthicket3::runtime::ThicketWarehouseRuntime;
+  }
+  testSuites:
+  [
+    habitatCountBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketWarehouse: Reference
+            #{
+              test::scarletthicket3::data::ThicketFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyLotFallsIntoExactlyOneHabitatGroup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeHabitatsCoveringFiveLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Habitat":"HB-FEN","Lots":2},{"Habitat":"HB-HEATH","Lots":2},{"Habitat":"HB-SCRUB","Lots":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

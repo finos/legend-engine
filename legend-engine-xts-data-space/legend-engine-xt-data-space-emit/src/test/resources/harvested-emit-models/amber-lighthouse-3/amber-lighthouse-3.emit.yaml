@@ -1,0 +1,49 @@
+name: amber-lighthouse-3
+title: "Amber Lighthouse 3 — a governed coastal tending register with a published coast rollup"
+description: |
+  An invented coastal lighthouse-tending register: stations bound through an
+  aliased main table and a declared key, a lens order folded out of a stored
+  code by an included enumeration mapping, lantern-room fittings reached across
+  a join and narrowed by a qualified property, a rollup the store publishes
+  itself, and a data space wiring the whole cluster to a runtime.
+modelSources:
+  model:
+    root: amber-lighthouse-3
+    files:
+      - test/amberlighthouse3/connection/LighthouseConnection.pure
+      - test/amberlighthouse3/dataspace/LighthouseDataSpace.pure
+      - test/amberlighthouse3/domain/LighthouseDomain.pure
+      - test/amberlighthouse3/mapping/LighthouseEnumMappings.pure
+      - test/amberlighthouse3/mapping/LighthouseTendingMapping.pure
+      - test/amberlighthouse3/profile/LighthouseProfile.pure
+      - test/amberlighthouse3/runtime/LighthouseRuntime.pure
+      - test/amberlighthouse3/store/LighthouseDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - grammar:profile
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-group-by
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - coastal-tending
+  - data-space
+  - enumeration-mapping
+  - graph-fetch
+  - h2
+  - mapping-include
+  - mapping-test
+  - profile
+  - qualified-property
+  - relational-group-by

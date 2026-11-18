@@ -1,0 +1,34 @@
+name: meadow-arboretum-3-canopy
+title: "Meadow Arboretum 3 — street-tree canopy survey model half"
+description: |
+  The model half of a street-tree canopy corpus: one flat survey class over a
+  single-schema relational table, bound by a mapping with an explicit main-table
+  alias and a single-column primary key, plus the local connection and the
+  runtime the query artefacts consume but do not define. It exists so the
+  service half can stay query-only.
+
+modelSources:
+  model:
+    root: meadow-arboretum-3-canopy
+    files:
+      - test/meadowarboretum3/connection/CanopyConnection.pure
+      - test/meadowarboretum3/domain/CanopyDomain.pure
+      - test/meadowarboretum3/mapping/CanopyMapping.pure
+      - test/meadowarboretum3/runtime/CanopyRuntime.pure
+      - test/meadowarboretum3/store/CanopyDatabase.pure
+
+features:
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - main-table-alias
+  - relational
+  - street-tree-canopy

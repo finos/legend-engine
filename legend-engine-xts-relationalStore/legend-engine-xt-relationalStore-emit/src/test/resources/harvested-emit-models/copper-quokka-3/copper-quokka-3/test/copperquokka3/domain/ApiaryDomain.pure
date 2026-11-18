@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::copperquokka3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A bee yard in a region.'} test::copperquokka3::domain::Yard
+{
+  yardCode: String[1];
+  yardName: String[1];
+  regionCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A marked queen and her lineage.'} test::copperquokka3::domain::Queen
+{
+  queenId: Integer[1];
+  lineage: String[1];
+  markedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A hive box standing in a yard, headed by an optional queen.'} test::copperquokka3::domain::Hive
+{
+  hiveId: Integer[1];
+  hiveName: String[1];
+  yardCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One inspection of a hive: brood frames, an optional honey weight and the mite change since the last visit.'} test::copperquokka3::domain::Inspection
+{
+  inspectionId: Integer[1];
+  hiveId: Integer[1];
+  inspectedOn: StrictDate[1];
+  framesBrood: Integer[1];
+  honeyKg: Float[0..1];
+  miteDelta: Integer[1];
+  inspectorName: String[1];
+}
+
+Association test::copperquokka3::domain::Inspection_Hive
+{
+  hive: Hive[0..1];
+  inspections: Inspection[*];
+}
+
+Association test::copperquokka3::domain::Hive_Yard
+{
+  yard: Yard[0..1];
+  hives: Hive[*];
+}
+
+Association test::copperquokka3::domain::Hive_Queen
+{
+  queen: Queen[0..1];
+  queenHives: Hive[*];
+}

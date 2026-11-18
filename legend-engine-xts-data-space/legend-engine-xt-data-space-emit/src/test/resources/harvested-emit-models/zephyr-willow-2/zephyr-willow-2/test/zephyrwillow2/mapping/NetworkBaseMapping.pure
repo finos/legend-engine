@@ -1,0 +1,153 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::zephyrwillow2::mapping::NetworkBaseMapping
+(
+  *test::zephyrwillow2::domain::CollectionRound[collectionRound]: Relational
+  {
+    ~filter [test::zephyrwillow2::store::DepotNetworkDB]ActiveRoundFilter
+    ~primaryKey
+    (
+      [test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.round_id
+    )
+    ~mainTable [test::zephyrwillow2::store::DepotNetworkDB]network.collection_round
+    roundId: [test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.round_id,
+    collectedOn: [test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.collected_on,
+    grossKg: [test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.gross_kg,
+    moisturePct: [test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.moisture_pct,
+    contaminationCode: rtrim([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.contamination_code),
+    gradeCode: rtrim([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.grade_code),
+    crewCode: [test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.crew_code,
+    handlingNote: case(
+                    greaterThanEqual([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.gross_kg, 900),
+                    'BULK TRANSFER',
+                    case(
+                      greaterThanEqual([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.gross_kg, 600),
+                      'DOUBLE LIFT',
+                      case(
+                        greaterThanEqual([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.gross_kg, 400),
+                        'SINGLE LIFT',
+                        case(
+                          greaterThanEqual([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.moisture_pct, 40),
+                          'DRY BEFORE BALING',
+                          case(
+                            greaterThanEqual([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.moisture_pct, 25),
+                            'STANDARD BALING',
+                            case(
+                              equal(rtrim([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.contamination_code), 'HI'),
+                              'HAND SORT',
+                              case(
+                                equal(rtrim([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.grade_code), 'MX'),
+                                'MIXED LANE',
+                                case(
+                                  equal([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.crew_code, 'CR-3'),
+                                  'ROUTINE COLLECTION',
+                                  sqlNull()
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+    roundLabel: concat(
+                  concat(
+                    toUpper(rtrim([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.grade_code)),
+                    '-'
+                  ),
+                  [test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.round_id
+                ),
+    loadIndex: plus(
+                 times([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.gross_kg, 10),
+                 [test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.moisture_pct
+               ),
+    sourceRegister: 'DEPOT_ROUND_REGISTER',
+    depotSiteName: [test::zephyrwillow2::store::DepotNetworkDB]@Round_Container > @Container_Site | [test::zephyrwillow2::store::DepotNetworkDB]network.depot_site.site_name,
+    authorityName: [test::zephyrwillow2::store::DepotNetworkDB]@Round_Container > @Container_Site > @Site_Ward > @Ward_District > @District_Authority | [test::zephyrwillow2::store::DepotNetworkDB]network.authority.authority_name,
+    siteContainerCount: [test::zephyrwillow2::store::DepotNetworkDB]@Round_Container > @Container_Site > @Site_Yield | [test::zephyrwillow2::store::DepotNetworkDB]network.site_yield_view.container_count,
+    siteCapacityL: [test::zephyrwillow2::store::DepotNetworkDB]@Round_Container > @Container_Site > @Site_Yield | [test::zephyrwillow2::store::DepotNetworkDB]network.site_yield_view.total_capacity_l,
+    handling
+    (
+      lane: case(
+              equal(rtrim([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.grade_code), 'PA'),
+              'LANE-A',
+              case(
+                equal(rtrim([test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.grade_code), 'GL'),
+                'LANE-B',
+                'LANE-C'
+              )
+            ),
+      bay: concat('BAY-', [test::zephyrwillow2::store::DepotNetworkDB]network.collection_round.crew_code)
+    )
+  }
+
+  *test::zephyrwillow2::domain::Container[container]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrwillow2::store::DepotNetworkDB]network.container.container_code
+    )
+    ~mainTable [test::zephyrwillow2::store::DepotNetworkDB]network.container
+    containerCode: [test::zephyrwillow2::store::DepotNetworkDB]network.container.container_code,
+    containerKind: [test::zephyrwillow2::store::DepotNetworkDB]network.container.container_kind,
+    capacityL: [test::zephyrwillow2::store::DepotNetworkDB]network.container.capacity_l
+  }
+
+  *test::zephyrwillow2::domain::DepotSite[depotSite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrwillow2::store::DepotNetworkDB]network.depot_site.site_code
+    )
+    ~mainTable [test::zephyrwillow2::store::DepotNetworkDB]network.depot_site
+    siteCode: [test::zephyrwillow2::store::DepotNetworkDB]network.depot_site.site_code,
+    siteName: [test::zephyrwillow2::store::DepotNetworkDB]network.depot_site.site_name,
+    tierCode: [test::zephyrwillow2::store::DepotNetworkDB]network.depot_site.tier_code
+  }
+
+  *test::zephyrwillow2::domain::Ward[ward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrwillow2::store::DepotNetworkDB]network.ward.ward_code
+    )
+    ~mainTable [test::zephyrwillow2::store::DepotNetworkDB]network.ward
+    wardCode: [test::zephyrwillow2::store::DepotNetworkDB]network.ward.ward_code,
+    wardName: [test::zephyrwillow2::store::DepotNetworkDB]network.ward.ward_name
+  }
+
+  *test::zephyrwillow2::domain::District[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrwillow2::store::DepotNetworkDB]network.district.district_code
+    )
+    ~mainTable [test::zephyrwillow2::store::DepotNetworkDB]network.district
+    districtCode: [test::zephyrwillow2::store::DepotNetworkDB]network.district.district_code,
+    districtName: [test::zephyrwillow2::store::DepotNetworkDB]network.district.district_name
+  }
+
+  *test::zephyrwillow2::domain::CollectionAuthority[collectionAuthority]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrwillow2::store::DepotNetworkDB]network.authority.authority_code
+    )
+    ~mainTable [test::zephyrwillow2::store::DepotNetworkDB]network.authority
+    authorityCode: [test::zephyrwillow2::store::DepotNetworkDB]network.authority.authority_code,
+    authorityName: [test::zephyrwillow2::store::DepotNetworkDB]network.authority.authority_name
+  }
+)

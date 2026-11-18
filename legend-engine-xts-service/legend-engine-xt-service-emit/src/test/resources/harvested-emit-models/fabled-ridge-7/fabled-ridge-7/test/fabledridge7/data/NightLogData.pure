@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data {meta::pure::profiles::doc.doc = 'Nine logbook nights that walk the seeing bands from the steadiest step through to the worst, and close with a night whose sky was never read.'} test::fabledridge7::data::SeeingArmFeedData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '[{"logRef":"nl-01","revision":1,"observerCode":"av-1","seeingArcsec":0.5,"cloudPct":5,"instrumentCode":"dome-1","apertureMm":700,"filterCodes":["L","R","G"],"targetCodes":["M31","M33"]},{"logRef":"nl-02","revision":2,"observerCode":"av-1","seeingArcsec":0.85,"cloudPct":5,"instrumentCode":"dome-1","apertureMm":700,"filterCodes":["L","R","G"],"targetCodes":["M31","M33"]},{"logRef":"nl-03","revision":3,"observerCode":"av-1","seeingArcsec":1.15,"cloudPct":5,"instrumentCode":"dome-1","apertureMm":700,"filterCodes":["L","R","G"],"targetCodes":["M31","M33"]},{"logRef":"nl-04","revision":4,"observerCode":"av-1","seeingArcsec":1.5,"cloudPct":5,"instrumentCode":"dome-1","apertureMm":700,"filterCodes":["L","R","G"],"targetCodes":["M31","M33"]},{"logRef":"nl-05","revision":5,"observerCode":"av-1","seeingArcsec":1.9,"cloudPct":5,"instrumentCode":"dome-1","apertureMm":700,"filterCodes":["L","R","G"],"targetCodes":["M31","M33"]},{"logRef":"nl-06","revision":6,"observerCode":"av-1","seeingArcsec":2.4,"cloudPct":5,"instrumentCode":"dome-1","apertureMm":700,"filterCodes":["L","R","G"],"targetCodes":["M31","M33"]},{"logRef":"nl-07","revision":7,"observerCode":"av-1","seeingArcsec":3.2,"cloudPct":5,"instrumentCode":"dome-1","apertureMm":700,"filterCodes":["L","R","G"],"targetCodes":["M31","M33"]},{"logRef":"nl-08","revision":8,"observerCode":"av-1","seeingArcsec":4.5,"cloudPct":5,"instrumentCode":"dome-1","apertureMm":700,"filterCodes":["L","R","G"],"targetCodes":["M31","M33"]},{"logRef":"nl-09","revision":9,"observerCode":"av-1","cloudPct":5,"instrumentCode":"dome-1","apertureMm":700,"filterCodes":["L","R","G"],"targetCodes":["M31","M33"]}]';
+  }#
+}
+
+Data {meta::pure::profiles::doc.doc = 'Ten logbook nights that walk every arm of the composed night grade, including both nights graded on cloud alone and the night that carries neither reading.'} test::fabledridge7::data::GradeArmFeedData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '[{"logRef":"gr-01","revision":1,"observerCode":"av-2","seeingArcsec":0.8,"cloudPct":5,"instrumentCode":"dome-2","apertureMm":900,"filterCodes":["HA","OIII","SII"],"targetCodes":["M27"]},{"logRef":"gr-02","revision":1,"observerCode":"av-2","seeingArcsec":0.8,"cloudPct":30,"instrumentCode":"dome-2","apertureMm":900,"filterCodes":["HA"],"targetCodes":["M27"]},{"logRef":"gr-03","revision":1,"observerCode":"av-2","seeingArcsec":0.8,"cloudPct":60,"instrumentCode":"dome-2","apertureMm":900,"filterCodes":["HA"],"targetCodes":["M27"]},{"logRef":"gr-04","revision":1,"observerCode":"av-2","seeingArcsec":0.8,"instrumentCode":"dome-2","apertureMm":900,"filterCodes":["HA"],"targetCodes":["M27"]},{"logRef":"gr-05","revision":1,"observerCode":"av-2","seeingArcsec":2.4,"cloudPct":5,"instrumentCode":"dome-2","apertureMm":900,"filterCodes":["HA"],"targetCodes":["M27"]},{"logRef":"gr-06","revision":1,"observerCode":"av-2","seeingArcsec":2.4,"cloudPct":60,"instrumentCode":"dome-2","apertureMm":900,"filterCodes":["HA"],"targetCodes":["M27"]},{"logRef":"gr-07","revision":1,"observerCode":"av-2","seeingArcsec":2.4,"instrumentCode":"dome-2","apertureMm":900,"filterCodes":["HA"],"targetCodes":["M27"]},{"logRef":"gr-08","revision":1,"observerCode":"av-2","cloudPct":20,"instrumentCode":"dome-2","apertureMm":900,"filterCodes":["HA"],"targetCodes":["M27"]},{"logRef":"gr-09","revision":1,"observerCode":"av-2","cloudPct":80,"instrumentCode":"dome-2","apertureMm":900,"filterCodes":["HA"],"targetCodes":["M27"]},{"logRef":"gr-10","revision":1,"observerCode":"av-2","instrumentCode":"dome-2","apertureMm":900,"filterCodes":[],"targetCodes":["M27"]}]';
+  }#
+}
+
+Data {meta::pure::profiles::doc.doc = 'Four logbook nights left with the gaps a hand-written page leaves behind - an unsigned page, an unnamed instrument, an unrecorded aperture and an unfiltered, idle night - alongside the filter and target summary arms.'} test::fabledridge7::data::LogbookGapFeedData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '[{"logRef":"gp-01","revision":2,"seeingArcsec":0.9,"cloudPct":8,"instrumentCode":"rc-8","apertureMm":203,"filterCodes":[],"targetCodes":[]},{"logRef":"gp-02","revision":2,"observerCode":" av-3 ","seeingArcsec":0.9,"cloudPct":8,"apertureMm":420,"filterCodes":[" ha "],"targetCodes":["m13"]},{"logRef":"gp-03","revision":2,"observerCode":"av-3","seeingArcsec":0.9,"cloudPct":8,"instrumentCode":"dome-3","filterCodes":["HA","OIII"],"targetCodes":["M13","M92","M5"]},{"logRef":"gp-04","revision":2,"observerCode":"av-3","seeingArcsec":0.9,"cloudPct":8,"instrumentCode":"rc-8","apertureMm":120,"filterCodes":["L","R","G","B"],"targetCodes":["M13","M92"]}]';
+  }#
+}

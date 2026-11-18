@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::westerncavern::domain::CaveSystem
+{
+  systemCode: String[1];
+  batchId: Integer[1];
+  systemName: String[0..1];
+  regionName: String[0..1];
+  discoveredOn: StrictDate[0..1];
+  mappedLengthMetres: Float[0..1];
+  systemNote: String[0..1];
+  registerName: String[0..1];
+}
+
+Class test::westerncavern::domain::Passage
+{
+  passageCode: String[1];
+  batchId: Integer[1];
+  systemCode: String[0..1];
+  passageName: String[0..1];
+  passageLengthMetres: Float[0..1];
+  passageWidthMetres: Float[0..1];
+  hazardNote: String[0..1];
+}
+
+Class test::westerncavern::domain::SurveyRun
+{
+  runCode: String[1];
+  batchId: Integer[1];
+  systemCode: String[0..1];
+  runName: String[0..1];
+  runDate: StrictDate[0..1];
+  leadSurveyor: String[0..1];
+  instrumentNote: String[0..1];
+}
+
+Class test::westerncavern::domain::SurveyLeg
+{
+  legCode: String[1];
+  batchId: Integer[1];
+  runCode: String[0..1];
+  passageCode: String[0..1];
+  legLengthMetres: Float[0..1];
+  depthChangeMetres: Float[0..1];
+  gradeLabel: String[0..1];
+  surveyedPassageName: String[0..1];
+  registerName: String[0..1];
+}
+
+Class test::westerncavern::domain::ClimateStation
+{
+  stationCode: String[1];
+  batchId: Integer[1];
+  passageCode: String[0..1];
+  stationName: String[0..1];
+  installedOn: StrictDate[0..1];
+  sensorNote: String[0..1];
+}
+
+Class test::westerncavern::domain::ClimateReading
+{
+  readingCode: String[1];
+  batchId: Integer[1];
+  stationCode: String[0..1];
+  readingDate: StrictDate[0..1];
+  airTemperatureCelsius: Float[0..1];
+  humidityPercent: Float[0..1];
+  dripRatePerMinute: Integer[0..1];
+  stationLabel: String[0..1];
+}
+
+Association test::westerncavern::domain::CaveSystem_Passage
+{
+  parentSystem: test::westerncavern::domain::CaveSystem[0..1];
+  passages: test::westerncavern::domain::Passage[*];
+}
+
+Association test::westerncavern::domain::CaveSystem_SurveyRun
+{
+  surveyedSystem: test::westerncavern::domain::CaveSystem[0..1];
+  surveyRuns: test::westerncavern::domain::SurveyRun[*];
+}
+
+Association test::westerncavern::domain::SurveyRun_SurveyLeg
+{
+  parentRun: test::westerncavern::domain::SurveyRun[0..1];
+  legs: test::westerncavern::domain::SurveyLeg[*];
+}
+
+Association test::westerncavern::domain::Passage_SurveyLeg
+{
+  surveyedPassage: test::westerncavern::domain::Passage[0..1];
+  passageLegs: test::westerncavern::domain::SurveyLeg[*];
+}
+
+Association test::westerncavern::domain::ClimateStation_ClimateReading
+{
+  hostStation: test::westerncavern::domain::ClimateStation[0..1];
+  readings: test::westerncavern::domain::ClimateReading[*];
+}

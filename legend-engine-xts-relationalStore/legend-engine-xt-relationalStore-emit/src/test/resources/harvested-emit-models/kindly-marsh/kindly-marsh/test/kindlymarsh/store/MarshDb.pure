@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::kindlymarsh::store::MarshDb
+(
+  Schema WETLAND
+  (
+    Table BIRD_COUNT
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      COUNT_ID INTEGER PRIMARY KEY,
+      BIRD_CODE VARCHAR(24) NOT NULL,
+      COUNTED_ON DATE NOT NULL,
+      FLOCK_SIZE INTEGER NOT NULL,
+      WING_SPAN FLOAT NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL,
+      LAKE_IN_ID INTEGER NOT NULL,
+      LAKE_OUT_ID INTEGER NOT NULL,
+      OBSERVER_ID INTEGER NOT NULL
+    )
+    Table OBSERVER
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      OBSERVER_ID INTEGER PRIMARY KEY,
+      OBSERVER_CODE VARCHAR(24) NOT NULL,
+      OBSERVER_NAME VARCHAR(64) NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+  )
+)

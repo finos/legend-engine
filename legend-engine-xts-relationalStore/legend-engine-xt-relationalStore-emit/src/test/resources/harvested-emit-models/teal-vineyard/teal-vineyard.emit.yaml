@@ -1,0 +1,54 @@
+name: teal-vineyard
+title: "Teal Vineyard Cycle-Dock Network — Banded Intake Registers And Optional-Narrowing Rider Rollups Over One Relational Store"
+description: |
+  A city cycle-share network whose docking points and completed hires live in two
+  relations of a single store, each anchored under its own main-relation alias and
+  single-column key in one mapping. A size-banding ladder of eight arms is derived on
+  the docking-point class and falls through to an unset override column, so a point
+  too small for every arm reads back as nothing; the mapping suites walk one point
+  through every arm and end on that fall-through. A multi-execution rollup totals hire
+  minutes and counts per rider category over a closed date window, where the category
+  and trip-kind narrowings are optional and skipped when unsupplied, and a single
+  execution register lists a district's intake for one calendar year with the month and
+  band both derived and the surface parameter doubling as an opt-out sentinel.
+modelSources:
+  model:
+    root: teal-vineyard
+    files:
+      - test/tealvineyard/connection/CycleNetworkConnections.pure
+      - test/tealvineyard/domain/CycleDomain.pure
+      - test/tealvineyard/mapping/CycleNetworkMapping.pure
+      - test/tealvineyard/runtime/CycleNetworkRuntimes.pure
+      - test/tealvineyard/service/RiderClassRollup.pure
+      - test/tealvineyard/service/StationIntakeRegister.pure
+      - test/tealvineyard/store/CycleNetworkDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - cycle-share-network
+  - date-arithmetic
+  - derived-band-ladder
+  - duckdb
+  - group-by-rollup
+  - h2
+  - main-table-alias
+  - multi-execution
+  - optional-narrowing
+  - relation-projection
+  - sort-limit

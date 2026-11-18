@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::westerncavern::dataspace::CavernSurveyDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'surveyRegister';
+      description: 'Register tier - the cave systems, passages, survey runs, graded legs and climate readings over the survey register source, with the conditional grade band and the join-reached passage and station labels already resolved.';
+      mapping: test::westerncavern::mapping::CavernSurveyMapping;
+      defaultRuntime: test::westerncavern::runtime::CavernSurveyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'surveyRegister';
+  title: 'Western Cavern Survey Register';
+  description: 'A governed entry point over the cave survey register: six batch-keyed extents wired by five navigable associations, an eight-armed conditional grade band with a null sentinel, join-reached passage and station labels, and the graded, sorted and grouped read paths built on top of them.';
+  featuredDiagrams:
+  [
+  ];
+}

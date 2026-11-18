@@ -1,0 +1,195 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::verdantgecko2::store::TramNetworkDB
+(
+  Schema network
+  (
+    Table depot
+    (
+      depot_id INTEGER PRIMARY KEY,
+      depot_name VARCHAR(80) NOT NULL,
+      borough_name VARCHAR(80) NOT NULL,
+      bay_count INTEGER NOT NULL,
+      amended_by VARCHAR(40) NOT NULL,
+      valid_from TIMESTAMP NOT NULL,
+      valid_thru TIMESTAMP NOT NULL
+    )
+    Table tram_line
+    (
+      line_id INTEGER PRIMARY KEY,
+      depot_id INTEGER NOT NULL,
+      line_code VARCHAR(12) NOT NULL,
+      line_name VARCHAR(80) NOT NULL,
+      night_service VARCHAR(8) NOT NULL,
+      amended_by VARCHAR(40) NOT NULL,
+      valid_from TIMESTAMP NOT NULL,
+      valid_thru TIMESTAMP NOT NULL
+    )
+    Table tram_stop
+    (
+      stop_id INTEGER PRIMARY KEY,
+      line_id INTEGER NOT NULL,
+      sector_id INTEGER NOT NULL,
+      stop_name VARCHAR(80) NOT NULL,
+      platform_length_m FLOAT NOT NULL,
+      opened_on DATE NOT NULL,
+      amended_by VARCHAR(40) NOT NULL,
+      valid_from TIMESTAMP NOT NULL,
+      valid_thru TIMESTAMP NOT NULL
+    )
+    Table stop_sector
+    (
+      sector_id INTEGER PRIMARY KEY,
+      group_id INTEGER NOT NULL,
+      sector_name VARCHAR(80) NOT NULL,
+      amended_by VARCHAR(40) NOT NULL,
+      valid_from TIMESTAMP NOT NULL,
+      valid_thru TIMESTAMP NOT NULL
+    )
+    Table sector_group
+    (
+      group_id INTEGER PRIMARY KEY,
+      group_name VARCHAR(80) NOT NULL,
+      parent_group_name VARCHAR(80) NOT NULL,
+      amended_by VARCHAR(40) NOT NULL,
+      valid_from TIMESTAMP NOT NULL,
+      valid_thru TIMESTAMP NOT NULL
+    )
+    Table tram_vehicle
+    (
+      vehicle_id INTEGER PRIMARY KEY,
+      line_id INTEGER NOT NULL,
+      fleet_number VARCHAR(16) NOT NULL,
+      seat_count INTEGER NOT NULL,
+      axle_load_t FLOAT NOT NULL,
+      amended_by VARCHAR(40) NOT NULL,
+      valid_from TIMESTAMP NOT NULL,
+      valid_thru TIMESTAMP NOT NULL
+    )
+    Table service_period
+    (
+      period_id INTEGER PRIMARY KEY,
+      period_name VARCHAR(60) NOT NULL,
+      opens_on DATE NOT NULL,
+      closes_on DATE NOT NULL,
+      amended_by VARCHAR(40) NOT NULL,
+      valid_from TIMESTAMP NOT NULL,
+      valid_thru TIMESTAMP NOT NULL
+    )
+    Table ridership_count
+    (
+      count_id INTEGER PRIMARY KEY,
+      stop_id INTEGER NOT NULL,
+      period_id INTEGER NOT NULL,
+      boardings INTEGER NOT NULL,
+      alightings INTEGER NOT NULL,
+      mean_dwell_seconds FLOAT NOT NULL,
+      counted_on DATE NOT NULL,
+      recorded_by VARCHAR(40) NOT NULL,
+      amended_by VARCHAR(40) NOT NULL,
+      valid_from TIMESTAMP NOT NULL,
+      valid_thru TIMESTAMP NOT NULL
+    )
+
+    View current_depot
+    (
+      ~filter CurrentDepot
+      depot_id: network.depot.depot_id PRIMARY KEY,
+      depot_name: network.depot.depot_name,
+      borough_name: network.depot.borough_name,
+      bay_count: network.depot.bay_count
+    )
+    View current_line
+    (
+      ~filter CurrentLine
+      line_id: network.tram_line.line_id PRIMARY KEY,
+      depot_id: network.tram_line.depot_id,
+      line_code: network.tram_line.line_code,
+      line_name: network.tram_line.line_name,
+      night_service: network.tram_line.night_service
+    )
+    View current_stop
+    (
+      ~filter CurrentStop
+      stop_id: network.tram_stop.stop_id PRIMARY KEY,
+      line_id: network.tram_stop.line_id,
+      sector_id: network.tram_stop.sector_id,
+      stop_name: network.tram_stop.stop_name,
+      platform_length_m: network.tram_stop.platform_length_m,
+      opened_on: network.tram_stop.opened_on
+    )
+    View current_sector
+    (
+      ~filter CurrentSector
+      sector_id: network.stop_sector.sector_id PRIMARY KEY,
+      group_id: network.stop_sector.group_id,
+      sector_name: network.stop_sector.sector_name
+    )
+    View current_group
+    (
+      ~filter CurrentGroup
+      group_id: network.sector_group.group_id PRIMARY KEY,
+      group_name: network.sector_group.group_name,
+      parent_group_name: network.sector_group.parent_group_name
+    )
+    View current_vehicle
+    (
+      ~filter CurrentVehicle
+      vehicle_id: network.tram_vehicle.vehicle_id PRIMARY KEY,
+      line_id: network.tram_vehicle.line_id,
+      fleet_number: network.tram_vehicle.fleet_number,
+      seat_count: network.tram_vehicle.seat_count,
+      axle_load_t: network.tram_vehicle.axle_load_t
+    )
+    View current_period
+    (
+      ~filter CurrentPeriod
+      period_id: network.service_period.period_id PRIMARY KEY,
+      period_name: network.service_period.period_name,
+      opens_on: network.service_period.opens_on,
+      closes_on: network.service_period.closes_on
+    )
+    View current_count
+    (
+      ~filter CurrentCount
+      count_id: network.ridership_count.count_id PRIMARY KEY,
+      stop_id: network.ridership_count.stop_id,
+      period_id: network.ridership_count.period_id,
+      boardings: network.ridership_count.boardings,
+      alightings: network.ridership_count.alightings,
+      mean_dwell_seconds: network.ridership_count.mean_dwell_seconds,
+      counted_on: network.ridership_count.counted_on,
+      recorded_by: network.ridership_count.recorded_by
+    )
+  )
+
+  Filter CurrentDepot(network.depot.valid_from <= now() and network.depot.valid_thru > now())
+  Filter CurrentLine(network.tram_line.valid_from <= now() and network.tram_line.valid_thru > now())
+  Filter CurrentStop(network.tram_stop.valid_from <= now() and network.tram_stop.valid_thru > now() and network.tram_stop.platform_length_m >= 15.0)
+  Filter CurrentSector(network.stop_sector.valid_from <= now() and network.stop_sector.valid_thru > now() and network.stop_sector.sector_name != 'UNASSIGNED')
+  Filter CurrentGroup(network.sector_group.valid_from <= now() and network.sector_group.valid_thru > now())
+  Filter CurrentVehicle(network.tram_vehicle.valid_from <= now() and network.tram_vehicle.valid_thru > now() and network.tram_vehicle.seat_count > 0)
+  Filter CurrentPeriod(network.service_period.valid_from <= now() and network.service_period.valid_thru > now())
+  Filter CurrentCount(network.ridership_count.valid_from <= now() and network.ridership_count.valid_thru > now() and network.ridership_count.boardings >= 0)
+
+  Join Count_Stop(network.current_count.stop_id = network.current_stop.stop_id)
+  Join Count_Period(network.current_count.period_id = network.current_period.period_id)
+  Join Stop_Line(network.current_stop.line_id = network.current_line.line_id)
+  Join Stop_Sector(network.current_stop.sector_id = network.current_sector.sector_id)
+  Join Line_Depot(network.current_line.depot_id = network.current_depot.depot_id)
+  Join Sector_Group(network.current_sector.group_id = network.current_group.group_id)
+  Join Vehicle_Line(network.current_vehicle.line_id = network.current_line.line_id)
+)

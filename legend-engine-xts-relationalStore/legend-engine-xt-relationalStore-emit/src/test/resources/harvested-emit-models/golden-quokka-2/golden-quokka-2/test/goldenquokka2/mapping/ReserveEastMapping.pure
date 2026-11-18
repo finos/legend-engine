@@ -1,0 +1,160 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenquokka2::mapping::ReserveEastMapping
+(
+  include mapping test::goldenquokka2::mapping::ReserveEnumMappings
+  include mapping test::goldenquokka2::mapping::ReserveReferenceMapping
+
+  *test::goldenquokka2::domain::Burrow[burrow]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenquokka2::store::ReserveDb]east.burrow.burrow_code
+    )
+    ~mainTable [test::goldenquokka2::store::ReserveDb]east.burrow
+    burrowCode: [test::goldenquokka2::store::ReserveDb]east.burrow.burrow_code,
+    burrowName: [test::goldenquokka2::store::ReserveDb]east.burrow.burrow_name,
+    zoneCode: [test::goldenquokka2::store::ReserveDb]east.burrow.zone_code,
+    entranceCount: [test::goldenquokka2::store::ReserveDb]east.burrow.entrance_count,
+    condition: EnumerationMapping ConditionMapping: case(
+                 equal([test::goldenquokka2::store::ReserveDb]east.burrow.condition_code, '-'),
+                 'Z',
+                 trim([test::goldenquokka2::store::ReserveDb]east.burrow.condition_code)
+               ),
+    conditionNote: case(
+                     equal([test::goldenquokka2::store::ReserveDb]east.burrow.condition_code, 'A'),
+                     'SOUND CHAMBER',
+                     case(
+                       equal([test::goldenquokka2::store::ReserveDb]east.burrow.condition_code, 'B'),
+                       'SETTLING FLOOR',
+                       case(
+                         equal([test::goldenquokka2::store::ReserveDb]east.burrow.condition_code, 'C'),
+                         'MINOR COLLAPSE',
+                         case(
+                           equal([test::goldenquokka2::store::ReserveDb]east.burrow.condition_code, 'D'),
+                           'MAJOR COLLAPSE',
+                           case(
+                             equal([test::goldenquokka2::store::ReserveDb]east.burrow.condition_code, 'E'),
+                             'FLOOD WATCH',
+                             case(
+                               equal([test::goldenquokka2::store::ReserveDb]east.burrow.condition_code, 'F'),
+                               'SILT CLEARANCE',
+                               case(
+                                 equal([test::goldenquokka2::store::ReserveDb]east.burrow.condition_code, 'G'),
+                                 concat('ABANDONED-', [test::goldenquokka2::store::ReserveDb]east.burrow.burrow_code),
+                                 case(
+                                   equal([test::goldenquokka2::store::ReserveDb]east.burrow.condition_code, 'H'),
+                                   'REOCCUPIED - LOG',
+                                   sqlNull()
+                                 )
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   ),
+    siltNote: case(
+                equal([test::goldenquokka2::store::ReserveDb]east.burrow.silt_note, '-1'),
+                sqlNull(),
+                [test::goldenquokka2::store::ReserveDb]east.burrow.silt_note
+              ),
+    labelText: concat(
+                 concat(
+                   toUpper(trim([test::goldenquokka2::store::ReserveDb]east.burrow.burrow_name)),
+                   '-'
+                 ),
+                 [test::goldenquokka2::store::ReserveDb]east.burrow.burrow_code
+               ),
+    speciesCommonName: [test::goldenquokka2::store::ReserveDb]@East_Burrow_Species | [test::goldenquokka2::store::ReserveDb]ref.species_reference.common_name
+  }
+
+  *test::goldenquokka2::domain::HabitatZone[zone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenquokka2::store::ReserveDb]east.habitat_zone.zone_code
+    )
+    ~mainTable [test::goldenquokka2::store::ReserveDb]east.habitat_zone
+    zoneCode: [test::goldenquokka2::store::ReserveDb]east.habitat_zone.zone_code,
+    zoneName: [test::goldenquokka2::store::ReserveDb]east.habitat_zone.zone_name,
+    hectares: [test::goldenquokka2::store::ReserveDb]east.habitat_zone.hectares,
+    kind: EnumerationMapping HabitatKindMapping: trim([test::goldenquokka2::store::ReserveDb]east.habitat_zone.kind_code)
+  }
+
+  *test::goldenquokka2::domain::BurrowInspection[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenquokka2::store::ReserveDb]east.burrow_inspection.inspection_code
+    )
+    ~mainTable [test::goldenquokka2::store::ReserveDb]east.burrow_inspection
+    inspectionCode: [test::goldenquokka2::store::ReserveDb]east.burrow_inspection.inspection_code,
+    burrowCode: [test::goldenquokka2::store::ReserveDb]east.burrow_inspection.burrow_code,
+    inspectedOn: [test::goldenquokka2::store::ReserveDb]east.burrow_inspection.inspected_on,
+    depthCm: [test::goldenquokka2::store::ReserveDb]east.burrow_inspection.depth_cm,
+    wardenGrade: EnumerationMapping WardenGradeMapping: trim([test::goldenquokka2::store::ReserveDb]east.burrow_inspection.warden_grade_code)
+  }
+
+  *test::goldenquokka2::domain::ForageRecord[forage]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenquokka2::store::ReserveDb]east.forage_record.record_code
+    )
+    ~mainTable [test::goldenquokka2::store::ReserveDb]east.forage_record
+    recordCode: [test::goldenquokka2::store::ReserveDb]east.forage_record.record_code,
+    burrowCode: [test::goldenquokka2::store::ReserveDb]east.forage_record.burrow_code,
+    grams: [test::goldenquokka2::store::ReserveDb]east.forage_record.grams,
+    quality: EnumerationMapping ForageQualityMapping: trim([test::goldenquokka2::store::ReserveDb]east.forage_record.quality_code)
+  }
+
+  test::goldenquokka2::domain::Burrow_Inspections: Relational
+  {
+    AssociationMapping
+    (
+      inspections[burrow, inspection]: [test::goldenquokka2::store::ReserveDb]@East_Burrow_Inspection,
+      burrow[inspection, burrow]: [test::goldenquokka2::store::ReserveDb]@East_Burrow_Inspection
+    )
+  }
+
+  test::goldenquokka2::domain::Burrow_Species: Relational
+  {
+    AssociationMapping
+    (
+      species[burrow, species]: [test::goldenquokka2::store::ReserveDb]@East_Burrow_Species,
+      burrows[species, burrow]: [test::goldenquokka2::store::ReserveDb]@East_Burrow_Species
+    )
+  }
+
+  test::goldenquokka2::domain::Inspection_Warden: Relational
+  {
+    AssociationMapping
+    (
+      warden[inspection, warden]: [test::goldenquokka2::store::ReserveDb]@East_Inspection_Warden,
+      wardenInspections[warden, inspection]: [test::goldenquokka2::store::ReserveDb]@East_Inspection_Warden
+    )
+  }
+
+  test::goldenquokka2::domain::Forage_Species: Relational
+  {
+    AssociationMapping
+    (
+      forageSpecies[forage, species]: [test::goldenquokka2::store::ReserveDb]@East_Forage_Species,
+      forageRecords[species, forage]: [test::goldenquokka2::store::ReserveDb]@East_Forage_Species
+    )
+  }
+)

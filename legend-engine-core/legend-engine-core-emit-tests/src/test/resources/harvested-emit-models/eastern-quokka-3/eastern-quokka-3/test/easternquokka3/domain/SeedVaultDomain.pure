@@ -1,0 +1,232 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::easternquokka3::domain::*;
+import test::easternquokka3::profile::*;
+
+Enum {doc.doc = 'The physical form a plant accession is held in inside the vault.'} test::easternquokka3::domain::AccessionForm
+{
+  DrySeedLot,
+  PressedSheet,
+  LivingCutting,
+  SporeCapsule,
+  TissueVial
+}
+
+Enum {doc.doc = 'The viability grade a lot was given at the last germination sweep.'} test::easternquokka3::domain::ViabilityGrade
+{
+  Strong,
+  Fading,
+  Dormant,
+  Exhausted
+}
+
+Enum {doc.doc = 'The climate a storage chamber is held at.'} test::easternquokka3::domain::ChamberClimate
+{
+  DeepFreeze,
+  ChilledDry,
+  CoolHumid,
+  AmbientShed
+}
+
+Enum {doc.doc = 'The confidence a determiner attached to the taxon name given to an accession.'} test::easternquokka3::domain::DeterminationConfidence
+{
+  Confirmed,
+  Probable,
+  Aggregate,
+  Undetermined
+}
+
+Class <<typemodifiers.abstract>> {doc.doc = 'Anything the vault registers, numbers and files into a chamber; the root of the property hierarchy.'} test::easternquokka3::domain::VaultRecord
+{
+  recordRef: String[1];
+  registeredOn: StrictDate[1];
+  chamberBoxCode: String[0..1];
+}
+
+Class <<typemodifiers.abstract>> {doc.doc = 'A vault record that came out of the field, so it also carries where and when it was gathered.'} test::easternquokka3::domain::PlantAccession extends VaultRecord
+{
+  gatheredOn: StrictDate[0..1];
+  siteName: String[0..1];
+  siteAltitudeMetres: Integer[0..1];
+  form: AccessionForm[0..1];
+}
+
+Class <<VaultCuration.sweepChecked>> {doc.doc = 'One cleaned and dried seed lot, the commonest thing the vault holds.', VaultCuration.vaultSteward = 'chamber-row-west', VaultCuration.sweepCadence = 'seasonal'} test::easternquokka3::domain::SeedLot extends PlantAccession
+[
+  lotIdentityCoherent: ($this.donorCode->isEmpty() || $this.gathererCode->isEmpty()) || ((!($this.donorCode->toOne()->trim() == $this.gathererCode->toOne()->trim()) || $this.viabilityNote->isNotEmpty()) || ($this.germinationPercent->isNotEmpty() && ($this.germinationPercent->toOne() == 100))),
+  chamberAssignmentCoherent: !($this.chamberBoxCode->toOne()->trim() == $this.reserveBoxCode->toOne()->trim()) || ($this.shelfNumber->toOne() == 12)
+]
+{
+  {VaultCuration.retentionWindow = 'indefinite'} donorCode: String[0..1];
+  gathererCode: String[0..1];
+  viabilityNote: String[0..1];
+  germinationPercent: Integer[0..1];
+  reserveBoxCode: String[0..1];
+  shelfNumber: Integer[0..1];
+  cleanedOn: StrictDate[0..1];
+  lotGrade: ViabilityGrade[0..1];
+}
+
+Class <<VaultCuration.awaitingDetermination>> {doc.doc = 'A pressed and mounted herbarium sheet kept alongside the dry lots.', VaultCuration.retentionWindow = 'indefinite'} test::easternquokka3::domain::HerbariumSheet extends PlantAccession
+{
+  mountNote: String[0..1];
+  sheetWidthMillimetres: Integer[0..1];
+  sheetGrade: ViabilityGrade[0..1];
+}
+
+Class <<VaultCuration.quarantined>> {doc.doc = 'A rooted cutting held alive in a growing frame rather than dried down.'} test::easternquokka3::domain::LivingCutting extends PlantAccession
+{
+  rootedOn: StrictDate[0..1];
+  potVolumeLitres: Float[0..1];
+  underLights: Boolean[0..1];
+}
+
+Class <<typemodifiers.abstract>> {doc.doc = 'Anyone the vault names on an accession or a taxon determination.'} test::easternquokka3::domain::Custodian
+{
+  custodianRef: String[1];
+  displayName: String[1];
+}
+
+Class {doc.doc = 'A vault staff botanist on the curation rota.'} test::easternquokka3::domain::StaffBotanist extends Custodian
+{
+  rotaSection: String[0..1];
+  specialityGroup: String[0..1];
+}
+
+Class {doc.doc = 'A visiting researcher granted chamber and reading-room access for a study visit.'} test::easternquokka3::domain::VisitingResearcher extends Custodian
+{
+  homeInstitute: String[0..1];
+  visitEndsOn: StrictDate[0..1];
+}
+
+Class {doc.doc = 'A block of field days during which a run of accessions was gathered.'} test::easternquokka3::domain::CollectionTrip
+[
+  tripSpanCoherent: (!($this.openedOn->toOne() == $this.closedOn->toOne()) || $this.habitatName->isNotEmpty()) || ($this.tripName->isNotEmpty() && ($this.tripName->toOne()->trim() == 'ridge sweep')),
+  tripRefWithinLength: $this.tripRef->trim()->length() <= 32
+]
+{
+  tripRef: String[1];
+  tripName: String[0..1];
+  openedOn: StrictDate[0..1];
+  closedOn: StrictDate[0..1];
+  habitatName: String[0..1];
+}
+
+Class {doc.doc = 'A taxon name applied to an accession on a given day, with the confidence the determiner attached to it.'} test::easternquokka3::domain::TaxonName
+{
+  taxonRef: String[1];
+  determinedOn: StrictDate[1];
+  familyName: String[0..1];
+  scientificName: String[0..1];
+  confidence: DeterminationConfidence[0..1];
+  determinationNote: String[0..1];
+}
+
+Class <<VaultCuration.sweepChecked>> {doc.doc = 'A physical chamber, or a cabinet within one, that vault records are filed into.', VaultCuration.vaultSteward = 'chamber-row-east'} test::easternquokka3::domain::StorageChamber
+[
+  cabinetCountRecognised: $this.cabinetCount->isEmpty() || ($this.cabinetCount->toOne() <= 240),
+  chamberCodeWithinLength: $this.chamberCode->trim()->length() <= 24
+]
+{
+  chamberCode: String[1];
+  roomName: String[0..1];
+  cabinetCount: Integer[0..1];
+  climate: ChamberClimate[0..1];
+}
+
+Class {doc.doc = 'A germination trial run on a seed lot, with the tray count and the share that came up.'} test::easternquokka3::domain::GerminationTrial
+{
+  trialRef: String[1];
+  startedOn: StrictDate[1];
+  trayCount: Integer[0..1];
+  emergedPercent: Integer[0..1];
+  trialNote: String[0..1];
+}
+
+Class {doc.doc = 'An outbound study-consignment request raised against a vault record and closed when it comes home.'} test::easternquokka3::domain::StudyConsignment
+{
+  consignmentRef: String[1];
+  raisedOn: StrictDate[1];
+  closedOn: StrictDate[0..1];
+  purposeNote: String[0..1];
+}
+
+Association {doc.doc = 'The taxon names applied to an accession, resolved through the accession supertype.'} test::easternquokka3::domain::Accession_Taxon
+{
+  determinedAccession: PlantAccession[0..1];
+  accessionTaxa: TaxonName[*];
+}
+
+Association {doc.doc = 'The determinations attributed to a custodian, resolved through the custodian supertype.'} test::easternquokka3::domain::Taxon_Custodian
+{
+  determiner: Custodian[0..1];
+  determinationsMade: TaxonName[*];
+}
+
+Association {doc.doc = 'The accessions gathered during a collection trip, and the trip an accession came from.'} test::easternquokka3::domain::Trip_Accession
+{
+  sourceTrip: CollectionTrip[0..1];
+  tripAccessions: PlantAccession[*];
+}
+
+Association {doc.doc = 'The chamber a dry seed lot is filed into, and the lots a chamber holds.'} test::easternquokka3::domain::Lot_Chamber
+{
+  lotChamber: StorageChamber[0..1];
+  filedLots: SeedLot[*];
+}
+
+Association {doc.doc = 'The chamber a herbarium sheet is filed into, and the sheets a chamber holds.'} test::easternquokka3::domain::Sheet_Chamber
+{
+  sheetChamber: StorageChamber[0..1];
+  filedSheets: HerbariumSheet[*];
+}
+
+Association {doc.doc = 'The study consignments raised against a vault record, resolved through the registering supertype.'} test::easternquokka3::domain::Record_Consignment
+{
+  consignedRecord: VaultRecord[0..1];
+  recordConsignments: StudyConsignment[*];
+}
+
+Association {doc.doc = 'The custodians who took part in a collection trip, and the trips a custodian joined.'} test::easternquokka3::domain::Trip_Custodian
+{
+  tripParty: Custodian[*];
+  tripsJoined: CollectionTrip[*];
+}
+
+Association {doc.doc = 'The germination trials run on a seed lot, and the lot a trial was run on.'} test::easternquokka3::domain::Lot_Trial
+{
+  trialledLot: SeedLot[0..1];
+  lotTrials: GerminationTrial[*];
+}
+
+Association {doc.doc = 'The staff botanist who rooted a living cutting, and the cuttings they rooted.'} test::easternquokka3::domain::Cutting_Custodian
+{
+  rootedBy: StaffBotanist[0..1];
+  rootedCuttings: LivingCutting[*];
+}
+
+Association {doc.doc = 'The custodian who raised a study consignment, resolved through the custodian supertype.'} test::easternquokka3::domain::Consignment_Custodian
+{
+  consignmentRequester: Custodian[0..1];
+  consignmentsRequested: StudyConsignment[*];
+}
+
+Association {doc.doc = 'The chambers a visiting researcher may open, and the visitors granted access to a chamber.'} test::easternquokka3::domain::Visitor_Chamber
+{
+  chamberVisitors: VisitingResearcher[*];
+  accessibleChambers: StorageChamber[*];
+}

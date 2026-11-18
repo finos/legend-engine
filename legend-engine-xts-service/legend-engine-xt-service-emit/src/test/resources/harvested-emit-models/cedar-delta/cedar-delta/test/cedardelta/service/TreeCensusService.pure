@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedardelta::service::TreeCensusService
+{
+  pattern: '/cedardelta/v1/tree-census';
+  title: 'Ward Street-Tree Census';
+  ownership: DID { identifier: 'urban-forestry-platform' };
+  documentation: 'Returns the published street-tree inventory rows rebuilt in memory from an inbound field survey, with size class, canopy remark, note digest and health grade derived by the shared census function library.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::cedardelta::domain::TreeRow.all()->graphFetch(
+  #{
+    test::cedardelta::domain::TreeRow{
+      recordId,
+      ward,
+      speciesCode,
+      heightM,
+      sizeClass,
+      canopyRemark,
+      noteDigest,
+      healthGrade,
+      rowSummary,
+      isVeteran
+    }
+  }#
+    )->serialize(
+  #{
+    test::cedardelta::domain::TreeRow{
+      recordId,
+      ward,
+      speciesCode,
+      heightM,
+      sizeClass,
+      canopyRemark,
+      noteDigest,
+      healthGrade,
+      rowSummary,
+      isVeteran
+    }
+  }#
+    );
+    mapping: test::cedardelta::mapping::TreeRowFromSurvey;
+    runtime: test::cedardelta::runtime::TreeRowRuntime;
+  }
+  testSuites:
+  [
+    censusSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          surveyConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"recordId":"R-01","ward":"WARD-NORTH","speciesCode":"ACER","trunkCm":140,"heightM":18,"canopyState":"FULL","crewNote":"corner oak"},{"recordId":"R-02","ward":"WARD-EAST","speciesCode":"QUERCUS","trunkCm":80,"heightM":12,"canopyState":"THINNING"},{"recordId":"R-03","ward":"WARD-WEST","speciesCode":"TILIA","trunkCm":30,"heightM":7,"canopyState":"SPARSE","crewNote":"lean"},{"recordId":"R-04","ward":"WARD-NORTH","speciesCode":"PINUS","trunkCm":50,"heightM":9,"canopyState":"FULL","crewNote":"young pine"},{"recordId":"R-05","ward":"WARD-EAST","speciesCode":"ACER","trunkCm":20,"heightM":3,"canopyState":"BARE","crewNote":"sapling"},{"recordId":"R-06","ward":"WARD-NORTH","speciesCode":"TILIA","trunkCm":200,"heightM":22,"canopyState":"FULL","crewNote":"  broad lime  "},{"recordId":"R-07","ward":"WARD-EAST","speciesCode":"QUERCUS","trunkCm":45,"heightM":8,"canopyState":"MISTED","crewNote":"odd state"},{"recordId":"R-08","ward":"WARD-NORTH","speciesCode":"ACER","trunkCm":70,"heightM":14,"canopyState":"SPARSE","crewNote":"thin crown"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        allWardsTransformed:
+        {
+          asserts:
+          [
+            censusRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"recordId":"R-01","ward":"WARD-NORTH","speciesCode":"ACER","heightM":18,"sizeClass":"HERITAGE","canopyRemark":"full","noteDigest":"CORNER OAK","healthGrade":"PRIME","rowSummary":"HERITAGE/full:PRIME[CORNER OAK]","isVeteran()":true},{"recordId":"R-02","ward":"WARD-EAST","speciesCode":"QUERCUS","heightM":12,"sizeClass":"MATURE","canopyRemark":"thinning","noteDigest":"note-absent","healthGrade":"STANDARD","rowSummary":"MATURE/thinning:STANDARD[note-absent]","isVeteran()":false},{"recordId":"R-03","ward":"WARD-WEST","speciesCode":"TILIA","heightM":7,"sizeClass":"SEMI","canopyRemark":"sparse","noteDigest":"LEAN","healthGrade":"MARGINAL","rowSummary":"SEMI/sparse:MARGINAL[LEAN]","isVeteran()":false},{"recordId":"R-04","ward":"WARD-NORTH","speciesCode":"PINUS","heightM":9,"sizeClass":"SEMI","canopyRemark":"full","noteDigest":"YOUNG PINE","healthGrade":"STANDARD","rowSummary":"SEMI/full:STANDARD[YOUNG PINE]","isVeteran()":false},{"recordId":"R-05","ward":"WARD-EAST","speciesCode":"ACER","heightM":3,"sizeClass":"YOUNG","canopyRemark":"bare","noteDigest":"SAPLING","healthGrade":"MARGINAL","rowSummary":"YOUNG/bare:MARGINAL[SAPLING]","isVeteran()":false},{"recordId":"R-06","ward":"WARD-NORTH","speciesCode":"TILIA","heightM":22,"sizeClass":"HERITAGE","canopyRemark":"full","noteDigest":"BROAD LIME","healthGrade":"PRIME","rowSummary":"HERITAGE/full:PRIME[BROAD LIME]","isVeteran()":true},{"recordId":"R-07","ward":"WARD-EAST","speciesCode":"QUERCUS","heightM":8,"sizeClass":"SEMI","canopyRemark":"state-not-recognised","noteDigest":"ODD STATE","healthGrade":"STANDARD","rowSummary":"SEMI/state-not-recognised:STANDARD[ODD STATE]","isVeteran()":false},{"recordId":"R-08","ward":"WARD-NORTH","speciesCode":"ACER","heightM":14,"sizeClass":"MATURE","canopyRemark":"sparse","noteDigest":"THIN CROWN","healthGrade":"MARGINAL","rowSummary":"MATURE/sparse:MARGINAL[THIN CROWN]","isVeteran()":false}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

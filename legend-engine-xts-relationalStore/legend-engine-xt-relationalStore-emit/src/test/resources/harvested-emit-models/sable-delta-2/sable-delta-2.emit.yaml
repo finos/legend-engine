@@ -1,0 +1,56 @@
+name: sable-delta-2
+title: "Sable Delta 2 — Bookmobile Stop Dispatch across a Tabular Logbook and a Model-Chained Digest Layer"
+description: |
+  A bookmobile stop-dispatch model whose nested stop-feed document is flattened by
+  eight chained model-to-model class mappings into stop, route, depot, vehicle,
+  driver, patron, holding and dwell views, while the dispatch logbook itself is
+  mapped out of a tabular store and projected as a tabular data set. Three
+  bidirectional relationship declarations bind the logbook rows to the flattened
+  views through cross-store association mappings that correlate the stop reference
+  across the store boundary instead of through a physical join, and the runtime
+  binds the tabular store beside a model-chained connection so both halves resolve
+  together. The digest layer is exercised as a serialised three-level graph and per
+  view, with documents whose dwell minutes, holding counts and patron nodes are
+  absent so both arms of every conditional transform surface.
+modelSources:
+  model:
+    root: sable-delta-2
+    files:
+      - test/sabledelta2/connection/StopConnections.pure
+      - test/sabledelta2/domain/FeedDomain.pure
+      - test/sabledelta2/domain/RosterDomain.pure
+      - test/sabledelta2/mapping/StopDigestMapping.pure
+      - test/sabledelta2/mapping/StopFeedMapping.pure
+      - test/sabledelta2/runtime/StopRuntime.pure
+      - test/sabledelta2/store/StopLogbookDb.pure
+features:
+  - scaffolding:model-chain-connection
+  - scaffolding:relational-connection
+  - execution:mapping-test
+  - grammar:association
+  - mapping:cross-store
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - scaffolding:relational-mapping
+  - execution:graph-fetch
+  - query:project
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bookmobile-dispatch
+  - chained-set-implementation
+  - cross-store
+  - graph-fetch
+  - h2
+  - mapping-test
+  - model-chain
+  - model-to-model
+  - relational
+  - tabular-data-set
+  - xstore-association

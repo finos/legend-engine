@@ -1,0 +1,131 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::scarletwillow3::domain::*;
+
+Profile test::scarletwillow3::domain::ReserveGovernance
+{
+  stereotypes: [excludedFromDistribution];
+  tags: [physicalTableName];
+}
+
+Enum test::scarletwillow3::domain::HabitatKind
+{
+  FEN,
+  CARR,
+  MIRE,
+  REEDBED,
+  HEATH
+}
+
+Enum test::scarletwillow3::domain::ScrubDensity
+{
+  OPEN,
+  SCATTERED,
+  DENSE
+}
+
+Enum test::scarletwillow3::domain::VisitKind
+{
+  WALKOVER,
+  TRANSECT,
+  FIXEDPOINT
+}
+
+Enum test::scarletwillow3::domain::SiteStatus
+{
+  ACTIVE,
+  DORMANT,
+  RETIRED
+}
+
+Class {meta::pure::profiles::doc.doc = 'The shared identifier-bearing base of the reserve estate, restated by every layer below it.'} test::scarletwillow3::domain::ReserveEntity
+{
+  entityCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A wetland reserve site. Sites are not versioned, so a query joining a versioned patch to its site mixes versioned and unversioned data.'} test::scarletwillow3::domain::ReserveSite extends ReserveEntity
+{
+  siteName: String[1];
+  status: SiteStatus[1];
+  regionName: String[0..1];
+}
+
+Class <<temporal.processingtemporal, test::scarletwillow3::domain::ReserveGovernance.excludedFromDistribution>> {meta::pure::profiles::doc.doc = 'A mapped habitat patch of one reserve site. Rows are versioned by when the survey office recorded them, so every read pins a processing instant and every navigation re-supplies it.', test::scarletwillow3::domain::ReserveGovernance.physicalTableName = 'habitat_patch'} test::scarletwillow3::domain::HabitatPatch extends ReserveEntity
+{
+  patchCode: String[1];
+  habitatKind: HabitatKind[1];
+  scrubDensity: ScrubDensity[0..1];
+  areaHectares: Float[1];
+  wetnessPct: Integer[1];
+  handlingNote: String[0..1];
+  displayLabel: String[1];
+  schemeName: String[1];
+  wardenName: String[0..1];
+  sitePatchCount: Integer[0..1];
+  siteAreaHectares: Float[0..1];
+  drainageNote: String[0..1];
+
+  isWet() {$this.wetnessPct > 20} : Boolean[1];
+  areaBand() {if($this.areaHectares >= 5.0, | 'LARGE', | if($this.areaHectares >= 2.0, | 'MEDIUM', | 'SMALL'))} : String[1];
+  richVisitsAt(processingDate: Date[1]) {$this.visits($processingDate)->filter(v|$v.speciesCount > 2)} : SurveyVisit[*];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A habitat patch on deep peat, whose peat depth is only readable once an instance has been narrowed to this subtype.'} test::scarletwillow3::domain::PeatPatch extends HabitatPatch
+{
+  peatDepthCm: Integer[0..1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'One recorded survey visit to a habitat patch. Both ends of its patch association are versioned, so the association itself is milestoned.'} test::scarletwillow3::domain::SurveyVisit extends ReserveEntity
+{
+  visitCode: String[1];
+  visitKind: VisitKind[1];
+  speciesCount: Integer[1];
+  remarkText: String[0..1];
+  observerName: String[0..1];
+  teamName: String[0..1];
+
+  isRich() {$this.speciesCount > 2} : Boolean[1];
+  patchBandAt(processingDate: Date[1]) {$this.patch($processingDate).areaBand() + '/' + $this.visitKind->toString()} : String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A surveyor recording visits. Observers are utility records and carry no version dimension.'} test::scarletwillow3::domain::Observer extends ReserveEntity
+{
+  observerName: String[1];
+  roleCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A parent-child link between two reserve sites. A row whose two ancestry columns are equal is excluded by the store predicate rather than by the model.'} test::scarletwillow3::domain::SiteLink extends ReserveEntity
+{
+  parentSiteId: String[1];
+}
+
+Association test::scarletwillow3::domain::Patch_Site
+{
+  sitePatches: HabitatPatch[*];
+  site: ReserveSite[1];
+}
+
+Association test::scarletwillow3::domain::Visit_Patch
+{
+  visits: SurveyVisit[*];
+  patch: HabitatPatch[1];
+}
+
+Association test::scarletwillow3::domain::Visit_Observer
+{
+  observedVisits: SurveyVisit[*];
+  observer: Observer[1];
+}

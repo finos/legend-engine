@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdanthatchery2::service::BatchRegister
+{
+  pattern: '/verdanthatchery2/batchRegister/{minHealth}';
+  title: 'Fell Beck Hatchery - Graded Fry Batch Register';
+  documentation: 'Restricts the stocked fry batches to a species membership set above a health floor and projects the batch, its pond one hop out, its site two hops out, the rearing stage banded from mean length and the tag note, ordered and capped.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'fell-beck-hatchery-ops'
+  ];
+  execution: Single
+  {
+    query: {speciesCodes: String[*], minHealth: Integer[1]|test::verdanthatchery2::domain::FryBatch.all()->filter(
+      b|($b.speciesCode->in($speciesCodes)) && ($b.healthScore >= $minHealth)
+    )->project(
+      [
+        b|$b.batchCode,
+        b|$b.pondName,
+        b|$b.siteName,
+        b|$b.vigourBand,
+        b|$b.tagNote
+      ],
+      [
+        'Batch/Code',
+        'Pond/Name',
+        'Site/Name',
+        'Batch/Vigour',
+        'Batch/Tag'
+      ]
+    )->sort(
+      [
+        asc('Batch/Code')
+      ]
+    )->limit(10)};
+    mapping: test::verdanthatchery2::mapping::HatcheryMapping;
+    runtime: test::verdanthatchery2::runtime::HatcheryWarehouseRuntime;
+  }
+  testSuites:
+  [
+    batchRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+                hatchery.fry_batch:
+                  'batch_code,pond_code,species_code,stocked_on,fry_count,mean_length_mm,health_score,grader_name,tagged_flag\n'+
+                  'FB-01,PD-01,BROWN_TROUT,2026-03-02,12000,12.0,88,ada wren,Y\n'+
+                  'FB-02,PD-01,BROWN_TROUT,2026-03-04,9500,20.0,81,ada wren,N\n'+
+                  'FB-03,PD-01,GRAYLING,2026-03-06,8100,30.0,76,,Y\n'+
+                  'FB-04,PD-02,BROWN_TROUT,2026-03-08,7400,45.0,72,bram kell,Y\n'+
+                  'FB-05,PD-02,GRAYLING,2026-03-10,6600,65.0,69,bram kell,N\n'+
+                  'FB-06,PD-02,ARCTIC_CHARR,2026-04-01,5200,90.0,64,bram kell,Y\n'+
+                  'FB-07,PD-03,ARCTIC_CHARR,2026-04-03,4100,120.0,58,cleo tarn,N\n'+
+                  'FB-08,PD-03,BROWN_TROUT,2026-04-05,3300,160.0,55,cleo tarn,Y\n'+
+                  'FB-09,PD-03,GRAYLING,2026-04-07,2500,220.0,51,cleo tarn,N\n';
+                hatchery.rearing_pond:
+                  'pond_code,pond_name,site_code,volume_m3\n'+
+                  'PD-01,Alder Race,ST-01,120.0\n'+
+                  'PD-02,Willow Race,ST-01,140.0\n'+
+                  'PD-03,Rowan Race,ST-02,95.0\n';
+                hatchery.hatchery_site:
+                  'site_code,site_name,catchment_name\n'+
+                  'ST-01,Upper Weir Hatchery,Fell Beck\n'+
+                  'ST-02,Lower Weir Hatchery,Mill Beck\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        oneSpeciesAboveAHealthFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            speciesCodes = ['BROWN_TROUT'],
+            minHealth = 70
+          ]
+          asserts:
+          [
+            theLowScoringTroutBatchDropsOutOfTheRegister:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch/Code":"FB-01","Pond/Name":"Alder Race","Site/Name":"Upper Weir Hatchery","Batch/Vigour":"PINHEAD","Batch/Tag":"TAGGED"},{"Batch/Code":"FB-02","Pond/Name":"Alder Race","Site/Name":"Upper Weir Hatchery","Batch/Vigour":"SWIM_UP","Batch/Tag":"UNTAGGED"},{"Batch/Code":"FB-04","Pond/Name":"Willow Race","Site/Name":"Upper Weir Hatchery","Batch/Vigour":"FINGERLING_EARLY","Batch/Tag":"TAGGED"}]';
+                  }#;
+              }#
+          ]
+        },
+        twoSpeciesAcrossEveryPond:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            speciesCodes = ['GRAYLING', 'ARCTIC_CHARR'],
+            minHealth = 50
+          ]
+          asserts:
+          [
+            theOversizedGraylingBatchCarriesTheNullRearingStage:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch/Code":"FB-03","Pond/Name":"Alder Race","Site/Name":"Upper Weir Hatchery","Batch/Vigour":"FIRST_FEED","Batch/Tag":"TAGGED"},{"Batch/Code":"FB-05","Pond/Name":"Willow Race","Site/Name":"Upper Weir Hatchery","Batch/Vigour":"FINGERLING_LATE","Batch/Tag":"UNTAGGED"},{"Batch/Code":"FB-06","Pond/Name":"Willow Race","Site/Name":"Upper Weir Hatchery","Batch/Vigour":"PARR","Batch/Tag":"TAGGED"},{"Batch/Code":"FB-07","Pond/Name":"Rowan Race","Site/Name":"Lower Weir Hatchery","Batch/Vigour":"SMOLT_READY","Batch/Tag":"UNTAGGED"},{"Batch/Code":"FB-09","Pond/Name":"Rowan Race","Site/Name":"Lower Weir Hatchery","Batch/Vigour":null,"Batch/Tag":"UNTAGGED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

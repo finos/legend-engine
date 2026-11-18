@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedlighthouse4::service::LotTrayFeed
+{
+  pattern: '/frostedlighthouse/v1/lotTrays';
+  title: 'Frosted Lighthouse - Lot Tray Feed';
+  owners:
+  [
+    'nursery-propagation-desk'
+  ];
+  documentation: 'Projects every propagation lot with no predicate at all, so the generated plan is a single unfiltered select whose optional grading timestamp flows through as a null for the lot that has not yet been graded.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::frostedlighthouse4::domain::SeedLot.all()->project([x|$x.lotId, x|$x.houseCode, x|$x.trayCount, x|$x.gradedAt], ['LotId', 'HouseCode', 'TrayCount', 'GradedAt'])->sort([asc('LotId')]);
+    mapping: test::frostedlighthouse4::mapping::NurseryLotMapping;
+    runtime: test::frostedlighthouse4::runtime::NurseryLotRuntime;
+  }
+  testSuites:
+  [
+    lotTraySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryLotConnection:
+            Relational
+            #{
+              nursery.seed_lot:
+                'lot_id,lot_code,species_code,house_code,status_code,tray_count,germination_pct,sown_on,graded_at,batch_note\n'+
+                '1,LT-0001,SP-ACER,GH-01,GRADED,48,92.5,2026-01-05,2026-02-01 09:15:00,first flush strong\n'+
+                '2,LT-0002,SP-BETU,GH-01,GRADED,36,78.25,2026-01-12,2026-02-02 09:30:00,\n'+
+                '3,LT-0003,SP-CORY,GH-02,SOWN,24,,2026-01-19,,awaiting first count\n'+
+                '4,LT-0004,SP-ACER,GH-02,GRADED,60,64.0,2026-01-26,2026-02-05 10:00:00,thinned tray\n'+
+                '5,LT-0005,SP-QUER,GH-03,DISCARDED,12,4.5,2026-02-02,2026-02-09 11:45:00,damping off\n'+
+                '6,LT-0006,SP-TILI,GH-03,GRADED,30,88.75,2026-02-09,2026-02-16 08:20:00,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        plannedAndExecuted:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LotId":1,"HouseCode":"GH-01","TrayCount":48,"GradedAt":"2026-02-01T09:15:00.000000000+0000"},{"LotId":2,"HouseCode":"GH-01","TrayCount":36,"GradedAt":"2026-02-02T09:30:00.000000000+0000"},{"LotId":3,"HouseCode":"GH-02","TrayCount":24,"GradedAt":null},{"LotId":4,"HouseCode":"GH-02","TrayCount":60,"GradedAt":"2026-02-05T10:00:00.000000000+0000"},{"LotId":5,"HouseCode":"GH-03","TrayCount":12,"GradedAt":"2026-02-09T11:45:00.000000000+0000"},{"LotId":6,"HouseCode":"GH-03","TrayCount":30,"GradedAt":"2026-02-16T08:20:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

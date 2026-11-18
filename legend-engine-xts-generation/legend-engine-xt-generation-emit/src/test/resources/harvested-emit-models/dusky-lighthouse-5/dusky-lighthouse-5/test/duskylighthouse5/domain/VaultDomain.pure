@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::duskylighthouse5::domain::*;
+
+Enum {doc.doc = 'Storage regime a vault accession is held under.'} test::duskylighthouse5::domain::StorageRegime
+{
+  DeepFreeze,
+  Chilled,
+  Ambient,
+  CryoVapour
+}
+
+Class {doc.doc = 'Shared shape of anything catalogued into the seed vault.'} test::duskylighthouse5::domain::VaultAccession
+{
+  accessionCode: String[1];
+  taxonName: String[1];
+  regime: StorageRegime[1];
+  collectedOn: StrictDate[1];
+  fieldNote: String[0..1];
+}
+
+Class {doc.doc = 'A packet of seed held in the vault, specialising a vault accession with viability data.'} test::duskylighthouse5::domain::SeedAccession extends VaultAccession
+{
+  seedCount: Integer[1];
+  germinationPct: Float[1];
+  moisturePct: Float[0..1];
+  isViable() {$this.germinationPct >= 75.0}: Boolean[1];
+}
+
+Class {doc.doc = 'A living tissue culture held in the vault, the second specialisation of a vault accession.'} test::duskylighthouse5::domain::TissueAccession extends VaultAccession
+{
+  vesselCount: Integer[1];
+  subcultureIntervalDays: Integer[1];
+}
+
+Class {doc.doc = 'The physical location a vault accession is shelved at; a related type the schema walk reaches.'} test::duskylighthouse5::domain::VaultLocation
+{
+  roomCode: String[1];
+  shelfCode: String[1];
+  temperatureC: Float[1];
+}

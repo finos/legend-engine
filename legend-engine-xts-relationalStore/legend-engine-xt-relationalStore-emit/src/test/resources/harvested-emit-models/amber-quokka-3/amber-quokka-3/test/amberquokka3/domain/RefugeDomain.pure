@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::amberquokka3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A valley zone a mountain refuge sits in; zones are never restated so they sit off both timelines.'} test::amberquokka3::domain::ValleyZone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+  terrainKind: String[1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'One booked stay in a dormitory room, corrected over processing time and effective over business time.'} test::amberquokka3::domain::OccupancySpell
+{
+  spellCode: String[1];
+  stayKind: String[1];
+  guestParty: String[1];
+  arrivalDate: StrictDate[1];
+  departureDate: StrictDate[1];
+  guestCount: Integer[1];
+  permitCode: String[0..1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A dormitory room of a refuge, reached at one bitemporal coordinate and carrying its stay sub-collection.'} test::amberquokka3::domain::DormRoom
+{
+  roomCode: String[1];
+  roomLabel: String[1];
+  heatingKind: String[1];
+  bunkCount: Integer[1];
+  spells: OccupancySpell[*];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A staffed mountain refuge read at one processing and one business instant, reaching its valley zone and its dormitory rooms through instant-parameterized properties.'} test::amberquokka3::domain::MountainRefuge
+{
+  refugeCode: String[1];
+  refugeName: String[1];
+  wardenCode: String[1];
+  altitudeM: Integer[1];
+  zone: ValleyZone[0..1];
+  rooms: DormRoom[*];
+}

@@ -1,0 +1,43 @@
+name: eastern-delta-2
+title: "Eastern Delta 2 - store-less night-sky survey register with inherited session types, closed observing vocabularies and literal-defaulted derived labels"
+description: |
+  A store-less Pure object layer for an optical sky-survey register. Two
+  multi-level hierarchies dominate the structure: observing sessions specialise
+  into imaging, narrowband imaging and spectroscopy, and sky targets specialise
+  into deep-sky, galaxy, nebula and minor-body types, so property resolution has
+  to walk the supertypes and a subtype instance still satisfies the supertype
+  contract. Ten closed vocabularies fix the legal value space for seeing, moon
+  phase, filter band, mount, detector, target kind, catalogue origin, sky
+  condition, calibration and dome state. Three multiplicity-qualified
+  associations attach instruments to sites, sessions to a survey programme and
+  targets to a session, and the derived properties on the session supertype are
+  literal-defaulted: each guards an absent collection or optional property and
+  falls back to a fixed label, otherwise folding an enumerated value and an
+  association traversal into one string, so the derivation resolves inherited
+  properties, an enumeration and an association end at once.
+modelSources:
+  model:
+    root: eastern-delta-2
+    files:
+      - test/easterndelta2/domain/ObservingSessions.pure
+      - test/easterndelta2/domain/SiteRegister.pure
+      - test/easterndelta2/domain/SkyTargets.pure
+      - test/easterndelta2/domain/SurveyAssociations.pure
+      - test/easterndelta2/domain/SurveyVocabulary.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - class-inheritance
+  - derived-property
+  - enumeration
+  - literal-defaulted
+  - object-layer
+  - sky-survey
+  - store-less

@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Association <<test::westernwillow6::nursery::NurseryStewardship.curated>> {meta::pure::profiles::doc.doc = 'Connects a versioned nursery bed to the versioned cutting batches rooted in it.'} test::westernwillow6::nursery::WithyBed_CuttingBatch
+{
+  {meta::pure::profiles::doc.doc = 'Bed containing the cutting batches.'} bed: test::westernwillow6::nursery::WithyBed[1];
+  {meta::pure::profiles::doc.doc = 'Batches rooted in the bed.'} batches: test::westernwillow6::nursery::CuttingBatch[*];
+}
+
+Association <<test::westernwillow6::nursery::NurseryStewardship.provisional>> {meta::pure::profiles::doc.doc = 'Connects a cutting batch to the processing-temporal crew that tends it.'} test::westernwillow6::nursery::CuttingBatch_WeaverCrew
+{
+  {meta::pure::profiles::doc.doc = 'Batch tended by the crew.'} batch: test::westernwillow6::nursery::CuttingBatch[1];
+  {meta::pure::profiles::doc.doc = 'Crew tending the batch.'} crew: test::westernwillow6::nursery::WeaverCrew[0..1];
+}
+
+Association <<test::westernwillow6::nursery::NurseryStewardship.curated>> {meta::pure::profiles::doc.doc = 'Links a versioned bed to the ordinary harvest season in which it is gathered.'} test::westernwillow6::nursery::WithyBed_HarvestSeason
+{
+  {meta::pure::profiles::doc.doc = 'Bed gathered during the season.'} bed: test::westernwillow6::nursery::WithyBed[1];
+  {meta::pure::profiles::doc.doc = 'Season for the harvest.'} season: test::westernwillow6::nursery::HarvestSeason[1];
+}

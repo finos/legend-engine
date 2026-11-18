@@ -1,0 +1,33 @@
+name: fabled-vineyard-5-services
+title: "Fabled Vineyard 5 - three keyed multi-execution services over a point-in-time vine block extent"
+description: >
+  Three multi-execution services, each planned under two keyed estates that share a query and a
+  mapping and differ only in runtime and connection. Every body opens the business-temporal vine
+  block extent at a supplied instant and filters it with a disjunction before projecting a tabular
+  register: a four-arm chain of variety equalities, a two-arm canopy status disjunction, and a
+  two-arm overlap test that compares two crew properties against each other.
+modelSources:
+  model:
+    root: fabled-vineyard-5-services
+    files:
+      - test/fabledvineyard5/service/CanopyStatusAsOf.pure
+      - test/fabledvineyard5/service/CrewOverlapAsOf.pure
+      - test/fabledvineyard5/service/VarietyRegisterAsOf.pure
+  dependencies:
+    - source: fabled-vineyard-5-estate.emit.yaml
+tds_variant: tabular-data-set
+complexity: intermediate
+stores: []
+tags:
+  - h2
+  - keyed-execution
+  - multi-execution
+  - point-in-time
+  - projection
+  - service
+  - vineyard
+features:
+  - execution:multi-execution-service
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project

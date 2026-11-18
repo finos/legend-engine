@@ -1,0 +1,283 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfullantern3::mapping::EstateMapping
+(
+  *test::wistfullantern3::domain::ParkTree[parkTree]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfullantern3::store::EstateDB]estate.tree_record.tree_key
+    )
+    ~mainTable [test::wistfullantern3::store::EstateDB]estate.tree_record
+    treeRef: [test::wistfullantern3::store::EstateDB]estate.tree_record.tree_ref,
+    parkName: [test::wistfullantern3::store::EstateDB]estate.tree_record.park_name,
+    speciesLabel: [test::wistfullantern3::store::EstateDB]estate.tree_record.species_label,
+    canopyClass: [test::wistfullantern3::store::EstateDB]estate.tree_record.canopy_class,
+    girthCm: [test::wistfullantern3::store::EstateDB]estate.tree_record.girth_cm,
+    spreadM: [test::wistfullantern3::store::EstateDB]estate.tree_record.spread_m,
+    conditionScore: [test::wistfullantern3::store::EstateDB]estate.tree_record.condition_score,
+    plantedOn: [test::wistfullantern3::store::EstateDB]estate.tree_record.planted_on,
+    surveyedAt: [test::wistfullantern3::store::EstateDB]estate.tree_record.surveyed_at,
+    wardenNote: [test::wistfullantern3::store::EstateDB]estate.tree_record.warden_note
+  }
+
+  *test::wistfullantern3::domain::ParkBench[parkBench]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfullantern3::store::EstateDB]estate.park_bench.bench_key
+    )
+    ~mainTable [test::wistfullantern3::store::EstateDB]estate.park_bench
+    benchRef: [test::wistfullantern3::store::EstateDB]estate.park_bench.bench_ref,
+    parkName: [test::wistfullantern3::store::EstateDB]estate.park_bench.park_name,
+    timberKind: [test::wistfullantern3::store::EstateDB]estate.park_bench.timber_kind,
+    seatCount: [test::wistfullantern3::store::EstateDB]estate.park_bench.seat_count,
+    plaqueText: [test::wistfullantern3::store::EstateDB]estate.park_bench.plaque_text,
+    installedOn: [test::wistfullantern3::store::EstateDB]estate.park_bench.installed_on
+  }
+
+  *test::wistfullantern3::domain::PathSegment[pathSegment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfullantern3::store::EstateDB]estate.path_segment.segment_key
+    )
+    ~mainTable [test::wistfullantern3::store::EstateDB]estate.path_segment
+    segmentRef: [test::wistfullantern3::store::EstateDB]estate.path_segment.segment_ref,
+    parkName: [test::wistfullantern3::store::EstateDB]estate.path_segment.park_name,
+    surfaceKind: [test::wistfullantern3::store::EstateDB]estate.path_segment.surface_kind,
+    lengthM: [test::wistfullantern3::store::EstateDB]estate.path_segment.length_m,
+    widthM: [test::wistfullantern3::store::EstateDB]estate.path_segment.width_m,
+    inspectedAt: [test::wistfullantern3::store::EstateDB]estate.path_segment.inspected_at
+  }
+
+  testSuites:
+  [
+    treeRecordSuite:
+    {
+      function: |test::wistfullantern3::domain::ParkTree.all(%2026-06-01)->project(
+  [
+    t|$t.treeRef,
+    t|$t.parkName,
+    t|$t.speciesLabel,
+    t|$t.canopyClass,
+    t|$t.girthCm,
+    t|$t.spreadM,
+    t|$t.conditionScore,
+    t|$t.plantedOn,
+    t|$t.surveyedAt,
+    t|$t.wardenNote
+  ],
+  [
+    'Tree',
+    'Park',
+    'Species',
+    'Class',
+    'GirthCm',
+    'SpreadM',
+    'Score',
+    'PlantedOn',
+    'SurveyedAt',
+    'WardenNote'
+  ]
+)->sort(
+  [
+    asc('Tree')
+  ]
+);
+      tests:
+      [
+        visibleGenerationOfEveryTree:
+        {
+          doc: 'Covers the main-table alias binding of every mapped type - string, fixed-precision numeric, float, integer, date and timestamp - with populated and absent optional values, and the processing window that hides the superseded generation of the corrected tree.';
+          data:
+          [
+            test::wistfullantern3::store::EstateDB:
+              Relational
+              #{
+                estate.tree_record:
+                  'tree_key,tree_ref,park_name,species_label,canopy_class,girth_cm,spread_m,condition_score,planted_on,surveyed_at,warden_note,in_z,out_z\n'+
+                  'TR-1-G1,TR-1,Northgate Green,Common Lime,BROAD,182.45,9.5,4,2012-03-14,2026-05-02 08:15:00,Storm pruned,2026-01-01,9999-12-31\n'+
+                  'TR-2-G1,TR-2,Northgate Green,Field Maple,BROAD,96.25,6.0,3,2015-11-02,2026-05-03 09:00:00,,2026-01-01,9999-12-31\n'+
+                  'TR-3-G1,TR-3,Riverside Walk,Silver Birch,SLENDER,54.15,4.5,2,2018-04-21,2026-02-10 07:40:00,First survey,2026-01-01,2026-03-01\n'+
+                  'TR-3-G2,TR-3,Riverside Walk,Silver Birch,SLENDER,58.75,4.8,3,2018-04-21,2026-04-11 07:40:00,Girth corrected,2026-03-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyTheOpenGenerationOfTheCorrectedTreeIsProjected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tree":"TR-1","Park":"Northgate Green","Species":"Common Lime","Class":"BROAD","GirthCm":182.45,"SpreadM":9.5,"Score":4,"PlantedOn":"2012-03-14","SurveyedAt":"2026-05-02T08:15:00.000000000+0000","WardenNote":"Storm pruned"},{"Tree":"TR-2","Park":"Northgate Green","Species":"Field Maple","Class":"BROAD","GirthCm":96.25,"SpreadM":6.0,"Score":3,"PlantedOn":"2015-11-02","SurveyedAt":"2026-05-03T09:00:00.000000000+0000","WardenNote":null},{"Tree":"TR-3","Park":"Riverside Walk","Species":"Silver Birch","Class":"SLENDER","GirthCm":58.75,"SpreadM":4.8,"Score":3,"PlantedOn":"2018-04-21","SurveyedAt":"2026-04-11T07:40:00.000000000+0000","WardenNote":"Girth corrected"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    amenitySuite:
+    {
+      function: |test::wistfullantern3::domain::ParkBench.all(%2026-06-01)->project(
+  [
+    b|$b.benchRef,
+    b|$b.parkName,
+    b|$b.timberKind,
+    b|$b.seatCount,
+    b|$b.plaqueText,
+    b|$b.installedOn
+  ],
+  [
+    'Bench',
+    'Park',
+    'Timber',
+    'Seats',
+    'Plaque',
+    'InstalledOn'
+  ]
+)->sort(
+  [
+    asc('Bench')
+  ]
+);
+      tests:
+      [
+        visibleBenchGenerations:
+        {
+          doc: 'Covers the second milestoned table of the store, its own primary-key clause and the optional plaque inscription, with two generations of one bench sharing a key and two rows carrying distinct keys.';
+          data:
+          [
+            test::wistfullantern3::store::EstateDB:
+              Relational
+              #{
+                estate.park_bench:
+                  'bench_key,bench_ref,park_name,timber_kind,seat_count,plaque_text,installed_on,in_z,out_z\n'+
+                  'BN-1-G1,BN-1,Northgate Green,OAK,3,In memory of the orchard wardens,2020-06-01,2026-01-01,9999-12-31\n'+
+                  'BN-2-G1,BN-2,Riverside Walk,IROKO,2,,2019-04-15,2026-01-01,2026-03-15\n'+
+                  'BN-2-G2,BN-2,Riverside Walk,IROKO,4,Riverside walkers club,2019-04-15,2026-03-15,9999-12-31\n'+
+                  'BN-3-G1,BN-3,Hollow Meadow,PLASTIC,2,,2022-08-09,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            theSupersededBenchGenerationIsHiddenAndTheAbsentPlaqueStaysNull:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bench":"BN-1","Park":"Northgate Green","Timber":"OAK","Seats":3,"Plaque":"In memory of the orchard wardens","InstalledOn":"2020-06-01"},{"Bench":"BN-2","Park":"Riverside Walk","Timber":"IROKO","Seats":4,"Plaque":"Riverside walkers club","InstalledOn":"2019-04-15"},{"Bench":"BN-3","Park":"Hollow Meadow","Timber":"PLASTIC","Seats":2,"Plaque":null,"InstalledOn":"2022-08-09"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    pathSegmentSuite:
+    {
+      function: |test::wistfullantern3::domain::PathSegment.all(%2026-06-01)->project(
+  [
+    s|$s.segmentRef,
+    s|$s.parkName,
+    s|$s.surfaceKind,
+    s|$s.lengthM,
+    s|$s.widthM,
+    s|$s.inspectedAt
+  ],
+  [
+    'Segment',
+    'Park',
+    'Surface',
+    'LengthM',
+    'WidthM',
+    'InspectedAt'
+  ]
+)->sort(
+  [
+    asc('Segment')
+  ]
+);
+      tests:
+      [
+        visibleSegmentGenerations:
+        {
+          doc: 'Covers the third milestoned table, whose column mix pairs a float length with a fixed-precision width, and the remeasured segment whose earlier generation is closed out before the queried processing date.';
+          data:
+          [
+            test::wistfullantern3::store::EstateDB:
+              Relational
+              #{
+                estate.path_segment:
+                  'segment_key,segment_ref,park_name,surface_kind,length_m,width_m,inspected_at,in_z,out_z\n'+
+                  'PS-1-G1,PS-1,Northgate Green,BOUND GRAVEL,120.5,1.85,2026-05-04 06:30:00,2026-01-01,9999-12-31\n'+
+                  'PS-2-G1,PS-2,Riverside Walk,ASPHALT,340.0,2.55,2026-05-04 07:00:00,2026-01-01,2026-04-01\n'+
+                  'PS-2-G2,PS-2,Riverside Walk,ASPHALT,352.75,2.55,2026-05-20 07:00:00,2026-04-01,9999-12-31\n'+
+                  'PS-3-G1,PS-3,Hollow Meadow,MOWN GRASS,85.25,3.15,2026-05-05 05:45:00,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            theRemeasuredSegmentReportsItsOpenLength:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment":"PS-1","Park":"Northgate Green","Surface":"BOUND GRAVEL","LengthM":120.5,"WidthM":1.85,"InspectedAt":"2026-05-04T06:30:00.000000000+0000"},{"Segment":"PS-2","Park":"Riverside Walk","Surface":"ASPHALT","LengthM":352.75,"WidthM":2.55,"InspectedAt":"2026-05-20T07:00:00.000000000+0000"},{"Segment":"PS-3","Park":"Hollow Meadow","Surface":"MOWN GRASS","LengthM":85.25,"WidthM":3.15,"InspectedAt":"2026-05-05T05:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+###Data
+Data test::wistfullantern3::data::EstateTestData
+{
+  Relational
+  #{
+    estate.tree_record:
+      'tree_key,tree_ref,park_name,species_label,canopy_class,girth_cm,spread_m,condition_score,planted_on,surveyed_at,warden_note,in_z,out_z\n'+
+      'TR-1-G1,TR-1,Northgate Green,Common Lime,BROAD,182.45,9.5,4,2012-03-14,2026-05-02 08:15:00,Storm pruned,2026-01-01,9999-12-31\n'+
+      'TR-2-G1,TR-2,Northgate Green,Field Maple,BROAD,96.25,6.0,3,2015-11-02,2026-05-03 09:00:00,,2026-01-01,9999-12-31\n'+
+      'TR-3-G1,TR-3,Riverside Walk,Silver Birch,SLENDER,54.15,4.5,2,2018-04-21,2026-02-10 07:40:00,First survey,2026-01-01,2026-03-01\n'+
+      'TR-3-G2,TR-3,Riverside Walk,Silver Birch,SLENDER,58.75,4.8,3,2018-04-21,2026-04-11 07:40:00,Girth corrected,2026-03-01,9999-12-31\n'+
+      'TR-4-G1,TR-4,Riverside Walk,Horse Chestnut,BROAD,240.15,12.25,5,1998-09-30,2026-05-05 10:20:00,Veteran canopy,2026-01-01,9999-12-31\n'+
+      'TR-5-G1,TR-5,Hollow Meadow,Rowan,SLENDER,38.35,3.2,4,2021-10-12,2026-05-06 11:05:00,,2026-01-01,9999-12-31\n'+
+      'TR-6-G1,TR-6,Northgate Green,Hornbeam,BROAD,88.55,6.0,3,2016-05-18,2026-05-07 08:40:00,,2026-01-01,9999-12-31\n';
+
+    estate.park_bench:
+      'bench_key,bench_ref,park_name,timber_kind,seat_count,plaque_text,installed_on,in_z,out_z\n'+
+      'BN-1-G1,BN-1,Northgate Green,OAK,3,In memory of the orchard wardens,2020-06-01,2026-01-01,9999-12-31\n'+
+      'BN-2-G1,BN-2,Riverside Walk,IROKO,2,,2019-04-15,2026-01-01,2026-03-15\n'+
+      'BN-2-G2,BN-2,Riverside Walk,IROKO,4,Riverside walkers club,2019-04-15,2026-03-15,9999-12-31\n'+
+      'BN-3-G1,BN-3,Hollow Meadow,PLASTIC,2,,2022-08-09,2026-01-01,9999-12-31\n';
+
+    estate.path_segment:
+      'segment_key,segment_ref,park_name,surface_kind,length_m,width_m,inspected_at,in_z,out_z\n'+
+      'PS-1-G1,PS-1,Northgate Green,BOUND GRAVEL,120.5,1.85,2026-05-04 06:30:00,2026-01-01,9999-12-31\n'+
+      'PS-2-G1,PS-2,Riverside Walk,ASPHALT,340.0,2.55,2026-05-04 07:00:00,2026-01-01,2026-04-01\n'+
+      'PS-2-G2,PS-2,Riverside Walk,ASPHALT,352.75,2.55,2026-05-20 07:00:00,2026-04-01,9999-12-31\n'+
+      'PS-3-G1,PS-3,Hollow Meadow,MOWN GRASS,85.25,3.15,2026-05-05 05:45:00,2026-01-01,9999-12-31\n';
+  }#
+}

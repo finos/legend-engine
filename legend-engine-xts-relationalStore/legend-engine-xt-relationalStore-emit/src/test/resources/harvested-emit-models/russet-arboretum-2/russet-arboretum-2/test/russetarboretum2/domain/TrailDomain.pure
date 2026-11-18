@@ -1,0 +1,101 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::russetarboretum2::domain::*;
+
+Enum test::russetarboretum2::domain::TerrainClass
+{
+  SCREE,
+  LOAM,
+  BOARDWALK
+}
+
+Class test::russetarboretum2::domain::TrailParty
+{
+  partyCode: String[1];
+  partyName: String[1];
+  shortName()
+  {
+    $this.partyName->substring(0, 4)->toUpper()
+  }: String[1];
+}
+
+Class test::russetarboretum2::domain::Steward extends TrailParty
+{
+  radioCall: String[1];
+  callSign()
+  {
+    $this.partyCode + '/' + $this.radioCall
+  }: String[1];
+}
+
+Class test::russetarboretum2::domain::TrailFeature
+{
+  featureLabel: String[1];
+}
+
+Class test::russetarboretum2::domain::TrailSegment extends TrailFeature
+{
+  segmentCode: String[1];
+  segmentName: String[1];
+  displayLabel()
+  {
+    $this.featureLabel + ' ' + $this.segmentCode + ' ' + $this.segmentName->toUpper()
+  }: String[1];
+}
+
+Association test::russetarboretum2::domain::SegmentStewardship
+{
+  segments: TrailSegment[*];
+  steward: Steward[1];
+}
+
+Class <<temporal.businesstemporal>> test::russetarboretum2::domain::TrailInspection
+{
+  inspectionCode: String[1];
+  loggedOn: StrictDate[1];
+  terrain: TerrainClass[0..1];
+  severityIndex: Integer[1];
+  washCount: Integer[1];
+  erosionIndex: Integer[1];
+  repairPriority: String[0..1];
+  inspectionYear: Integer[1];
+  registerTag: String[1];
+  regionName: String[0..1];
+  segment: TrailSegment[1];
+  severityBand()
+  {
+    if($this.severityIndex > 8,
+      | 'HIGH',
+      | if($this.severityIndex > 4,
+        | 'MEDIUM',
+        | 'LOW'))
+  }: String[1];
+  erosionBand()
+  {
+    if($this.erosionIndex > 70,
+      | 'WATCH',
+      | 'ROUTINE')
+  }: String[1];
+  priorityLabel()
+  {
+    if($this.repairPriority->isEmpty(),
+      | 'UNSCHEDULED',
+      | $this.repairPriority->toOne()->toLower())
+  }: String[1];
+  stalenessDays(asOf: StrictDate[1])
+  {
+    $this.loggedOn->dateDiff($asOf, meta::pure::functions::date::DurationUnit.DAYS)
+  }: Integer[1];
+}

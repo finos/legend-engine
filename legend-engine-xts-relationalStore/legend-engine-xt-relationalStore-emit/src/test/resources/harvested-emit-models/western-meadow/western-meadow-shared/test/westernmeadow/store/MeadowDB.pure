@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::westernmeadow::store::MeadowDB
+(
+  Schema meadow
+  (
+    Table walk_roster
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      roster_code VARCHAR(16) PRIMARY KEY,
+      roster_name VARCHAR(120) NOT NULL,
+      coordinator_name VARCHAR(120) NOT NULL,
+      from_z DATE,
+      thru_z DATE
+    )
+
+    Table roster_member
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      member_ref VARCHAR(16) PRIMARY KEY,
+      roster_code VARCHAR(16) NOT NULL,
+      member_name VARCHAR(120) NOT NULL,
+      profile_code VARCHAR(16) NOT NULL,
+      from_z DATE,
+      thru_z DATE
+    )
+  )
+
+  Schema reference_data
+  (
+    Table habitat_profile
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      profile_code VARCHAR(16) PRIMARY KEY,
+      habitat_name VARCHAR(120) NOT NULL,
+      sward_height_band VARCHAR(24) NOT NULL,
+      indicator_species VARCHAR(120) NOT NULL,
+      management_regime VARCHAR(40) NOT NULL,
+      mowing_window VARCHAR(24) NOT NULL,
+      grazing_unit FLOAT NOT NULL,
+      soil_series VARCHAR(40) NOT NULL,
+      drainage_class VARCHAR(24) NOT NULL,
+      ph_band VARCHAR(16) NOT NULL,
+      effective_from DATE NOT NULL,
+      lake_batch_ref VARCHAR(24) NOT NULL,
+      survey_authority VARCHAR(120) NOT NULL,
+      profile_note VARCHAR(200),
+      in_z DATE,
+      out_z DATE,
+      from_z DATE,
+      thru_z DATE
+    )
+  )
+
+  Join Roster_Member
+  (
+    meadow.walk_roster.roster_code = meadow.roster_member.roster_code
+  )
+
+  Join Member_Habitat
+  (
+    meadow.roster_member.profile_code = reference_data.habitat_profile.profile_code
+  )
+)

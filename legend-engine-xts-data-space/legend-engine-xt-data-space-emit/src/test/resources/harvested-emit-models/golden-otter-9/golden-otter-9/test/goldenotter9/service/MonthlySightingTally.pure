@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenotter9::service::MonthlySightingTally
+{
+  pattern: '/goldenotter9/v1/sightings/{year}/{month}';
+  title: 'Otter Sanctuary - Monthly Sighting Tally';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists the accepted sightings of one survey month, matching the month and year parameters against the period columns and keeping only the three accepted status codes.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {month: Integer[1], year: Integer[1]|test::goldenotter9::domain::Sighting.all()->filter(
+      s|($s.periodMonth == $month) && ($s.periodYear == $year) && $s.statusCode->in(['CONFIRMED', 'PROBABLE', 'SPRAINT'])
+    )->project(
+      [
+        s|$s.sightingCode,
+        s|$s.periodKey,
+        s|$s.holt.holtName,
+        s|$s.observer.observerName,
+        s|$s.headCount,
+        s|$s.statusCode
+      ],
+      [
+        'Sighting',
+        'Period',
+        'Holt',
+        'Observer',
+        'Head',
+        'Status'
+      ]
+    )->sort([asc('Sighting')])};
+    mapping: test::goldenotter9::mapping::SanctuaryMapping;
+    runtime: test::goldenotter9::runtime::SanctuaryRuntime;
+  }
+  testSuites:
+  [
+    monthlySightingTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sanctuaryWarehouse:
+            Reference
+            #{
+              test::goldenotter9::data::SanctuaryFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        juneCurrentYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            month = 6,
+            year = 2026
+          ]
+          asserts:
+          [
+            rejectedSightingDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sighting":"SG-02","Period":"2026-6","Holt":"Alder Holt","Observer":"Liv Penn","Head":2,"Status":"PROBABLE"},{"Sighting":"SG-03","Period":"2026-6","Holt":"Willow Holt","Observer":"Tom Vale","Head":1,"Status":"SPRAINT"}]';
+                  }#;
+              }#
+          ]
+        },
+        junePriorYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            month = 6,
+            year = 2025
+          ]
+          asserts:
+          [
+            priorYearOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sighting":"SG-05","Period":"2025-6","Holt":"Root Holt","Observer":"Liv Penn","Head":2,"Status":"CONFIRMED"}]';
+                  }#;
+              }#
+          ]
+        },
+        emptyMonth:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            month = 1,
+            year = 2026
+          ]
+          asserts:
+          [
+            noSightings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

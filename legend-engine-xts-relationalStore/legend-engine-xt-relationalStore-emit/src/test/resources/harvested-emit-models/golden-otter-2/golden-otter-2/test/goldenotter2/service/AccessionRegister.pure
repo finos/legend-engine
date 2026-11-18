@@ -1,0 +1,140 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenotter2::service::AccessionRegister
+{
+  pattern: '/garden/v1/accessions';
+  title: 'Golden Otter - Accession register';
+  owners:
+  [
+    'glasshouse-register-desk',
+    'botanic-collections-office'
+  ];
+  documentation: 'Accession-level register: accessions whose taxon appears in the requested taxon collection are projected together with their bed derivations reached through the association, then reduced with distinct and sorted by accession code.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {taxonNames: String[*]|test::goldenotter2::domain::PlantAccession.all()->filter(
+      a|$taxonNames->contains($a.taxonName)
+    )->project(
+      [
+        a|$a.accessionCode,
+        a|$a.taxonName,
+        a|$a.pottedCount,
+        a|$a.bed.bedCode,
+        a|$a.bed.bedName,
+        a|$a.bed.soilCode,
+        a|$a.bed.glasshouseName,
+        a|$a.bed.rotaLabel
+      ],
+      [
+        'Accession/Code',
+        'Accession/Taxon',
+        'Accession/Potted',
+        'Bed/Code',
+        'Bed/Name',
+        'Bed/Soil',
+        'Bed/Glasshouse',
+        'Bed/Rota'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Accession/Code')
+      ]
+    );};
+    mapping: test::goldenotter2::mapping::GardenMapping;
+    runtime: test::goldenotter2::runtime::GardenRuntime;
+  }
+  testSuites:
+  [
+    accessionRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gardenConnection:
+            Relational
+            #{
+                glass.glasshouse:
+                'glasshouse_code,glasshouse_name,zone_code\n'+
+                'GH-1,Palm House,ZONE-A\n'+
+                'GH-2,Fern House,ZONE-B\n';
+              glass.watering_rota:
+                'rota_code,glasshouse_code,rota_label,week_number\n'+
+                'WR-1,GH-1,morning-rota,1\n'+
+                'WR-2,GH-2,evening-rota,2\n';
+              beds.plant_bed:
+                'bed_code,bed_name,glasshouse_code,soil_code,active_flag\n'+
+                'PB-1,North Bed,GH-1,loam mix,Y\n'+
+                'PB-2,South Bed,GH-2,peat free,Y\n'+
+                'PB-3,Old Bed,GH-1,sand mix,N\n';
+              beds.plant_accession:
+                'accession_code,bed_code,taxon_name,potted_count,label_text\n'+
+                'PA-1,PB-1,Nepenthes alata,6,label one\n'+
+                'PA-2,PB-1,Dryopteris affinis,3,label two\n'+
+                'PA-3,PB-2,Adiantum raddianum,9,label three\n'+
+                'PA-4,PB-3,Cyathea dealbata,4,label four\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        requestedTaxaOnActiveBeds:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            taxonNames = ['Nepenthes alata', 'Adiantum raddianum']
+          ]
+          asserts:
+          [
+            twoAccessions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession/Code":"PA-1","Accession/Taxon":"Nepenthes alata","Accession/Potted":6,"Bed/Code":"PB-1","Bed/Name":"NORTH BED","Bed/Soil":"loam-mix","Bed/Glasshouse":"Palm House","Bed/Rota":"morning-rota"},{"Accession/Code":"PA-3","Accession/Taxon":"Adiantum raddianum","Accession/Potted":9,"Bed/Code":"PB-2","Bed/Name":"SOUTH BED","Bed/Soil":"peat-free","Bed/Glasshouse":"Fern House","Bed/Rota":"evening-rota"}]';
+                  }#;
+              }#
+          ]
+        },
+        taxonWithNoAccession:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            taxonNames = ['Zamia furfuracea']
+          ]
+          asserts:
+          [
+            emptyResult:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantquarry3::mapping::QuarryMapping
+(
+  *test::verdantquarry3::domain::QuarrySite[quarrySite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantquarry3::store::QuarryDB]geology.quarry_site.quarry_code
+    )
+    ~mainTable [test::verdantquarry3::store::QuarryDB]geology.quarry_site
+    quarryCode: [test::verdantquarry3::store::QuarryDB]geology.quarry_site.quarry_code,
+    quarryName: [test::verdantquarry3::store::QuarryDB]geology.quarry_site.quarry_name,
+    regionCode: [test::verdantquarry3::store::QuarryDB]geology.quarry_site.region_code,
+    faces[quarrySite, quarryFace]: [test::verdantquarry3::store::QuarryDB]@Face_Site
+  }
+
+  *test::verdantquarry3::domain::QuarryFace[quarryFace]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantquarry3::store::QuarryDB]geology.quarry_face.face_code
+    )
+    ~mainTable [test::verdantquarry3::store::QuarryDB]geology.quarry_face
+    faceCode: [test::verdantquarry3::store::QuarryDB]geology.quarry_face.face_code,
+    faceName: [test::verdantquarry3::store::QuarryDB]geology.quarry_face.face_name,
+    benchHeight: [test::verdantquarry3::store::QuarryDB]geology.quarry_face.bench_height,
+    surveyedOn: [test::verdantquarry3::store::QuarryDB]geology.quarry_face.surveyed_on,
+    site[quarryFace, quarrySite]: [test::verdantquarry3::store::QuarryDB]@Face_Site,
+    samples[quarryFace, coreSample]: [test::verdantquarry3::store::QuarryDB]@Sample_Face
+  }
+
+  *test::verdantquarry3::domain::CoreSample[coreSample]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantquarry3::store::QuarryDB]geology.core_sample.sample_code
+    )
+    ~mainTable [test::verdantquarry3::store::QuarryDB]geology.core_sample
+    sampleCode: [test::verdantquarry3::store::QuarryDB]geology.core_sample.sample_code,
+    mineralCode: [test::verdantquarry3::store::QuarryDB]geology.core_sample.mineral_code,
+    purityPercent: [test::verdantquarry3::store::QuarryDB]geology.core_sample.purity_percent,
+    depthMetres: [test::verdantquarry3::store::QuarryDB]geology.core_sample.depth_metres,
+    collectedOn: [test::verdantquarry3::store::QuarryDB]geology.core_sample.collected_on,
+    face[coreSample, quarryFace]: [test::verdantquarry3::store::QuarryDB]@Sample_Face
+  }
+)

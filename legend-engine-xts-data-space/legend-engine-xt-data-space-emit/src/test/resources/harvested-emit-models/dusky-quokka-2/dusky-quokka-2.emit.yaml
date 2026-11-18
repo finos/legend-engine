@@ -1,0 +1,52 @@
+name: dusky-quokka-2
+title: Glasshouse Propagation Entry Point With Diagram Layout
+description: >-
+  A data-space-fronted glasshouse propagation model: propagation blocks, the
+  seedling trays sown in them, the grower crews looking after the blocks and the
+  germination viability readings taken on them, mapped onto a single multi-table
+  relational store through inner joins, laid out in a stored diagram and served
+  by two featured service endpoints.
+modelSources:
+  model:
+    root: dusky-quokka-2
+    files:
+      - test/duskyquokka2/connection/NurseryConnection.pure
+      - test/duskyquokka2/dataspace/NurseryDataSpace.pure
+      - test/duskyquokka2/diagram/NurseryDiagram.pure
+      - test/duskyquokka2/domain/NurseryDomain.pure
+      - test/duskyquokka2/mapping/NurseryMapping.pure
+      - test/duskyquokka2/runtime/NurseryRuntime.pure
+      - test/duskyquokka2/service/TrayRegisterService.pure
+      - test/duskyquokka2/service/ViabilityWatchService.pure
+      - test/duskyquokka2/store/NurseryDB.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:diagram
+  - grammar:tagged-value
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-column-primary-key
+  - store:relational-multi-table
+stores:
+  - test::duskyquokka2::store::NurseryDB
+complexity: advanced
+tags:
+  - association
+  - composite-key
+  - data-space
+  - diagram
+  - h2
+  - horticulture
+  - relational
+  - service
+  - snowflake

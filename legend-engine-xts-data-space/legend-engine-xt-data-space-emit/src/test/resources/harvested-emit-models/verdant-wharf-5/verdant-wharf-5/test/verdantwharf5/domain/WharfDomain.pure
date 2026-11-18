@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::verdantwharf5::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A quay berth of the wharf, identified by its code together with the date it opened.'} test::verdantwharf5::domain::WharfBerth
+{
+  berthCode: String[1];
+  openedOn: StrictDate[1];
+  berthName: String[1];
+  tideWindow: String[0..1];
+  depthM: Float[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One leg of a vessel call at the wharf, identified by its call code together with its leg ordinal, carrying an eight-armed handling lane that falls through to nothing for an unrecognised priority.'} test::verdantwharf5::domain::VesselCall
+{
+  callCode: String[1];
+  callLeg: Integer[1];
+  vesselName: String[1];
+  arrivedAt: DateTime[0..1];
+  cargoClass: String[1];
+  palletTotal: Integer[0..1];
+  handlingLane: String[0..1];
+  berthName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A cargo pallet landed on one leg of a vessel call.'} test::verdantwharf5::domain::CargoPallet
+{
+  palletCode: String[1];
+  palletWeightKg: Decimal[0..1];
+  sealCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A wardens check recorded against a pallet, reaching its vessel call through a two-hop join path.'} test::verdantwharf5::domain::PalletCheck
+{
+  checkCode: String[1];
+  inspectorTeam: String[0..1];
+  checkedAt: DateTime[0..1];
+  outcomeCode: String[0..1];
+  callCode: String[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A berth holds many call legs; a call leg optionally resolves to one berth.'} test::verdantwharf5::domain::Berth_Calls
+{
+  berth: test::verdantwharf5::domain::WharfBerth[0..1];
+  calls: test::verdantwharf5::domain::VesselCall[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A call leg holds many pallets; a pallet optionally resolves to one call leg.'} test::verdantwharf5::domain::Call_Pallets
+{
+  call: test::verdantwharf5::domain::VesselCall[0..1];
+  pallets: test::verdantwharf5::domain::CargoPallet[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A pallet holds many wardens checks; a check optionally resolves to one pallet.'} test::verdantwharf5::domain::Pallet_Checks
+{
+  pallet: test::verdantwharf5::domain::CargoPallet[0..1];
+  checks: test::verdantwharf5::domain::PalletCheck[*];
+}

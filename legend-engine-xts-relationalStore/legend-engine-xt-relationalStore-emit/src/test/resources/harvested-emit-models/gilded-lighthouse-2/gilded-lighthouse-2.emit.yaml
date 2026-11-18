@@ -1,0 +1,59 @@
+name: gilded-lighthouse-2
+title: Gilded Lighthouse 2 keeper watches - a business-date rollup joined back onto its own register and republished through two keyed execution bindings
+description: >
+  A harbour lighthouse watch log. Every night watch is effective over business time,
+  so each reading is pinned at a business date and sees the watch version that was
+  open then; a watch whose validity window closed earlier surfaces only when the
+  register is read as of a date inside that window. One keyed multi-execution service
+  filters the extent on a caller-supplied keeper collection and an hours cap, groups
+  the surviving watches by station and keeper into a lit-hours total, a peak oil draw
+  and a watch count, and then joins that grouped side back onto a projection of the
+  same filtered extent on both grouping columns, so each group is republished once per
+  watch behind it before a restriction and a deduplication fold it back to one row.
+  A second single-execution service publishes the plain register and carries a standing
+  origin label the mapping supplies as a literal rather than from a column. Two
+  connections and runtimes back the primary and archive execution keys.
+modelSources:
+  model:
+    root: gilded-lighthouse-2
+    files:
+      - test/gildedlighthouse2/connection/HarbourConnections.pure
+      - test/gildedlighthouse2/data/HarbourTestData.pure
+      - test/gildedlighthouse2/domain/WatchDomain.pure
+      - test/gildedlighthouse2/mapping/HarbourMapping.pure
+      - test/gildedlighthouse2/runtime/HarbourRuntimes.pure
+      - test/gildedlighthouse2/service/WatchRegisterService.pure
+      - test/gildedlighthouse2/service/WatchRollupService.pure
+      - test/gildedlighthouse2/store/HarbourDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-date
+  - collection-op
+  - group-by
+  - h2
+  - keeper-watch-log
+  - literal-defaulted
+  - multi-execution-service
+  - plan-generation
+  - point-in-time
+  - project
+  - service-test
+  - tds-join

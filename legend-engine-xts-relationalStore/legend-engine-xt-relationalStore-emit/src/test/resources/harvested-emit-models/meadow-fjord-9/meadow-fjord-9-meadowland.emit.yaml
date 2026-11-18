@@ -1,0 +1,33 @@
+name: meadow-fjord-9-meadowland
+title: "Meadow Fjord 9 - business-temporal wildflower survey plot model"
+description: >
+  The model half of a wildflower meadow survey corpus: a business-temporal survey plot and a
+  plain survey zone mapped onto a milestoned two-table store, with the store, mapping,
+  connection and runtime that the register services consume but do not define.
+modelSources:
+  model:
+    root: meadow-fjord-9-meadowland
+    files:
+      - test/meadowfjord9/connection/MeadowConnection.pure
+      - test/meadowfjord9/domain/MeadowDomain.pure
+      - test/meadowfjord9/mapping/MeadowMapping.pure
+      - test/meadowfjord9/runtime/MeadowRuntime.pure
+      - test/meadowfjord9/store/MeadowDb.pure
+tds_variant: tabular-data-set
+complexity: intermediate
+stores:
+  - relational
+tags:
+  - business-temporal
+  - meadow
+  - relational
+  - survey
+features:
+  - grammar:derived-property
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime

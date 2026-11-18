@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::sablesummit4::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A single street tree held in a municipal inventory: a mandatory identifier and planting date followed by a long tail of optional site measurements and optional maintenance dates.'} demo::sablesummit4::domain::StreetTree
+{
+  treeCode: String[1];
+  plantedDate: StrictDate[1];
+  siteWidthM: Float[0..1];
+  soilVolumeM3: Float[0..1];
+  wateringRateLitresPerWeek: Float[0..1];
+  lastPrunedDate: StrictDate[0..1];
+  scheduledRemovalDate: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One canopy measurement taken against a street tree: a mandatory reading code and reading date plus optional canopy figures and optional follow-up dates.'} demo::sablesummit4::domain::CanopyMeasurement
+{
+  measurementCode: String[1];
+  recordedDate: StrictDate[1];
+  heightMetres: Float[0..1];
+  crownSpreadMetres: Float[0..1];
+  trunkDiameterCm: Float[0..1];
+  leafAreaIndex: Float[0..1];
+  verifiedDate: StrictDate[0..1];
+  nextVisitDate: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An all-mandatory surveyor badge row, referenced by nothing else in the inventory.'} demo::sablesummit4::domain::SurveyorBadge
+{
+  badgeCode: String[1];
+  badgeName: String[1];
+  districtName: String[1];
+  issuedDate: StrictDate[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds a street tree to the canopy measurements taken against it: a collection in one direction, a single tree in the other.'} demo::sablesummit4::domain::Tree_Measurement
+{
+  canopyMeasurements: CanopyMeasurement[*];
+  measuredTree: StreetTree[1];
+}

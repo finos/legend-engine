@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigodelta2::mapping::GlasshouseMapping
+(
+  include mapping test::indigodelta2::mapping::GlasshouseBaseMapping
+
+  *test::indigodelta2::domain::IrrigationCycle[cycle]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigodelta2::store::GlasshouseDB]garden.irrigation_cycle.cycle_id
+    )
+    ~mainTable [test::indigodelta2::store::GlasshouseDB]garden.irrigation_cycle
+    cycleCode: [test::indigodelta2::store::GlasshouseDB]garden.irrigation_cycle.cycle_code,
+    houseCode: [test::indigodelta2::store::GlasshouseDB]garden.irrigation_cycle.house_id,
+    wateringMode: [test::indigodelta2::store::GlasshouseDB]garden.irrigation_cycle.watering_mode,
+    waterLitres: [test::indigodelta2::store::GlasshouseDB]garden.irrigation_cycle.water_litres,
+    minutesRun: [test::indigodelta2::store::GlasshouseDB]garden.irrigation_cycle.minutes_run,
+    moistureTarget: [test::indigodelta2::store::GlasshouseDB]garden.irrigation_cycle.moisture_target,
+    startedOn: [test::indigodelta2::store::GlasshouseDB]garden.irrigation_cycle.started_on
+  }
+
+  test::indigodelta2::domain::Cycle_Glasshouse: Relational
+  {
+    AssociationMapping
+    (
+      house[cycle, house]: [test::indigodelta2::store::GlasshouseDB]@Cycle_Glasshouse,
+      cycles[house, cycle]: [test::indigodelta2::store::GlasshouseDB]@Cycle_Glasshouse
+    )
+  }
+
+  testSuites:
+  [
+    activeCycleMappingSuite:
+    {
+      function: |test::indigodelta2::domain::IrrigationCycle.all(%2026-06-01)->project(
+  [
+    c|$c.cycleCode,
+    c|$c.house.houseName,
+    c|$c.waterLitres
+  ],
+  [
+    'Cycle',
+    'House',
+    'Litres'
+  ])->sort([asc('Cycle')]);
+      tests:
+      [
+        activeRowsExcludeExpiredCycle:
+        {
+          doc: 'The business-temporal cycle window is resolved by the mapped table, so the cycle ending before the requested date is absent while the active cycle reaches its joined glasshouse name.';
+          data:
+          [
+            test::indigodelta2::store::GlasshouseDB:
+              Relational
+              #{
+                garden.glasshouse:
+                  'house_id,house_code,house_name,climate_lane\n'+
+                  'GH-1,ORCH-1,Cloud Fern House,Cool Lane\n'+
+                  'GH-2,ORCH-2,Sun Bell House,Warm Lane\n';
+                garden.irrigation_cycle:
+                  'cycle_id,cycle_code,house_id,watering_mode,water_litres,minutes_run,moisture_target,started_on,from_z,thru_z\n'+
+                  'IC-1,IR-101,GH-1,MIST,120,18,62.5,2026-05-10,2026-01-01,9999-12-31\n'+
+                  'IC-2,IR-102,GH-2,DRIP,90,12,52.0,2025-03-10,2024-01-01,2025-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            currentCycles:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cycle":"IR-101","House":"Cloud Fern House","Litres":120}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,143 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::copperquokka3::mapping::ApiaryMapping
+(
+  *test::copperquokka3::domain::Yard[yard]: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperquokka3::store::ApiaryDb]apiary.yard.yard_code
+    )
+    ~mainTable [test::copperquokka3::store::ApiaryDb]apiary.yard
+    yardCode: [test::copperquokka3::store::ApiaryDb]apiary.yard.yard_code,
+    yardName: [test::copperquokka3::store::ApiaryDb]apiary.yard.yard_name,
+    regionCode: [test::copperquokka3::store::ApiaryDb]apiary.yard.region_code
+  }
+  *test::copperquokka3::domain::Queen[queen]: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperquokka3::store::ApiaryDb]apiary.queen.queen_id
+    )
+    ~mainTable [test::copperquokka3::store::ApiaryDb]apiary.queen
+    queenId: [test::copperquokka3::store::ApiaryDb]apiary.queen.queen_id,
+    lineage: [test::copperquokka3::store::ApiaryDb]apiary.queen.lineage,
+    markedOn: [test::copperquokka3::store::ApiaryDb]apiary.queen.marked_on
+  }
+  *test::copperquokka3::domain::Hive[hive]: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperquokka3::store::ApiaryDb]apiary.hive.hive_id
+    )
+    ~mainTable [test::copperquokka3::store::ApiaryDb]apiary.hive
+    hiveId: [test::copperquokka3::store::ApiaryDb]apiary.hive.hive_id,
+    hiveName: [test::copperquokka3::store::ApiaryDb]apiary.hive.hive_name,
+    yardCode: [test::copperquokka3::store::ApiaryDb]apiary.hive.yard_code
+  }
+  *test::copperquokka3::domain::Inspection[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperquokka3::store::ApiaryDb]apiary.inspection.inspection_id
+    )
+    ~mainTable [test::copperquokka3::store::ApiaryDb]apiary.inspection
+    inspectionId: [test::copperquokka3::store::ApiaryDb]apiary.inspection.inspection_id,
+    hiveId: [test::copperquokka3::store::ApiaryDb]apiary.inspection.hive_id,
+    inspectedOn: [test::copperquokka3::store::ApiaryDb]apiary.inspection.inspected_on,
+    framesBrood: [test::copperquokka3::store::ApiaryDb]apiary.inspection.frames_brood,
+    honeyKg: [test::copperquokka3::store::ApiaryDb]apiary.inspection.honey_kg,
+    miteDelta: [test::copperquokka3::store::ApiaryDb]apiary.inspection.mite_delta,
+    inspectorName: [test::copperquokka3::store::ApiaryDb]apiary.inspection.inspector_name
+  }
+
+  test::copperquokka3::domain::Inspection_Hive: Relational
+  {
+    AssociationMapping
+    (
+      hive[inspection, hive]: [test::copperquokka3::store::ApiaryDb]@Inspection_Hive,
+      inspections[hive, inspection]: [test::copperquokka3::store::ApiaryDb]@Inspection_Hive
+    )
+  }
+  test::copperquokka3::domain::Hive_Yard: Relational
+  {
+    AssociationMapping
+    (
+      yard[hive, yard]: [test::copperquokka3::store::ApiaryDb]@Hive_Yard,
+      hives[yard, hive]: [test::copperquokka3::store::ApiaryDb]@Hive_Yard
+    )
+  }
+  test::copperquokka3::domain::Hive_Queen: Relational
+  {
+    AssociationMapping
+    (
+      queen[hive, queen]: [test::copperquokka3::store::ApiaryDb]@Hive_Queen,
+      queenHives[queen, hive]: [test::copperquokka3::store::ApiaryDb]@Hive_Queen
+    )
+  }
+
+  testSuites:
+  [
+    inspectionPathSuite:
+    {
+      function: |test::copperquokka3::domain::Inspection.all()->project([i|$i.inspectionId, i|$i.honeyKg, i|$i.hive.hiveName, i|$i.hive.yard.yardName, i|$i.hive.queen.lineage], ['Inspection', 'HoneyKg', 'Hive', 'Yard', 'Lineage'])->sort([asc('Inspection')]);
+      tests:
+      [
+        presentAndMissingRelatedObjects:
+        {
+          doc: 'The first inspection reaches its hive, yard and queen; the second has no honey weight and its hive stands in an unregistered yard without a queen.';
+          data:
+          [
+            test::copperquokka3::store::ApiaryDb:
+              Relational
+              #{
+                apiary.inspection:
+                  'inspection_id,hive_id,inspected_on,frames_brood,honey_kg,mite_delta,inspector_name\n'+
+                  '100,10,2026-04-01,6,12.5,3,Anna Reed\n'+
+                  '108,14,2026-04-10,5,,0,Bram Holt\n';
+
+                apiary.hive:
+                  'hive_id,hive_name,yard_code,queen_id\n'+
+                  '10,Amber Box,YD-1,1\n'+
+                  '14,Ash Box,YD-9,\n';
+
+                apiary.yard:
+                  'yard_code,yard_name,region_code\n'+
+                  'YD-1,Clover Yard,NORTH\n';
+
+                apiary.queen:
+                  'queen_id,lineage,marked_on\n'+
+                  '1,Carniolan,2025-05-01\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inspection":100,"HoneyKg":12.5,"Hive":"Amber Box","Yard":"Clover Yard","Lineage":"Carniolan"},{"Inspection":108,"HoneyKg":null,"Hive":"Ash Box","Yard":null,"Lineage":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

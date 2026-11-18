@@ -1,0 +1,34 @@
+name: opal-vineyard
+title: "Opal Vineyard — store-less document-schema generation model (wide record class, bidirectional association, diagram and generation specification)"
+description: |
+  A store-less non-financial viticulture model whose five classes form a producer-and-payload
+  structure: two identity classes, one deliberately flat and wide harvest record mixing string,
+  integer and floating-point properties with several optional, and two aggregate classes that
+  each carry a system reference plus a to-many record collection - one through a bidirectional
+  association, the other as a plain property. A JSON-schema file generation scopes a single
+  aggregate root and follows the reachable class graph, a generation specification sequences it
+  as one build step, and a diagram lays every class out with explicit geometry and property views.
+modelSources:
+  model:
+    root: opal-vineyard
+    files:
+      - test/opalvineyard/diagram/VineyardDiagram.pure
+      - test/opalvineyard/domain/VineyardDomain.pure
+      - test/opalvineyard/generation/VineyardGeneration.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:association
+  - grammar:diagram
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - diagram
+  - generation-specification
+  - harvest
+  - json-schema
+  - store-less
+  - viticulture
+  - wide-class

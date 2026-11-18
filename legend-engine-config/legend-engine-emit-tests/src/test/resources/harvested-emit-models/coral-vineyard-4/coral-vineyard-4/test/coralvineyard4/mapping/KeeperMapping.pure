@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralvineyard4::mapping::KeeperMapping
+(
+  *test::coralvineyard4::domain::Keeper[keeper]: Pure
+  {
+    ~src test::coralvineyard4::feed::KeeperFeed
+    keeperName: $src.name,
+    refugeCode: $src.refuge->map(r | $r->trim()->toUpper()),
+    season: if($src.season->isEmpty(), |'YEAR-ROUND', |$src.season->toOne()->toUpper()),
+    languages: $src.speaks->map(l | $l->toUpper())
+  }
+
+  testSuites:
+  [
+    keeperSuite:
+    {
+      function: |test::coralvineyard4::domain::Keeper.all()->graphFetch(
+        #{
+          test::coralvineyard4::domain::Keeper{
+            keeperName,
+            refugeCode,
+            season,
+            languages
+          }
+        }#
+      )->serialize(
+        #{
+          test::coralvineyard4::domain::Keeper{
+            keeperName,
+            refugeCode,
+            season,
+            languages
+          }
+        }#
+      );
+      tests:
+      [
+        seasonalKeeper:
+        {
+          doc: 'A summer keeper speaking two languages has the refuge code normalised and every language upper-cased.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::coralvineyard4::feed::KeeperFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"name":"Ada Moraine","refuge":" rf-01","season":"summer","speaks":["en","fr"]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            seasonalKeeperGraph:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"keeperName":"Ada Moraine","refugeCode":"RF-01","season":"SUMMER","languages":["EN","FR"]}';
+                  }#;
+              }#
+          ];
+        },
+        yearRoundKeeper:
+        {
+          doc: 'A keeper with no declared season and no listed languages falls back to year-round with an empty language collection.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::coralvineyard4::feed::KeeperFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"name":"Bo Scree","refuge":"rf-02","speaks":[]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            yearRoundKeeperGraph:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"keeperName":"Bo Scree","refugeCode":"RF-02","season":"YEAR-ROUND","languages":[]}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

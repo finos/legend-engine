@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::tealwillow2::domain::*;
+
+Class test::tealwillow2::domain::Gallery
+{
+  galleryId: String[1];
+  galleryName: String[1];
+  wingCode: String[1];
+}
+
+Class test::tealwillow2::domain::Exhibit
+{
+  exhibitId: String[1];
+  title: String[1];
+  themeCode: String[1];
+  galleryLabel: String[0..1];
+  curatorLabel: String[0..1];
+}
+
+Class test::tealwillow2::domain::Artifact
+{
+  artifactId: String[1];
+  label: String[1];
+  material: String[1];
+  conditionLabel: String[1];
+  galleryTrail: String[0..1];
+}
+
+Class test::tealwillow2::domain::Curator
+{
+  curatorId: String[1];
+  curatorName: String[1];
+  sectionCode: String[1];
+}
+
+Association test::tealwillow2::domain::Gallery_Exhibit
+{
+  gallery: Gallery[0..1];
+  exhibits: Exhibit[*];
+}
+
+Association test::tealwillow2::domain::Exhibit_Artifact
+{
+  exhibit: Exhibit[0..1];
+  artifacts: Artifact[*];
+}
+
+Association test::tealwillow2::domain::Exhibit_Curator
+{
+  curator: Curator[0..1];
+  curatedExhibits: Exhibit[*];
+}

@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralwarren9::service::AllotmentDonors
+{
+  pattern: '/coralwarren9/v1/donors';
+  title: 'Seed Library - Allotment Donors';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists the donating gardeners whose plot code sits in the four-code allotment membership set.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::coralwarren9::domain::Gardener.all()->filter(
+      g|$g.plotCode->in(['PL-A', 'PL-C', 'PL-D', 'PL-F'])
+    )->project(
+      [
+        g|$g.gardenerCode,
+        g|$g.gardenerName,
+        g|$g.plotCode
+      ],
+      [
+        'Gardener',
+        'Name',
+        'Plot'
+      ]
+    )->sort([asc('Gardener')]);
+    mapping: test::coralwarren9::mapping::SeedLibraryMapping;
+    runtime: test::coralwarren9::runtime::SeedLibraryRuntime;
+  }
+  testSuites:
+  [
+    allotmentDonorsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedLibraryWarehouse:
+            Reference
+            #{
+              test::coralwarren9::data::SeedLibraryFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        allotmentPlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoAllotmentDonors:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Gardener":"GD-1","Name":"Ruth Okafor","Plot":"PL-A"},{"Gardener":"GD-3","Name":"Mei Tanaka","Plot":"PL-C"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

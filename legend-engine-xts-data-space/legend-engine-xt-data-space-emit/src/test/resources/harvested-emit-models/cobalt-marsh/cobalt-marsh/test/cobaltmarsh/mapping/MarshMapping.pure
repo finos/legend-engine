@@ -1,0 +1,205 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cobaltmarsh::mapping::MarshMapping
+(
+  test::cobaltmarsh::domain::SamplingStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltmarsh::store::MarshDB]marsh.sampling_station.station_id
+    )
+    ~mainTable [test::cobaltmarsh::store::MarshDB]marsh.sampling_station
+    stationId: [test::cobaltmarsh::store::MarshDB]marsh.sampling_station.station_id,
+    stationName: trim([test::cobaltmarsh::store::MarshDB]marsh.sampling_station.station_name),
+    habitat: case(
+                equal([test::cobaltmarsh::store::MarshDB]marsh.sampling_station.habitat_code, 'MF'),
+                'Mudflat',
+                case(
+                  equal([test::cobaltmarsh::store::MarshDB]marsh.sampling_station.habitat_code, 'RB'),
+                  'Reedbed',
+                  case(
+                    equal([test::cobaltmarsh::store::MarshDB]marsh.sampling_station.habitat_code, 'SM'),
+                    'Salt Meadow',
+                    case(
+                      equal([test::cobaltmarsh::store::MarshDB]marsh.sampling_station.habitat_code, 'OW'),
+                      'Open Water',
+                      case(
+                        equal([test::cobaltmarsh::store::MarshDB]marsh.sampling_station.habitat_code, 'WW'),
+                        'Wet Woodland',
+                        case(
+                          equal([test::cobaltmarsh::store::MarshDB]marsh.sampling_station.habitat_code, 'PL'),
+                          'Pool Complex',
+                          case(
+                            equal([test::cobaltmarsh::store::MarshDB]marsh.sampling_station.habitat_code, 'DN'),
+                            'Dune Slack',
+                            'Unclassified'
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+    depthNote: case(
+                 isNull([test::cobaltmarsh::store::MarshDB]marsh.sampling_station.depth_cm),
+                 'Depth unrecorded',
+                 concat('Depth ', concat(substring([test::cobaltmarsh::store::MarshDB]marsh.sampling_station.station_name, 1, 3), ' logged'))
+               ),
+    nameLength: length([test::cobaltmarsh::store::MarshDB]marsh.sampling_station.station_name),
+    surveyProgram: 'Wetland Watch',
+    installedOn: [test::cobaltmarsh::store::MarshDB]marsh.sampling_station.installed_on,
+    tidal: [test::cobaltmarsh::store::MarshDB]marsh.sampling_station.is_tidal
+  }
+
+  test::cobaltmarsh::domain::WaterSample[sample]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltmarsh::store::MarshDB]marsh.water_sample.sample_id
+    )
+    ~mainTable [test::cobaltmarsh::store::MarshDB]marsh.water_sample
+    sampleId: [test::cobaltmarsh::store::MarshDB]marsh.water_sample.sample_id,
+    turbidityNtu: [test::cobaltmarsh::store::MarshDB]marsh.water_sample.turbidity_ntu,
+    oxygenMgl: [test::cobaltmarsh::store::MarshDB]marsh.water_sample.oxygen_mgl,
+    sampledOn: [test::cobaltmarsh::store::MarshDB]marsh.water_sample.sampled_on,
+    qualityBand: case(
+                   equal([test::cobaltmarsh::store::MarshDB]marsh.water_sample.grade_code, 'A'),
+                   'Excellent',
+                   case(
+                     equal([test::cobaltmarsh::store::MarshDB]marsh.water_sample.grade_code, 'B'),
+                     'Adequate',
+                     case(
+                       equal([test::cobaltmarsh::store::MarshDB]marsh.water_sample.grade_code, 'C'),
+                       'Watch',
+                       sqlNull()
+                     )
+                   )
+                 ),
+    sampleLabel: concat(trim([test::cobaltmarsh::store::MarshDB]marsh.water_sample.sample_id), concat('/', coalesce([test::cobaltmarsh::store::MarshDB]marsh.water_sample.grade_code, 'NA')))
+  }
+
+  test::cobaltmarsh::domain::BirdCount[bird]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltmarsh::store::MarshDB]marsh.bird_count.count_id
+    )
+    ~mainTable [test::cobaltmarsh::store::MarshDB]marsh.bird_count
+    countId: [test::cobaltmarsh::store::MarshDB]marsh.bird_count.count_id,
+    speciesCode: [test::cobaltmarsh::store::MarshDB]marsh.bird_count.species_code,
+    tally: [test::cobaltmarsh::store::MarshDB]marsh.bird_count.tally,
+    observedOn: [test::cobaltmarsh::store::MarshDB]marsh.bird_count.observed_on,
+    flockSize: case(
+                 greaterThan([test::cobaltmarsh::store::MarshDB]marsh.bird_count.tally, 100),
+                 'Large',
+                 case(
+                   and(
+                     greaterThan([test::cobaltmarsh::store::MarshDB]marsh.bird_count.tally, 20),
+                     lessThan([test::cobaltmarsh::store::MarshDB]marsh.bird_count.tally, 101)
+                   ),
+                   'Medium',
+                   case(
+                     equal([test::cobaltmarsh::store::MarshDB]marsh.bird_count.tally, 0),
+                     'None',
+                     'Small'
+                   )
+                 )
+               )
+  }
+
+  test::cobaltmarsh::domain::RangerShift[shift]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltmarsh::store::MarshDB]marsh.ranger_shift.shift_id
+    )
+    ~mainTable [test::cobaltmarsh::store::MarshDB]marsh.ranger_shift
+    shiftId: [test::cobaltmarsh::store::MarshDB]marsh.ranger_shift.shift_id,
+    rangerName: [test::cobaltmarsh::store::MarshDB]marsh.ranger_shift.ranger_name,
+    shiftHours: [test::cobaltmarsh::store::MarshDB]marsh.ranger_shift.shift_hours,
+    nightShift: [test::cobaltmarsh::store::MarshDB]marsh.ranger_shift.is_night,
+    workloadBand: case(
+                    greaterThan(plus([test::cobaltmarsh::store::MarshDB]marsh.ranger_shift.shift_hours, 0.5), 9.0),
+                    'Extended',
+                    case(
+                      lessThan(minus([test::cobaltmarsh::store::MarshDB]marsh.ranger_shift.shift_hours, 0.5), 4.0),
+                      'Short',
+                      'Standard'
+                    )
+                  )
+  }
+
+  testSuites:
+  [
+    stationHabitatSuite:
+    {
+      function: |test::cobaltmarsh::domain::SamplingStation.all(%2024-06-01)->project(
+  [
+    x|$x.stationId,
+    x|$x.habitat,
+    x|$x.depthNote,
+    x|$x.nameLength,
+    x|$x.surveyProgram
+  ],
+  [
+    'StationId',
+    'Habitat',
+    'DepthNote',
+    'NameLength',
+    'Program'
+  ]
+);
+      tests:
+      [
+        everyHabitatArm:
+        {
+          doc: 'Point-in-time projection over the processing-milestoned station table, hitting every conditional habitat arm, the unclassified fallback, the unrecorded-depth branch and a row milestoned out of range.';
+          data:
+          [
+            test::cobaltmarsh::store::MarshDB:
+              Relational
+              #{
+                marsh.sampling_station:
+                  'station_id,station_name,habitat_code,depth_cm,is_tidal,installed_on,in_z,out_z\n'+
+                  'ST-01,Lower Mudflat,MF,120,true,2019-04-01,2024-01-01,9999-12-31\n'+
+                  'ST-02,Reed Channel,RB,80,true,2019-05-01,2024-01-01,9999-12-31\n'+
+                  'ST-03,Salt Meadow East,SM,45,false,2020-03-01,2024-01-01,9999-12-31\n'+
+                  'ST-04,Open Lagoon,OW,310,true,2020-06-01,2024-01-01,9999-12-31\n'+
+                  'ST-05,Alder Carr,WW,60,false,2021-02-01,2024-01-01,9999-12-31\n'+
+                  'ST-06,Pool Cluster,PL,95,false,2021-08-01,2024-01-01,9999-12-31\n'+
+                  'ST-07,Dune Hollow,DN,,false,2022-01-01,2024-01-01,9999-12-31\n'+
+                  'ST-08,Sluice Corner,ZZ,25,true,2022-09-01,2024-01-01,9999-12-31\n'+
+                  'ST-09,Retired Platform,MF,140,true,2018-01-01,2018-01-01,2023-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            allArms:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationId":"ST-01","Habitat":"Mudflat","DepthNote":"Depth Low logged","NameLength":13,"Program":"Wetland Watch"},{"StationId":"ST-02","Habitat":"Reedbed","DepthNote":"Depth Ree logged","NameLength":12,"Program":"Wetland Watch"},{"StationId":"ST-03","Habitat":"Salt Meadow","DepthNote":"Depth Sal logged","NameLength":16,"Program":"Wetland Watch"},{"StationId":"ST-04","Habitat":"Open Water","DepthNote":"Depth Ope logged","NameLength":11,"Program":"Wetland Watch"},{"StationId":"ST-05","Habitat":"Wet Woodland","DepthNote":"Depth Ald logged","NameLength":10,"Program":"Wetland Watch"},{"StationId":"ST-06","Habitat":"Pool Complex","DepthNote":"Depth Poo logged","NameLength":12,"Program":"Wetland Watch"},{"StationId":"ST-07","Habitat":"Dune Slack","DepthNote":"Depth unrecorded","NameLength":11,"Program":"Wetland Watch"},{"StationId":"ST-08","Habitat":"Unclassified","DepthNote":"Depth Slu logged","NameLength":13,"Program":"Wetland Watch"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

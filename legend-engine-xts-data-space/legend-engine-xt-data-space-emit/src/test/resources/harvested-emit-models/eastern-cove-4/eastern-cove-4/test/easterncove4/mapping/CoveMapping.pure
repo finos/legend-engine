@@ -1,0 +1,200 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easterncove4::mapping::CoveMapping
+(
+  include mapping test::easterncove4::mapping::CoveBaseMapping
+
+  *test::easterncove4::domain::GaugeReading[gaugeReading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easterncove4::store::CoveDatabase]tide.gauge_reading.reading_id
+    )
+    ~mainTable [test::easterncove4::store::CoveDatabase]tide.gauge_reading
+    readingId: [test::easterncove4::store::CoveDatabase]tide.gauge_reading.reading_id,
+    gaugeCode: [test::easterncove4::store::CoveDatabase]tide.gauge_reading.gauge_code,
+    swellCode: [test::easterncove4::store::CoveDatabase]tide.gauge_reading.swell_code,
+    heightCm: [test::easterncove4::store::CoveDatabase]tide.gauge_reading.height_cm,
+    waterTempC: [test::easterncove4::store::CoveDatabase]tide.gauge_reading.water_temp_c,
+    takenOn: [test::easterncove4::store::CoveDatabase]tide.gauge_reading.taken_on,
+    stationName: [test::easterncove4::store::CoveDatabase]@Reading_Station | [test::easterncove4::store::CoveDatabase]tide.station.station_name,
+    wardenName: [test::easterncove4::store::CoveDatabase]@Reading_Station > @Station_Watch > @Watch_Warden | [test::easterncove4::store::CoveDatabase]crew.warden.warden_name
+  }
+
+  *test::easterncove4::domain::MooringCheck[mooringCheck]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easterncove4::store::CoveDatabase]crew.mooring_check.check_id
+    )
+    ~mainTable [test::easterncove4::store::CoveDatabase]crew.mooring_check
+    checkId: [test::easterncove4::store::CoveDatabase]crew.mooring_check.check_id,
+    buoyCode: [test::easterncove4::store::CoveDatabase]crew.mooring_check.buoy_code,
+    conditionCode: [test::easterncove4::store::CoveDatabase]crew.mooring_check.condition_code,
+    scourDepthCm: [test::easterncove4::store::CoveDatabase]crew.mooring_check.scour_depth_cm,
+    checkedOn: [test::easterncove4::store::CoveDatabase]crew.mooring_check.checked_on,
+    stationName: [test::easterncove4::store::CoveDatabase]@Check_Station | [test::easterncove4::store::CoveDatabase]tide.station.station_name
+  }
+
+  test::easterncove4::domain::Reading_Station_Rel: Relational
+  {
+    AssociationMapping
+    (
+      readings[station, gaugeReading]: [test::easterncove4::store::CoveDatabase]@Reading_Station,
+      station[gaugeReading, station]: [test::easterncove4::store::CoveDatabase]@Reading_Station
+    )
+  }
+
+  test::easterncove4::domain::Check_Station_Rel: Relational
+  {
+    AssociationMapping
+    (
+      checks[station, mooringCheck]: [test::easterncove4::store::CoveDatabase]@Check_Station,
+      station[mooringCheck, station]: [test::easterncove4::store::CoveDatabase]@Check_Station
+    )
+  }
+
+  testSuites:
+  [
+    readingResolutionSuite:
+    {
+      function: |test::easterncove4::domain::GaugeReading.all(%2026-03-01)->project(
+        [
+          x|$x.readingId,
+          x|$x.gaugeCode,
+          x|$x.heightCm,
+          x|$x.stationName,
+          x|$x.wardenName,
+          x|$x.station.coveCode
+        ],
+        [
+          'Reading',
+          'Gauge',
+          'HeightCm',
+          'Station',
+          'Warden',
+          'Cove'
+        ]
+      )->sort([asc('Reading')]);
+      tests:
+      [
+        readingsResolvedAtAPinnedInstant:
+        {
+          doc: 'One row per reading that is live at the pinned instant, each resolved one hop out to the station it was taken at and three hops out to the warden keeping watch over that station; the station with no warden assigned leaves the joined name absent. The re-derived reading whose processing window has already closed is out of range at the pinned instant and never appears.';
+          data:
+          [
+            test::easterncove4::store::CoveDatabase:
+              Relational
+              #{
+                tide.station:
+                  'station_code,station_name,cove_code,sensor_type\n'+
+                  'ST-1,Kelp Point,EAST-COVE,PRESSURE\n'+
+                  'ST-2,Shingle Bar,EAST-COVE,ACOUSTIC\n'+
+                  'ST-3,Gull Stack,NORTH-COVE,RADAR\n';
+
+                tide.gauge_reading:
+                  'reading_id,in_z,station_code,gauge_code,swell_code,height_cm,water_temp_c,taken_on,out_z\n'+
+                  '1,2026-01-01,ST-1,GA-001,GROUNDSWELL,214,11.5,2026-01-05,9999-12-31\n'+
+                  '2,2026-01-01,ST-2,GA-002,WINDSWELL,168,11.0,2026-01-06,9999-12-31\n'+
+                  '3,2026-01-01,ST-3,GA-003,GROUNDSWELL,305,10.25,2026-01-07,9999-12-31\n'+
+                  '4,2026-01-01,ST-1,GA-004,CONFUSED,190,11.75,2026-01-08,2026-02-01\n';
+
+                crew.warden:
+                  'warden_code,warden_name,watch_code\n'+
+                  'WD-1,Ada Marlow,EARLY\n'+
+                  'WD-2,Bo Selkirk,LATE\n';
+
+                crew.station_watch:
+                  'station_code,warden_code\n'+
+                  'ST-1,WD-1\n'+
+                  'ST-2,WD-2\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":1,"Gauge":"GA-001","HeightCm":214,"Station":"Kelp Point","Warden":"Ada Marlow","Cove":"EAST-COVE"},{"Reading":2,"Gauge":"GA-002","HeightCm":168,"Station":"Shingle Bar","Warden":"Bo Selkirk","Cove":"EAST-COVE"},{"Reading":3,"Gauge":"GA-003","HeightCm":305,"Station":"Gull Stack","Warden":null,"Cove":"NORTH-COVE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    mooringResolutionSuite:
+    {
+      function: |test::easterncove4::domain::MooringCheck.all(%2026-03-01)->project(
+        [
+          x|$x.checkId,
+          x|$x.buoyCode,
+          x|$x.conditionCode,
+          x|$x.scourDepthCm,
+          x|$x.stationName
+        ],
+        [
+          'Check',
+          'Buoy',
+          'Condition',
+          'ScourCm',
+          'Station'
+        ]
+      )->sort([asc('Check')]);
+      tests:
+      [
+        inspectionsResolvedAtAPinnedInstant:
+        {
+          doc: 'The buoy inspections that are live at the pinned instant, each resolved one hop out to the station whose water they were made in. The superseded re-inspection is out of range and the inspection versioned in after the pinned instant has not yet begun, so neither is resolved.';
+          data:
+          [
+            test::easterncove4::store::CoveDatabase:
+              Relational
+              #{
+                tide.station:
+                  'station_code,station_name,cove_code,sensor_type\n'+
+                  'ST-1,Kelp Point,EAST-COVE,PRESSURE\n'+
+                  'ST-2,Shingle Bar,EAST-COVE,ACOUSTIC\n';
+
+                crew.mooring_check:
+                  'check_id,in_z,station_code,buoy_code,condition_code,scour_depth_cm,checked_on,out_z\n'+
+                  '1,2026-01-01,ST-1,BY-001,SOUND,35,2026-01-10,9999-12-31\n'+
+                  '2,2026-01-01,ST-2,BY-002,CHAFED,62,2026-01-11,9999-12-31\n'+
+                  '3,2026-01-01,ST-1,BY-003,SOUND,28,2026-01-12,2026-02-01\n'+
+                  '4,2026-04-01,ST-2,BY-004,SCOURED,110,2026-03-28,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Check":1,"Buoy":"BY-001","Condition":"SOUND","ScourCm":35,"Station":"Kelp Point"},{"Check":2,"Buoy":"BY-002","Condition":"CHAFED","ScourCm":62,"Station":"Shingle Bar"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

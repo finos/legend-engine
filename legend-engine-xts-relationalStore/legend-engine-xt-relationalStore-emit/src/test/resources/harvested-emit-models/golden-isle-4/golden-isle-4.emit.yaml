@@ -1,0 +1,57 @@
+name: golden-isle-4
+title: "Golden Isle 4 — Seabird Colony Nest Register"
+description: |
+  An invented seabird monitoring register: nests on surveyed cliff plots mapped
+  over a four-table relational store with two grouped inline views, three
+  enumerations resolved from computed source expressions, layered conditional
+  transforms for the brood band and the handling note, and view-backed
+  properties reached across a four-hop join chain that is pinned both resolving
+  and missing by the mapping test suites.
+modelSources:
+  model:
+    root: golden-isle-4
+    files:
+      - test/goldenisle4/domain/IsleDomain.pure
+      - test/goldenisle4/mapping/IsleEnumMappings.pure
+      - test/goldenisle4/mapping/IsleMapping.pure
+      - test/goldenisle4/mapping/SightingDigestMapping.pure
+      - test/goldenisle4/store/IsleDb.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inline-view
+  - store:relational-multi-table
+  - store:relational-outer-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-transform
+  - duckdb
+  - enum-of-expression
+  - enumeration
+  - inline-view
+  - m2m
+  - mapping-include
+  - mapping-test
+  - multi-hop-join
+  - nest-register
+  - outer-join
+  - relational
+  - view-backed-property

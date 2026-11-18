@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::nobleestuary::domain::*;
+
+Profile test::nobleestuary::domain::CurationProfile
+{
+  stereotypes: [specGenerated];
+  tags: [steward];
+}
+
+Enum test::nobleestuary::domain::AccessTier
+{
+  OPEN,
+  RESERVED,
+  ARCHIVE,
+  TOURING
+}
+
+Class {meta::pure::profiles::doc.doc = 'Wide flat intake record delivered by the collection registration desk.'} test::nobleestuary::domain::IntakeFeed
+{
+  feedId: String[1];
+  title: String[1];
+  gallery: String[1];
+  openedYear: Integer[1];
+  buildingName: String[1];
+  floorLabel: String[1];
+  roomCode: String[1];
+  stewardName: String[1];
+  stewardAlias: String[1];
+  stewardTeam: String[1];
+  stewardPhoneExt: String[1];
+  stewardRoomCode: String[1];
+  stewardNote: String[1];
+  accessTier: AccessTier[1];
+  audienceNote: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Shared identity for anything held in the collection catalogue.'} test::nobleestuary::domain::CatalogueRecord
+{
+  recordId: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A catalogued natural-history specimen.'} test::nobleestuary::domain::SpecimenRecord extends CatalogueRecord
+{
+  taxonName: String[1];
+  siteStreet: String[1];
+  siteCity: String[1];
+  sitePostalCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A catalogued human-made artefact.'} test::nobleestuary::domain::ArtefactRecord extends CatalogueRecord
+{
+  materialCode: String[1];
+  periodName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Shared naming for a person connected to the collection.'} test::nobleestuary::domain::Party
+{
+  partyName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A curator responsible for a part of the collection.'} test::nobleestuary::domain::Curator extends Party
+{
+  curatorCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A donor who transferred material into the collection.'} test::nobleestuary::domain::Donor extends Party
+{
+  donorCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Hub class for a public exhibit, completed by its location, steward and audience spokes.'} test::nobleestuary::domain::Exhibit
+{
+  exhibitId: String[1];
+  exhibitTitle: String[1];
+  galleryName: String[1];
+  openingYear: Integer[1];
+  shortTitle() {$this.exhibitTitle->substring(0, if($this.openingYear >= 1900, | 8, | 4))->toUpper()->trim()->toLower()}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Physical placement of an exhibit within the museum building.'} test::nobleestuary::domain::ExhibitLocation
+{
+  buildingName: String[1];
+  floorLabel: String[1];
+  roomCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The person accountable for an exhibit while it is on display.'} test::nobleestuary::domain::ExhibitSteward
+{
+  stewardName: String[1];
+  stewardAlias: String[1];
+  stewardTeam: String[1];
+  stewardPhoneExt: String[1];
+  stewardRoomCode: String[1];
+  stewardNote: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Access tier the exhibit is offered under, typed by the only closed value set in the model.'} test::nobleestuary::domain::ExhibitAudience
+{
+  tier: AccessTier[1];
+  audienceNote: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A postal address for a collection site.'} test::nobleestuary::domain::Address
+{
+  streetLine: String[1];
+  cityName: String[1];
+  postalCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened specimen summary carrying a duplicated taxon label and a nested site address.'} test::nobleestuary::domain::SpecimenSummary
+{
+  recordId: String[1];
+  taxonName: String[1];
+  taxonNameAlt: String[1];
+}
+
+Association test::nobleestuary::domain::Exhibit_Location
+{
+  exhibit: Exhibit[1];
+  location: ExhibitLocation[1];
+}
+
+Association test::nobleestuary::domain::Exhibit_Steward
+{
+  stewardedExhibit: Exhibit[1];
+  steward: ExhibitSteward[1];
+}
+
+Association test::nobleestuary::domain::Exhibit_Audience
+{
+  audiencedExhibit: Exhibit[1];
+  audience: ExhibitAudience[1];
+}
+
+Association test::nobleestuary::domain::Summary_Site
+{
+  summary: SpecimenSummary[1];
+  site: Address[1];
+}
+
+Association test::nobleestuary::domain::Record_Address
+{
+  record: CatalogueRecord[1];
+  postalAddress: Address[1];
+}

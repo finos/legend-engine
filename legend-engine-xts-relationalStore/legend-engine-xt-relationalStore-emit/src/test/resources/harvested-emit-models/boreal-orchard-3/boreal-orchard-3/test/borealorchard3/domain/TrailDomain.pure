@@ -1,0 +1,138 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::borealorchard3::domain::SurfaceGrade
+{
+  SEALED,
+  GRAVEL,
+  PEAT,
+  SCREE
+}
+
+Enum test::borealorchard3::domain::HutClass
+{
+  BOTHY,
+  STAGED,
+  SERVICED
+}
+
+Enum test::borealorchard3::domain::JobPriority
+{
+  ROUTINE,
+  ELEVATED,
+  URGENT
+}
+
+Enum test::borealorchard3::domain::ShiftKind
+{
+  DAY,
+  NIGHT,
+  RELIEF
+}
+
+Class test::borealorchard3::domain::Hut
+{
+  hutCode: String[1];
+  hutName: String[1];
+  hutClass: test::borealorchard3::domain::HutClass[1];
+  regionCode: String[1];
+  bunkCount: Integer[1];
+  wardenName: String[1];
+}
+
+Class test::borealorchard3::domain::TrailSegment
+{
+  segmentCode: String[1];
+  segmentName: String[1];
+  hutCode: String[1];
+  surfaceGrade: test::borealorchard3::domain::SurfaceGrade[1];
+  lengthMetres: Integer[1];
+  ascentMetres: Integer[1];
+  hutName: String[1];
+}
+
+Class test::borealorchard3::domain::MaintenanceJob
+{
+  jobCode: String[1];
+  segmentCode: String[1];
+  priority: test::borealorchard3::domain::JobPriority[1];
+  raisedOn: StrictDate[1];
+  crewSize: Integer[1];
+  hutName: String[1];
+  wardenName: String[1];
+  bridgeSpanMetres: Float[0..1];
+  culvertBlocked: Boolean[0..1];
+}
+
+Class test::borealorchard3::domain::BridgeJob extends test::borealorchard3::domain::MaintenanceJob
+{
+  spanMetres: Float[1];
+  deckMaterial: String[1];
+}
+
+Class test::borealorchard3::domain::CulvertJob extends test::borealorchard3::domain::MaintenanceJob
+{
+  pipeDiameterCm: Integer[1];
+  blocked: Boolean[1];
+}
+
+Class test::borealorchard3::domain::SegmentClosure
+{
+  closureCode: String[1];
+  segmentCode: String[1];
+  closedFrom: StrictDate[1];
+  closedThrough: StrictDate[1];
+  segmentName: String[1];
+}
+
+Class test::borealorchard3::domain::Warden
+{
+  wardenCode: String[1];
+  wardenName: String[1];
+  baseRegionCode: String[1];
+}
+
+Class test::borealorchard3::domain::WardenShift
+{
+  shiftCode: String[1];
+  wardenCode: String[1];
+  shiftKind: test::borealorchard3::domain::ShiftKind[1];
+  shiftDate: StrictDate[1];
+  hours: Integer[1];
+  wardenName: String[1];
+}
+
+Class test::borealorchard3::domain::WardenCertificate
+{
+  certificateCode: String[1];
+  wardenCode: String[1];
+  skillCode: String[1];
+  awardedOn: StrictDate[1];
+  wardenName: String[1];
+}
+
+Class test::borealorchard3::domain::Region
+{
+  regionCode: String[1];
+  regionName: String[1];
+  upland: Boolean[1];
+}
+
+Class test::borealorchard3::domain::SurfaceReference
+{
+  gradeCode: test::borealorchard3::domain::SurfaceGrade[1];
+  gradeLabel: String[1];
+  walkingSpeedKph: Float[1];
+}

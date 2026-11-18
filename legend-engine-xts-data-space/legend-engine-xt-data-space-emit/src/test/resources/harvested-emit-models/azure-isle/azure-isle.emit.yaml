@@ -1,0 +1,58 @@
+name: azure-isle
+title: "Azure Isle — Island Seabird Nest Counts With Processing Milestoning, Conditional Classifications, Four-Hop Joins And Grouped And Distinct Views"
+description: |
+  Nest counts of island seabird colonies are delivered in processing batches and read as of a supplied
+  processing day. The count mapping classifies the raw weather, method, chick and size codes with nested
+  conditional transforms and resolves the plot, colony, island, reserve and species of every count through
+  join chains of up to four hops. A grouped view keeps the latest completed census visit of each colony
+  behind a named disjunctive filter, and a distinct view collapses repeated roster rows behind an inequality
+  filter; both back their own classes. Five services filter, project, sort and group the counts, visits and
+  roster, are featured by one of four data spaces together with a diagram, and run on two OAuth Snowflake
+  connections whose mapper post-processors rewrite the schemas.
+modelSources:
+  model:
+    root: azure-isle
+    files:
+      - test/azureisle/connection/IsleConnections.pure
+      - test/azureisle/data/IsleSurveyData.pure
+      - test/azureisle/dataspace/IsleDataSpaces.pure
+      - test/azureisle/diagram/IsleDiagram.pure
+      - test/azureisle/domain/IsleDomain.pure
+      - test/azureisle/mapping/IsleMapping.pure
+      - test/azureisle/profile/IsleCatalog.pure
+      - test/azureisle/runtime/IsleRuntimes.pure
+      - test/azureisle/service/IsleServices.pure
+      - test/azureisle/store/IsleDb.pure
+features:
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:service
+  - mapping:relational-conditional-transform
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-class
+  - milestoning:milestoning
+  - milestoning:processing-temporal
+  - query:group-by
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-view-distinct
+  - store:relational-view-group-by
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-transform
+  - data-space
+  - diagram
+  - group-by
+  - h2
+  - multi-hop-join
+  - processing-milestoning
+  - relational-view
+  - seabird-survey
+  - service
+  - snowflake

@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::coralisle::store::ReefSurveyDb
+(
+  Schema survey
+  (
+    Table survey_station
+    (
+      station_code VARCHAR(32) PRIMARY KEY,
+      station_name VARCHAR(120) NOT NULL,
+      shore_zone VARCHAR(40),
+      depth_meters INTEGER,
+      monitored BIT NOT NULL,
+      commissioned_on TIMESTAMP NOT NULL,
+      habitat_notes VARCHAR(400),
+      reef_sector VARCHAR(40),
+      tide_window VARCHAR(40),
+      retired_on TIMESTAMP
+    )
+    Table survey_visit
+    (
+      visit_ref VARCHAR(32) PRIMARY KEY,
+      station_code VARCHAR(32) NOT NULL,
+      visited_on TIMESTAMP NOT NULL,
+      surface_temp_c INTEGER,
+      swell_noted BIT NOT NULL,
+      observer_code VARCHAR(32),
+      visibility_meters INTEGER,
+      weather_note VARCHAR(200),
+      logged_on TIMESTAMP
+    )
+  )
+)
+
+Database test::coralisle::store::PlanktonTowDb
+(
+  Schema habitat
+  (
+    Table plankton_tow
+    (
+      tow_ref VARCHAR(32) PRIMARY KEY,
+      tow_name VARCHAR(120) NOT NULL,
+      net_mesh_microns INTEGER,
+      tow_completed BIT NOT NULL,
+      sampled_at TIMESTAMP NOT NULL,
+      station_code VARCHAR(32),
+      tow_depth_meters INTEGER,
+      tow_duration_minutes INTEGER,
+      sample_note VARCHAR(200)
+    )
+  )
+)
+
+Database test::coralisle::store::WaterReadingDb
+(
+  Schema habitat
+  (
+    Table water_reading
+    (
+      reading_ref VARCHAR(32) PRIMARY KEY,
+      station_code VARCHAR(32) NOT NULL,
+      salinity_psu INTEGER,
+      recorded_at TIMESTAMP NOT NULL,
+      turbidity_ntu INTEGER,
+      probe_tag VARCHAR(32),
+      probe_depth_meters INTEGER,
+      reading_note VARCHAR(200)
+    )
+  )
+)
+
+Database test::coralisle::store::FieldTeamDb
+(
+  Schema survey
+  (
+    Table field_observer
+    (
+      observer_code VARCHAR(32) PRIMARY KEY,
+      observer_name VARCHAR(120) NOT NULL,
+      team_name VARCHAR(80),
+      certified BIT NOT NULL,
+      shore_base VARCHAR(80),
+      rostered_from TIMESTAMP,
+      rostered_thru TIMESTAMP,
+      contact_note VARCHAR(200)
+    )
+    Table equipment_log
+    (
+      gear_tag VARCHAR(32) PRIMARY KEY,
+      gear_name VARCHAR(120) NOT NULL,
+      serviced_on TIMESTAMP,
+      gear_kind VARCHAR(40),
+      shore_base VARCHAR(80),
+      service_note VARCHAR(200),
+      retired BIT
+    )
+  )
+)

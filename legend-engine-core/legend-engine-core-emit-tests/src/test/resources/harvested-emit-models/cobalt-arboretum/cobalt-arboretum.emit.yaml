@@ -1,0 +1,43 @@
+name: cobalt-arboretum
+title: "Municipal Park Inventory — Wide Enumeration Vocabulary over a Mixed-Milestoning Type Graph"
+description: |
+  A municipal park-inventory domain whose interest is the combination of a
+  wide closed-vocabulary layer with three coexisting milestoning strategies in
+  one association graph. Fourteen enumerations type properties on milestoned
+  classes rather than appearing only as query literals, an abstract inventory
+  supertype is specialised by six fixture kinds, and the value-identity
+  stereotype marks a property subset on every class so equality is decided by
+  that subset. Navigation crosses a bi-temporal revision head into
+  processing-temporal measures and history rows, so each hop must be supplied
+  the right subset of temporal arguments.
+
+modelSources:
+  model:
+    root: cobalt-arboretum
+    files:
+      - test/cobaltarboretum/domain/Associations.pure
+      - test/cobaltarboretum/domain/Inventory.pure
+      - test/cobaltarboretum/domain/Vocabularies.pure
+
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:equality-key-stereotype
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association-graph
+  - bi-temporal
+  - business-temporal
+  - enumeration
+  - inheritance
+  - milestoned-association
+  - park-inventory
+  - processing-temporal
+  - value-identity

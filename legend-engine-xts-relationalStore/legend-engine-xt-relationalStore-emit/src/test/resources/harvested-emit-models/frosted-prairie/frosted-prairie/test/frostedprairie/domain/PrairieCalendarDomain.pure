@@ -1,0 +1,133 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::frostedprairie::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Prescribed-fire regimes a calendar day can be planned under.'} test::frostedprairie::domain::BurnRegime
+{
+  PRESCRIBED,
+  PATCH,
+  NONE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Planned fire intensity, translated from a numeric source column.'} test::frostedprairie::domain::BurnIntensity
+{
+  LOW,
+  MODERATE,
+  HIGH
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Grazing rotation phase in force on a calendar day.'} test::frostedprairie::domain::RotationPhase
+{
+  REST,
+  GRAZE,
+  RECOVER
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Season phase vocabulary typed on the season window but left unmapped, so no source value ever resolves to it.'} test::frostedprairie::domain::SeasonPhase
+{
+  DORMANT,
+  EMERGING,
+  FLOWERING,
+  SENESCENT
+}
+
+Class {meta::pure::profiles::doc.doc = 'A start and end pair reused by every window structure; it has no identity of its own and exists only inside its parent.'} test::frostedprairie::domain::DayInterval
+{
+  startDate: StrictDate[0..1];
+  endDate: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The season a calendar day belongs to, carrying its own interval and an unmapped phase vocabulary.'} test::frostedprairie::domain::SeasonWindow
+{
+  seasonYear: Integer[0..1];
+  phase: test::frostedprairie::domain::SeasonPhase[0..1];
+  interval: test::frostedprairie::domain::DayInterval[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The crew nominated for a planned burn, nested two levels below the calendar day.'} test::frostedprairie::domain::BurnCrew
+{
+  crewCode: String[0..1];
+  crewName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The burn plan standing on a calendar day: two enumerated translations, a planned day count, its own interval and its crew.'} test::frostedprairie::domain::BurnPlan
+{
+  regime: test::frostedprairie::domain::BurnRegime[0..1];
+  intensity: test::frostedprairie::domain::BurnIntensity[0..1];
+  plannedDays: Integer[0..1];
+  interval: test::frostedprairie::domain::DayInterval[0..1];
+  crew: test::frostedprairie::domain::BurnCrew[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The grazing block standing on a calendar day, with an enumerated rotation phase and its own interval.'} test::frostedprairie::domain::GrazingBlock
+{
+  rotation: test::frostedprairie::domain::RotationPhase[0..1];
+  interval: test::frostedprairie::domain::DayInterval[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Water-table observation attached to a calendar day.'} test::frostedprairie::domain::HydrologyWindow
+{
+  waterTableCm: Integer[0..1];
+  note: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Pollinator activity attached to a calendar day.'} test::frostedprairie::domain::PollinatorWindow
+{
+  pollinatorCount: Integer[0..1];
+  bloomIndex: Decimal[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Survey record attached to a calendar day, carrying its own interval.'} test::frostedprairie::domain::SurveyWindow
+{
+  note: String[0..1];
+  interval: test::frostedprairie::domain::DayInterval[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The grain a calendar row is recorded at; the store filter selecting the finest grain is declared but never applied, so coarser rows are visible too.'} test::frostedprairie::domain::GrainMarker
+{
+  grainCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One row of the prairie phenology calendar. Beyond its ordinals it carries six nested window structures, a conditional stage label, an optional fractional burn factor, and a family of parameterised period predicates that take another calendar day as their argument.'} test::frostedprairie::domain::PrairieDay
+{
+  dayId: Integer[1];
+  seasonYear: Integer[1];
+  weekOrdinal: Integer[1];
+  monthOrdinal: Integer[1];
+  quarterOrdinal: Integer[1];
+  dayOfSeason: Integer[1];
+  calendarDate: StrictDate[0..1];
+  stageLabel: String[0..1];
+  grain: test::frostedprairie::domain::GrainMarker[0..1];
+  season: test::frostedprairie::domain::SeasonWindow[0..1];
+  burn: test::frostedprairie::domain::BurnPlan[0..1];
+  grazing: test::frostedprairie::domain::GrazingBlock[0..1];
+  hydrology: test::frostedprairie::domain::HydrologyWindow[0..1];
+  pollinator: test::frostedprairie::domain::PollinatorWindow[0..1];
+  survey: test::frostedprairie::domain::SurveyWindow[0..1];
+  burnFactor() {if($this.burn.plannedDays->isEmpty(), | [], | $this.burn.plannedDays->toOne() / $this.dayOfSeason)}: Float[0..1];
+  isSameDayAs(other: test::frostedprairie::domain::PrairieDay[1]) {$this.dayOfSeason == $other.dayOfSeason}: Boolean[1];
+  isWeekToDate(other: test::frostedprairie::domain::PrairieDay[1]) {and(and($this.seasonYear == $other.seasonYear, $this.weekOrdinal == $other.weekOrdinal), $this.dayOfSeason <= $other.dayOfSeason)}: Boolean[1];
+  isMonthToDate(other: test::frostedprairie::domain::PrairieDay[1]) {and(and($this.seasonYear == $other.seasonYear, $this.monthOrdinal == $other.monthOrdinal), $this.dayOfSeason <= $other.dayOfSeason)}: Boolean[1];
+  isQuarterToDate(other: test::frostedprairie::domain::PrairieDay[1]) {and(and($this.seasonYear == $other.seasonYear, $this.quarterOrdinal == $other.quarterOrdinal), $this.dayOfSeason <= $other.dayOfSeason)}: Boolean[1];
+  isYearToDate(other: test::frostedprairie::domain::PrairieDay[1]) {and($this.seasonYear == $other.seasonYear, $this.dayOfSeason <= $other.dayOfSeason)}: Boolean[1];
+  isPriorWeekOf(other: test::frostedprairie::domain::PrairieDay[1]) {and(and($this.weekOrdinal > 0, $this.seasonYear == if($other.weekOrdinal == 1, | $other.seasonYear - 1, | $other.seasonYear)), $this.weekOrdinal == if($other.weekOrdinal == 1, | 52, | $other.weekOrdinal - 1))}: Boolean[1];
+  isPriorMonthOf(other: test::frostedprairie::domain::PrairieDay[1]) {and(and($this.seasonYear == if($other.monthOrdinal == 1, | $other.seasonYear - 1, | $other.seasonYear), $this.monthOrdinal == if($other.monthOrdinal == 1, | 12, | $other.monthOrdinal - 1)), $this.dayOfSeason <= $other.dayOfSeason)}: Boolean[1];
+  isPriorQuarterOf(other: test::frostedprairie::domain::PrairieDay[1]) {and(and($this.seasonYear == if($other.quarterOrdinal == 1, | $other.seasonYear - 1, | $other.seasonYear), $this.quarterOrdinal == if($other.quarterOrdinal == 1, | 4, | $other.quarterOrdinal - 1)), $this.dayOfSeason <= $other.dayOfSeason)}: Boolean[1];
+  isPriorYearOf(other: test::frostedprairie::domain::PrairieDay[1]) {and($this.seasonYear == $other.seasonYear - 1, $this.dayOfSeason <= $other.dayOfSeason)}: Boolean[1];
+  isPriorMonthToDate(other: test::frostedprairie::domain::PrairieDay[1]) {and($this.isPriorMonthOf($other), $this.weekOrdinal <= $other.weekOrdinal)}: Boolean[1];
+  isPriorQuarterToDate(other: test::frostedprairie::domain::PrairieDay[1]) {or($this.isPriorQuarterOf($other), $this.isPriorYearOf($other))}: Boolean[1];
+}

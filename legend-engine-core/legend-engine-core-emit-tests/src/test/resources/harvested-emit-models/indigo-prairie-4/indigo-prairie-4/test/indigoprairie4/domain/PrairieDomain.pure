@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class test::indigoprairie4::source::RawCollectionRecord
+{
+  collectionCode: String[1];
+  regionName: String[1];
+  aliases: String[*];
+}
+
+Class test::indigoprairie4::source::RawSeedLotRecord
+{
+  lotRef: String[1];
+  gradeCode: String[1];
+  countText: String[1];
+  labelText: String[0..1];
+  aliases: String[*];
+  collection: test::indigoprairie4::source::RawCollectionRecord[1];
+}
+
+Class test::indigoprairie4::domain::CollectionProvenance
+{
+  collectionCode: String[1];
+  regionName: String[1];
+  primaryAlias: String[1];
+}
+
+Enum test::indigoprairie4::domain::GerminationGrade
+{
+  Exceptional,
+  Vigorous,
+  Robust,
+  Promising,
+  Steady,
+  Sparse,
+  Dormant,
+  Unsuitable,
+  Uncertifiable
+}
+
+Class test::indigoprairie4::domain::CertifiedSeedLot
+{
+  lotCode: String[1];
+  grade: test::indigoprairie4::domain::GerminationGrade[1];
+  seedCount: Integer[1];
+  displayLabel: String[1];
+  aliasEcho: String[1];
+  provenance: test::indigoprairie4::domain::CollectionProvenance[1];
+}

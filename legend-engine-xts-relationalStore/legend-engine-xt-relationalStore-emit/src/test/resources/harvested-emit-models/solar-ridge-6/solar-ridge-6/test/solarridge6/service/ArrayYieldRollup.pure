@@ -1,0 +1,138 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarridge6::service::ArrayYieldRollup
+{
+  pattern: '/solarridge6/v1/array-yield-rollup';
+  title: 'Solar Ridge - Ridge Array Yield Rollup';
+  ownership: UserList { users: ['ridge-array-desk'] };
+  documentation: 'Rolls the daily panel-string readings of a ridge-top solar array up to one row per array and derived tilt band, restricted to the readings taken from a given date onwards and to the arrays named in the register the endpoint takes as a collection. The tilt band is derived in the mapping below the service; the service body is the aggregation surface only.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], arrayRegister: String[*]|test::solarridge6::domain::ArrayReading.all()->filter(
+      r|($r.readingDate >= $fromDate) && ($r.arrayCode->in($arrayRegister))
+    )->groupBy(
+      [
+        r|$r.arrayCode,
+        r|$r.tiltBand
+      ],
+      [
+        agg(r|$r.outputKwh, y|$y->sum()),
+        agg(r|$r.stringCode, y|$y->count())
+      ],
+      [
+        'ArrayCode',
+        'TiltBand',
+        'TotalKwh',
+        'Strings'
+      ]
+    )->sort([asc('ArrayCode'), asc('TiltBand')])};
+    mapping: test::solarridge6::mapping::ArrayReadingMapping;
+    runtime: test::solarridge6::runtime::RidgeArrayRuntime;
+  }
+  testSuites:
+  [
+    arrayYieldRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          ridgeArray:
+            Relational
+            #{
+              ridge.array_reading:
+                'reading_date,array_code,string_code,tilt_class,inverter_state,panel_count,irradiance_wm2,output_kwh,soiling_pct,downtime_min,observer_note\n'+
+                '2032-03-04,AR-01,ST-01,Steep,ONLINE,20,880.0,40.0,2.0,0,panels rinsed at dawn\n'+
+                '2032-03-04,AR-01,ST-02,Steep,DERATED,20,860.0,30.0,9.5,45,string two derated\n'+
+                '2032-03-05,AR-02,ST-03,Shallow,ONLINE,10,700.0,15.0,1.0,0,\n'+
+                '2032-02-20,AR-02,ST-04,Shallow,OFFLINE,10,0.0,0.0,20.0,600,inverter swapped\n'+
+                '2032-03-06,AR-09,ST-09,Steep,ONLINE,15,900.0,25.0,3.0,0,outside the register\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registeredArraysFromDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2032-03-01,
+            arrayRegister = ['AR-01', 'AR-02', 'AR-03']
+          ]
+          asserts:
+          [
+            twoArrayTiltGroups:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ArrayCode":"AR-01","TiltBand":"TILT_STEEP","TotalKwh":70.0,"Strings":2},{"ArrayCode":"AR-02","TiltBand":"TILT_SHALLOW","TotalKwh":15.0,"Strings":1}]';
+                  }#;
+              }#
+          ]
+        },
+        singleRegisteredArrayOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2032-03-05,
+            arrayRegister = ['AR-02']
+          ]
+          asserts:
+          [
+            oneShallowGroup:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ArrayCode":"AR-02","TiltBand":"TILT_SHALLOW","TotalKwh":15.0,"Strings":1}]';
+                  }#;
+              }#
+          ]
+        },
+        emptyRollupWhenNoArrayMatchesTheRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2032-03-01,
+            arrayRegister = ['AR-77']
+          ]
+          asserts:
+          [
+            noGroups:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

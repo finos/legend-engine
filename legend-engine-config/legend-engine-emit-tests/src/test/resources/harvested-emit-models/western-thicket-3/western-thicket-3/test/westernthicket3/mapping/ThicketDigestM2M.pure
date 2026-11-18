@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernthicket3::mapping::ThicketDigestM2M
+(
+  test::westernthicket3::domain::RegrowthGrade: EnumerationMapping RegrowthCodeMapping
+  {
+    VIGOROUS: ['V'],
+    STEADY: ['S'],
+    SLOW: ['L'],
+    STALLED: ['T']
+  }
+
+  test::westernthicket3::domain::CanopyBand: EnumerationMapping CanopyCodeMapping
+  {
+    OPEN: ['O'],
+    MIXED: ['M'],
+    CLOSED: ['C']
+  }
+
+  *test::westernthicket3::payload::CutTallyDigest[cutTallyDigestSet]: Pure
+  {
+    ~src test::westernthicket3::payload::CutTallyPayload
+    surveyCode: $src.surveyCode,
+    standTag: 'STAND/' + $src.standCode->toUpper()->trim(),
+    cutTag: 'CUT/' + $src.record.cutText->toUpper()->trim(),
+    stemBand: if($src.record.stemText->trim()->length() == 0,
+                 | 'BAND-NONE',
+                 | if($src.record.stemText->trim()->parseInteger() >= 72,
+                      | 'BAND-HIGH',
+                      | if($src.record.stemText->trim()->parseInteger() >= 24,
+                           | 'BAND-MID',
+                           | 'BAND-LOW'))),
+    regrowthGrade: EnumerationMapping RegrowthCodeMapping: [if($src.record.regrowthCode->isEmpty(), | 'T', | $src.record.regrowthCode->toOne()->toUpper()->trim())]->toOne(),
+    canopyBand: EnumerationMapping CanopyCodeMapping: [if($src.record.canopyCode->isEmpty(), | 'C', | $src.record.canopyCode->toOne()->toUpper()->trim())]->toOne()
+  }
+
+  testSuites:
+  [
+    cutTallyDigestSuite:
+    {
+      function: |test::westernthicket3::payload::CutTallyDigest.all()->graphFetch(
+        #{
+          test::westernthicket3::payload::CutTallyDigest
+          {
+            surveyCode,
+            standTag,
+            cutTag,
+            stemBand,
+            regrowthGrade,
+            canopyBand
+          }
+        }#
+      )->serialize(
+        #{
+          test::westernthicket3::payload::CutTallyDigest
+          {
+            surveyCode,
+            standTag,
+            cutTag,
+            stemBand,
+            regrowthGrade,
+            canopyBand
+          }
+        }#
+      );
+      tests:
+      [
+        everyBandAndEveryCodeFallback:
+        {
+          doc: 'Walks all four arms of the stem banding including the blank-count sentinel and the inclusive edge of the top band, every value of both closed code domains, and the two absent codes each substituted by its fallback ahead of the enumeration lookup, with padded codes proving the trim runs before the lookup.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernthicket3::payload::CutTallyPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"surveyCode":"CS-01","standCode":"st-01","record":{"regrowthCode":"v","canopyCode":"o","cutText":"coppice","stemText":"100"}},{"surveyCode":"CS-02","standCode":"st-02","record":{"regrowthCode":"s","canopyCode":"m","cutText":"singling","stemText":"40"}},{"surveyCode":"CS-03","standCode":"st-03","record":{"regrowthCode":"l","canopyCode":"c","cutText":"layering","stemText":"10"}},{"surveyCode":"CS-04","standCode":"st-04","record":{"cutText":"pollarding","stemText":"  "}},{"surveyCode":"CS-05","standCode":" st-01 ","record":{"regrowthCode":" t ","canopyCode":" o ","cutText":" coppice ","stemText":" 72 "}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fiveBandedTallies:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"surveyCode":"CS-01","standTag":"STAND/ST-01","cutTag":"CUT/COPPICE","stemBand":"BAND-HIGH","regrowthGrade":"VIGOROUS","canopyBand":"OPEN"},{"surveyCode":"CS-02","standTag":"STAND/ST-02","cutTag":"CUT/SINGLING","stemBand":"BAND-MID","regrowthGrade":"STEADY","canopyBand":"MIXED"},{"surveyCode":"CS-03","standTag":"STAND/ST-03","cutTag":"CUT/LAYERING","stemBand":"BAND-LOW","regrowthGrade":"SLOW","canopyBand":"CLOSED"},{"surveyCode":"CS-04","standTag":"STAND/ST-04","cutTag":"CUT/POLLARDING","stemBand":"BAND-NONE","regrowthGrade":"STALLED","canopyBand":"CLOSED"},{"surveyCode":"CS-05","standTag":"STAND/ST-01","cutTag":"CUT/COPPICE","stemBand":"BAND-HIGH","regrowthGrade":"STALLED","canopyBand":"OPEN"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

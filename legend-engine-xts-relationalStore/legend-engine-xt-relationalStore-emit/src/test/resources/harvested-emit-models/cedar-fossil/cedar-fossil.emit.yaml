@@ -1,0 +1,67 @@
+name: cedar-fossil
+title: "Cedar Fossil — Processing-Temporal Specimen Catalogue over an Included Registry Store"
+description: |
+  A palaeontology specimen catalogue whose store includes a separate registry
+  store, so the catalogue joins reach the dig-site and bed tables defined
+  elsewhere. The specimen table is processing-temporal and the catalogue also
+  carries a grouped inline view over the preparation log and a named filter that
+  trims unfinished preparation entries. The catalogue mapping includes a
+  reference mapping for the registry classes, maps two enumerations from their
+  stored codes, addresses every column through a qualified main table, resolves
+  the site over one hop and the bed period over a two-hop path, serves the
+  effort column from the inline view, and implements the site-to-bed association
+  over the registry join. Three mapping test suites cover the enumerated and
+  join-reached projection at a processing instant where every version is open,
+  the same projection at an earlier instant where a later processing window is
+  out of range, the association traversal on its own, and the filtered
+  preparation log. Two connections over the same store carry a delegated
+  Kerberos and a vault-referenced middle-tier credential, each bound by its own
+  runtime.
+modelSources:
+  model:
+    root: cedar-fossil
+    files:
+      - test/cedarfossil/connection/CatalogueConnections.pure
+      - test/cedarfossil/domain/FossilDomain.pure
+      - test/cedarfossil/mapping/CatalogueMapping.pure
+      - test/cedarfossil/mapping/RegistryMapping.pure
+      - test/cedarfossil/runtime/CatalogueRuntimes.pure
+      - test/cedarfossil/store/FossilCatalogueDB.pure
+      - test/cedarfossil/store/FossilRegistryDB.pure
+features:
+  - execution:mapping-test
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - duckdb
+  - enumeration-mapping
+  - inline-view
+  - mapping-include
+  - multi-hop-join
+  - processing-temporal
+  - store-filter
+  - store-include

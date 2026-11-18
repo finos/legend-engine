@@ -1,0 +1,53 @@
+name: olive-quarry-2
+title: "Olive Quarry - a store-less heritage quarry dispatch feed transformed model-to-model through shared enumeration mappings, nested class mappings and router unions"
+description: |
+  A heritage stone quarry. Every cut block leaves with a JSON dispatch document carrying an optional block
+  code, free-text grade and finish, a mass, a nested quarry-site element and a list of painted marking tags.
+  A mapping holding only enumeration mappings is included by two model-to-model mappings: the dispatch
+  mapping builds the published stone block with a computed label, an eight-arm mass band with an absent
+  fallback, grade and finish values computed from the source text before the shared enumeration lookup
+  (an unknown grade is filtered out rather than mapped), a nested location class mapping over the site
+  element and identifiers unioned from a legacy and a live-tag class mapping; the review mapping builds a
+  conservation review whose notes are unioned from a mass and a grade class mapping. Four services embed
+  their runtime with a JSON model connection, graph-fetch and serialize trees of two levels, and declare
+  deployment-identifier or user-list ownership with JSON equality test suites.
+modelSources:
+  model:
+    root: olive-quarry-2
+    files:
+      - test/olivequarry2/domain/QuarryDomain.pure
+      - test/olivequarry2/mapping/BlockDispatchMapping.pure
+      - test/olivequarry2/mapping/BlockReviewMapping.pure
+      - test/olivequarry2/mapping/QuarryEnumMappings.pure
+      - test/olivequarry2/service/QuarryServices.pure
+      - test/olivequarry2/source/QuarrySource.pure
+features:
+  - scaffolding:model-connection
+  - execution:mapping-test
+  - execution:service
+  - execution:embedded-runtime
+  - execution:service-ownership-did
+  - execution:service-test
+  - execution:service-test-external-format-json
+  - execution:service-user-ownership
+  - mapping:m2m-nested-class-mapping-reference
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - execution:graph-fetch
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - embedded-runtime
+  - enumeration-mapping
+  - graph-fetch
+  - heritage-quarry
+  - m2m
+  - mapping-include
+  - mapping-test
+  - model-store
+  - nested-class-mapping
+  - operation-mapping
+  - service-test
+  - store-less

@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::wistfulhatchery::dataspace::RearingDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'rearing';
+      description: 'Rearing context - cohorts, rooms and host plantings resolved against the brood warehouse.';
+      mapping: test::wistfulhatchery::mapping::BroodMapping;
+      defaultRuntime: test::wistfulhatchery::runtime::BroodRuntime;
+    },
+    {
+      name: 'emergence';
+      description: 'Emergence context - emergence counts and release events resolved against the emergence warehouse.';
+      mapping: test::wistfulhatchery::mapping::EmergenceMapping;
+      defaultRuntime: test::wistfulhatchery::runtime::EmergenceRuntime;
+    }
+  ];
+  defaultExecutionContext: 'rearing';
+  title: 'Wistful Hatchery - Rearing Product';
+  description: 'Consumable surface over the rearing side of the conservatory, packaging the brood and emergence execution contexts behind the readiness and release endpoints.';
+  elements:
+  [
+    test::wistfulhatchery::domain::LarvalCohort,
+    test::wistfulhatchery::domain::EmergenceRecord,
+    test::wistfulhatchery::domain::ReleaseEvent
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Cohort readiness digest';
+      description: 'Featured endpoint returning the banded readiness of the cohorts in force at a processing date.';
+      executable: test::wistfulhatchery::service::CohortReadinessDigest;
+    },
+    {
+      id: 2;
+      title: 'Emergence release report';
+      description: 'Featured endpoint pairing in-force emergence counts with their release events.';
+      executable: test::wistfulhatchery::service::EmergenceReleaseReport;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'conservatory-rearing@conservatory.invalid';
+  };
+}
+
+###DataSpace
+DataSpace test::wistfulhatchery::dataspace::FlightDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'habitat';
+      description: 'Habitat context - flight enclosure climate readings and nectar stations resolved against the habitat warehouse.';
+      mapping: test::wistfulhatchery::mapping::HabitatMapping;
+      defaultRuntime: test::wistfulhatchery::runtime::HabitatRuntime;
+    }
+  ];
+  defaultExecutionContext: 'habitat';
+  title: 'Wistful Hatchery - Flight Habitat Product';
+  description: 'Consumable surface over the flight enclosures, packaging the habitat execution context behind the humidity watch endpoint.';
+  elements:
+  [
+    test::wistfulhatchery::domain::ClimateReading,
+    test::wistfulhatchery::domain::Enclosure,
+    test::wistfulhatchery::domain::NectarStation
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Humidity watch';
+      description: 'Featured endpoint listing the in-force humidity readings above a supplied floor.';
+      executable: test::wistfulhatchery::service::HumidityWatch;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'conservatory-habitat@conservatory.invalid';
+  };
+}

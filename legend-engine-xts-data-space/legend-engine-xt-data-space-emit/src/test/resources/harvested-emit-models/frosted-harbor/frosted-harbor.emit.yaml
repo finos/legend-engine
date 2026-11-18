@@ -1,0 +1,86 @@
+name: frosted-harbor
+title: "Frosted Harbor Berthing — A Two-Hop Zone Path, A Unioned Load Root and A Grouped Peak Rejoined to Its Detail Rows"
+description: |
+  A harbour berthing register whose assignments live on a business timeline and
+  carry three bound-checking constraints, two derived properties and a zone read
+  across a two-hop join path from the berth to its dock. One service reads the
+  extent at a caller-supplied instant, drops layup-graded rows through an
+  enumeration inequality, groups the survivors on the two-hop zone and the period
+  code with a peak-level aggregate, and joins that grouped relation back to a
+  detail projection of the same extent before de-duplicating and ordering. A
+  second service queries a load root routed by a union across a quayside and a
+  relay population, each side translating its own stored kind label through a
+  shared enumeration mapping, reading a roster label from an inline view and
+  defaulting its source marker to a literal. Two mapping suites cover the unioned
+  register and the grouped dock view, and the store carries filters, three views
+  and six joins across six tables.
+
+modelSources:
+  model:
+    root: frosted-harbor
+    files:
+      - test/frostedharbor/connection/HarborConnections.pure
+      - test/frostedharbor/dataspace/HarborDataSpace.pure
+      - test/frostedharbor/domain/HarborDomain.pure
+      - test/frostedharbor/mapping/HarborEnumMappings.pure
+      - test/frostedharbor/mapping/HarborMapping.pure
+      - test/frostedharbor/runtime/HarborRuntimes.pure
+      - test/frostedharbor/service/BerthGradeBoard.pure
+      - test/frostedharbor/service/ZoneLoadBoard.pure
+      - test/frostedharbor/store/HarborDb.pure
+
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:derived-property
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:operation-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-polymorphic-query
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - mapping:router-union
+  - milestoning:business-temporal
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - class-inheritance
+  - constraint
+  - data-space
+  - derived-property
+  - enumeration-mapping
+  - group-by
+  - h2
+  - harbour-berthing
+  - inline-view
+  - multi-hop-join
+  - operation-mapping
+  - relational-filter
+  - router-union
+  - service-test
+  - tabular-join

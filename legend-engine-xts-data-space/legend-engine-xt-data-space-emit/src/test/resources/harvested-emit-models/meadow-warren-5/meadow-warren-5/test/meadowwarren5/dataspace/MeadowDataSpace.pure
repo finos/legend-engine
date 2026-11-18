@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::meadowwarren5::dataspace::MeadowDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'monitoring';
+      description: 'The everyday entry point over the meadow monitoring model, resolving the milestoned mapping against the monitoring warehouse runtime.';
+      mapping: test::meadowwarren5::mapping::MeadowMapping;
+      defaultRuntime: test::meadowwarren5::runtime::MeadowRuntime;
+    },
+    {
+      name: 'review';
+      description: 'The same mapping resolved against the review runtime, used when a correction round is being checked against the register the field team published.';
+      mapping: test::meadowwarren5::mapping::MeadowMapping;
+      defaultRuntime: test::meadowwarren5::runtime::MeadowReviewRuntime;
+    }
+  ];
+  defaultExecutionContext: 'monitoring';
+  title: 'Alpine Meadow Forage Monitoring';
+  description: 'The versioned alpine meadow monitoring product: clipped forage samples, the plots they were clipped from and the daily weather summaries published for those plots, all kept on one processing axis so that any read can be pinned to the instant the numbers were known at rather than to the latest correction.';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Forage Sample Register';
+      description: 'The published register endpoint, read at a processing instant given as its only parameter.';
+      executable: test::meadowwarren5::service::SampleRegister;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'meadow-monitoring-support@alpinemeadow.invalid';
+  };
+}

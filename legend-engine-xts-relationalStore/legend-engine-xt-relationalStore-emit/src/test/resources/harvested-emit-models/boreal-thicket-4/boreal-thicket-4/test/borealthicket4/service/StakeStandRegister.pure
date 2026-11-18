@@ -1,0 +1,130 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealthicket4::service::StakeStandRegister
+{
+  pattern: '/borealthicket4/v1/stake-stand-register/{asOf}';
+  title: 'Boreal Thicket - Stake Register By Canopy Tier';
+  owners:
+  [
+    'snow-course-survey',
+    'thicket-monitoring'
+  ];
+  documentation: 'Register of the stake readings live at a milestoning instant for one canopy tier: the instant is propagated into the milestoned stake traversal, the deep predicate narrows the readings by name prefix, tier, density, depth and species, and the survivors are projected with their joined stand, tier and species context in stake order.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], tier: String[1]|test::borealthicket4::domain::SnowStake.all($asOf)->filter(
+      s|($s.stakeName->startsWith('Stake')) && (($s.standTier->toOne() == $tier) && (($s.densityPct <= 90) && (($s.depthCm > 10.0) && !($s.speciesName->toOne() == 'Unlisted Species'))))
+    )->project(
+      [
+        col(s|$s.stakeCode, 'Stake'),
+        col(s|$s.stakeName, 'Stake Name'),
+        col(s|$s.standName, 'Stand'),
+        col(s|$s.standTier, 'Tier'),
+        col(s|$s.speciesName, 'Species'),
+        col(s|$s.depthCm, 'Depth'),
+        col(s|$s.densityPct, 'Density')
+      ]
+    )->sort(
+      [
+        asc('Stake')
+      ]
+    )};
+    mapping: test::borealthicket4::mapping::ThicketMapping;
+    runtime: test::borealthicket4::runtime::ThicketAuditRuntime;
+  }
+  testSuites:
+  [
+    stakeStandRegisterSuite:
+    {
+      data:
+      [
+      connections:
+      [
+        thicketConnection:
+          Relational
+          #{
+            thicket.snow_stake:
+              'stake_code,stake_name,stand_code,species_code,crew_code,depth_cm,density_pct,read_on,valid_from,valid_thru\n'+
+              'S-1,Stake Ridge North,ST-1,SP-1,CR-1,92.5,45,2026-03-01,2026-01-01,9999-12-31\n'+
+              'S-2,Stake Hollow Mid,ST-2,SP-2,CR-2,64.0,55,2026-03-02,2026-02-01,9999-12-31\n'+
+              'S-3,Stake Burn Old,ST-1,SP-1,CR-1,40.0,70,2025-05-01,2025-01-01,2025-09-01\n'+
+              'S-4,Stake Muskeg Edge,,,,18.0,30,2026-03-05,2026-01-15,9999-12-31\n';
+            thicket.stand_block:
+              'stand_code,stand_name,stand_tier\n'+
+              'ST-1,North Ridge Stand,UPPER\n'+
+              'ST-2,Hollow Stand,LOWER\n';
+            thicket.species_tag:
+              'species_code,species_name\n'+
+              'SP-1,Black Spruce\n'+
+              'SP-2,Jack Pine\n';
+            thicket.survey_crew:
+              'crew_code,crew_name\n'+
+              'CR-1,Ridge Crew\n'+
+              'CR-2,Hollow Crew\n';
+          }#
+      ]
+      ]
+      tests:
+      [
+        theLaterInstantKeepsOnlyTheOpenUpperTierReading:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-15,
+            tier = 'UPPER'
+          ]
+          asserts:
+          [
+            oneOpenUpperTierStake:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stake":"S-1","Stake Name":"Stake Ridge North","Stand":"North Ridge Stand","Tier":"UPPER","Species":"Black Spruce","Depth":92.5,"Density":45}]';
+                  }#;
+              }#
+          ]
+        },
+        theEarlierInstantKeepsOnlyTheSinceClosedReading:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2025-06-01,
+            tier = 'UPPER'
+          ]
+          asserts:
+          [
+            onlyTheStakeInsideTheClosedWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stake":"S-3","Stake Name":"Stake Burn Old","Stand":"North Ridge Stand","Tier":"UPPER","Species":"Black Spruce","Depth":40.0,"Density":70}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

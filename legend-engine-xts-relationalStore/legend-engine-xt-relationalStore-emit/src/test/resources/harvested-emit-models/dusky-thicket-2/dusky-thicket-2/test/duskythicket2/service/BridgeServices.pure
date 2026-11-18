@@ -1,0 +1,243 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskythicket2::service::BridgeInspectionRegister
+{
+  pattern: '/duskythicket2/v1/bridge-inspections';
+  title: 'Dusky Thicket - Footbridge Inspection Register At A Business Instant';
+  documentation: 'Resolves the footbridge inspection versions the register believed in at a caller-supplied business instant, narrows them on an optional district collection and on a rolling window measured backwards from that instant, and projects the eight-armed condition grade, the day count to the review cut-off and the weekly footfall arithmetic. A version whose validity window does not contain the instant disappears with no explicit filter, and a version that trips none of the eight arms projects no grade at all.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['trail-structures-desk'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], districtCodes: String[*], sinceDays: Integer[1]|test::duskythicket2::domain::BridgeInspection.all($asOf)->filter(
+      i|(($districtCodes->isEmpty()) || ($i.districtCode->in($districtCodes))) && ((($i.inspectedOn >= $asOf->adjust($sinceDays * -1, meta::pure::functions::date::DurationUnit.DAYS)) && ($i.inspectedOn <= $asOf)) && (($i.spanMetres > 0.0) && ($i.footfallPerDay > 0)))
+    )->project(
+      [
+        i|$i.inspectionCode,
+        i|$i.structureCode,
+        i|$i.districtCode,
+        i|$i.inspectionKind,
+        i|$i.inspectedOn,
+        i|$i.spanMetres,
+        i|$i.deckScore,
+        i|$i.conditionGrade(),
+        i|$i.daysBeforeReview(),
+        i|$i.weeklyFootfall(),
+        i|$i.inspectorNote
+      ],
+      [
+        'Inspection',
+        'Structure',
+        'District',
+        'Kind',
+        'Inspected On',
+        'Span Metres',
+        'Deck Score',
+        'Grade',
+        'Days Before Review',
+        'Weekly Footfall',
+        'Note'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Inspection')
+      ]
+    )->limit(20)};
+    mapping: test::duskythicket2::mapping::BridgeMapping;
+    runtime: test::duskythicket2::runtime::BridgeRuntime;
+  }
+  testSuites:
+  [
+    bridgeInspectionRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          bridgeConnection:
+            Relational
+            #{
+              crossing.bridge_inspection:
+                'inspection_code,structure_code,district_code,inspection_kind,inspected_on,span_metres,deck_score,rail_score,rust_pct,clearance_cm,footfall_per_day,inspector_note,bus_from_z,bus_thru_z\n'+
+                'BI-01,ST-1,DS-N,ROUTINE,2026-05-02,12.0,15,90,10,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-02,ST-2,DS-N,ROUTINE,2026-05-04,14.0,80,18,10,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-03,ST-3,DS-S,DETAILED,2026-05-06,16.0,80,80,75,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-04,ST-4,DS-S,DETAILED,2026-05-08,45.0,80,80,10,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-05,ST-5,DS-E,ROUTINE,2026-05-10,18.0,80,80,10,40,100,,2026-01-01,9999-12-31\n'+
+                'BI-06,ST-6,DS-E,ROUTINE,2026-05-12,20.0,80,80,10,200,900,,2026-01-01,9999-12-31\n'+
+                'BI-07,ST-7,DS-W,DETAILED,2026-05-14,22.0,97,80,10,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-08,ST-8,DS-W,ROUTINE,2026-05-16,24.0,80,80,10,200,100,handrail bolt replaced,2026-01-01,9999-12-31\n'+
+                'BI-09,ST-9,DS-N,ROUTINE,2026-02-10,26.0,80,80,10,200,100,first pass on the new deck,2026-01-01,2026-03-01\n'+
+                'BI-09,ST-9,DS-N,ROUTINE,2026-05-18,26.0,80,80,10,200,100,,2026-03-01,9999-12-31\n'+
+                'BI-10,ST-10,DS-S,ROUTINE,2026-03-20,28.0,80,80,10,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-11,ST-11,DS-E,ROUTINE,2025-12-15,30.0,10,80,10,200,100,,2025-01-01,2026-03-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyGradeArmAtTheLaterInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            districtCodes = [],
+            sinceDays = 90
+          ]
+          asserts:
+          [
+            theVersionValidOnlyBeforeTheInstantDropsOut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inspection":"BI-01","Structure":"ST-1","District":"DS-N","Kind":"ROUTINE","Inspected On":"2026-05-02","Span Metres":12.0,"Deck Score":15,"Grade":"DECK_CRITICAL","Days Before Review":60,"Weekly Footfall":700,"Note":null},{"Inspection":"BI-02","Structure":"ST-2","District":"DS-N","Kind":"ROUTINE","Inspected On":"2026-05-04","Span Metres":14.0,"Deck Score":80,"Grade":"RAIL_CRITICAL","Days Before Review":58,"Weekly Footfall":700,"Note":null},{"Inspection":"BI-03","Structure":"ST-3","District":"DS-S","Kind":"DETAILED","Inspected On":"2026-05-06","Span Metres":16.0,"Deck Score":80,"Grade":"CORRODED","Days Before Review":56,"Weekly Footfall":700,"Note":null},{"Inspection":"BI-04","Structure":"ST-4","District":"DS-S","Kind":"DETAILED","Inspected On":"2026-05-08","Span Metres":45.0,"Deck Score":80,"Grade":"LONG_SPAN","Days Before Review":54,"Weekly Footfall":700,"Note":null},{"Inspection":"BI-05","Structure":"ST-5","District":"DS-E","Kind":"ROUTINE","Inspected On":"2026-05-10","Span Metres":18.0,"Deck Score":80,"Grade":"LOW_CLEARANCE","Days Before Review":52,"Weekly Footfall":700,"Note":null},{"Inspection":"BI-06","Structure":"ST-6","District":"DS-E","Kind":"ROUTINE","Inspected On":"2026-05-12","Span Metres":20.0,"Deck Score":80,"Grade":"BUSY_CROSSING","Days Before Review":50,"Weekly Footfall":6300,"Note":null},{"Inspection":"BI-07","Structure":"ST-7","District":"DS-W","Kind":"DETAILED","Inspected On":"2026-05-14","Span Metres":22.0,"Deck Score":97,"Grade":"PRISTINE","Days Before Review":48,"Weekly Footfall":700,"Note":null},{"Inspection":"BI-08","Structure":"ST-8","District":"DS-W","Kind":"ROUTINE","Inspected On":"2026-05-16","Span Metres":24.0,"Deck Score":80,"Grade":"NOTED","Days Before Review":46,"Weekly Footfall":700,"Note":"handrail bolt replaced"},{"Inspection":"BI-09","Structure":"ST-9","District":"DS-N","Kind":"ROUTINE","Inspected On":"2026-05-18","Span Metres":26.0,"Deck Score":80,"Grade":null,"Days Before Review":44,"Weekly Footfall":700,"Note":null},{"Inspection":"BI-10","Structure":"ST-10","District":"DS-S","Kind":"ROUTINE","Inspected On":"2026-03-20","Span Metres":28.0,"Deck Score":80,"Grade":null,"Days Before Review":103,"Weekly Footfall":700,"Note":null}]';
+                  }#;
+              }#
+          ]
+        },
+        theEarlierInstantSeesOnlyTheVersionThatLaterExpires:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-02-01,
+            districtCodes = ['DS-E'],
+            sinceDays = 400
+          ]
+          asserts:
+          [
+            theOutOfRangeVersionAtTheLaterInstantIsTheOnlyRowHere:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inspection":"BI-11","Structure":"ST-11","District":"DS-E","Kind":"ROUTINE","Inspected On":"2025-12-15","Span Metres":30.0,"Deck Score":10,"Grade":"DECK_CRITICAL","Days Before Review":198,"Weekly Footfall":700,"Note":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::duskythicket2::service::BridgeRollupByEstate
+{
+  pattern: '/duskythicket2/v1/bridge-rollup/{estate}';
+  title: 'Dusky Thicket - Footbridge Rollup Keyed By Estate';
+  documentation: 'Estate-keyed counterpart of the register: the versions valid at the queried business instant are grouped by district and inspection kind, counting inspections and totalling daily footfall, so one point-in-time query function is planned against two keyed execution stacks.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['trail-structures-desk'] };
+  execution: Multi
+  {
+    query: {asOf: StrictDate[1], districtCodes: String[*]|test::duskythicket2::domain::BridgeInspection.all($asOf)->filter(
+      i|(($districtCodes->isEmpty()) || ($i.districtCode->in($districtCodes))) && (($i.inspectedOn <= $asOf) && ($i.spanMetres > 0.0))
+    )->groupBy(
+      [
+        i|$i.districtCode,
+        i|$i.inspectionKind
+      ],
+      [
+        agg(i|$i.footfallPerDay, y|$y->sum()),
+        agg(i|$i.inspectionCode, y|$y->count())
+      ],
+      [
+        'District',
+        'Kind',
+        'TotalFootfall',
+        'Inspections'
+      ]
+    )->sort(
+      [
+        asc('District'),
+        asc('Kind')
+      ]
+    )};
+    key: 'estate';
+    executions['north']:
+    {
+      mapping: test::duskythicket2::mapping::BridgeMapping;
+      runtime: test::duskythicket2::runtime::BridgeRuntime;
+    }
+    executions['south']:
+    {
+      mapping: test::duskythicket2::mapping::BridgeMapping;
+      runtime: test::duskythicket2::runtime::BridgeRuntime;
+    }
+  }
+  testSuites:
+  [
+    bridgeRollupByEstateSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          bridgeConnection:
+            Relational
+            #{
+              crossing.bridge_inspection:
+                'inspection_code,structure_code,district_code,inspection_kind,inspected_on,span_metres,deck_score,rail_score,rust_pct,clearance_cm,footfall_per_day,inspector_note,bus_from_z,bus_thru_z\n'+
+                'BI-01,ST-1,DS-N,ROUTINE,2026-05-02,12.0,15,90,10,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-02,ST-2,DS-N,ROUTINE,2026-05-04,14.0,80,18,10,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-03,ST-3,DS-S,DETAILED,2026-05-06,16.0,80,80,75,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-04,ST-4,DS-S,DETAILED,2026-05-08,45.0,80,80,10,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-05,ST-5,DS-E,ROUTINE,2026-05-10,18.0,80,80,10,40,100,,2026-01-01,9999-12-31\n'+
+                'BI-06,ST-6,DS-E,ROUTINE,2026-05-12,20.0,80,80,10,200,900,,2026-01-01,9999-12-31\n'+
+                'BI-07,ST-7,DS-W,DETAILED,2026-05-14,22.0,97,80,10,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-08,ST-8,DS-W,ROUTINE,2026-05-16,24.0,80,80,10,200,100,handrail bolt replaced,2026-01-01,9999-12-31\n'+
+                'BI-09,ST-9,DS-N,ROUTINE,2026-02-10,26.0,80,80,10,200,100,first pass on the new deck,2026-01-01,2026-03-01\n'+
+                'BI-09,ST-9,DS-N,ROUTINE,2026-05-18,26.0,80,80,10,200,100,,2026-03-01,9999-12-31\n'+
+                'BI-10,ST-10,DS-S,ROUTINE,2026-03-20,28.0,80,80,10,200,100,,2026-01-01,9999-12-31\n'+
+                'BI-11,ST-11,DS-E,ROUTINE,2025-12-15,30.0,10,80,10,200,100,,2025-01-01,2026-03-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northKeyDistrictAndKindTotals:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['north'];
+          parameters:
+          [
+            asOf = %2026-06-01,
+            districtCodes = []
+          ]
+          asserts:
+          [
+            sixGroupsFromTheVersionsValidAtTheInstant:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"District":"DS-E","Kind":"ROUTINE","TotalFootfall":1000,"Inspections":2},{"District":"DS-N","Kind":"ROUTINE","TotalFootfall":300,"Inspections":3},{"District":"DS-S","Kind":"DETAILED","TotalFootfall":200,"Inspections":2},{"District":"DS-S","Kind":"ROUTINE","TotalFootfall":100,"Inspections":1},{"District":"DS-W","Kind":"DETAILED","TotalFootfall":100,"Inspections":1},{"District":"DS-W","Kind":"ROUTINE","TotalFootfall":100,"Inspections":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

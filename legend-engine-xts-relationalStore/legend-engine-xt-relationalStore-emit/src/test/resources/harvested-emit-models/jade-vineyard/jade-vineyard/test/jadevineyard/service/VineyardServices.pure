@@ -1,0 +1,199 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::jadevineyard::service::IrrigationByDistrict
+{
+  pattern: '/jadevineyard/v1/irrigation/{districtCode}';
+  title: 'Irrigation Runs By District';
+  owners:
+  [
+    'vineyard-field-team'
+  ];
+  documentation: 'Selects a runtime by district key and returns runs whose date part matches the requested day.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {runDay: StrictDate[1], districtCode: String[1]|test::jadevineyard::domain::IrrigationRun.all()->filter(
+      r|($r.runDate->datePart() == $runDay) && ($r.districtCode == $districtCode)
+    )->project(~[
+      runCode: x|$x.runCode->trim()->toUpper()->toLower()->toUpper()->trim()->toUpper(),
+      districtCode: x|$x.districtCode,
+      trellisLabel: x|$x.trellisLabel,
+      climateName: x|$x.climateName
+    ])};
+    key: 'districtCode';
+    executions['D-NORTH']:
+    {
+      mapping: test::jadevineyard::mapping::VineyardMapping;
+      runtime: test::jadevineyard::runtime::VineyardNorthRuntime;
+    }
+    executions['D-EAST']:
+    {
+      mapping: test::jadevineyard::mapping::VineyardMapping;
+      runtime: test::jadevineyard::runtime::VineyardSouthRuntime;
+    }
+  }
+  testSuites:
+  [
+    districtExecutionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vineyardConnection:
+            Relational
+            #{
+              vineyard.irrigation_run:
+                'run_id,run_code,run_date,block_id,trellis_grade,moisture_flag,status_code\n'+
+                '1,IR-01,2026-06-01,101,1,,1\n'+
+                '2,IR-02,2026-06-01,102,2,1,1\n';
+              vineyard.vine_block:
+                'block_id,block_code,parcel_id\n101,VB-01,201\n102,VB-02,202\n';
+              vineyard.estate_parcel:
+                'parcel_id,parcel_code,district_id\n201,EP-01,301\n202,EP-02,302\n';
+              vineyard.vineyard_district:
+                'district_id,district_code,climate_id\n301,D-NORTH,401\n302,D-EAST,402\n';
+              vineyard.climate_zone:
+                'climate_id,climate_name\n401,Coastal Fog\n402,High Plain\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northExecution:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            runDay = %2026-06-01,
+            districtCode = 'D-NORTH'
+          ]
+          asserts:
+          [
+            northRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"runCode":"IR-01","districtCode":"D-NORTH","trellisLabel":"VISTA","climateName":"Coastal Fog"}]';
+                  }#;
+              }#
+          ]
+        },
+        eastExecution:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            runDay = %2026-06-01,
+            districtCode = 'D-EAST'
+          ]
+          asserts:
+          [
+            eastRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"runCode":"IR-02","districtCode":"D-EAST","trellisLabel":"RIDGE","climateName":"High Plain"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::jadevineyard::service::IrrigationByCodes
+{
+  pattern: '/jadevineyard/v1/irrigation/codes';
+  title: 'Irrigation Runs By Codes';
+  owners:
+  [
+    'vineyard-field-team'
+  ];
+  documentation: 'Returns runs whose district code is contained in a requested list using the relation projection grammar.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {districtCodes: String[*]|test::jadevineyard::domain::IrrigationRun.all()->filter(
+      r|$r.districtCode->in($districtCodes)
+    )->project(~[
+      runCode: x|(($x.runCode->trim())),
+      districtCode: x|$x.districtCode,
+      statusLabel: x|$x.statusLabel
+    ])};
+    mapping: test::jadevineyard::mapping::VineyardMapping;
+    runtime: test::jadevineyard::runtime::VineyardNorthRuntime;
+  }
+  testSuites:
+  [
+    codeListSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vineyardConnection:
+            Relational
+            #{
+              vineyard.irrigation_run:
+                'run_id,run_code,run_date,block_id,trellis_grade,moisture_flag,status_code\n'+
+                '1,IR-01,2026-06-01,101,1,,1\n';
+              vineyard.vine_block:
+                'block_id,block_code,parcel_id\n101,VB-01,201\n';
+              vineyard.estate_parcel:
+                'parcel_id,parcel_code,district_id\n201,EP-01,301\n';
+              vineyard.vineyard_district:
+                'district_id,district_code,climate_id\n301,D-NORTH,401\n';
+              vineyard.climate_zone:
+                'climate_id,climate_name\n401,Coastal Fog\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northCodes:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            districtCodes = ['D-NORTH']
+          ]
+          asserts:
+          [
+            oneRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"runCode":"IR-01","districtCode":"D-NORTH","statusLabel":"SCHEDULED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

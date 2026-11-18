@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenotter2::mapping::VolunteerMapping
+(
+  *test::goldenotter2::domain::Volunteer[volunteer]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter2::store::VolunteerDb]people.volunteer.volunteer_code
+    )
+    ~mainTable [test::goldenotter2::store::VolunteerDb]people.volunteer
+    volunteerCode: [test::goldenotter2::store::VolunteerDb]people.volunteer.volunteer_code,
+    volunteerName: toUpper([test::goldenotter2::store::VolunteerDb]people.volunteer.volunteer_name),
+    rotaCode: [test::goldenotter2::store::VolunteerDb]people.volunteer.rota_code,
+    badgeLabel: [test::goldenotter2::store::VolunteerDb]@Volunteer_Badge | [test::goldenotter2::store::VolunteerDb]people.badge.badge_label
+  }
+
+  testSuites:
+  [
+    volunteerBadgeSuite:
+    {
+      function: |test::goldenotter2::domain::Volunteer.all()->project(
+  [
+    v|$v.volunteerCode,
+    v|$v.volunteerName,
+    v|$v.rotaCode,
+    v|$v.badgeLabel
+  ],
+  [
+    'VolunteerCode',
+    'VolunteerName',
+    'RotaCode',
+    'BadgeLabel'
+  ]
+)->sort(
+  [
+    asc('VolunteerCode')
+  ]
+);
+      tests:
+      [
+        volunteersWithAndWithoutABadge:
+        {
+          doc: 'Covers the volunteer main table alias, the upper-cased name transform and a volunteer whose badge reference resolves to nothing.';
+          data:
+          [
+            test::goldenotter2::store::VolunteerDb:
+              Relational
+              #{
+                people.badge:
+                  'badge_code,badge_label,badge_grade\n'+
+                  'BG-1,Propagation Badge,SENIOR\n';
+                people.volunteer:
+                  'volunteer_code,volunteer_name,badge_code,rota_code\n'+
+                  'VL-1,Ada Green,BG-1,WR-1\n'+
+                  'VL-2,Bram Reed,BG-9,WR-2\n';
+              }#
+          ];
+          asserts:
+          [
+            twoVolunteers:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VolunteerCode":"VL-1","VolunteerName":"ADA GREEN","RotaCode":"WR-1","BadgeLabel":"Propagation Badge"},{"VolunteerCode":"VL-2","VolunteerName":"BRAM REED","RotaCode":"WR-2","BadgeLabel":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

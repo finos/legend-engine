@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::tealotter5::domain::*;
+
+Class <<typemodifiers.abstract, temporal.businesstemporal, CanopyGovernance.councilApproved, ArboristGuidance.rootZoneSensitive>> {doc.doc = 'The abstract canopy identity shared by every municipal street planting, effective over the survey timeline.', CanopyGovernance.stewardRole = 'canopy-steward', ArboristGuidance.accessNote = 'verge access from the footway'} test::tealotter5::domain::CanopyRecord
+{
+  registerNumber: String[1];
+  register: CanopyRegister[1];
+  plantedYear: Integer[1];
+  displayLabel: String[1];
+}
+
+Class <<temporal.businesstemporal, CanopyGovernance.fieldSurveyed, ArboristGuidance.climbingRestricted>> {doc.doc = 'A street tree standing in the public verge, carrying its taxonomic placement and crown observations.', CanopyGovernance.inspectionCadence = 'annual'} test::tealotter5::domain::StreetTree extends CanopyRecord
+{
+  taxonRank: TaxonRank[1];
+  streetSetting: StreetSetting[0..1];
+  plantingMethod: PlantingMethod[1];
+  crownHabit: CrownHabit[1];
+  plaqueScript: PlaqueScript[0..1];
+  surveyNotes: String[*];
+}
+
+Class <<temporal.businesstemporal, CanopyGovernance.heritageListed, ArboristGuidance.powerLineAdjacent>> {doc.doc = 'A heritage-listed street tree specialised from a street tree, retaining its plaque and girth measurement.', ArboristGuidance.pruningNote = 'no crown reduction without council consent'} test::tealotter5::domain::HeritageTree extends StreetTree
+{
+  girthCentimetres: Integer[1];
+  windExposure: WindExposure[1];
+  inspectionCadence: InspectionCadence[1];
+}
+
+Class <<temporal.businesstemporal, CanopyGovernance.replacementPlanned, ArboristGuidance.rootZoneSensitive>> {doc.doc = 'A planter bed holding shrubs or a young whip, tracked alongside trees in the canopy register.', CanopyGovernance.retentionBand = 'medium-term'} test::tealotter5::domain::PlanterBed extends CanopyRecord
+{
+  soilVolumeBand: SoilVolumeBand[1];
+  supportStyle: SupportStyle[1];
+  windExposure: WindExposure[0..1];
+  plaqueScript: PlaqueScript[0..1];
+}
+
+Class <<temporal.bitemporal, CanopyGovernance.removalPending, ArboristGuidance.climbingRestricted>> {doc.doc = 'A canopy inspection corrected over processing time and effective over the survey timeline.', CanopyGovernance.inspectionCadence = 'quarterly', ArboristGuidance.accessNote = 'confirm traffic management before climbing'} test::tealotter5::domain::InspectionEntry
+{
+  inspectionCode: String[1];
+  vitalityGrade: VitalityGrade[1];
+  inspectedOn: StrictDate[1];
+  plantingMethod: PlantingMethod[0..1];
+  inspectionNotes: String[*];
+}
+
+Class <<temporal.processingtemporal, CanopyGovernance.fieldSurveyed, ArboristGuidance.rootZoneSensitive>> {doc.doc = 'One recorded state of a maintenance visit; a correction opens a new processing version and closes the previous one.', ArboristGuidance.wateringNote = 'log litres delivered per visit'} test::tealotter5::domain::MaintenanceVisit
+{
+  visitCode: String[1];
+  maintenanceKind: MaintenanceKind[1];
+  visitedOn: StrictDate[1];
+  litresDelivered: Integer[0..1];
+  crewNotes: String[*];
+}
+
+Class <<temporal.processingtemporal, CanopyGovernance.councilApproved>> {doc.doc = 'An arborist crew as recorded at a point in processing time, with its certification tier.', CanopyGovernance.stewardRole = 'crew-lead'} test::tealotter5::domain::ArboristCrew
+{
+  crewCode: String[1];
+  crewLabel: String[1];
+  crewTier: CrewTier[1];
+  intakeRoute: IntakeRoute[1];
+}
+
+Class <<CanopyGovernance.councilApproved, ArboristGuidance.rootZoneSensitive>> {doc.doc = 'A ward-level canopy zone grouping plantings for reporting; it is not versioned over time.', CanopyGovernance.wardVisibility = 'public'} test::tealotter5::domain::CanopyZone
+{
+  zoneCode: String[1];
+  zoneLabel: String[1];
+  streetSetting: StreetSetting[1];
+  inspectionCadence: InspectionCadence[1];
+}

@@ -1,0 +1,27 @@
+name: crimson-fossil-9
+title: Crimson Fossil Field Jacket Preparation
+description: |
+  A field-jacket intake model that converts dig-site arrivals into matrix
+  preparation records queued for a preparation bench.
+modelSources:
+  model:
+    root: crimson-fossil-9
+    files:
+      - test/crimsonfossil9/domain/FieldJacketDomain.pure
+      - test/crimsonfossil9/mapping/FieldJacketMapping.pure
+features:
+  - execution:mapping-test
+  - execution:test-data-branch-coverage
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - field-jacket
+  - fossil-logistics
+  - matrix-preparation
+  - model-to-model

@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::opalbeacon::domain::*;
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A catalogued beacon star whose record is corrected on one axis and re-issued on the other, so every read is resolved at two instants.'} test::opalbeacon::domain::BeaconStar
+{
+  starCode: String[1];
+  starName: String[1];
+  magnitude: Integer[1];
+  bandCode: String[1];
+  sectorName: String[0..1];
+  teamName: String[0..1];
+  stationName: String[0..1];
+  domeKind: String[0..1];
+  registerTag: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A survey run booked against one sky sector, reaching its serving station across the same four-hop coverage path.'} test::opalbeacon::domain::SurveyRun
+{
+  runCode: String[1];
+  runName: String[1];
+  sectorName: String[0..1];
+  stationName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A sky sector: the catalogue partition a star or a survey run belongs to.'} test::opalbeacon::domain::SkySector
+{
+  sectorCode: String[1];
+  sectorName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An observing station reached only through the sector-to-team coverage chain.'} test::opalbeacon::domain::ObservingStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  domeKind: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Coverage of beacon stars by observing stations, reached across the sector-to-team chain.'} test::opalbeacon::domain::Star_Coverage
+{
+  stars: BeaconStar[*];
+  stations: ObservingStation[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Coverage of survey runs by observing stations, reached across the same sector-to-team chain from a different root.'} test::opalbeacon::domain::Survey_Coverage
+{
+  surveys: SurveyRun[*];
+  stations: ObservingStation[*];
+}

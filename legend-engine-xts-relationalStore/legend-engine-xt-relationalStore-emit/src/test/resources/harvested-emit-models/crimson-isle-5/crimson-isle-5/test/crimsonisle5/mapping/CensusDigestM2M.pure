@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonisle5::mapping::CensusDigestM2M
+(
+  *test::crimsonisle5::domain::CensusDigest[censusDigestSet]: Pure
+  {
+    ~src test::crimsonisle5::domain::CensusPayload
+    censusRef: $src.censusRef->toOne(),
+    observerLabel: 'R' + $src.revision->toOne()->toString() + '/' + $src.record.observerCode->toOne()->toUpper()->trim(),
+    broodBand: if($src.record.fledgedCount->isEmpty(),
+                  | 'BROOD-NONE',
+                  | if($src.record.fledgedCount->toOne() <= 2,
+                       | 'BROOD-1',
+                       | if($src.record.fledgedCount->toOne() <= 6,
+                            | 'BROOD-2',
+                            | if($src.record.fledgedCount->toOne() <= 10,
+                                 | 'BROOD-3',
+                                 | 'BROOD-4')))),
+    plotView[plotDigestSet]: $src
+  }
+
+  *test::crimsonisle5::domain::PlotDigest[plotDigestSet]: Pure
+  {
+    ~src test::crimsonisle5::domain::CensusPayload
+    plotName: $src.record.plot.plotName,
+    habitatHint: if($src.record.plot.habitatCode->isEmpty(),
+                    | 'UNCLASSED',
+                    | $src.record.plot.habitatCode->toOne()->toUpper())
+  }
+
+  testSuites:
+  [
+    censusDigestSuite:
+    {
+      function: |test::crimsonisle5::domain::CensusDigest.all()->graphFetch(
+        #{
+          test::crimsonisle5::domain::CensusDigest
+          {
+            censusRef,
+            observerLabel,
+            broodBand,
+            plotView
+            {
+              plotName,
+              habitatHint
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::crimsonisle5::domain::CensusDigest
+          {
+            censusRef,
+            observerLabel,
+            broodBand,
+            plotView
+            {
+              plotName,
+              habitatHint
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        everyBroodBandArmAndTheUnclassedHabitat:
+        {
+          doc: 'Drives the brood-band ladder through its first, second and last arms plus the absent-count fallback, and pairs each digest with the nested plot view so the upper-cased habitat and the unclassed fallback both surface from the same payload instance.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::crimsonisle5::domain::CensusPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"censusRef":"CP-01","revision":2,"record":{"observerCode":"ob-1","nestCount":10,"fledgedCount":2,"plot":{"plotName":"North Dune Plot","habitatCode":"dune"}}},{"censusRef":"CP-02","revision":3,"record":{"observerCode":"ob-2","nestCount":9,"fledgedCount":6,"plot":{"plotName":"South Cliff Plot","habitatCode":"cliff"}}},{"censusRef":"CP-03","revision":4,"record":{"observerCode":"ob-3","nestCount":21,"fledgedCount":14,"plot":{"plotName":"West Spit Plot"}}},{"censusRef":"CP-04","revision":5,"record":{"observerCode":"ob-4","nestCount":4,"plot":{"plotName":"North Dune Plot","habitatCode":"dune"}}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fourBandedDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"censusRef":"CP-01","observerLabel":"R2/OB-1","broodBand":"BROOD-1","plotView":{"plotName":"North Dune Plot","habitatHint":"DUNE"}},{"censusRef":"CP-02","observerLabel":"R3/OB-2","broodBand":"BROOD-2","plotView":{"plotName":"South Cliff Plot","habitatHint":"CLIFF"}},{"censusRef":"CP-03","observerLabel":"R4/OB-3","broodBand":"BROOD-4","plotView":{"plotName":"West Spit Plot","habitatHint":"UNCLASSED"}},{"censusRef":"CP-04","observerLabel":"R5/OB-4","broodBand":"BROOD-NONE","plotView":{"plotName":"North Dune Plot","habitatHint":"DUNE"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

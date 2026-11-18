@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyhatchery5::service::PondConditionService
+{
+  pattern: '/duskyhatchery/v1/ponds/{processingDate}';
+  title: 'Pond Condition At Processing Instant';
+  owners:
+  [
+    'hatchery-operations'
+  ];
+  documentation: 'Projects the rearing ponds whose recorded water temperature clears the rearing floor as of the requested processing instant, so the milestoning predicate and the alias-qualified column list are both visible in the generated sql.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|test::duskyhatchery5::domain::RearingPond.all($processingDate)->filter(
+      p|$p.waterTempC >= 8.0
+    )->project(
+      [
+        x|$x.pondCode,
+        x|$x.siteName,
+        x|$x.waterTempC
+      ],
+      [
+        'Pond',
+        'Site',
+        'TempC'
+      ]
+    )->sort([asc('Pond')])};
+    mapping: test::duskyhatchery5::mapping::HatcheryMapping;
+    runtime: test::duskyhatchery5::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    pondConditionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              hatchery.rearing_pond:
+                'pond_code,site_name,water_temp_c,volume_litres,in_z,out_z\n'+
+                'PD-01,Alder Run,9.5,45000.000,2025-01-01,9999-12-31\n'+
+                'PD-01,Alder Run Cold,7.0,30000.000,2024-01-01,2025-01-01\n'+
+                'PD-02,Willow Flat,8.25,52000.500,2025-01-01,9999-12-31\n'+
+                'PD-03,Heron Pool,6.5,21000.000,2025-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentWarmPonds:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-01
+          ]
+          asserts:
+          [
+            onlyCurrentPondsAboveFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Pond":"PD-01","Site":"Alder Run","TempC":9.5},{"Pond":"PD-02","Site":"Willow Flat","TempC":8.25}]';
+                  }#;
+              }#
+          ]
+        },
+        instantBeforeAnyVersion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2023-01-01
+          ]
+          asserts:
+          [
+            noVersionsInWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

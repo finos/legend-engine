@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivorytundra5::mapping::StationRegisterMapping
+(
+  *test::ivorytundra5::domain::SensorDeployment[deployment_register]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivorytundra5::store::StationDb]tundra.sensor_deployment.deploy_code,
+      [test::ivorytundra5::store::StationDb]tundra.sensor_deployment.from_z
+    )
+    ~mainTable [test::ivorytundra5::store::StationDb]tundra.sensor_deployment
+    deployCode: [test::ivorytundra5::store::StationDb]tundra.sensor_deployment.deploy_code,
+    instrumentName: [test::ivorytundra5::store::StationDb]tundra.sensor_deployment.instrument_name,
+    sampleInterval: [test::ivorytundra5::store::StationDb]tundra.sensor_deployment.sample_interval,
+    serviceState: [test::ivorytundra5::store::StationDb]tundra.sensor_deployment.service_state
+  }
+
+  *test::ivorytundra5::domain::ObservationStation[station_register]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivorytundra5::store::StationDb]tundra.observation_station.station_code,
+      [test::ivorytundra5::store::StationDb]tundra.observation_station.from_z
+    )
+    ~mainTable [test::ivorytundra5::store::StationDb]tundra.observation_station
+    stationCode: [test::ivorytundra5::store::StationDb]tundra.observation_station.station_code,
+    stationName: [test::ivorytundra5::store::StationDb]tundra.observation_station.station_name,
+    terrainLabel: [test::ivorytundra5::store::StationDb]tundra.observation_station.terrain_label
+  }
+
+  *test::ivorytundra5::domain::StationCustodian[custodian_register]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivorytundra5::store::StationDb]tundra.station_custodian.custodian_code
+    )
+    ~mainTable [test::ivorytundra5::store::StationDb]tundra.station_custodian
+    custodianCode: [test::ivorytundra5::store::StationDb]tundra.station_custodian.custodian_code,
+    custodianName: [test::ivorytundra5::store::StationDb]tundra.station_custodian.custodian_name,
+    radioNote: [test::ivorytundra5::store::StationDb]tundra.station_custodian.radio_note
+  }
+
+  *test::ivorytundra5::domain::CalibrationCheck[check_register]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivorytundra5::store::StationDb]tundra.calibration_check.check_code
+    )
+    ~mainTable [test::ivorytundra5::store::StationDb]tundra.calibration_check
+    checkCode: [test::ivorytundra5::store::StationDb]tundra.calibration_check.check_code,
+    checkResult: [test::ivorytundra5::store::StationDb]tundra.calibration_check.check_result,
+    driftPercent: [test::ivorytundra5::store::StationDb]tundra.calibration_check.drift_percent
+  }
+
+  test::ivorytundra5::domain::Deployment_Station: Relational
+  {
+    AssociationMapping
+    (
+      station[deployment_register, station_register]: [test::ivorytundra5::store::StationDb]@Register_Deployment_Station,
+      deployments[station_register, deployment_register]: [test::ivorytundra5::store::StationDb]@Register_Deployment_Station
+    )
+  }
+
+  test::ivorytundra5::domain::Station_Custodian: Relational
+  {
+    AssociationMapping
+    (
+      custodian[station_register, custodian_register]: [test::ivorytundra5::store::StationDb]@Register_Station_Custodian,
+      custodianStations[custodian_register, station_register]: [test::ivorytundra5::store::StationDb]@Register_Station_Custodian
+    )
+  }
+
+  test::ivorytundra5::domain::Station_Checks: Relational
+  {
+    AssociationMapping
+    (
+      checks[station_register, check_register]: [test::ivorytundra5::store::StationDb]@Register_Station_Check,
+      checkStation[check_register, station_register]: [test::ivorytundra5::store::StationDb]@Register_Station_Check
+    )
+  }
+)

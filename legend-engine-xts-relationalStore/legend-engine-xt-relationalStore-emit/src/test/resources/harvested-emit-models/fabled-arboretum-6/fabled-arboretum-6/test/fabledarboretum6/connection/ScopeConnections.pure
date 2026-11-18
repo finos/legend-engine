@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::fabledarboretum6::connection::ScopePoolConnection
+{
+  store: test::fabledarboretum6::store::ScopeDb;
+  type: MemSQL;
+  timezone: +0000;
+  quoteIdentifiers: false;
+  specification: Static
+  {
+    name: 'EXAMPLE_SCOPE_POOL_DB';
+    host: 'example-scope-pool-host';
+    port: 3306;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'scopepoolserviceprincipal';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'hirepool'; to: 'hirepool_current';}
+      ];
+    }
+  ];
+}
+
+###Connection
+RelationalDatabaseConnection test::fabledarboretum6::connection::CoatingBenchConnection
+{
+  store: test::fabledarboretum6::store::CoatingDb;
+  type: MemSQL;
+  timezone: +0000;
+  quoteIdentifiers: false;
+  specification: Static
+  {
+    name: 'EXAMPLE_COATING_BENCH_DB';
+    host: 'example-coating-bench-host';
+    port: 3306;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'coatingbenchserviceprincipal';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        table {from: 'optic_grade'; to: 'optic_grade_current'; schemaFrom: 'optics'; schemaTo: 'optics';}
+      ];
+    }
+  ];
+}

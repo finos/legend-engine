@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::zephyrharbor::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'How a monitoring buoy is held in place.'} test::zephyrharbor::domain::MooringKind
+{
+  FIXED_PILE,
+  SWING_MOORING,
+  FLOATING_PONTOON
+}
+
+Enum {meta::pure::profiles::doc.doc = 'How exposed a harbour zone is to open-water swell.'} test::zephyrharbor::domain::ShelterGrade
+{
+  SHELTERED,
+  EXPOSED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Outcome recorded for a completed dive survey.'} test::zephyrharbor::domain::SurveyGrade
+{
+  ACCEPTED,
+  REPEAT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Role a diver holds on a survey team.'} test::zephyrharbor::domain::DiverTier
+{
+  LEAD,
+  ASSIST
+}
+
+Class {meta::pure::profiles::doc.doc = 'Mooring sub-structure of a buoy station, held inline with its owning station.'} test::zephyrharbor::domain::MooringSpec
+{
+  mooringKind: MooringKind[0..1];
+  berthLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Team of divers that carried out a survey.'} test::zephyrharbor::domain::SurveyCrew
+{
+  crewId: String[1];
+  crewName: String[0..1];
+  crewBaseZoneLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Named stretch of harbour water a station sits in.'} test::zephyrharbor::domain::HarbourZone
+{
+  zoneId: String[1];
+  zoneLabel: String[0..1];
+  shelterGrade: ShelterGrade[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Diver who logged a survey.'} test::zephyrharbor::domain::Diver
+{
+  diverId: String[1];
+  diverName: String[0..1];
+  tier: DiverTier[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One kelp survey dive carried out at a buoy station.'} test::zephyrharbor::domain::DiveSurvey
+{
+  surveyId: String[1];
+  kelpCoverPct: Float[0..1];
+  visibilityMetres: Float[0..1];
+  grade: SurveyGrade[0..1];
+  crew: SurveyCrew[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Monitoring buoy station whose kelp cover band is derived from the survey read at it.'} test::zephyrharbor::domain::BuoyStation
+[
+  depthPositive: $this.depthMetres > 0.0,
+  bandRecognised: test::zephyrharbor::function::isKnownBand($this.coverBand)
+]
+{
+  stationId: String[1];
+  stationName: String[1];
+  depthMetres: Float[1];
+  mooring: MooringSpec[0..1];
+  coverBand: String[0..1];
+  shelterNote: String[0..1];
+  crewName: String[0..1];
+  crewBaseZoneLabel: String[0..1];
+  surveyTally: Integer[0..1];
+  zoneLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Digest of an inbound station feed record, derived entirely in property expressions.'} test::zephyrharbor::domain::StationDigest
+{
+  digestId: String[1];
+  readinessBand: String[1];
+  berthLabel: String[1];
+  noteLine: String[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a station to the surveys read at it.'} test::zephyrharbor::domain::StationSurveys
+{
+  station: BuoyStation[0..1];
+  surveys: DiveSurvey[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a survey to the diver who logged it.'} test::zephyrharbor::domain::SurveyDivers
+{
+  survey: DiveSurvey[*];
+  diver: Diver[0..1];
+}

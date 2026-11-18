@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedapiary4::service::HiveZoneRegisterService
+{
+  pattern: '/frostedapiary4/v1/hive/zone-register';
+  title: 'Frosted Apiary - Hive Zone Register';
+  owners:
+  [
+    'apiary-register-platform',
+    'hive-observation-eng'
+  ];
+  documentation: 'Single-execution service returning the hive register resolved at a pinned processing instant, restricted to the recognised forage zones and carrying the banded colony strength derived from the recorded frame count.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::frostedapiary4::domain::Hive.all(%2025-06-15T00:00:00)->filter(
+      h|$h.forageZone->in(['ORCHARD', 'MEADOW', 'HEATHLAND', 'RIVERBANK', 'ALPINE_MEADOW'])
+    )->project(
+      [
+        col(
+          h|$h.hiveName,
+          'HiveName'
+        ),
+        col(
+          h|$h.forageZone,
+          'ForageZone'
+        ),
+        col(
+          h|$h.strengthBand(),
+          'StrengthBand'
+        )
+      ]
+    )->sort([asc('HiveName')]);
+    mapping: test::frostedapiary4::mapping::ApiaryMapping;
+    runtime: test::frostedapiary4::runtime::ApiaryH2Runtime;
+  }
+  testSuites:
+  [
+    hiveZoneRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryConnection:
+            Relational
+            #{
+              apiary.hive:
+                'hive_id,hive_name,forage_zone,frame_count,queen_tag,audit_note,in_z,out_z\n'+
+                '1,Clover Row,ORCHARD,24,QT-1,frames drawn,2025-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '2,Willow Verge,MEADOW,12,,,2025-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '3,Bramble End,HEATHLAND,6,QT-3,split performed,2025-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '4,Retired Skep,ORCHARD,30,QT-4,decommissioned,2024-01-01 00:00:00,2024-06-01 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        recognisedZonesAtCurrentInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            zoneRegisterRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HiveName":"Bramble End","ForageZone":"HEATHLAND","StrengthBand":"NUCLEUS"},{"HiveName":"Clover Row","ForageZone":"ORCHARD","StrengthBand":"STRONG"},{"HiveName":"Willow Verge","ForageZone":"MEADOW","StrengthBand":"BUILDING"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

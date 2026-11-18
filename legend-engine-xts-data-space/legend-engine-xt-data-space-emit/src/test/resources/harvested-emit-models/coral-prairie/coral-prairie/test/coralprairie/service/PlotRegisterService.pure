@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralprairie::service::PlotRegisterService
+{
+  pattern: '/prairie/v1/plots';
+  title: 'Coral Prairie - Restoration plot register';
+  owners:
+  [
+    'prairie-restoration',
+    'grassland-survey'
+  ];
+  documentation: 'Publishes the restoration plot register as a tabular projection, walking each implemented association from the plot hub out to its management zone, seed mix, soil series, technician and the burn unit reached through the two-link zone chain.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::coralprairie::domain::RestorationPlot.all()->project(
+      [
+        x|$x.plotCode,
+        x|$x.plotName,
+        x|$x.plotSlug,
+        x|$x.hectares,
+        x|$x.zone.zoneName,
+        x|$x.seedMix.mixLabel,
+        x|$x.soilSeries.soilLabel,
+        x|$x.technician.technicianName,
+        x|$x.plotBurnUnit.burnName
+      ],
+      [
+        'PlotCode',
+        'PlotName',
+        'PlotSlug',
+        'Hectares',
+        'Zone',
+        'SeedMix',
+        'Soil',
+        'Technician',
+        'BurnUnit'
+      ]
+    )->sort(
+      [
+        asc('PlotCode')
+      ]
+    );
+    mapping: test::coralprairie::mapping::PrairieMapping;
+    runtime: test::coralprairie::runtime::PrairieRuntime;
+  }
+  testSuites:
+  [
+    plotRegisterServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection: Reference
+            #{
+              test::coralprairie::data::PrairieTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        fullRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            registerRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PLOT-1","PlotName":"NORTH TERRACE STRI","PlotSlug":"north","Hectares":12.5,"Zone":"NORTH TERRACE","SeedMix":"Tallgrass Mix","Soil":"Loam Series","Technician":"REN OKAFOR","BurnUnit":"Spring Rotation"},{"PlotCode":"PLOT-2","PlotName":"WILLOW CREEK BENCH","PlotSlug":"willo","Hectares":8.25,"Zone":"NORTH TERRACE","SeedMix":"Shortgrass Mix","Soil":"Silt Series","Technician":"REN OKAFOR","BurnUnit":"Spring Rotation"},{"PlotCode":"PLOT-3","PlotName":"SOUTH TERRACE FLAT","PlotSlug":"south","Hectares":15.75,"Zone":"SOUTH TERRACE","SeedMix":"Tallgrass Mix","Soil":"Loam Series","Technician":"MIRA LINDQVIST","BurnUnit":"Spring Rotation"},{"PlotCode":"PLOT-4","PlotName":"CREEK MARGIN VERGE","PlotSlug":"creek","Hectares":4.5,"Zone":"CREEK MARGIN","SeedMix":"Shortgrass Mix","Soil":"Silt Series","Technician":"MIRA LINDQVIST","BurnUnit":"Autumn Rotation"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

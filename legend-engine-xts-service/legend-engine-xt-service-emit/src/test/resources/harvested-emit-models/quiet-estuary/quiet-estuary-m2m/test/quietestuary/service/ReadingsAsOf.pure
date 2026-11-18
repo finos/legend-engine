@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietestuary::service::ReadingsAsOf
+{
+  pattern: '/quietestuary/readingsAsOf';
+  title: 'Estuary Gauge Readings As Of';
+  owners:
+  [
+    'estuary-monitoring'
+  ];
+  documentation: 'Returns the union of shoreline and channel tide-gauge readings whose observation window contains the supplied instant and whose station belongs to the requested set, serialising the derived station label and tide band. Readings whose window closed before the supplied instant are excluded.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: DateTime[1], stations: String[*]|test::quietestuary::domain::GaugeReading.all()->filter(
+      r|($r.stationCode->in($stations)) && (($r.validFrom <= $asOf) && ($r.validThru > $asOf))
+    )->graphFetch(
+      #{
+        test::quietestuary::domain::GaugeReading{
+          stationCode,
+          reach,
+          waterLevelCm,
+          tideBand,
+          stationLabel
+        }
+      }#
+    )->serialize(
+      #{
+        test::quietestuary::domain::GaugeReading{
+          stationCode,
+          reach,
+          waterLevelCm,
+          tideBand,
+          stationLabel
+        }
+      }#
+    )};
+    mapping: test::quietestuary::mapping::EstuaryReadings;
+    runtime: test::quietestuary::runtime::EstuaryRuntime;
+  }
+  testSuites:
+  [
+    readingsAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gaugeReadingConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"stationRef":"QE-11","feedKind":"SHORE","waterLevelCm":340,"saltPpt":29,"observedFrom":"2025-03-01T00:00:00","observedThru":"2025-09-01T00:00:00"},{"stationRef":"QE-12","feedKind":"SHORE","waterLevelCm":150,"saltPpt":24,"observedFrom":"2024-01-01T00:00:00","observedThru":"2025-01-01T00:00:00"},{"stationRef":"QE-21","feedKind":"CHANNEL","waterLevelCm":210,"flowRate":88,"observedFrom":"2025-02-01T00:00:00","observedThru":"2025-12-01T00:00:00"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        asOfMidYear:
+        {
+          parameters:
+          [
+            asOf = %2025-06-01T00:00:00,
+            stations = ['QE-11', 'QE-12', 'QE-21']
+          ]
+          asserts:
+          [
+            twoOpenReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"stationCode":"QE-11","reach":"shoreline","waterLevelCm":340,"tideBand()":"SPRING","stationLabel()":"SHO/qe-11/340!"},{"stationCode":"QE-21","reach":"channel","waterLevelCm":210,"tideBand()":"MEAN","stationLabel()":"CHA/qe-21/210"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::quietestuary::service::PeakReadingsAsOf
+{
+  pattern: '/quietestuary/peakReadingsAsOf';
+  title: 'Estuary Peak Gauge Readings As Of';
+  owners:
+  [
+    'estuary-monitoring'
+  ];
+  documentation: 'Narrower counterpart of the as-of query over the same union of shoreline and channel feeds: only readings in the requested station collection whose window is open at the supplied instant and whose level reaches the spring-tide threshold are returned.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: DateTime[1], stations: String[*]|test::quietestuary::domain::GaugeReading.all()->filter(
+      r|($r.stationCode->in($stations)) && ((($r.validFrom <= $asOf) && ($r.validThru > $asOf)) && ($r.tideBand == 'SPRING'))
+    )->graphFetch(
+      #{
+        test::quietestuary::domain::GaugeReading{
+          stationCode,
+          reach,
+          waterLevelCm,
+          stationLabel
+        }
+      }#
+    )->serialize(
+      #{
+        test::quietestuary::domain::GaugeReading{
+          stationCode,
+          reach,
+          waterLevelCm,
+          stationLabel
+        }
+      }#
+    )};
+    mapping: test::quietestuary::mapping::EstuaryReadings;
+    runtime: test::quietestuary::runtime::EstuaryRuntime;
+  }
+}

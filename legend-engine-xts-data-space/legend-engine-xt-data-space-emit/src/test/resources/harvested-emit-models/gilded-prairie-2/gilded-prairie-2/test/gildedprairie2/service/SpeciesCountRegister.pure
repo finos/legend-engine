@@ -1,0 +1,193 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedprairie2::service::SpeciesCountRegister
+{
+  pattern: '/gildedprairie2/v1/species-count-register';
+  title: 'Species Stem Counts For A Caller Species Collection';
+  owners:
+  [
+    'prairie-survey-platform',
+    'grassland-stewardship'
+  ];
+  documentation: 'Reduces the processing-temporal stem-count extent by a membership predicate over an unbounded caller-supplied species collection, so the predicate becomes an in-list whose size is part of the plan shape, and projects the count together with the plot name reached two joins away through the survey. The projection is de-duplicated in the plan, so two counts that agree on every projected column collapse to one row.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: DateTime[1], speciesNames: String[*]|test::gildedprairie2::domain::SpeciesCount.all($asOf)->filter(
+      c|$c.speciesName->in($speciesNames)
+    )->project(
+      [
+        c|$c.speciesName,
+        c|$c.stemCount,
+        c|$c.plotName
+      ],
+      [
+        'SpeciesName',
+        'StemCount',
+        'PlotName'
+      ]
+    )->distinct()->sort(
+      [
+        asc('SpeciesName')
+      ]
+    );};
+    mapping: test::gildedprairie2::mapping::PrairieCatalogMapping;
+    runtime: test::gildedprairie2::runtime::PrairieCatalogRuntime;
+  }
+  testSuites:
+  [
+    speciesCountSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              prairie_survey.species_count:
+                'count_code,survey_code,species_name,stem_count,in_z,out_z\n'+
+                'CT-01,SV-01,Andropogon gerardii,140,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'CT-02,SV-01,Andropogon gerardii,140,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'CT-03,SV-01,Schizachyrium scoparium,95,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'CT-04,SV-02,Sorghastrum nutans,60,2019-01-01 00:00:00,2019-12-31 00:00:00\n'+
+                'CT-05,SV-01,Bouteloua curtipendula,,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+              prairie_survey.survey:
+                'survey_code,plot_code,surveyed_on,observer_name,in_z,out_z\n'+
+                'SV-01,PL-01,2024-05-20,A. Fieldhand,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'SV-02,PL-01,2019-05-20,B. Fieldhand,2019-01-01 00:00:00,2019-12-31 00:00:00\n';
+              prairie_plot.plot:
+                'plot_code,plot_name,region_code,established_on,plot_area_m2,in_z,out_z\n'+
+                'PL-01,North Ridge Sward,RG-01,2019-04-01,2400.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        memberAndDuplicateCollapse:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            speciesNames = ['Andropogon gerardii', 'Schizachyrium scoparium']
+          ]
+          asserts:
+          [
+            duplicateRowsCollapse:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SpeciesName":"Andropogon gerardii","StemCount":140,"PlotName":"North Ridge Sward"},{"SpeciesName":"Schizachyrium scoparium","StemCount":95,"PlotName":"North Ridge Sward"}]';
+                  }#;
+              }#
+          ]
+        },
+        nonMemberSpecies:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            speciesNames = ['Panicum virgatum']
+          ]
+          asserts:
+          [
+            nonMemberYieldsNoRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        },
+        emptySpeciesCollection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            speciesNames = []
+          ]
+          asserts:
+          [
+            emptyCollectionYieldsNoRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        },
+        supersededSurveyOutOfRange:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            speciesNames = ['Sorghastrum nutans']
+          ]
+          asserts:
+          [
+            closedCountVersionExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        },
+        absentStemCount:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            speciesNames = ['Bouteloua curtipendula']
+          ]
+          asserts:
+          [
+            absentCountProjectsAsNull:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SpeciesName":"Bouteloua curtipendula","StemCount":null,"PlotName":"North Ridge Sward"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

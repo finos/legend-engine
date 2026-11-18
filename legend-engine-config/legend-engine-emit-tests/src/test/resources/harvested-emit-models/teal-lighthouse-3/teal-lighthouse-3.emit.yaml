@@ -1,0 +1,51 @@
+name: teal-lighthouse-3
+title: "Teal Lighthouse 3 — A Nested Digitisation Configuration Schema Over Three Closed Vocabularies With Documents Encoding Its Instances"
+description: |
+  A store-agnostic non-financial domain model of a herbarium digitisation programme's
+  configuration. A dozen entity types form a nested schema: a programme owns its specimen
+  collections, each collection declares its datasets, each dataset declares its columns, an
+  optional retention policy and the validation rules asserted over those columns, and the
+  programme's publication targets serve consumer APIs that expose a subset of the declared
+  datasets. Property multiplicities span mandatory single, optional single, one-or-many and
+  zero-or-many, and every link in the object graph is a typed property, so the graph is
+  expressed without associations, mappings or stores.
+
+  Three enumerations are the vocabulary the group is built around: a sensitivity-label set
+  ordered from open to sealed, a small schema-kind set, and a large capability-flag set
+  enumerating the ingest, export and preview variants an environment can enable.
+  Enumeration-typed properties appear as mandatory single values on the programme, the datasets,
+  the columns' served kind and the publication targets, as zero-or-many label collections on a
+  column, and as a per-environment record whose every property is a collection of the
+  capability enumeration.
+
+  Seven text elements carry structured documents as opaque content, each encoding instances of
+  that schema: a markdown overview of how the types nest, plain-text programme instances for a
+  coastal and an upland programme, the environment profiles, the publication targets, a
+  markdown statement of the label handling and retention rules, and a delimited validation-rule
+  catalogue. Content is opaque to the compiler, so a document is a typed text element with a
+  declared content type rather than parsed model structure and the schema-instance relationship
+  holds by convention.
+
+modelSources:
+  model:
+    root: teal-lighthouse-3
+    files:
+      - test/teallighthouse3/domain/Enumerations.pure
+      - test/teallighthouse3/domain/HerbariumConfig.pure
+      - test/teallighthouse3/text/ProgrammeDocuments.pure
+
+features:
+  - grammar:enumeration
+  - grammar:text-element
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - closed-value-set
+  - configuration-schema
+  - domain-only
+  - enumeration
+  - enumeration-collection
+  - herbarium-digitisation
+  - nested-schema
+  - text-element

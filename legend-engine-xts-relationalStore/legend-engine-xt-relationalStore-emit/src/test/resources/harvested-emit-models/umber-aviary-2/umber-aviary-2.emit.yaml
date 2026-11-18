@@ -1,0 +1,39 @@
+name: umber-aviary-2
+title: "Umber Aviary 2 — A Walk-Through Aviary Holding Register Versioned On The Processing Timeline Across A Three-Relation Store"
+description: |
+  A walk-through aviary keeps a register of the birds it holds. Each holding is versioned on
+  the processing timeline, so a corrected holding record supersedes the row it replaces
+  instead of overwriting it, and every read of the register has to resolve its rows through a
+  processing-date window.
+
+  The store declares three relations — the milestoned holding relation plus the bird-house and
+  species reference relations — and the relational mapping binds one class mapping onto each of
+  them, so the row-source space of the group is wider than any single table.
+
+  Three mapping test suites cover the register: the milestoned suite asserts that only the
+  holdings live on the requested processing date survive, discarding both the superseded row
+  and the row opened after that date, while the two reference suites assert the unmilestoned
+  relations so every relation of the store is exercised.
+modelSources:
+  model:
+    root: umber-aviary-2
+    files:
+      - test/umberaviary2/domain/AviaryDomain.pure
+      - test/umberaviary2/mapping/AviaryMapping.pure
+      - test/umberaviary2/store/AviaryDb.pure
+features:
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-multi-table
+stores:
+  - test::umberaviary2::store::AviaryDb
+complexity: basic
+tags:
+  - aviary-register
+  - duckdb
+  - mapping-test
+  - multi-table
+  - processing-temporal
+  - relational-mapping

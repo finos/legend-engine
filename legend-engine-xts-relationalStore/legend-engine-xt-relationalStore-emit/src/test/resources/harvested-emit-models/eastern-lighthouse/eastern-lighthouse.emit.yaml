@@ -1,0 +1,35 @@
+name: eastern-lighthouse
+title: "Eastern Lighthouse — A Parallel Pair of Snapshot-Milestoned Shoal Survey Stores Correlated Only By Shared Key Columns"
+description: |
+  A coastal aids-to-navigation survey held twice over: a granular store of five tables and a
+  bulk store of four, both using one identically named schema so that each bulk table mirrors a
+  granular counterpart in role while differing in key breadth, and in one case carrying an
+  unbounded character width where the granular side bounds it. Every one of the nine tables
+  declares exactly one milestoning axis — business-temporal in its snapshot-date form binding
+  the logical snapshot to a date column — while processing-in/processing-out timestamps, batch
+  identifiers, batch timestamps and a row digest stay plain, unmanaged audit columns. Six tables
+  make the snapshot date a key member; three key themselves on item and record coordinates
+  alone; and the granular beacon-kind table promotes a processing timestamp into its key so that
+  several milestoned rows can share one business date. No join, filter or view is declared: the
+  relations correlate by convention through overlapping but unequal composite keys, the widest
+  reaching eight key columns.
+modelSources:
+  model:
+    root: eastern-lighthouse
+    files:
+      - test/easternlighthouse/store/ShoalRollupDb.pure
+      - test/easternlighthouse/store/ShoalSurveyDb.pure
+features:
+  - milestoning:business-temporal
+  - scaffolding:relational-store
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: basic
+tags:
+  - audit-columns
+  - composite-key
+  - join-free-correlation
+  - parallel-stores
+  - shoal-survey
+  - snapshot-milestoning

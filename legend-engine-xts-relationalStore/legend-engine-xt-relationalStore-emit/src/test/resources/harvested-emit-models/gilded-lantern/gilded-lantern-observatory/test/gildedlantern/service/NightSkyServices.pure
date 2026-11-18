@@ -1,0 +1,196 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+
+import test::gildedlantern::profile::*;
+
+Service <<NightSkyProfile.publicSession>> {NightSkyProfile.steward = 'skyward-observatory'} test::gildedlantern::service::NightSkyRegister
+{
+  pattern: '/gildedlantern/sky/sessions';
+  title: 'Night Sky Session Register';
+  owners:
+  [
+    'skyward-observatory'
+  ];
+  documentation: 'Filters observing sessions by exposure range and site, then projects normalized session, instrument, and exposure-band columns for the public night-sky register.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minimumExposure: Float[1], maximumExposure: Float[1], resultLimit: Integer[1]|test::gildedlantern::domain::ObservingSession.all()->filter(
+      s|($s.exposureSeconds > $minimumExposure) && ($s.exposureSeconds <= $maximumExposure)
+    )->project(
+      [
+        s|$s.sessionCode->toUpper()->trim()->substring(0, 7),
+        s|$s.siteCode->toUpper()->trim(),
+        s|$s.instrumentCode->toUpper()->trim()->substring(0, 5),
+        s| if($s.exposureSeconds > 900.0, | 'DEEP', | 'QUICK'),
+        s|$s.observedOn,
+        s|$s.skyQuality
+      ],
+      [
+        'Session',
+        'Site',
+        'Instrument',
+        'ExposureBand',
+        'ObservedOn',
+        'SkyQuality'
+      ]
+    )->sort([asc('Session')])->take($resultLimit)};
+    mapping: test::gildedlantern::mapping::ObservatoryMapping;
+    runtime: test::gildedlantern::runtime::ObservatoryRuntime;
+  }
+  testSuites:
+  [
+    nightSkyRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          observatory:
+            Relational
+            #{
+              sky.observing_session:
+                'session_id,session_code,site_code,observed_on,exposure_seconds,instrument_code,sky_quality\n'+
+                '1,NS-ALPHA-01,MOUNTAIN,2026-07-14,1200.0,TE-RED,4\n'+
+                '2,NS-BETA-02,COAST,2026-07-15,640.0,TE-BLUE,3\n'+
+                '3,NS-GAMMA-03,MOUNTAIN,2026-07-16,1800.0,TE-RED,5\n';
+              sky.telescope_instrument:
+                'instrument_id,instrument_code,instrument_name,aperture_meters,site_code\n'+
+                '10,TE-RED,Red Aperture,0.42,MOUNTAIN\n'+
+                '20,TE-BLUE,Blue Aperture,0.28,COAST\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        boundedMountainSessions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minimumExposure = 1000.0,
+            maximumExposure = 1500.0,
+            resultLimit = 5
+          ]
+          asserts:
+          [
+            boundedSessions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Session":"NS-ALPH","Site":"MOUNTAIN","Instrument":"TE-RE","ExposureBand":"DEEP","ObservedOn":"2026-07-14","SkyQuality":4}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service <<NightSkyProfile.calibratedInstrument>> {NightSkyProfile.archiveLabel = 'site-dispatched-session-feed'} test::gildedlantern::service::SiteSessionFeed
+{
+  pattern: '/gildedlantern/sky/sessions/{siteCode}';
+  title: 'Site Session Feed';
+  owners:
+  [
+    'skyward-observatory'
+  ];
+  documentation: 'Shares one filtered session projection across site-keyed executions, selecting the mountain or coastal runtime at request time.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {siteCode: String[1], instrumentCode: String[1], resultLimit: Integer[1]|test::gildedlantern::domain::ObservingSession.all()->filter(
+      s|($s.siteCode == $siteCode) && ($s.instrumentCode == $instrumentCode)
+    )->project(
+      [
+        s|$s.sessionCode->toUpper()->trim()->substring(0, 7),
+        s|$s.siteCode->toUpper()->trim(),
+        s|$s.exposureSeconds
+      ],
+      [
+        'Session',
+        'Site',
+        'Exposure'
+      ]
+    )->sort([asc('Session')])->take($resultLimit)};
+    key: 'siteCode';
+    executions['MOUNTAIN']:
+    {
+      mapping: test::gildedlantern::mapping::ObservatoryMapping;
+      runtime: test::gildedlantern::runtime::ObservatoryRuntime;
+    }
+    executions['COAST']:
+    {
+      mapping: test::gildedlantern::mapping::ObservatoryMapping;
+      runtime: test::gildedlantern::runtime::ObservatoryRuntime;
+    }
+  }
+  testSuites:
+  [
+    siteSessionFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          observatory:
+            Relational
+            #{
+              sky.observing_session:
+                'session_id,session_code,site_code,observed_on,exposure_seconds,instrument_code,sky_quality\n'+
+                '1,NS-ALPHA-01,MOUNTAIN,2026-07-14,1200.0,TE-RED,4\n'+
+                '2,NS-BETA-02,COAST,2026-07-15,640.0,TE-BLUE,3\n';
+              sky.telescope_instrument:
+                'instrument_id,instrument_code,instrument_name,aperture_meters,site_code\n'+
+                '10,TE-RED,Red Aperture,0.42,MOUNTAIN\n'+
+                '20,TE-BLUE,Blue Aperture,0.28,COAST\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        mountainSiteFeed:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['MOUNTAIN'];
+          parameters:
+          [
+            siteCode = 'MOUNTAIN',
+            instrumentCode = 'TE-RED',
+            resultLimit = 3
+          ]
+          asserts:
+          [
+            mountainSessions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Session":"NS-ALPH","Site":"MOUNTAIN","Exposure":1200.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

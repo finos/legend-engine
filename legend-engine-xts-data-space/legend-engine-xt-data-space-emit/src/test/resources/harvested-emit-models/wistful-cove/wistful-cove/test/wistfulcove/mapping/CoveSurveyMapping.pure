@@ -1,0 +1,209 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulcove::mapping::CoveSurveyMapping
+(
+  include mapping test::wistfulcove::mapping::CoveBaseMapping
+
+  *test::wistfulcove::domain::MooringRecord[mooring]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulcove::store::CoveDB]cove.mooring_record.record_id
+    )
+    ~mainTable [test::wistfulcove::store::CoveDB]cove.mooring_record
+    mooringCode: [test::wistfulcove::store::CoveDB]cove.mooring_record.mooring_code,
+    coveCode: [test::wistfulcove::store::CoveDB]cove.mooring_record.cove_code,
+    gradeCode: [test::wistfulcove::store::CoveDB]cove.mooring_record.grade_code,
+    hullLengthM: [test::wistfulcove::store::CoveDB]cove.mooring_record.hull_length_m,
+    beamWidthM: [test::wistfulcove::store::CoveDB]cove.mooring_record.beam_width_m,
+    lineCount: [test::wistfulcove::store::CoveDB]cove.mooring_record.line_count,
+    surveyedOn: [test::wistfulcove::store::CoveDB]cove.mooring_record.surveyed_on,
+    deckAreaM2: times([test::wistfulcove::store::CoveDB]cove.mooring_record.hull_length_m, [test::wistfulcove::store::CoveDB]cove.mooring_record.beam_width_m),
+    berthZone: case(equal([test::wistfulcove::store::CoveDB]cove.mooring_record.grade_code, 'G1'), 'ZONE_A',
+      case(equal([test::wistfulcove::store::CoveDB]cove.mooring_record.grade_code, 'G2'), 'ZONE_B',
+      case(equal([test::wistfulcove::store::CoveDB]cove.mooring_record.grade_code, 'G3'), 'ZONE_C',
+      case(equal([test::wistfulcove::store::CoveDB]cove.mooring_record.grade_code, 'G4'), 'ZONE_D',
+      case(equal([test::wistfulcove::store::CoveDB]cove.mooring_record.grade_code, 'G5'), 'ZONE_E',
+      case(equal([test::wistfulcove::store::CoveDB]cove.mooring_record.grade_code, 'G6'), 'ZONE_F',
+      case(equal([test::wistfulcove::store::CoveDB]cove.mooring_record.grade_code, 'G7'), 'ZONE_G',
+      case(and(equal([test::wistfulcove::store::CoveDB]cove.mooring_record.grade_code, 'G8'), greaterThanEqual([test::wistfulcove::store::CoveDB]cove.mooring_record.line_count, 2)), 'ZONE_H',
+      sqlNull())))))))),
+    shoreZoneName: [test::wistfulcove::store::CoveDB]@Mooring_Site_J > @Site_Shore_J | [test::wistfulcove::store::CoveDB]cove.shore_zone.zone_name
+  }
+
+  *test::wistfulcove::domain::SurveyNote[note]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulcove::store::CoveDB]archive.survey_note.note_id
+    )
+    ~mainTable [test::wistfulcove::store::CoveDB]archive.survey_note
+    mooringCode: [test::wistfulcove::store::CoveDB]archive.survey_note.mooring_code,
+    coveCode: [test::wistfulcove::store::CoveDB]archive.survey_note.cove_code,
+    noteText: [test::wistfulcove::store::CoveDB]archive.survey_note.note_text
+  }
+
+  *test::wistfulcove::domain::TenderRun[tender]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulcove::store::CoveDB]archive.tender_run.run_id
+    )
+    ~mainTable [test::wistfulcove::store::CoveDB]archive.tender_run
+    mooringCode: [test::wistfulcove::store::CoveDB]archive.tender_run.mooring_code,
+    coveCode: [test::wistfulcove::store::CoveDB]archive.tender_run.cove_code,
+    tenderCode: [test::wistfulcove::store::CoveDB]archive.tender_run.tender_code,
+    tripCount: [test::wistfulcove::store::CoveDB]archive.tender_run.trip_count
+  }
+
+  test::wistfulcove::domain::Mooring_Site: Relational
+  {
+    AssociationMapping
+    (
+      site[mooring, site]: [test::wistfulcove::store::CoveDB]@Mooring_Site_J,
+      mooringsAtSite[site, mooring]: [test::wistfulcove::store::CoveDB]@Mooring_Site_J
+    )
+  }
+
+  test::wistfulcove::domain::Mooring_Note: Relational
+  {
+    AssociationMapping
+    (
+      notes[mooring, note]: [test::wistfulcove::store::CoveDB]@Mooring_Note_J,
+      notedMooring[note, mooring]: [test::wistfulcove::store::CoveDB]@Mooring_Note_J
+    )
+  }
+
+  test::wistfulcove::domain::Mooring_Tender: Relational
+  {
+    AssociationMapping
+    (
+      tenderRuns[mooring, tender]: [test::wistfulcove::store::CoveDB]@Mooring_Tender_J,
+      tenderedMooring[tender, mooring]: [test::wistfulcove::store::CoveDB]@Mooring_Tender_J
+    )
+  }
+
+  test::wistfulcove::domain::Site_Tender: Relational
+  {
+    AssociationMapping
+    (
+      siteTenderRuns[site, tender]: [test::wistfulcove::store::CoveDB]@Site_Tender_J,
+      tenderedSite[tender, site]: [test::wistfulcove::store::CoveDB]@Site_Tender_J
+    )
+  }
+
+  test::wistfulcove::domain::Site_Note: Relational
+  {
+    AssociationMapping
+    (
+      siteNotes[site, note]: [test::wistfulcove::store::CoveDB]@Site_Note_J,
+      notedSite[note, site]: [test::wistfulcove::store::CoveDB]@Site_Note_J
+    )
+  }
+
+  testSuites:
+  [
+    conditionalArmSuite:
+    {
+      function: |test::wistfulcove::domain::MooringRecord.all(%2026-04-01)->project(
+        [
+          m|$m.mooringCode,
+          m|$m.gradeCode,
+          m|$m.berthZone,
+          m|$m.deckAreaM2,
+          m|$m.lineCount,
+          m|$m.shoreZoneName
+        ],
+        [
+          'Mooring Code',
+          'Grade Code',
+          'Berth Zone',
+          'Deck Area M2',
+          'Line Count',
+          'Shore Zone'
+        ]
+      )->sort(
+        [
+          asc('Mooring Code')
+        ]
+      );
+      tests:
+      [
+        everyArmAndTheFallback:
+        {
+          doc: 'One fixture hits all eight arms of the conditional berth-zone transform plus both fallback paths - an unknown grade and the eighth grade failing the line-count guard - while the arithmetic deck-area transform and the two-hop join to the shore zone resolve on the same aliased row, and the record whose processing window closed before the requested instant is absent entirely.';
+          data:
+          [
+            test::wistfulcove::store::CoveDB:
+              Relational
+              #{
+      cove.mooring_record:
+        'record_id,mooring_code,cove_code,grade_code,hull_length_m,beam_width_m,line_count,surveyed_on,in_z,out_z\n'+
+        '1,M-01,C-1,G1,10.0,3.0,4,2026-01-05,2026-01-01,9999-12-31\n'+
+        '2,M-02,C-1,G2,12.5,3.5,3,2026-01-06,2026-01-01,9999-12-31\n'+
+        '3,M-03,C-1,G3,8.0,2.5,2,2026-01-07,2026-01-01,9999-12-31\n'+
+        '4,M-04,C-2,G4,15.0,4.0,5,2026-01-08,2026-01-01,9999-12-31\n'+
+        '5,M-05,C-2,G5,9.5,3.0,1,2026-01-09,2026-01-01,9999-12-31\n'+
+        '6,M-06,C-2,G6,11.0,3.5,2,2026-01-10,2026-01-01,9999-12-31\n'+
+        '7,M-07,C-3,G7,14.0,4.5,6,2026-01-11,2026-01-01,9999-12-31\n'+
+        '8,M-08,C-3,G8,13.0,4.0,3,2026-01-12,2026-01-01,9999-12-31\n'+
+        '9,M-09,C-3,G8,7.0,2.0,1,2026-01-13,2026-01-01,9999-12-31\n'+
+        '10,M-10,C-1,GX,6.0,2.0,2,2026-01-14,2026-01-01,9999-12-31\n'+
+        '11,M-11,C-1,G1,5.0,2.0,2,2026-01-15,2026-01-01,2026-02-01\n';
+
+      cove.cove_site:
+        'site_id,cove_code,cove_name,shore_code,in_z,out_z\n'+
+        '1,C-1,Kittiwake Cove,S-N,2026-01-01,9999-12-31\n'+
+        '2,C-2,Fulmar Cove,S-N,2026-01-01,9999-12-31\n'+
+        '3,C-3,Petrel Cove,S-S,2026-01-01,9999-12-31\n';
+
+      cove.shore_zone:
+        'zone_id,shore_code,zone_name,in_z,out_z\n'+
+        '1,S-N,North Shore,2026-01-01,9999-12-31\n'+
+        '2,S-S,South Shore,2026-01-01,9999-12-31\n';
+
+      archive.survey_note:
+        'note_id,mooring_code,cove_code,note_text,in_z,out_z\n'+
+        '1,M-01,C-1,Fenders replaced,2026-01-01,9999-12-31\n'+
+        '2,M-04,C-2,Chain re-shackled,2026-01-01,9999-12-31\n'+
+        '3,M-07,C-3,Line re-spliced,2026-01-01,9999-12-31\n'+
+        '4,M-01,C-1,Superseded inspection remark,2026-01-01,2026-02-01\n';
+
+      archive.tender_run:
+        'run_id,mooring_code,cove_code,tender_code,trip_count,in_z,out_z\n'+
+        '1,M-01,C-1,T-1,4,2026-01-01,9999-12-31\n'+
+        '2,M-01,C-1,T-2,2,2026-01-01,9999-12-31\n'+
+        '3,M-04,C-2,T-3,1,2026-01-01,9999-12-31\n'+
+        '4,M-07,C-3,T-4,5,2026-01-01,9999-12-31\n'+
+        '5,M-04,C-2,T-9,7,2026-01-01,2026-02-01\n';
+              }#
+          ];
+          asserts:
+          [
+            armRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Mooring Code":"M-01","Grade Code":"G1","Berth Zone":"ZONE_A","Deck Area M2":30.0,"Line Count":4,"Shore Zone":"North Shore"},{"Mooring Code":"M-02","Grade Code":"G2","Berth Zone":"ZONE_B","Deck Area M2":43.75,"Line Count":3,"Shore Zone":"North Shore"},{"Mooring Code":"M-03","Grade Code":"G3","Berth Zone":"ZONE_C","Deck Area M2":20.0,"Line Count":2,"Shore Zone":"North Shore"},{"Mooring Code":"M-04","Grade Code":"G4","Berth Zone":"ZONE_D","Deck Area M2":60.0,"Line Count":5,"Shore Zone":"North Shore"},{"Mooring Code":"M-05","Grade Code":"G5","Berth Zone":"ZONE_E","Deck Area M2":28.5,"Line Count":1,"Shore Zone":"North Shore"},{"Mooring Code":"M-06","Grade Code":"G6","Berth Zone":"ZONE_F","Deck Area M2":38.5,"Line Count":2,"Shore Zone":"North Shore"},{"Mooring Code":"M-07","Grade Code":"G7","Berth Zone":"ZONE_G","Deck Area M2":63.0,"Line Count":6,"Shore Zone":"South Shore"},{"Mooring Code":"M-08","Grade Code":"G8","Berth Zone":"ZONE_H","Deck Area M2":52.0,"Line Count":3,"Shore Zone":"South Shore"},{"Mooring Code":"M-09","Grade Code":"G8","Berth Zone":null,"Deck Area M2":14.0,"Line Count":1,"Shore Zone":"South Shore"},{"Mooring Code":"M-10","Grade Code":"GX","Berth Zone":null,"Deck Area M2":12.0,"Line Count":2,"Shore Zone":"North Shore"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

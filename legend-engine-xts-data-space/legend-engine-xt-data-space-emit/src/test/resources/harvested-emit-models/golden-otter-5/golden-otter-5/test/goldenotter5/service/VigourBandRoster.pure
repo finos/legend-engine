@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenotter5::service::VigourBandRoster
+{
+  pattern: '/goldenotter5/v1/vigour-roster';
+  owners: ['nursery-curation'];
+  documentation: 'Projects batches from either of two vigour codes and sorts the joined bench and glasshouse labels.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::goldenotter5::domain::PropagationBatch.all()->filter(b|($b.vigourCode == 'A') || ($b.vigourCode == 'B'))->project(
+      [
+        b|$b.gradeLabel,
+        b|$b.benchLabel,
+        b|$b.houseName,
+        b|$b.benchBatchCount
+      ],
+      [
+        'GradeLabel',
+        'BenchLabel',
+        'HouseName',
+        'BenchBatchCount'
+      ]
+    )->sort([asc('GradeLabel')]);
+    mapping: test::goldenotter5::mapping::NurseryMapping;
+    runtime: test::goldenotter5::runtime::NurseryRuntime;
+  }
+  testSuites:
+  [
+    vigourRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection: Relational
+          #{
+            nursery.propagation_batch:
+              'batch_id,bench_id,sown_date,cutting_count,vigour_code,cultivar_name,misting_note,rooted_count\n1,1,2026-05-01,10,A,FERN,light,5\n2,1,2026-05-02,20,B,FERN,light,10\n';
+            nursery.bench:
+              'bench_id,bench_label,house_id,bench_area_m2\n1,BENCH-1,1,20\n';
+            nursery.glasshouse:
+              'house_id,house_name,zone_label\n1,HOUSE-1,NORTH\n';
+          }#
+        ]
+      ]
+      tests:
+      [
+        twoBands:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"GradeLabel":"ALPHA","BenchLabel":"BENCH-1","HouseName":"HOUSE-1","BenchBatchCount":2},{"GradeLabel":"BETA","BenchLabel":"BENCH-1","HouseName":"HOUSE-1","BenchBatchCount":2}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

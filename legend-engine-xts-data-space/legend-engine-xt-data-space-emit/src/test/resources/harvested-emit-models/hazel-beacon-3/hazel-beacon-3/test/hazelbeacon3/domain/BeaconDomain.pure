@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A navigation beacon on the coastal trust register, carrying the shore-station and lamp detail resolved across single join hops and the grade band derived from its recorded grade code.'} test::hazelbeacon3::domain::NavigationBeacon
+{
+  beaconCode: String[1];
+  beaconName: String[1];
+  commissionedOn: StrictDate[1];
+  focalHeightM: Integer[0..1];
+  gradeBand: String[0..1];
+  registerScheme: String[0..1];
+  stationName: String[0..1];
+  coastSector: String[0..1];
+  lampType: String[0..1];
+  ratedHours: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A shore station that keeps a group of beacons on one stretch of coast.'} test::hazelbeacon3::domain::BeaconStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  coastSector: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A lamp unit type fitted to the beacons of the register.'} test::hazelbeacon3::domain::LampUnit
+{
+  lampCode: String[1];
+  lampType: String[1];
+  ratedHours: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A volunteer inspection visit to a beacon, carrying the beacon name reached across a single join hop and the battery label derived from the recorded charge.'} test::hazelbeacon3::domain::BeaconInspection
+{
+  inspectionRef: String[1];
+  inspectedOn: StrictDate[1];
+  inspectorCode: String[1];
+  lensScore: Integer[0..1];
+  batteryPct: Integer[0..1];
+  batteryLabel: String[0..1];
+  beaconName: String[0..1];
+  beaconGradeCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A defect raised against an inspection visit, banded from its severity code and carrying the inspection date reached across a single join hop.'} test::hazelbeacon3::domain::InspectionDefect
+{
+  defectRef: String[1];
+  defectCode: String[1];
+  severityCode: String[0..1];
+  severityBand: String[0..1];
+  raisedOn: StrictDate[1];
+  inspectedOn: StrictDate[0..1];
+  inspectorCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A maintenance order opened against a beacon, carrying the crew detail reached across a single join hop and the priority band derived from the recorded priority code.'} test::hazelbeacon3::domain::UpkeepOrder
+{
+  orderRef: String[1];
+  beaconCode: String[1];
+  openedOn: StrictDate[1];
+  closedOn: StrictDate[0..1];
+  priorityBand: String[0..1];
+  crewName: String[0..1];
+  depotName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A part drawn from the depot store against a maintenance order, carrying the order beacon reached across a single join hop.'} test::hazelbeacon3::domain::PartUsage
+{
+  usageRef: String[1];
+  partCode: String[1];
+  quantity: Integer[1];
+  orderBeaconCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A maintenance crew working out of one depot.'} test::hazelbeacon3::domain::UpkeepCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  depotName: String[1];
+}
+
+Association test::hazelbeacon3::domain::Station_Beacons
+{
+  station: test::hazelbeacon3::domain::BeaconStation[0..1];
+  beacons: test::hazelbeacon3::domain::NavigationBeacon[*];
+}
+
+Association test::hazelbeacon3::domain::Lamp_Beacons
+{
+  lamp: test::hazelbeacon3::domain::LampUnit[0..1];
+  litBeacons: test::hazelbeacon3::domain::NavigationBeacon[*];
+}
+
+Association test::hazelbeacon3::domain::Beacon_Inspections
+{
+  beacon: test::hazelbeacon3::domain::NavigationBeacon[0..1];
+  inspections: test::hazelbeacon3::domain::BeaconInspection[*];
+}
+
+Association test::hazelbeacon3::domain::Inspection_Defects
+{
+  inspection: test::hazelbeacon3::domain::BeaconInspection[0..1];
+  defects: test::hazelbeacon3::domain::InspectionDefect[*];
+}
+
+Association test::hazelbeacon3::domain::Crew_Orders
+{
+  crew: test::hazelbeacon3::domain::UpkeepCrew[0..1];
+  orders: test::hazelbeacon3::domain::UpkeepOrder[*];
+}
+
+Association test::hazelbeacon3::domain::Order_Usages
+{
+  order: test::hazelbeacon3::domain::UpkeepOrder[0..1];
+  usages: test::hazelbeacon3::domain::PartUsage[*];
+}

@@ -1,0 +1,133 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelprairie::service::BloomStemTally
+{
+  pattern: '/prairie/v1/bloom-stem-tally/{season}/{day}/{observer}';
+  title: 'Hazel Prairie - Bloom Stem Tally';
+  documentation: 'Totals stems and counts records per meadow and three-letter species stem for one observer, one colour and one survey day, over meadows in a caller-supplied region set.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: 'prairie-survey-guild' };
+  execution: Multi
+  {
+    query: {day: StrictDate[1], observer: String[1], regions: String[*], colour: String[1]|test::hazelprairie::domain::BloomCount.all()->filter(
+      x|($x.plot.meadow.region->in($regions) && (($x.colour == $colour) && ($x.observer == $observer))) && ($x.surveyDay == $day)
+    )->groupBy(
+      [
+        x|$x.plot.meadow.name,
+        x|$x.species->trim()->substring(0, 3)->toUpper()
+      ],
+      [
+        agg(x|$x.stems, y|$y->sum()),
+        agg(x|$x.recordRef, y|$y->count())
+      ],
+      [
+        'Meadow',
+        'SpeciesStem',
+        'Stems',
+        'Records'
+      ]
+    )->sort(
+      [
+        asc('Meadow'),
+        asc('SpeciesStem')
+      ]
+    )};
+    key: 'season';
+    executions['spring']:
+    {
+      mapping: test::hazelprairie::mapping::PrairieMapping;
+      runtime: test::hazelprairie::runtime::PrairieSpringRuntime;
+    }
+    executions['autumn']:
+    {
+      mapping: test::hazelprairie::mapping::PrairieMapping;
+      runtime: test::hazelprairie::runtime::PrairieAutumnRuntime;
+    }
+  }
+  testSuites:
+  [
+    bloomStemTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          springConnection: Reference
+            #{
+              test::hazelprairie::data::PrairieTestData
+            }#,
+          autumnConnection: Reference
+            #{
+              test::hazelprairie::data::PrairieTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        sharedStemsMergeAcrossSpecies:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['spring', 'autumn'];
+          parameters:
+          [
+            day = %2026-05-04,
+            observer = 'ilse',
+            regions = ['north', 'south'],
+            colour = 'blue'
+          ]
+          asserts:
+          [
+            sharedStemsMergeAcrossSpeciesRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Meadow":"Foxglove Rise","SpeciesStem":"BLU","Stems":52,"Records":2},{"Meadow":"Sedge Hollow","SpeciesStem":"BUG","Stems":12,"Records":2}]';
+                  }#;
+              }#
+          ]
+        },
+        westernRegionOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['spring', 'autumn'];
+          parameters:
+          [
+            day = %2026-05-04,
+            observer = 'ilse',
+            regions = ['west'],
+            colour = 'blue'
+          ]
+          asserts:
+          [
+            westernRegionOnlyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Meadow":"Tallgrass Reach","SpeciesStem":"COR","Stems":9,"Records":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

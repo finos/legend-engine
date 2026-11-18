@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sableridge2::service::HutClassBoard
+{
+  pattern: '/sableridge/v1/hut-class-board/{environment}/{segmentCode}';
+  title: 'Sable Ridge - Hut Class Board';
+  documentation: 'Graph-fetches the huts on the requested trail segment, keyed so the summit and valley stores answer the same shape.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: segmentCode: String[1]|test::sableridge2::domain::MountainHut.all()->filter(h|$h.segment.segmentCode == $segmentCode->toUpper())->graphFetch(
+      #{
+        test::sableridge2::domain::MountainHut
+        {
+          hutCode,
+          hutName,
+          hutClass,
+          elevationM,
+          segment
+          {
+            segmentCode,
+            segmentName,
+            grade
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::sableridge2::domain::MountainHut
+        {
+          hutCode,
+          hutName,
+          hutClass,
+          elevationM,
+          segment
+          {
+            segmentCode,
+            segmentName,
+            grade
+          }
+        }
+      }#
+    );
+    key: 'environment';
+    executions['summit']:
+    {
+      mapping: test::sableridge2::mapping::RidgeMapping;
+      runtime: test::sableridge2::runtime::RidgeSummitRuntime;
+    }
+    executions['valley']:
+    {
+      mapping: test::sableridge2::mapping::RidgeMapping;
+      runtime: test::sableridge2::runtime::RidgeValleyRuntime;
+    }
+  }
+}

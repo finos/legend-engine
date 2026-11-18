@@ -1,0 +1,71 @@
+name: kindly-otter
+title: "Kindly Otter — Wide Flat Branch Records Published Over Two Estates Reached By Identifier Rewriting"
+description: |
+  A public-library branch corpus of independent wide records — a twelve-column monthly lending
+  series with its declared annual total, branch service profiles, shelved stock with its
+  reservation queue, volunteer periods and an outreach register — all bound by a single relational
+  mapping to one multi-table store with no join between any two relations. Validity is enforced
+  unevenly: a minority of the classes carry constraints over their own properties while the rest
+  are unconstrained. Two connections sit over that one store, each carrying a name-rewriting
+  post-processing stage that moves every declared relation onto a different schema and table name,
+  so the model's declared identifiers are logical only and two runtimes reach two physical estates
+  without any change to the classes. A data space fixes the primary estate as the published default
+  and lists the curated diagrams and featured endpoints, behind which four parameterless services
+  project each record at full width.
+modelSources:
+  model:
+    root: kindly-otter
+    files:
+      - test/kindlyotter/connection/LibraryConnections.pure
+      - test/kindlyotter/dataspace/LibraryDataSpace.pure
+      - test/kindlyotter/diagram/LibraryDiagram.pure
+      - test/kindlyotter/domain/LibraryDomain.pure
+      - test/kindlyotter/mapping/LibraryBranchMapping.pure
+      - test/kindlyotter/runtime/LibraryRuntimes.pure
+      - test/kindlyotter/service/BranchMonthSeriesFeed.pure
+      - test/kindlyotter/service/BranchProfileFeed.pure
+      - test/kindlyotter/service/TitleStockFeed.pure
+      - test/kindlyotter/service/VolunteerHoursFeed.pure
+      - test/kindlyotter/store/LibraryBranchDb.pure
+      - test/kindlyotter/text/LibraryNotes.pure
+features:
+  - connection:mapper-postprocessor
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:constraint
+  - grammar:diagram
+  - grammar:tagged-value
+  - grammar:text-element
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-multi-table
+  - connection:snowflake
+  - connection:oauth-authentication
+stores:
+  - relational
+complexity: advanced
+tags:
+  - branch-lending-records
+  - h2
+  - identifier-rewriting
+  - mapper-post-processor
+  - published-data-space
+  - snowflake
+  - twelve-column-monthly-series
+  - two-estate-runtimes
+  - uneven-class-constraints
+  - wide-flat-record-set

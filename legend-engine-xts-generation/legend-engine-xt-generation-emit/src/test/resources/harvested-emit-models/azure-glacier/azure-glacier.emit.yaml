@@ -1,0 +1,27 @@
+name: azure-glacier
+title: "Glaciology Monitoring — Enumeration Domain with Avro File Generation"
+description: |
+  A glacier-monitoring corpus exercising EMIT file/artifact generation over a
+  domain that includes a closed GlacierType enumeration. The Glacier class
+  (with a GlacierType-valued property and a derived isRetreating property)
+  feeds an Avro FileGeneration collected into a GenerationSpecification.
+  Store-less: parse, compile and file-generation only.
+modelSources:
+  model:
+    root: azure-glacier
+    files:
+      - test/azureglacier/domain/GlacierDomain.pure
+      - test/azureglacier/generation/GlacierGeneration.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - avro
+  - enumeration
+  - file-generation
+  - generation-specification
+  - glaciology

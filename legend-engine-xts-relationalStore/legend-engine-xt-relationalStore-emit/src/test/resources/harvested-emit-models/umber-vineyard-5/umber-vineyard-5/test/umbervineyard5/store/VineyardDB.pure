@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::umbervineyard5::store::VineyardDB
+(
+  Schema vines
+  (
+    Table vine_block
+    (
+      block_code VARCHAR(16) PRIMARY KEY,
+      block_name VARCHAR(128),
+      vineyard_code VARCHAR(16),
+      trellis_code VARCHAR(16),
+      crew_code VARCHAR(16),
+      vine_count INTEGER,
+      row_length_m INTEGER
+    )
+    Table vineyard
+    (
+      vineyard_code VARCHAR(16) PRIMARY KEY,
+      vineyard_name VARCHAR(128),
+      region_name VARCHAR(128)
+    )
+    Table trellis
+    (
+      trellis_code VARCHAR(16) PRIMARY KEY,
+      trellis_style VARCHAR(64),
+      wire_count INTEGER
+    )
+    Table crew
+    (
+      crew_code VARCHAR(16) PRIMARY KEY,
+      crew_name VARCHAR(128)
+    )
+    Table block_note
+    (
+      block_code VARCHAR(16) PRIMARY KEY,
+      reviewer_code VARCHAR(16),
+      note_text VARCHAR(256)
+    )
+    Table reviewer
+    (
+      reviewer_code VARCHAR(16) PRIMARY KEY,
+      reviewer_name VARCHAR(128)
+    )
+  )
+
+  Join Block_Vineyard(vines.vine_block.vineyard_code = vines.vineyard.vineyard_code)
+  Join Block_Trellis(vines.vine_block.trellis_code = vines.trellis.trellis_code)
+  Join Block_Crew(vines.vine_block.crew_code = vines.crew.crew_code)
+  Join Block_Note(vines.vine_block.block_code = vines.block_note.block_code)
+  Join Note_Reviewer(vines.block_note.reviewer_code = vines.reviewer.reviewer_code)
+)

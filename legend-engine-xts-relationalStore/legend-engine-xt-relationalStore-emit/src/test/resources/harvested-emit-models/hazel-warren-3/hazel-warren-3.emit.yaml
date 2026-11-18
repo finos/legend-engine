@@ -1,0 +1,77 @@
+name: hazel-warren-3
+title: "Allotment Warren - a joins-only store composition over two leaf stores, a branch-selecting property mapping and two keyed environment tallies"
+description: |
+  A community allotment register split so that no single store describes the whole picture: one leaf
+  store owns the plots and their tending rota, a second leaf store owns the site and crop reference
+  tables, and a third store declares no table at all - it includes both leaves and contributes only
+  the three joins that relate them, so every column and every join side resolves through the
+  composition. One mapping binds a three-property plot class directly against its main table under an
+  explicit primary key and includes a second mapping that supplies the site, crop and
+  composite-keyed tending implementations, which is what makes the association's far end and the
+  reference classes resolvable at all. A second class implementation is computed rather than read:
+  its grade band selects among eight arms with a null fallback, and its keeper, district, season,
+  effort, freshness, curation and display columns are guarded expressions, join-reached columns, a
+  nested selection, a literal default, a concatenation and a comparison against the current date.
+  Three mapping tests pin those branches, the association whose far end is only included and the
+  composite-keyed included implementation. Two multi-execution services keyed by environment share
+  one deeply nested tabular predicate - an eight-arm disjunction over recognised field names and two
+  guards comparing the sowing date to the current date - and differ only in whether the retired plots
+  are dropped before the projection, so the pair shows exactly what the pre-projection predicate
+  removes from the grouped and de-duplicated count.
+modelSources:
+  model:
+    root: hazel-warren-3
+    files:
+      - test/hazelwarren3/connection/PlotConnections.pure
+      - test/hazelwarren3/domain/AllotmentDomain.pure
+      - test/hazelwarren3/mapping/PlotLinkMapping.pure
+      - test/hazelwarren3/mapping/SiteReferenceMapping.pure
+      - test/hazelwarren3/runtime/PlotRuntimes.pure
+      - test/hazelwarren3/service/ActivePlotTallyByEnvironment.pure
+      - test/hazelwarren3/service/WholePlotTallyByEnvironment.pure
+      - test/hazelwarren3/store/PlotCoreDb.pure
+      - test/hazelwarren3/store/PlotLinkDb.pure
+      - test/hazelwarren3/store/SiteReferenceDb.pure
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - allotment
+  - association
+  - composite-key
+  - conditional-mapping
+  - group-by
+  - h2
+  - inner-join
+  - main-table-alias
+  - mapping-include
+  - mapping-test
+  - multi-execution
+  - primary-key
+  - relational
+  - service-test
+  - store-include
+  - tabular-data-set

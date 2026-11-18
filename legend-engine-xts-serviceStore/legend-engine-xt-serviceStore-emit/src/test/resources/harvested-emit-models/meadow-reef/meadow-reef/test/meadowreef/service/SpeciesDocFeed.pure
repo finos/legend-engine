@@ -1,0 +1,147 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowreef::service::SpeciesDocFeed
+{
+  pattern: '/meadowreef/v1/species-doc-feed';
+  title: 'Meadow Reef - Species Document Feed';
+  owners:
+  [
+    'reef-trail-office'
+  ];
+  documentation: 'Graph-fetches the species documents of the endpoint-backed register, unioned across the live and archived listings, so both endpoint reads and their shared document contract are observable in one payload.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::meadowreef::domain::SpeciesDoc.all()->graphFetch(
+      #{
+        test::meadowreef::domain::SpeciesDoc
+        {
+          speciesCode,
+          commonName,
+          register
+          {
+            registerCode
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::meadowreef::domain::SpeciesDoc
+        {
+          speciesCode,
+          commonName,
+          register
+          {
+            registerCode
+          }
+        }
+      }#
+    );
+    mapping: test::meadowreef::mapping::SpeciesDocMapping;
+    runtime: test::meadowreef::runtime::SpeciesDocRuntime;
+  }
+  testSuites:
+  [
+    docFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          speciesApiConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/species/species-feed';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '[{"speciesCode":"SP-014","commonName":"banded parrotfish","register":{"registerCode":"RG-1"}}]';
+                      }#;
+                  };
+                },
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/species/archive-feed';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '[{"speciesCode":"SP-090","commonName":"retired wrasse","register":{"registerCode":"RG-9"}}]';
+                      }#;
+                  };
+                }
+              ]
+            }#,
+          registerApiConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/registers/register-feed';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '[{"registerCode":"RG-1","steward":"trail office"}]';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        liveAndArchivedDocumentsUnion:
+        {
+          asserts:
+          [
+            bothListingsSurface:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"speciesCode":"SP-014","commonName":"banded parrotfish","register":{"registerCode":"RG-1"}},{"speciesCode":"SP-090","commonName":"retired wrasse","register":{"registerCode":"RG-9"}}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

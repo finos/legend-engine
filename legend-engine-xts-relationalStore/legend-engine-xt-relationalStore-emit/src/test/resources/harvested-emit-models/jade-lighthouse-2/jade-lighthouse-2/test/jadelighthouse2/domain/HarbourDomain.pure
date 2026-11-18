@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::jadelighthouse2::domain::*;
+
+Enum test::jadelighthouse2::domain::LampState
+{
+  LIT,
+  DIMMED,
+  SHUTTERED,
+  DECOMMISSIONED
+}
+
+Enum test::jadelighthouse2::domain::GlazingKind
+{
+  SHELTERED,
+  WEATHERED
+}
+
+Class test::jadelighthouse2::domain::HarbourRecord
+{
+  recordCode: String[1];
+}
+
+Class test::jadelighthouse2::domain::OpticDetail
+{
+  opticLabel: String[1];
+  sectorName: String[0..1];
+}
+
+Class test::jadelighthouse2::domain::StationTally
+{
+  focalBand: String[1];
+  tallyNote: String[1];
+}
+
+Class test::jadelighthouse2::domain::LightStation extends HarbourRecord
+{
+  stationName: String[1];
+  lampCount: Integer[1];
+  focalHeightM: Float[1];
+  band: String[0..1];
+  noteLabel: String[1];
+  state: LampState[0..1];
+  glazing: GlazingKind[0..1];
+  keeperPost: String[0..1];
+  optic: OpticDetail[1];
+  tally: StationTally[1];
+  heightPerLamp: Float[0..1];
+}
+
+Class test::jadelighthouse2::domain::WatchLog extends HarbourRecord
+{
+  watchCode: String[1];
+  watchHours: Float[1];
+  watchDate: StrictDate[1];
+  watchState: LampState[0..1];
+}
+
+Class test::jadelighthouse2::domain::ReliefWatch extends WatchLog
+{
+}
+
+Class test::jadelighthouse2::domain::LampWatchSummary extends HarbourRecord
+{
+  watchCode: String[1];
+  hoursTotal: Float[1];
+}
+
+Association test::jadelighthouse2::domain::StationWatch
+{
+  watch: WatchLog[0..1];
+  stations: LightStation[*];
+}

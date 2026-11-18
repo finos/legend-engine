@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::olivecove4::mapping::LedgeCensusMapping
+(
+  *test::olivecove4::domain::LedgeCount[count]: Relational
+  {
+    ~filter [test::olivecove4::store::LedgeDb]RecentSeasonFilter
+    ~primaryKey
+    (
+      [test::olivecove4::store::LedgeDb]census.ledge_count.count_code
+    )
+    ~mainTable [test::olivecove4::store::LedgeDb]census.ledge_count
+    countCode: [test::olivecove4::store::LedgeDb]census.ledge_count.count_code,
+    ledgeCode: [test::olivecove4::store::LedgeDb]census.ledge_count.ledge_code,
+    speciesCode: [test::olivecove4::store::LedgeDb]census.ledge_count.species_code,
+    adultCount: [test::olivecove4::store::LedgeDb]census.ledge_count.adult_count,
+    chickCount: [test::olivecove4::store::LedgeDb]census.ledge_count.chick_count,
+    seasonKey: [test::olivecove4::store::LedgeDb]census.ledge_count.season_key,
+    countedOn: [test::olivecove4::store::LedgeDb]census.ledge_count.counted_on,
+    ledgeName: [test::olivecove4::store::LedgeDb]@Count_Ledge | [test::olivecove4::store::LedgeDb]census.cliff_ledge.ledge_name,
+    coveName: [test::olivecove4::store::LedgeDb]@Count_Ledge | [test::olivecove4::store::LedgeDb]census.cliff_ledge.cove_name,
+    teamName: [test::olivecove4::store::LedgeDb]@Count_Team | [test::olivecove4::store::LedgeDb]census.observer_team.team_name,
+    registerLabel: concat('COVE-LEDGE-', [test::olivecove4::store::LedgeDb]census.ledge_count.season_key)
+  }
+
+  testSuites:
+  [
+    ledgeCensusSuite:
+    {
+      function: |test::olivecove4::domain::LedgeCount.all()->project(
+  [
+    x|$x.countCode,
+    x|$x.ledgeCode,
+    x|$x.speciesCode,
+    x|$x.adultCount,
+    x|$x.chickCount,
+    x|$x.seasonKey,
+    x|$x.countedOn,
+    x|$x.ledgeName,
+    x|$x.coveName,
+    x|$x.teamName,
+    x|$x.registerLabel
+  ],
+  [
+    'CountCode',
+    'LedgeCode',
+    'SpeciesCode',
+    'AdultCount',
+    'ChickCount',
+    'SeasonKey',
+    'CountedOn',
+    'LedgeName',
+    'CoveName',
+    'TeamName',
+    'RegisterLabel'
+  ]
+)->sort(
+  [
+    asc('CountCode')
+  ]
+);
+      tests:
+      [
+        recentSeasonCountsResolveEveryHop:
+        {
+          doc: 'Counts from seasons after the baseline the store filter names are published and each resolves its ledge, cove and counting team over a hop, the visit made before chicks could be recorded carries no chick figure, the published label is composed from a fixed census marker and the season key, and the count from the baseline season is dropped by the store filter.';
+          data:
+          [
+            test::olivecove4::store::LedgeDb:
+              Relational
+              #{
+                census.cliff_ledge:
+                  'ledge_code,ledge_name,cove_name,aspect\n'+
+                  'LG-01,Gannet Shelf,Olive Cove,NE\n'+
+                  'LG-02,Kittiwake Ledge,Olive Cove,SW\n';
+                census.observer_team:
+                  'observer_ref,team_name\n'+
+                  'OB-01,Coast Path Team\n'+
+                  'OB-02,Boat Survey Team\n';
+                census.ledge_count:
+                  'count_code,ledge_code,species_code,adult_count,chick_count,season_key,counted_on,observer_ref\n'+
+                  'CT-0001,LG-01,GUILLEMOT,120,44,2024,2024-06-04,OB-01\n'+
+                  'CT-0002,LG-02,KITTIWAKE,86,,2024,2024-05-12,OB-02\n'+
+                  'CT-0003,LG-01,GUILLEMOT,132,51,2025,2025-06-09,OB-01\n'+
+                  'CT-0004,LG-02,KITTIWAKE,74,19,2023,2023-06-02,OB-02\n';
+              }#
+          ];
+          asserts:
+          [
+            threeRecentCountsPublished:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CountCode":"CT-0001","LedgeCode":"LG-01","SpeciesCode":"GUILLEMOT","AdultCount":120,"ChickCount":44,"SeasonKey":"2024","CountedOn":"2024-06-04","LedgeName":"Gannet Shelf","CoveName":"Olive Cove","TeamName":"Coast Path Team","RegisterLabel":"COVE-LEDGE-2024"},{"CountCode":"CT-0002","LedgeCode":"LG-02","SpeciesCode":"KITTIWAKE","AdultCount":86,"ChickCount":null,"SeasonKey":"2024","CountedOn":"2024-05-12","LedgeName":"Kittiwake Ledge","CoveName":"Olive Cove","TeamName":"Boat Survey Team","RegisterLabel":"COVE-LEDGE-2024"},{"CountCode":"CT-0003","LedgeCode":"LG-01","SpeciesCode":"GUILLEMOT","AdultCount":132,"ChickCount":51,"SeasonKey":"2025","CountedOn":"2025-06-09","LedgeName":"Gannet Shelf","CoveName":"Olive Cove","TeamName":"Coast Path Team","RegisterLabel":"COVE-LEDGE-2025"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

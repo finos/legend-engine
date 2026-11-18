@@ -1,0 +1,70 @@
+name: jade-isle-2
+title: "Jade Isle Trail Network — Processing-Milestoned Warden Patrols Over An Including Mapping Across Two Cross-Schema Stores"
+description: |
+  An island nature-reserve record published through two mapping layers: a core
+  layer resolves trail segments, the protected habitats they cross and the walker
+  tallies recorded on them out of one store whose habitat table sits in a second
+  schema, and a patrol layer includes that core layer and adds the warden record
+  out of a second store whose roster notes likewise sit in a second schema. The
+  warden patrol class is kept on a processing timeline, so corrections are closed
+  out in place and only the versions open at the requested date resolve. Three
+  associations are implemented purely as store joins, every class mapping is
+  keyed and aliased onto its main table, and three parameterised tabular services
+  cover the shapes the record is consumed through: a membership-filtered segment
+  board, a membership-filtered patrol window resolved at a processing date, and
+  the unfiltered register at that date. Two data spaces feature the endpoints and
+  bind the mapping and runtime pairs a consumer executes against.
+modelSources:
+  model:
+    root: jade-isle-2
+    files:
+      - test/jadeisle2/connection/IsleConnections.pure
+      - test/jadeisle2/dataspace/IsleTrailDataSpace.pure
+      - test/jadeisle2/domain/IsleDomain.pure
+      - test/jadeisle2/mapping/IsleCoreMapping.pure
+      - test/jadeisle2/mapping/IsleVisitMapping.pure
+      - test/jadeisle2/runtime/IsleRuntimes.pure
+      - test/jadeisle2/service/PatrolRegister.pure
+      - test/jadeisle2/service/PatrolWindow.pure
+      - test/jadeisle2/service/SegmentBoard.pure
+      - test/jadeisle2/store/IsleCoreDb.pure
+      - test/jadeisle2/store/IsleVisitDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - cross-schema
+  - data-space
+  - h2
+  - mapping-include
+  - nature-reserve-trails
+  - parameterized-service
+  - processing-temporal
+  - service-test
+  - snowflake
+  - tabular-data-set

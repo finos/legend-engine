@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverorchard3::mapping::ApiaryMapping
+(
+  include mapping test::silverorchard3::mapping::RegisterMapping
+
+  *test::silverorchard3::domain::HiveDetail[hive_detail]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverorchard3::store::ApiaryDb]bee_ext.hive_ext.batch_in_id,
+      [test::silverorchard3::store::ApiaryDb]bee_ext.hive_ext.batch_out_id,
+      [test::silverorchard3::store::ApiaryDb]bee_ext.hive_ext.row_digest,
+      [test::silverorchard3::store::ApiaryDb]bee_ext.hive_ext.global_id
+    )
+    ~mainTable [test::silverorchard3::store::ApiaryDb]bee_ext.hive_ext
+    globalId: [test::silverorchard3::store::ApiaryDb]bee_ext.hive_ext.global_id,
+    queenYear: [test::silverorchard3::store::ApiaryDb]bee_ext.hive_ext.queen_year,
+    temperament: [test::silverorchard3::store::ApiaryDb]bee_ext.hive_ext.temperament,
+    rowDigest: [test::silverorchard3::store::ApiaryDb]bee_ext.hive_ext.row_digest
+  }
+
+  *test::silverorchard3::domain::ApiaryDetail[apiary_detail]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverorchard3::store::ApiaryDb]bee_ext.apiary_ext.batch_in_id,
+      [test::silverorchard3::store::ApiaryDb]bee_ext.apiary_ext.batch_out_id,
+      [test::silverorchard3::store::ApiaryDb]bee_ext.apiary_ext.row_digest,
+      [test::silverorchard3::store::ApiaryDb]bee_ext.apiary_ext.global_id
+    )
+    ~mainTable [test::silverorchard3::store::ApiaryDb]bee_ext.apiary_ext
+    globalId: [test::silverorchard3::store::ApiaryDb]bee_ext.apiary_ext.global_id,
+    shelterKind: [test::silverorchard3::store::ApiaryDb]bee_ext.apiary_ext.shelter_kind,
+    waterSource: [test::silverorchard3::store::ApiaryDb]bee_ext.apiary_ext.water_source,
+    rowDigest: [test::silverorchard3::store::ApiaryDb]bee_ext.apiary_ext.row_digest
+  }
+
+  test::silverorchard3::domain::HiveRecord_Detail: Relational
+  {
+    AssociationMapping
+    (
+      hiveDetail[hive_record, hive_detail]: [test::silverorchard3::store::ApiaryDb]@Hive_Ext,
+      hive[hive_detail, hive_record]: [test::silverorchard3::store::ApiaryDb]@Hive_Ext
+    )
+  }
+
+  test::silverorchard3::domain::ApiaryRecord_Detail: Relational
+  {
+    AssociationMapping
+    (
+      apiaryDetail[apiary_record, apiary_detail]: [test::silverorchard3::store::ApiaryDb]@Apiary_Ext,
+      apiary[apiary_detail, apiary_record]: [test::silverorchard3::store::ApiaryDb]@Apiary_Ext
+    )
+  }
+
+  testSuites:
+  [
+    hiveExtensionSuite:
+    {
+      function: |test::silverorchard3::domain::HiveRecord.all(%2026-03-15)->project([h|$h.globalId, h|$h.hiveDetail.temperament, h|$h.hiveDetail.queenYear], ['Hive', 'Temperament', 'Queen Year'])->sort('Hive');
+      tests:
+      [
+        extensionReachedThroughTheAssociation:
+        {
+          doc: 'HV-01 reaches its inspection extension through the one-hop join, while HV-02 has no extension row and reports empty inspection attributes.';
+          data:
+          [
+            test::silverorchard3::store::ApiaryDb:
+              Relational
+              #{
+              bee_ref.hive_base:
+                'batch_in_id,batch_out_id,batch_in_on,batch_out_on,row_digest,global_id,hive_label,colony_strain,frame_count,region_code\n'+
+                '1,2,2026-01-01,2026-02-01,d-h1a,HV-01,Clover Row One,carniolan,8,north\n'+
+                '2,999999999,2026-02-01,9999-12-31,d-h1b,HV-01, Clover Row One ,carniolan,10,north\n'+
+                '1,999999999,2026-01-01,9999-12-31,d-h2,HV-02,Heather Knoll,buckfast,,north\n'+
+                '3,999999999,2026-04-01,9999-12-31,d-h3,HV-03,Lime Walk,,6,south\n';
+              bee_ext.hive_ext:
+                'batch_in_id,batch_out_id,batch_in_on,batch_out_on,row_digest,global_id,queen_year,temperament\n'+
+                '1,999999999,2026-01-01,9999-12-31,e-h1,HV-01,2025,calm\n'+
+                '1,999999999,2026-01-01,9999-12-31,e-h3,HV-03,2024,defensive\n';
+              }#
+          ];
+          asserts:
+          [
+            theExtensionIsJoinedOnTheRegisterIdentifier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hive":"HV-01","Temperament":"calm","Queen Year":2025},{"Hive":"HV-02","Temperament":null,"Queen Year":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

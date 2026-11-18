@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::hazelglacier5::domain::*;
+
+Class <<meta::pure::profiles::typemodifiers.abstract, meta::pure::profiles::temporal.businesstemporal, test::hazelglacier5::domain::CurationGovernance.accessioned, test::hazelglacier5::domain::HandlingNotes.fragile>> {meta::pure::profiles::doc.doc = 'The abstract catalogue identity shared by natural-history specimens, effective over the curation timeline.', test::hazelglacier5::domain::CurationGovernance.custodianRole = 'collection-curator', test::hazelglacier5::domain::HandlingNotes.storageNote = 'catalogue-shelf'} test::hazelglacier5::domain::CatalogueRecord
+{
+  catalogueNumber: String[1];
+  section: CatalogueSection[1];
+  accessionYear: Integer[1];
+  displayLabel: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal, test::hazelglacier5::domain::CurationGovernance.published, test::hazelglacier5::domain::HandlingNotes.requiresGloves>> {meta::pure::profiles::doc.doc = 'A herbarium sheet carrying the collected plant material and its taxonomic placement.', test::hazelglacier5::domain::CurationGovernance.examinationCadence = 'annual'} test::hazelglacier5::domain::HerbariumSheet extends CatalogueRecord
+{
+  taxonRank: TaxonRank[1];
+  habitatBand: HabitatBand[0..1];
+  preservationMethod: PreservationMethod[1];
+  mountingStyle: MountingStyle[1];
+  labelScript: LabelScript[0..1];
+  collectionNotes: String[*];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal, test::hazelglacier5::domain::CurationGovernance.fieldCollected, test::hazelglacier5::domain::HandlingNotes.lightSensitive>> {meta::pure::profiles::doc.doc = 'A pressed fern sheet specialised from a herbarium sheet, retaining a detailed leaf preparation note.', test::hazelglacier5::domain::HandlingNotes.handlingNote = 'shield from direct light'} test::hazelglacier5::domain::PressedFernSheet extends HerbariumSheet
+{
+  frondCount: Integer[1];
+  lightSensitivity: LightSensitivity[1];
+  examinationCadence: ExaminationCadence[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal, test::hazelglacier5::domain::CurationGovernance.provisionalDetermination, test::hazelglacier5::domain::HandlingNotes.fragile>> {meta::pure::profiles::doc.doc = 'A mineral specimen carrying its crystal habit and storage conditions in the catalogue.', test::hazelglacier5::domain::CurationGovernance.retentionBand = 'long-term'} test::hazelglacier5::domain::MineralSpecimen extends CatalogueRecord
+{
+  crystalHabit: CrystalHabit[1];
+  storageEnvironment: StorageEnvironment[1];
+  lightSensitivity: LightSensitivity[0..1];
+  labelScript: LabelScript[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal, test::hazelglacier5::domain::CurationGovernance.deaccessionPending, test::hazelglacier5::domain::HandlingNotes.requiresGloves>> {meta::pure::profiles::doc.doc = 'A condition report corrected over processing time and effective over the specimen curation timeline.', test::hazelglacier5::domain::CurationGovernance.examinationCadence = 'quarterly', test::hazelglacier5::domain::HandlingNotes.mountingNote = 'review mount before handling'} test::hazelglacier5::domain::ConditionAssessment
+{
+  assessmentCode: String[1];
+  conditionGrade: ConditionGrade[1];
+  assessedOn: StrictDate[1];
+  preservationMethod: PreservationMethod[0..1];
+  assessmentNotes: String[*];
+}
+
+Class <<test::hazelglacier5::domain::CurationGovernance.published, test::hazelglacier5::domain::HandlingNotes.requiresGloves>> {meta::pure::profiles::doc.doc = 'A curator team responsible for reviewing and maintaining catalogue records.', test::hazelglacier5::domain::CurationGovernance.custodianRole = 'team-lead'} test::hazelglacier5::domain::CuratorTeam
+{
+  teamCode: String[1];
+  teamLabel: String[1];
+  intakeMode: IntakeMode[1];
+  examinationCadence: ExaminationCadence[1];
+}
+
+Class <<test::hazelglacier5::domain::CurationGovernance.accessioned, test::hazelglacier5::domain::HandlingNotes.lightSensitive>> {meta::pure::profiles::doc.doc = 'A display case that protects and presents a selected catalogue specimen.', test::hazelglacier5::domain::HandlingNotes.storageNote = 'stable enclosed display'} test::hazelglacier5::domain::DisplayCase
+{
+  caseCode: String[1];
+  storageEnvironment: StorageEnvironment[1];
+  lightSensitivity: LightSensitivity[1];
+  mountingStyle: MountingStyle[0..1];
+}

@@ -1,0 +1,148 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::russetquokka::mapping::ReserveMapping
+(
+  *test::russetquokka::domain::StewardZone[zone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetquokka::store::ReserveDB]reserve.steward_zone.zone_id
+    )
+    ~mainTable [test::russetquokka::store::ReserveDB]reserve.steward_zone
+    zoneName: [test::russetquokka::store::ReserveDB]reserve.steward_zone.zone_name,
+    stewardTeam: [test::russetquokka::store::ReserveDB]reserve.steward_zone.steward_team
+  }
+
+  *test::russetquokka::domain::Transect[transect]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetquokka::store::ReserveDB]reserve.transect.transect_id
+    )
+    ~mainTable [test::russetquokka::store::ReserveDB]reserve.transect
+    transectCode: [test::russetquokka::store::ReserveDB]reserve.transect.transect_code
+  }
+
+  *test::russetquokka::domain::Burrow[burrow]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetquokka::store::ReserveDB]reserve.burrow.burrow_id
+    )
+    ~mainTable [test::russetquokka::store::ReserveDB]reserve.burrow
+    burrowCode: [test::russetquokka::store::ReserveDB]reserve.burrow.burrow_code,
+    substrate: [test::russetquokka::store::ReserveDB]reserve.burrow.substrate
+  }
+
+  *test::russetquokka::domain::ColonyCount[count]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetquokka::store::ReserveDB]reserve.colony_count.count_id
+    )
+    ~mainTable [test::russetquokka::store::ReserveDB]reserve.colony_count
+    tagCode: [test::russetquokka::store::ReserveDB]reserve.colony_count.tag_code,
+    individualsCounted: [test::russetquokka::store::ReserveDB]reserve.colony_count.individuals_counted
+  }
+
+  test::russetquokka::domain::Burrow_ColonyCount: Relational
+  {
+    AssociationMapping
+    (
+      burrow[count, burrow]: [test::russetquokka::store::ReserveDB]@Count_Burrow,
+      counts[burrow, count]: [test::russetquokka::store::ReserveDB]@Count_Burrow
+    )
+  }
+
+  test::russetquokka::domain::Transect_Burrow: Relational
+  {
+    AssociationMapping
+    (
+      transect[burrow, transect]: [test::russetquokka::store::ReserveDB]@Burrow_Transect,
+      burrows[transect, burrow]: [test::russetquokka::store::ReserveDB]@Burrow_Transect
+    )
+  }
+
+  test::russetquokka::domain::StewardZone_Transect: Relational
+  {
+    AssociationMapping
+    (
+      zone[transect, zone]: [test::russetquokka::store::ReserveDB]@Transect_Zone,
+      transects[zone, transect]: [test::russetquokka::store::ReserveDB]@Transect_Zone
+    )
+  }
+
+  testSuites:
+  [
+    countHabitatSuite:
+    {
+      function: |test::russetquokka::domain::ColonyCount.all(%2024-06-01, %2024-06-01)->project(
+  [
+    x|$x.tagCode,
+    x|$x.individualsCounted,
+    x|$x.burrow.habitatLabel()
+  ],
+  [
+    'TagCode',
+    'Individuals',
+    'Habitat'
+  ]
+);
+      tests:
+      [
+        habitatLabelAtInstant:
+        {
+          doc: 'Bitemporal point-in-time projection of a headcount together with the derived habitat label of its burrow, so the out-of-window versions are excluded and the derived expression is evaluated over the surviving rows.';
+          data:
+          [
+            test::russetquokka::store::ReserveDB:
+              Relational
+              #{
+                reserve.steward_zone:
+                  'zone_id,zone_name,steward_team\n'+
+                  '1,Dune Ridge Zone,North Warden Crew\n';
+                reserve.transect:
+                  'transect_id,transect_code,zone_id\n'+
+                  '1,TR-ALPHA,1\n';
+                reserve.burrow:
+                  'burrow_id,burrow_code,substrate,transect_id\n'+
+                  '1,bw-001,SAND,1\n'+
+                  '2,bw-002,LIMESTONE,99\n';
+                reserve.colony_count:
+                  'count_id,tag_code,individuals_counted,burrow_id,in_z,out_z,from_z,thru_z\n'+
+                  '1,QK-1001,14,1,2024-01-01,9999-12-31,2024-01-01,9999-12-31\n'+
+                  '2,QK-1002,9,2,2024-01-01,9999-12-31,2024-01-01,9999-12-31\n'+
+                  '3,QK-1003,5,1,2023-01-01,2023-12-31,2023-01-01,2023-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            twoLiveCounts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TagCode":"QK-1001","Individuals":14,"Habitat":"BW-001 / SAND"},{"TagCode":"QK-1002","Individuals":9,"Habitat":"BW-002 / LIMESTONE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

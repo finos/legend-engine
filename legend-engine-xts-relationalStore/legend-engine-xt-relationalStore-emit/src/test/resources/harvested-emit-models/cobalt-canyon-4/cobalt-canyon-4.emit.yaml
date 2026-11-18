@@ -1,0 +1,80 @@
+name: cobalt-canyon-4
+title: "Cobalt Canyon - ranger patrol services over processing-temporal reports with as-of trail closures"
+description: |
+  A canyon ranger patrol register. Patrol reports are versioned over
+  processing time and point to a business-temporal trail segment, a numbered
+  sector and a set of hazard notes. Four single-execution services, split into
+  a live and an archive environment bound to their own mapping and runtime,
+  open with two let-bound timestamps from now() and read the report extent as
+  of the processing date or a far-future literal. Each filters on a nested
+  conjunction of a day-granular lower-bound date test against a fixed date,
+  a rolling window of one week or one month before today, a negated membership
+  exclusion of sector numbers reached through a navigation and a negated
+  emptiness test on the hazard notes; projects direct properties, one-hop
+  paths, constant columns, a milestoned property call on the trail segment
+  and a conditional ranger-tag column driven by a regular-expression match;
+  then filters projected rows on a boolean column not being true (and, in the
+  monthly review, a non-empty tag) and applies distinct. Services declare a
+  user-list ownership and auto-activate updates. Service tests cover a
+  superseded processing version, a trail segment version not yet in force,
+  rows inside and outside each window, excluded sectors, missing hazards,
+  true, false and empty flags and duplicate rows collapsed by distinct.
+modelSources:
+  model:
+    root: cobalt-canyon-4
+    files:
+      - test/cobaltcanyon4/connection/CanyonConnections.pure
+      - test/cobaltcanyon4/data/CanyonPatrolData.pure
+      - test/cobaltcanyon4/domain/CanyonDomain.pure
+      - test/cobaltcanyon4/mapping/CanyonArchiveMapping.pure
+      - test/cobaltcanyon4/mapping/CanyonLiveMapping.pure
+      - test/cobaltcanyon4/mapping/CanyonReferenceMapping.pure
+      - test/cobaltcanyon4/runtime/CanyonRuntimes.pure
+      - test/cobaltcanyon4/service/ArchiveHazardWeek.pure
+      - test/cobaltcanyon4/service/ArchiveSeasonRegister.pure
+      - test/cobaltcanyon4/service/PatrolHazardWatch.pure
+      - test/cobaltcanyon4/service/PatrolMonthlyReview.pure
+      - test/cobaltcanyon4/store/CanyonDb.pure
+features:
+  - connection:h2
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - execution:service-user-ownership
+  - grammar:milestoned-property-call
+  - mapping:mapping-include
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:processing-temporal
+  - query:conditional-projection
+  - query:date-arithmetic
+  - query:date-comparison
+  - query:date-today
+  - query:distinct
+  - query:filter
+  - query:let-binding
+  - query:membership-test
+  - query:post-projection-filter
+  - query:project
+  - query:string-function
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - date-window
+  - distinct
+  - h2
+  - let-binding
+  - processing-temporal
+  - ranger-patrol
+  - relational
+  - service
+  - service-test
+  - tds

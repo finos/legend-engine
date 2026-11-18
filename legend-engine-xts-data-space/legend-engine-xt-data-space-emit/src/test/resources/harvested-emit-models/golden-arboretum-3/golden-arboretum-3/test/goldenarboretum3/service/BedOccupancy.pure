@@ -1,0 +1,135 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenarboretum3::service::BedOccupancy
+{
+  pattern: '/nursery/v1/occupancy/{shelterClass}';
+  title: 'Bed Occupancy By Shelter Class';
+  documentation: 'Publishes the distinct bed, species and growing-medium combinations standing in beds of one shelter class, collapsing repeated lots to one row inside the query rather than leaving the duplicates to the caller.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {shelterClass: String[1]|test::goldenarboretum3::domain::PropagationLot.all()->project(
+      [
+        l|$l.bedName,
+        l|$l.speciesName,
+        l|$l.substrateName,
+        l|$l.bed.shelterClass
+      ],
+      [
+        'bed/name',
+        'bed/species',
+        'bed/substrate',
+        'bed/shelter'
+      ]
+    )->filter(
+      r|$r.getString('bed/shelter') == $shelterClass
+    )->distinct()->sort(
+      [
+        asc('bed/name'),
+        asc('bed/species')
+      ]
+    )};
+    mapping: test::goldenarboretum3::mapping::NurseryCoreMapping;
+    runtime: test::goldenarboretum3::runtime::NurseryCoreRuntime;
+  }
+  testSuites:
+  [
+    occupancySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryRegisterConnection:
+            Relational
+            #{
+              nursery.propagation_lot:
+                'lot_code,lot_label,bed_code,species_code,substrate_code,stage_code,vigour_code,health_flag,sown_count,struck_count,potted_on,keeper_note\n'+
+                'LOT-01,Winter whips,BED-1,SP-OAK,SUB-LOAM,POTTED,A,1,240,201,2026-02-10,\n'+
+                'LOT-02,Repeat whips,BED-1,SP-OAK,SUB-LOAM,POTTED,A,1,120,100,2026-02-11,\n'+
+                'LOT-03,Privet plugs,BED-1,SP-HAZEL,SUB-BARK,SOWN,C,1,320,288,2026-02-12,\n'+
+                'LOT-04,Open bench plugs,BED-2,SP-HAZEL,SUB-BARK,SOWN,C,1,80,60,2026-02-13,\n';
+
+              nursery.nursery_bed:
+                'bed_code,bed_name,zone_code,bench_metres,shaded_flag\n'+
+                'BED-1,Long frame,ZONE-N,24,1\n'+
+                'BED-2,Open bench,ZONE-S,30,0\n';
+              reference.species_ref:
+                'species_code,species_name,family_name,native_range\n'+
+                'SP-OAK,Sessile oak,Fagaceae,western uplands\n'+
+                'SP-HAZEL,Common hazel,Betulaceae,mixed woodland\n';
+
+              reference.substrate_ref:
+                'substrate_code,substrate_name,drainage_class\n'+
+                'SUB-LOAM,Sieved loam,MODERATE\n'+
+                'SUB-BARK,Composted bark,FREE\n';
+
+              reference.zone_ref:
+                'zone_code,zone_name,shelter_class\n'+
+                'ZONE-N,North quarter,WALLED\n'+
+                'ZONE-S,South quarter,OPEN\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        walledShelterCollapsesDuplicates:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            shelterClass = 'WALLED'
+          ]
+          asserts:
+          [
+            twoDistinctCombinationsFromThreeLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"bed/name":"Long frame","bed/species":"Common hazel","bed/substrate":"Composted bark","bed/shelter":"WALLED"},{"bed/name":"Long frame","bed/species":"Sessile oak","bed/substrate":"Sieved loam","bed/shelter":"WALLED"}]';
+                  }#;
+              }#
+          ]
+        },
+        openShelter:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            shelterClass = 'OPEN'
+          ]
+          asserts:
+          [
+            oneOpenBenchCombination:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"bed/name":"Open bench","bed/species":"Common hazel","bed/substrate":"Composted bark","bed/shelter":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

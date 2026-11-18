@@ -1,0 +1,210 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::sunlitcove6::service::PatchReachTally
+{
+  pattern: '/sunlitcove6/v1/patch-reach-tally/{fromInstant}/{asOfInstant}';
+  title: 'Sunlit Cove 6 - Patch Reach Tally';
+  documentation: 'The reach tally over the surge-swept patches dived inside an injected window, optionally narrowed to a caller supplied reach set. The surviving patches are grouped by the reach reached through the station join, counted and their frond tallies summed, so the aggregation is pushed down onto the joined station column rather than resolved after projection.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {fromInstant: DateTime[1], asOfInstant: DateTime[1], reachCodes: String[*]|demo::sunlitcove6::domain::KelpPatch.all()->filter(
+      p|($p.lastDivedAt >= $fromInstant) &&
+        ($p.lastDivedAt <= $asOfInstant) &&
+        ($p.flowRegime == 'SURGE') &&
+        ($reachCodes->isEmpty() || $reachCodes->contains($p.reachCode))
+    )->groupBy(
+      [
+        p|$p.reachCode
+      ],
+      [
+        agg(
+          p|$p.patchId,
+          y|$y->count()
+        ),
+        agg(
+          p|$p.frondTally,
+          y|$y->sum()
+        )
+      ],
+      [
+        'Reach',
+        'PatchCount',
+        'Fronds'
+      ]
+    )->sort([asc('Reach')])};
+    mapping: demo::sunlitcove6::mapping::CoveSurveyMapping;
+    runtime: demo::sunlitcove6::runtime::CoveRetainedRuntime;
+  }
+  testSuites:
+  [
+    patchReachTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveWarehouse: Reference
+            #{
+              demo::sunlitcove6::data::CoveSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothReachesTallyWhenTheReachSetIsLeftEmpty:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromInstant = %2026-01-01T00:00:00.000,
+            asOfInstant = %2026-06-01T00:00:00.000,
+            reachCodes = []
+          ]
+          asserts:
+          [
+            theNorthernShoalCarriesFivePatchesAndTheSouthernOne:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reach":"RC-NORTH","PatchCount":5,"Fronds":904},{"Reach":"RC-SOUTH","PatchCount":1,"Fronds":216}]';
+                  }#;
+              }#
+          ]
+        },
+        oneReachSurvivesWhenTheReachSetNamesIt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromInstant = %2026-01-01T00:00:00.000,
+            asOfInstant = %2026-06-01T00:00:00.000,
+            reachCodes = ['RC-SOUTH']
+          ]
+          asserts:
+          [
+            onlyTheSouthernShoalIsTallied:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reach":"RC-SOUTH","PatchCount":1,"Fronds":216}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service demo::sunlitcove6::service::PatchHoldfastLookup
+{
+  pattern: '/sunlitcove6/v1/patch-holdfast-lookup';
+  title: 'Sunlit Cove 6 - Patch Holdfast Lookup';
+  documentation: 'The holdfast lookup over the patch register: the patches whose holdfast code appears in the caller supplied set, widened with the reference detail and the charted station extent reached through the two named joins.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {holdfastCodes: String[*]|demo::sunlitcove6::domain::KelpPatch.all()->filter(
+      p|$p.holdfastCode->in($holdfastCodes)
+    )->project(
+      [
+        p|$p.patchLabel,
+        p|$p.holdfastName,
+        p|$p.growthForm,
+        p|$p.stationHectares
+      ],
+      [
+        'Patch',
+        'Holdfast',
+        'Form',
+        'Hectares'
+      ]
+    )->sort([asc('Patch')])};
+    mapping: demo::sunlitcove6::mapping::CoveSurveyMapping;
+    runtime: demo::sunlitcove6::runtime::CoveWarehouseRuntime;
+  }
+  testSuites:
+  [
+    patchHoldfastLookupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveWarehouse: Reference
+            #{
+              demo::sunlitcove6::data::CoveSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        theMembershipTestSelectsTheRegrowthPlotHoldfast:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            holdfastCodes = ['ribbon']
+          ]
+          asserts:
+          [
+            onlyTheRegrowthPlotPatchIsReturned:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch":"PATCH-03","Holdfast":"Ribbon kelp","Form":"MIDWATER","Hectares":12.5}]';
+                  }#;
+              }#
+          ]
+        },
+        anEmptyCodeSetSelectsNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            holdfastCodes = []
+          ]
+          asserts:
+          [
+            theMembershipTestCannotHoldAgainstAnEmptySet:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

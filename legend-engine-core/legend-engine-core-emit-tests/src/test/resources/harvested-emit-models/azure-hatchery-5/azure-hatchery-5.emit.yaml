@@ -1,0 +1,43 @@
+name: azure-hatchery-5
+title: "Trout Hatchery Incubation And Rearing Domain - Twelve Class-Level Constraints Over Collection-Op Derived Properties"
+description: |
+  A store-less Pure domain covering the incubation and rearing side of a trout hatchery: incubation trays and
+  the daily degree-day and mortality counts taken on them, rearing raceways and the fry batches swum up into
+  them, and the graded length samples taken off those batches. Every class carries class-level constraints, so
+  an instance is valid only where its counts are physically consistent rather than merely typed: a trimmed
+  width window closes both ends of the tray code, an eyed count may never exceed the eggs actually set, a
+  picked-loss count may never exceed the shortfall between what was set and what eyed up, a day index is
+  one-based, the degree-days a single day can carry are bounded above, a usable volume is strictly positive,
+  the fry held in a channel may never exceed its licensed head, and the fry held in a batch may never exceed
+  the fry that swam up. Two constraints are collection-reducing rather than scalar: the licensed-head
+  constraint sums the held fry across the batches of the channel, and the loading derived property first
+  narrows those batches to the ones still on feed before reducing them against the usable volume. The derived
+  properties are all collection ops over the child references rather than stored totals: accumulated
+  degree-days sum the daily counts, days-with-mortality count only the days a mortality was actually picked
+  over, graded-batch count only the batches carrying a sample, and mean sampled length divides the summed
+  sample lengths by the sample count behind an empty guard so an ungraded batch reports nothing instead of
+  zero.
+modelSources:
+  model:
+    root: azure-hatchery-5
+    files:
+      - test/azurehatchery5/domain/EggTray.pure
+      - test/azurehatchery5/domain/Raceway.pure
+      - test/azurehatchery5/domain/WaterSource.pure
+features:
+  - grammar:constraint
+  - grammar:derived-property-collection-op
+  - grammar:enumeration
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-composition
+  - collection-op
+  - constraint
+  - derived-property
+  - empty-guard
+  - enumeration
+  - store-less
+  - width-window

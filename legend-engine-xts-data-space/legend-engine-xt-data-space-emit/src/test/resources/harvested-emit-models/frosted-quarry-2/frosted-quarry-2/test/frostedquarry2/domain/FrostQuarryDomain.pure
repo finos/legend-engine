@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::frostedquarry2::domain::*;
+
+Class test::frostedquarry2::domain::IceQuarry
+{
+  quarryId: String[1];
+  quarryName: String[1];
+  regionCode: String[1];
+  licenceStatus: String[1];
+}
+
+Class test::frostedquarry2::domain::ExtractionPanel
+{
+  panelId: String[1];
+  panelCode: String[1];
+  iceThicknessM: Float[1];
+}
+
+Class test::frostedquarry2::domain::HarvestCycle
+{
+  cycleId: String[1];
+  cycleCode: String[1];
+  startedOn: StrictDate[1];
+  crewSize: Integer[1];
+}
+
+Class test::frostedquarry2::domain::IceBlock
+{
+  blockId: String[1];
+  blockCode: String[1];
+  massKg: Integer[1];
+  meltLossRatio: Float[1];
+}
+
+Class test::frostedquarry2::domain::ClarityGrade
+{
+  gradeId: String[1];
+  gradeCode: String[1];
+  clarityScore: Integer[1];
+}
+
+Class test::frostedquarry2::domain::MeltAudit
+{
+  auditId: String[1];
+  auditCode: String[1];
+  measuredLossRatio: Float[1];
+}
+
+Class test::frostedquarry2::domain::HaulSled
+{
+  sledId: String[1];
+  sledCode: String[1];
+  capacityKg: Integer[1];
+}
+
+Class test::frostedquarry2::domain::TransferRun
+{
+  runId: String[1];
+  runCode: String[1];
+  runDate: StrictDate[1];
+}
+
+Class test::frostedquarry2::domain::ColdStore
+{
+  storeId: String[1];
+  storeCode: String[1];
+  storeName: String[1];
+  holdingTempC: Float[1];
+}
+
+Association test::frostedquarry2::domain::Quarry_Panel
+{
+  quarry: IceQuarry[0..1];
+  panels: ExtractionPanel[*];
+}
+
+Association test::frostedquarry2::domain::Panel_Cycle
+{
+  panel: ExtractionPanel[0..1];
+  cycles: HarvestCycle[*];
+}
+
+Association test::frostedquarry2::domain::Cycle_Block
+{
+  cycle: HarvestCycle[0..1];
+  blocks: IceBlock[*];
+}
+
+Association test::frostedquarry2::domain::Block_Grade
+{
+  gradedBlock: IceBlock[0..1];
+  grades: ClarityGrade[*];
+}
+
+Association test::frostedquarry2::domain::Block_Audit
+{
+  auditedBlock: IceBlock[0..1];
+  audits: MeltAudit[*];
+}
+
+Association test::frostedquarry2::domain::Sled_Run
+{
+  sled: HaulSled[0..1];
+  runs: TransferRun[*];
+}
+
+Association test::frostedquarry2::domain::Run_Store
+{
+  storedRuns: TransferRun[*];
+  coldStore: ColdStore[0..1];
+}

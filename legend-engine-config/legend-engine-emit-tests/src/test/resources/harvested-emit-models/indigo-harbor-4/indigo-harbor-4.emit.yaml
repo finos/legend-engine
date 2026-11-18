@@ -1,0 +1,44 @@
+name: indigo-harbor-4
+title: "Indigo Harbour 4 — Buoy, beacon and tide-gauge upkeep register with bi-temporal watches"
+description: |
+  A store-free harbour upkeep register. An abstract harbour fixture is
+  specialised into buoys, beacons and tide gauges, each guarded by
+  disjunctive constraints over optional chain, lamp and datum readings, one
+  of them a warning-level rule. Fixtures carry visit and reading collections
+  read through as-of qualified properties that filter on a date bound and
+  take the last entry. Harbour hands specialise into lamp keepers and
+  mooring divers linked to the fixtures they look after. Watches, keeper
+  posts and rotas are bi-temporal and joined by milestoned associations; a
+  data element lists two lamp-watch versions, one dated outside its window,
+  and a text element documents the register.
+modelSources:
+  model:
+    root: indigo-harbor-4
+    files:
+      - test/indigoharbor4/data/HarbourWatchFixtures.pure
+      - test/indigoharbor4/domain/HarbourFixtures.pure
+      - test/indigoharbor4/domain/HarbourVocabulary.pure
+      - test/indigoharbor4/domain/HarbourWatches.pure
+      - test/indigoharbor4/text/HarbourNotes.pure
+features:
+  - execution:data-element
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:complex-typed-property
+  - grammar:constraint
+  - grammar:profile
+  - grammar:derived-property
+  - grammar:tagged-value
+  - grammar:enumeration
+  - grammar:text-element
+  - milestoning:bi-temporal
+  - milestoning:milestoned-association
+  - scaffolding:class
+stores: []
+complexity: intermediate
+tags:
+  - beacon-upkeep
+  - bi-temporal
+  - buoy-register
+  - harbour-upkeep
+  - tide-gauge

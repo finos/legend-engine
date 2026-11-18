@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::goldenisle2::store::TrailDB
+(
+  Schema trail
+  (
+    Table path_segment
+    (
+      segment_code VARCHAR(24) PRIMARY KEY,
+      route_code VARCHAR(24) NOT NULL,
+      surface_code VARCHAR(40) NOT NULL,
+      gradient_pct INTEGER NOT NULL,
+      width_cm INTEGER NOT NULL,
+      drainage_code VARCHAR(24) NOT NULL
+    )
+
+    Table path_route
+    (
+      route_code VARCHAR(24) PRIMARY KEY,
+      route_name VARCHAR(120) NOT NULL,
+      district_code VARCHAR(24) NOT NULL
+    )
+
+    Table segment_inspection
+    (
+      inspection_code VARCHAR(24) PRIMARY KEY,
+      segment_code VARCHAR(24) NOT NULL,
+      inspected_on DATE NOT NULL,
+      erosion_score INTEGER NOT NULL,
+      surface_code VARCHAR(40) NOT NULL,
+      gradient_pct INTEGER NOT NULL,
+      width_cm INTEGER NOT NULL,
+      note VARCHAR(200) NOT NULL
+    )
+
+    View segment_condition_view
+    (
+      segment_code: trail.path_segment.segment_code PRIMARY KEY,
+      access_grade: case(greaterThan(trail.path_segment.gradient_pct, 12), 'steep-pitch', case(greaterThan(trail.path_segment.gradient_pct, 6), 'graded-climb', 'level-going')),
+      width_class: case(greaterThan(trail.path_segment.width_cm, 120), 'wide-going', 'single-file')
+    )
+
+    View route_load_view
+    (
+      ~groupBy
+      (
+        trail.path_segment.route_code
+      )
+      route_code: trail.path_segment.route_code PRIMARY KEY,
+      segment_count: count(trail.path_segment.segment_code)
+    )
+  )
+
+  Schema isleref
+  (
+    Table district
+    (
+      district_code VARCHAR(24) PRIMARY KEY,
+      district_name VARCHAR(120) NOT NULL,
+      isle_code VARCHAR(24) NOT NULL
+    )
+
+    Table isle
+    (
+      isle_code VARCHAR(24) PRIMARY KEY,
+      isle_name VARCHAR(120) NOT NULL,
+      landing_code VARCHAR(24) NOT NULL
+    )
+
+    Table landing
+    (
+      landing_code VARCHAR(24) PRIMARY KEY,
+      landing_name VARCHAR(120) NOT NULL,
+      crossing_minutes INTEGER NOT NULL
+    )
+  )
+
+  Join Inspection_Segment(trail.segment_inspection.segment_code = trail.path_segment.segment_code)
+  Join Inspection_Condition(trail.segment_inspection.segment_code = trail.segment_condition_view.segment_code)
+  Join Segment_Route(trail.path_segment.route_code = trail.path_route.route_code)
+  Join Route_District(trail.path_route.district_code = isleref.district.district_code)
+  Join District_Isle(isleref.district.isle_code = isleref.isle.isle_code)
+  Join Isle_Landing(isleref.isle.landing_code = isleref.landing.landing_code)
+)

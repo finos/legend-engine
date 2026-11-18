@@ -1,0 +1,255 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantfossil::service::FindLabelBoard
+{
+  pattern: '/dig/v1/finds/{minMass}';
+  title: 'Find Label Board';
+  owners:
+  [
+    'example-dig-register'
+  ];
+  documentation: 'Label lines for recovered finds above a mass threshold, with the trench they came out of and the site reached two joins away.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minMass: Integer[1]|test::verdantfossil::domain::Find.all()->filter(
+      f|$f.massG >= $minMass && ($f.conditionCode != 'C')
+    )->project(
+      [
+        f|$f.labelLine(),
+        f|$f.trenchLabel,
+        f|$f.siteName
+      ],
+      [
+        'Find',
+        'Trench',
+        'Site'
+      ]
+    )->sort([asc('Find')])};
+    mapping: test::verdantfossil::mapping::DigMapping;
+    runtime: test::verdantfossil::runtime::DigRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              dig.find:
+                'find_id,trench_code,stratum_code,specimen_label,mass_g,condition_code,crate_code\n'+
+                'FD-01,TR-01,ST-01,Ammonite Cast,820,A,CR-01\n'+
+                'FD-02,TR-02,ST-02,Fern Frond Slab,240,B,CR-02\n'+
+                'FD-03,TR-01,ST-02,Tooth Fragment,45,C,CR-01\n'+
+                'FD-04,TR-03,ST-03,Rib Section,1500,A,CR-03\n'+
+                'FD-05,TR-04,ST-01,Shell Bed Block,600,B,CR-02\n';
+              dig.trench:
+                'trench_code,site_code,trench_label,depth_cm\n'+
+                'TR-01,SI-01,North Cutting,240\n'+
+                'TR-02,SI-02,Ridge Step,120\n'+
+                'TR-03,SI-01,South Gallery,310\n'+
+                'TR-04,SI-03,Cliff Bench,90\n';
+              dig.site:
+                'site_code,site_name,region_name,opened_year\n'+
+                'SI-01,Larch Ridge Quarry,Upland Moor,2016\n'+
+                'SI-02,Willow Bend Pit,River Terrace,2019\n'+
+                'SI-03,Cedar Hollow Cut,Coastal Cliff,2012\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_mass_threshold:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minMass = 200
+          ]
+          asserts:
+          [
+            assertion_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Find":"FD-01 / Ammonite Cast","Trench":"North Cutting","Site":"Larch Ridge Quarry"},{"Find":"FD-02 / Fern Frond Slab","Trench":"Ridge Step","Site":"Willow Bend Pit"},{"Find":"FD-04 / Rib Section","Trench":"South Gallery","Site":"Larch Ridge Quarry"},{"Find":"FD-05 / Shell Bed Block","Trench":"Cliff Bench","Site":"Cedar Hollow Cut"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::verdantfossil::service::StratumFindBoard
+{
+  pattern: '/dig/v1/strata/{stratumName}';
+  title: 'Stratum Find Board';
+  owners:
+  [
+    'example-dig-register'
+  ];
+  documentation: 'Finds attributed to one named geological layer, reached through the join between the find table and the stratum table.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {stratumName: String[1]|test::verdantfossil::domain::Find.all()->filter(
+      f|$f.stratumName == $stratumName
+    )->project(
+      [
+        f|$f.labelLine(),
+        f|$f.stratumName,
+        f|$f.massG
+      ],
+      [
+        'Find',
+        'Stratum',
+        'Mass'
+      ]
+    )->sort([asc('Find')])};
+    mapping: test::verdantfossil::mapping::DigMapping;
+    runtime: test::verdantfossil::runtime::DigRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              dig.find:
+                'find_id,trench_code,stratum_code,specimen_label,mass_g,condition_code,crate_code\n'+
+                'FD-01,TR-01,ST-01,Ammonite Cast,820,A,CR-01\n'+
+                'FD-02,TR-02,ST-02,Fern Frond Slab,240,B,CR-02\n'+
+                'FD-03,TR-01,ST-02,Tooth Fragment,45,C,CR-01\n';
+              dig.stratum:
+                'stratum_code,stratum_name,period_name\n'+
+                'ST-01,Grey Marl,Middle Beds\n'+
+                'ST-02,Green Shale,Upper Beds\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_named_stratum:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            stratumName = 'Green Shale'
+          ]
+          asserts:
+          [
+            assertion_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Find":"FD-02 / Fern Frond Slab","Stratum":"Green Shale","Mass":240},{"Find":"FD-03 / Tooth Fragment","Stratum":"Green Shale","Mass":45}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::verdantfossil::service::CrateHandoverBoard
+{
+  pattern: '/dig/v1/crates/{preparatorName}';
+  title: 'Crate Handover Board';
+  owners:
+  [
+    'example-dig-register'
+  ];
+  documentation: 'Transport crates handed to one named laboratory preparator, resolving the preparator through the crate join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {preparatorName: String[1]|test::verdantfossil::domain::Crate.all()->filter(
+      c|$c.preparatorName == $preparatorName
+    )->project(
+      [
+        c|$c.crateLabel,
+        c|$c.preparatorName
+      ],
+      [
+        'Crate',
+        'Preparator'
+      ]
+    )->sort([asc('Crate')])};
+    mapping: test::verdantfossil::mapping::DigMapping;
+    runtime: test::verdantfossil::runtime::DigRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              dig.crate:
+                'crate_code,crate_label,preparator_code\n'+
+                'CR-01,Crate Alpha,PR-01\n'+
+                'CR-02,Crate Beta,PR-02\n'+
+                'CR-03,Crate Gamma,PR-01\n';
+              dig.preparator:
+                'preparator_code,preparator_name\n'+
+                'PR-01,Rowan Vale\n'+
+                'PR-02,Mira Fenn\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_named_preparator:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            preparatorName = 'Rowan Vale'
+          ]
+          asserts:
+          [
+            assertion_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Crate":"Crate Alpha","Preparator":"Rowan Vale"},{"Crate":"Crate Gamma","Preparator":"Rowan Vale"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenarboretum4::mapping::BedRegisterMapping
+(
+  test::goldenarboretum4::domain::NurseryBed: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.BED_CODE
+    )
+    ~mainTable [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD
+    bedCode: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.BED_CODE,
+    bedName: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.BED_NAME,
+    shade: EnumerationMapping ShadeToleranceMapping: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.SHADE_CODE,
+    season: EnumerationMapping PropagationSeasonMapping: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.SEASON_CODE,
+    soil: EnumerationMapping SoilPreferenceMapping: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.SOIL_CODE,
+    bedAreaSqm: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.BED_AREA_SQM
+  }
+
+  test::goldenarboretum4::domain::ShadeTolerance: EnumerationMapping ShadeToleranceMapping
+  {
+    FULL_SUN: ['FULL_SUN', 'OPEN_GROUND'],
+    PART_SHADE: ['PART_SHADE'],
+    DEEP_SHADE: ['DEEP_SHADE']
+  }
+
+  test::goldenarboretum4::domain::PropagationSeason: EnumerationMapping PropagationSeasonMapping
+  {
+    SPRING: ['SPRING'],
+    SUMMER: ['SUMMER'],
+    AUTUMN: ['AUTUMN', 'BACK_END'],
+    WINTER: ['WINTER']
+  }
+
+  test::goldenarboretum4::domain::SoilPreference: EnumerationMapping SoilPreferenceMapping
+  {
+    LOAM: ['LOAM'],
+    SAND: ['SAND'],
+    CLAY: ['CLAY'],
+    PEAT_FREE: ['PEAT_FREE']
+  }
+
+  testSuites:
+  [
+    testSuite_NurseryBed:
+    {
+      function: |test::goldenarboretum4::domain::NurseryBed.all()->project(
+        [
+          x|$x.bedCode,
+          x|$x.bedName,
+          x|$x.shade,
+          x|$x.season,
+          x|$x.soil,
+          x|$x.bedAreaSqm
+        ],
+        [
+          'Bed',
+          'Name',
+          'Shade',
+          'Season',
+          'Soil',
+          'Area'
+        ]
+      );
+      tests:
+      [
+        test_repeatedKeyTuple:
+        {
+          data:
+          [
+            test::goldenarboretum4::store::NurseryDatabase:
+              Relational
+              #{
+                NURSERY.PROPAGATION_RECORD:
+                  'BATCH_CODE,BED_CODE,BED_NAME,TAXON_NAME,FAMILY_NAME,HABIT_CODE,VIGOUR_CODE,ROOTING_CODE,GRADE_CODE,SHADE_CODE,SEASON_CODE,SOIL_CODE,CUTTINGS_STRUCK,BED_AREA_SQM,SOWN_ON,LOGGED_AT,PROPAGATOR_NOTE\n'+
+                  'PB-20,BED-D,Shade Tunnel D,Hydrangea arborescens,Hydrangeaceae,MULTISTEM,VIG_MED,SOFTWOOD,GROW_ON,PART_SHADE,BACK_END,PEAT_FREE,60.0,32.0,2024-09-15,2024-09-15 11:20:00,\n'+
+                  'PB-21,BED-D,Shade Tunnel D,Sarcococca confusa,Buxaceae,SHRUB,VIG_LOW,HARDWOOD,GROW_ON,DEEP_SHADE,WINTER,PEAT_FREE,45.0,32.0,2024-12-01,2024-12-01 09:00:00,\n'+
+                  'PB-22,BED-E,Open Bed E,Betula pendula,Betulaceae,STANDARD,VIG_HIGH,SEED,SALEABLE,OPEN_GROUND,SPRING,SAND,,,2024-03-20,2024-03-20 08:30:00,\n';
+              }#
+          ];
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Bed" : "BED-D",\n  "Name" : "Shade Tunnel D",\n  "Shade" : "PART_SHADE",\n  "Season" : "AUTUMN",\n  "Soil" : "PEAT_FREE",\n  "Area" : 32.0\n}, {\n  "Bed" : "BED-D",\n  "Name" : "Shade Tunnel D",\n  "Shade" : "DEEP_SHADE",\n  "Season" : "WINTER",\n  "Soil" : "PEAT_FREE",\n  "Area" : 32.0\n}, {\n  "Bed" : "BED-E",\n  "Name" : "Open Bed E",\n  "Shade" : "FULL_SUN",\n  "Season" : "SPRING",\n  "Soil" : "SAND",\n  "Area" : null\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

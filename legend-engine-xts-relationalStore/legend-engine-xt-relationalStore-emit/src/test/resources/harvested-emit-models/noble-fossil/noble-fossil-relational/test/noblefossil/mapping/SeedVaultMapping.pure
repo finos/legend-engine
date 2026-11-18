@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::noblefossil::mapping::SeedVaultMapping
+(
+  *test::noblefossil::domain::SeedLot[seedLot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::noblefossil::store::SeedVaultDB]vault.seed_lot.lot_code
+    )
+    ~mainTable [test::noblefossil::store::SeedVaultDB]vault.seed_lot
+    lotCode: [test::noblefossil::store::SeedVaultDB]vault.seed_lot.lot_code,
+    speciesName: [test::noblefossil::store::SeedVaultDB]vault.seed_lot.species_name,
+    viabilityPct: [test::noblefossil::store::SeedVaultDB]vault.seed_lot.viability_pct
+  }
+
+  testSuites:
+  [
+    seedLotSuite:
+    {
+      function: |test::noblefossil::domain::SeedLot.all(%2026-06-01)->project(
+        [
+          l|$l.lotCode,
+          l|$l.speciesName,
+          l|$l.viabilityPct
+        ],
+        [
+          'Lot',
+          'Species',
+          'Viability'
+        ]
+      )->sort([asc('Lot')]);
+      tests:
+      [
+        activeAsOfBusinessDate:
+        {
+          doc: 'Projects the seed lots whose business validity window contains the requested business date; the retired lot whose window closed before that date is the milestoning out-of-range row and is excluded.';
+          data:
+          [
+            test::noblefossil::store::SeedVaultDB:
+              Relational
+              #{
+                vault.seed_lot:
+                  'lot_code,species_name,viability_pct,valid_from,valid_thru\n'+
+                  'SL-100,Silphium laciniatum,88,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  'SL-200,Asclepias tuberosa,54,2024-01-01 00:00:00.000,2025-01-01 00:00:00.000\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"SL-100","Species":"Silphium laciniatum","Viability":88}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

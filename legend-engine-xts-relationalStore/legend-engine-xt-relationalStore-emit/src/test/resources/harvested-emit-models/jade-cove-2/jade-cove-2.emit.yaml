@@ -1,0 +1,45 @@
+name: jade-cove-2
+title: "Jade Cove 2 - shore survey pools joined to their reach and crossed onto document-sourced digests"
+description: >
+  A rock pool survey model in which pools are read out of a shore store and pick up the name of
+  their reach and its warden across a single join, sampling records handed in as documents are
+  folded onto digests by standalone banding functions, and a cross-store association resolves a
+  digest to the pool it was taken from with no physical join between the two stores. Graph-fetch
+  mapping tests cover the joined read, every banding arm and the crossed resolution including a
+  digest naming a pool the shore store does not carry.
+modelSources:
+  model:
+    root: jade-cove-2
+    files:
+      - test/jadecove2/connection/CoveConnection.pure
+      - test/jadecove2/domain/CoveDomain.pure
+      - test/jadecove2/function/IntakeRules.pure
+      - test/jadecove2/mapping/CoveCrossMapping.pure
+      - test/jadecove2/mapping/CoveMapping.pure
+      - test/jadecove2/mapping/PoolDigestM2M.pure
+      - test/jadecove2/runtime/CoveRuntime.pure
+      - test/jadecove2/store/CoveDb.pure
+tds_variant: none
+complexity: intermediate
+stores:
+  - relational
+tags:
+  - cross-store
+  - graph-fetch
+  - h2
+  - join
+  - model-to-model
+  - shore-survey
+features:
+  - execution:mapping-test
+  - grammar:function
+  - mapping:cross-store
+  - mapping:m2m-transform
+  - store:relational-join
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime

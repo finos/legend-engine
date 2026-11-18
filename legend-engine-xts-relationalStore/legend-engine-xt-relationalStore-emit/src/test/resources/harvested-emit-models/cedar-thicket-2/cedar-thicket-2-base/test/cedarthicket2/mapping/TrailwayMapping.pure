@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarthicket2::mapping::TrailwayMapping
+(
+  *test::cedarthicket2::domain::TrailRun[trailRun]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarthicket2::store::ParkCoreDb]trailway.trail_run.run_id
+    )
+    ~mainTable [test::cedarthicket2::store::ParkCoreDb]trailway.trail_run
+    runId: [test::cedarthicket2::store::ParkCoreDb]trailway.trail_run.run_id,
+    trailCode: [test::cedarthicket2::store::ParkCoreDb]trailway.trail_run.trail_code,
+    trailName: [test::cedarthicket2::store::ParkCoreDb]trailway.trail_run.trail_name,
+    eventOn: [test::cedarthicket2::store::ParkCoreDb]trailway.trail_run.event_on,
+    snapshotTag: [test::cedarthicket2::store::ParkCoreDb]trailway.trail_run.snapshot_tag,
+    distanceMetres: [test::cedarthicket2::store::ParkCoreDb]trailway.trail_run.distance_metres,
+    surfaceLabel: concat(
+                    toLower(trim(coalesce([test::cedarthicket2::store::ParkCoreDb]trailway.trail_run.surface_code, 'unset'))),
+                    concat(
+                      ' surface on ',
+                      toUpper(trim([test::cedarthicket2::store::ParkCoreDb]trailway.trail_run.trail_code))
+                    )
+                  )
+  }
+
+  testSuites:
+  [
+    trailRunSurfaceSuite:
+    {
+      function: |test::cedarthicket2::domain::TrailRun.all()->project(
+  [
+    r|$r.runId,
+    r|$r.trailCode,
+    r|$r.trailName,
+    r|$r.eventOn,
+    r|$r.snapshotTag,
+    r|$r.distanceMetres,
+    r|$r.surfaceLabel
+  ],
+  [
+    'RunId',
+    'TrailCode',
+    'TrailName',
+    'EventOn',
+    'SnapshotTag',
+    'DistanceMetres',
+    'SurfaceLabel'
+  ]
+);
+      tests:
+      [
+        surfaceLabelsAcrossEverySnapshot:
+        {
+          doc: 'Projects every stored trail run so the surface label composition is exercised over a run with a declared surface, a run whose surface column is absent and a run whose surface code carries surrounding whitespace, and so the runs that share an event date across two snapshot tags both surface.';
+          data:
+          [
+            test::cedarthicket2::store::ParkCoreDb: Reference
+              #{
+                test::cedarthicket2::data::ParkTestData
+              }#
+          ];
+          asserts:
+          [
+            projectedRuns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RunId":1,"TrailCode":"TR-RIDGE","TrailName":"Ridge Loop","EventOn":"2033-05-02","SnapshotTag":"MORNING","DistanceMetres":4200,"SurfaceLabel":"gravel surface on TR-RIDGE"},{"RunId":2,"TrailCode":"TR-RIDGE","TrailName":"Ridge Loop","EventOn":"2033-05-02","SnapshotTag":"MORNING","DistanceMetres":4200,"SurfaceLabel":"gravel surface on TR-RIDGE"},{"RunId":3,"TrailCode":"TR-CEDAR","TrailName":"Cedar Cut","EventOn":"2033-05-02","SnapshotTag":"MORNING","DistanceMetres":1800,"SurfaceLabel":"boardwalk surface on TR-CEDAR"},{"RunId":4,"TrailCode":"TR-CEDAR","TrailName":"Cedar Cut","EventOn":"2033-05-02","SnapshotTag":"EVENING","DistanceMetres":1800,"SurfaceLabel":"unset surface on TR-CEDAR"},{"RunId":5,"TrailCode":"TR-MEADOW","TrailName":"Meadow Spur","EventOn":"2033-05-03","SnapshotTag":"MORNING","DistanceMetres":null,"SurfaceLabel":"packed earth surface on TR-MEADOW"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

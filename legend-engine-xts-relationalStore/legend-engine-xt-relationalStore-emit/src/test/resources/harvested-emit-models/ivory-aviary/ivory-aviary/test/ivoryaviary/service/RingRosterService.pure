@@ -1,0 +1,152 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivoryaviary::service::RingRosterService
+{
+  pattern: '/aviary/v1/ring-roster/{processingDate}';
+  title: 'Ivory Aviary - ring roster as of a processing date';
+  owners:
+  [
+    'aviary-observatory',
+    'shorebird-survey'
+  ];
+  documentation: 'Pins the processing-temporal ring extent to a caller-supplied date and narrows it with a compound predicate that mixes a case-normalised mode comparison with two set memberships under conjunction and disjunction, then projects the derived age band, remark sentinel and observer tag before de-duplicating and ordering the roster.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], mode: String[1], residentSpecies: String[*], passageSpecies: String[*]|test::ivoryaviary::domain::RingRecord.all($processingDate)->filter(
+      r|(($mode->toUpper() == 'RESIDENT') && $r.speciesCode->in($residentSpecies)) || (($mode->toUpper() == 'PASSAGE') && $r.speciesCode->in($passageSpecies))
+    )->project(
+      [
+        x|$x.ringCode,
+        x|$x.speciesName,
+        x|$x.enclosureCode,
+        x|$x.ageBand,
+        x|$x.noteLabel,
+        x|$x.observerTag,
+        x|$x.ringWidth,
+        x|$x.wingSpanMm
+      ],
+      [
+        'RingCode',
+        'Species',
+        'Enclosure',
+        'AgeBand',
+        'NoteLabel',
+        'ObserverTag',
+        'RingWidth',
+        'WingSpanMm'
+      ]
+    )->distinct()->sort(
+      [
+        asc('RingCode')
+      ]
+    )};
+    mapping: test::ivoryaviary::mapping::AviaryMapping;
+    runtime: test::ivoryaviary::runtime::AviaryRuntime;
+  }
+  testSuites:
+  [
+    ringRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryConnection:
+            Reference
+            #{
+              test::ivoryaviary::data::AviaryFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        residentRosterMidSeason:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            mode = 'resident',
+            residentSpecies = ['TER', 'PLV'],
+            passageSpecies = ['KNT']
+          ]
+          asserts:
+          [
+            currentRingsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RingCode":"R-1001","Species":"Arctic Tern","Enclosure":"E-01","AgeBand":"juvenile","NoteLabel":"ringed at dawn","ObserverTag":"ada s","RingWidth":6,"WingSpanMm":280},{"RingCode":"R-1002","Species":"Arctic Tern","Enclosure":"E-01","AgeBand":"adult","NoteLabel":"no remark","ObserverTag":"ben d","RingWidth":6,"WingSpanMm":275},{"RingCode":"R-1003","Species":"Golden Plover","Enclosure":"E-02","AgeBand":"first-year","NoteLabel":"second capture","ObserverTag":"cyd r","RingWidth":6,"WingSpanMm":240},{"RingCode":"R-1004","Species":"Golden Plover","Enclosure":"E-02","AgeBand":null,"NoteLabel":"no remark","ObserverTag":"dot f","RingWidth":6,"WingSpanMm":236},{"RingCode":"R-1007","Species":"Arctic Tern","Enclosure":"E-04","AgeBand":"adult","NoteLabel":"revised record","ObserverTag":"gus r","RingWidth":6,"WingSpanMm":278},{"RingCode":"R-1008","Species":"Golden Plover","Enclosure":"E-05","AgeBand":"juvenile","NoteLabel":"no remark","ObserverTag":"hal d","RingWidth":6,"WingSpanMm":244}]';
+                  }#;
+              }#
+          ]
+        },
+        rosterBeforeTheRevision:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-02-01,
+            mode = 'resident',
+            residentSpecies = ['TER'],
+            passageSpecies = []
+          ]
+          asserts:
+          [
+            onlyTheSupersededVersion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RingCode":"R-1001","Species":"Arctic Tern","Enclosure":"E-01","AgeBand":"juvenile","NoteLabel":"ringed at dawn","ObserverTag":"ada s","RingWidth":6,"WingSpanMm":280},{"RingCode":"R-1002","Species":"Arctic Tern","Enclosure":"E-01","AgeBand":"adult","NoteLabel":"no remark","ObserverTag":"ben d","RingWidth":6,"WingSpanMm":275},{"RingCode":"R-1007","Species":"Arctic Tern","Enclosure":"E-04","AgeBand":"adult","NoteLabel":"superseded record","ObserverTag":"gus r","RingWidth":6,"WingSpanMm":270}]';
+                  }#;
+              }#
+          ]
+        },
+        passageRosterMidSeason:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            mode = 'passage',
+            residentSpecies = ['TER', 'PLV'],
+            passageSpecies = ['KNT', 'SND']
+          ]
+          asserts:
+          [
+            passageArmOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RingCode":"R-1006","Species":"Red Knot","Enclosure":"E-03","AgeBand":"juvenile","NoteLabel":"no remark","ObserverTag":"fay c","RingWidth":6,"WingSpanMm":300},{"RingCode":"R-1009","Species":"Sanderling","Enclosure":"E-05","AgeBand":"adult","NoteLabel":"no ring wear","ObserverTag":"ivy b","RingWidth":6,"WingSpanMm":190},{"RingCode":"R-1010","Species":"Red Knot","Enclosure":"E-06","AgeBand":"first-year","NoteLabel":"no remark","ObserverTag":"jon w","RingWidth":6,"WingSpanMm":295}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

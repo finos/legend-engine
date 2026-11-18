@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::scarletarboretum4::data::SpecimenSubmissionFixtures
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '[{"submissionRef":"sv-31","specimenCode":"qc-31","channel":"field","measuredOn":"2026-05-02","vigourCode":"rob","canopyPct":88.0,"ringCount":210,"careNotes":["mulched"],"bed":{"bedCode":"bd-7","section":{"sectionCode":"SEC-W","regionLabel":"west walk"}},"surveyorCode":"sr-4","plotTag":"pt-2"},{"submissionRef":"sv-32","specimenCode":"qc-32","channel":"field","measuredOn":"2021-01-04","vigourCode":"f","canopyPct":30.0,"ringCount":95,"careNotes":["thinned"],"bed":{"bedCode":"bd-8"},"surveyorCode":"kw-2","plotTag":"pt-3"},{"submissionRef":"sv-33","specimenCode":"qc-33","channel":"audit","measuredOn":"2026-05-04","vigourCode":"fair","canopyPct":49.0,"ringCount":150,"careNotes":["reviewed","re-tagged"],"bed":{"bedCode":"bd-9","section":{"sectionCode":"SEC-C","regionLabel":"central walk"}},"auditRef":"au-41","reviewedOn":"2026-06-01"},{"submissionRef":"sv-34","channel":"audit","careNotes":[],"auditRef":"rv-42"},{"submissionRef":"sv-35","specimenCode":"qc-35","channel":"registry","careNotes":["ignored"]}]';
+  }#
+}
+
+Data test::scarletarboretum4::data::ArmCoverageFixtures
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '[{"submissionRef":" sp-01 ","specimenCode":" qc-11 ","channel":"field","measuredOn":"2026-03-02","vigourCode":"rob","canopyPct":91.5,"ringCount":140,"careNotes":["mulched","watered"],"bed":{"bedCode":"bd-1","section":{"sectionCode":"SEC-N","regionLabel":"  north walk  "}},"surveyorCode":"sr-7","plotTag":"pt-9"},{"submissionRef":"sp-02","specimenCode":"qc-12","channel":"FIELD","measuredOn":"2026-03-03","vigourCode":"f","canopyPct":52.0,"ringCount":88,"careNotes":["prune crown"],"bed":{"bedCode":"bd-2","section":{"sectionCode":"SEC-S"}},"surveyorCode":"kw-3","plotTag":"pt-4"},{"submissionRef":"sp-03","channel":"field","measuredOn":"2026-03-04","canopyPct":22.0,"careNotes":[],"bed":{"bedCode":"bd-3"}},{"submissionRef":"sp-04","specimenCode":"qc-14","channel":"field","measuredOn":"2026-03-05","vigourCode":"zz","canopyPct":4.0,"ringCount":12,"careNotes":["staked"]},{"submissionRef":"sp-05","specimenCode":"qc-15","channel":"audit","measuredOn":"2026-03-06","vigourCode":"p","ringCount":300,"careNotes":["reviewed"],"bed":{"bedCode":"bd-5","section":{"sectionCode":"SEC-E","regionLabel":"east walk"}},"auditRef":"au-21","reviewedOn":"2026-04-01"},{"submissionRef":"sp-06","channel":"AUDIT","measuredOn":"2026-03-07","canopyPct":66.0,"careNotes":[],"auditRef":"rv-22"}]';
+  }#
+}
+
+Data test::scarletarboretum4::data::DefaultFallbackFixtures
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '[{"submissionRef":"sp-07","channel":"field","careNotes":[]},{"submissionRef":"sp-08","channel":"audit","careNotes":[]}]';
+  }#
+}
+
+Data test::scarletarboretum4::data::DisjointRoutingFixtures
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '[{"submissionRef":"sp-09","specimenCode":"qc-19","channel":"registry","careNotes":[]},{"submissionRef":"sp-10","specimenCode":"qc-20","careNotes":[]},{"submissionRef":"sp-11","specimenCode":"qc-21","channel":" field ","measuredOn":"2026-03-09","canopyPct":47.0,"careNotes":["weeded"],"surveyorCode":"sr-1"},{"submissionRef":"sp-12","specimenCode":"qc-22","channel":" audit ","measuredOn":"2026-03-10","careNotes":[],"auditRef":"au-23","reviewedOn":"2026-03-31"}]';
+  }#
+}

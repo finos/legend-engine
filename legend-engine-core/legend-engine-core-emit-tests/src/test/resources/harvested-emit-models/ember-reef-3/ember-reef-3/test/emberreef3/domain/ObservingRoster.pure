@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::emberreef3::domain::*;
+import meta::pure::profiles::*;
+
+Class <<typemodifiers.abstract, temporal.businesstemporal>> {doc.doc = 'Anyone the observatory can hold answerable for a night of observing, versioned on the calendar the roster is published against.'} demo::emberreef3::domain::RosterParty
+{
+  {doc.doc = 'Roster identifier of the party.'} partyCode: String[1];
+  {doc.doc = 'Name the party is published under.'} displayName: String[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'An observer holding time on the roster, inheriting the roster identity and its timeline from the abstract party.'} demo::emberreef3::domain::Observer extends RosterParty
+{
+  {doc.doc = 'Standing the observer holds on the roster.'} rosterRole: String[1];
+  {doc.doc = 'Nights the observer is scheduled for in the current season.'} scheduledNights: Integer[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'An observer visiting for a single season, two levels down the party hierarchy so its timeline is inherited rather than declared afresh.'} demo::emberreef3::domain::VisitingObserver extends Observer
+{
+  {doc.doc = 'Institute the visitor is travelling from.'} homeInstitute: String[1];
+  {doc.doc = 'Season label the visit was granted for.'} seasonLabel: String[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A support astronomer on the observatory staff, a sibling leaf of the visiting observer under the same roster party root.'} demo::emberreef3::domain::SupportAstronomer extends Observer
+{
+  {doc.doc = 'Dome the astronomer supports.'} supportedDome: String[1];
+  {doc.doc = 'Whether the astronomer is qualified to drive the mount unattended.'} soloQualified: Boolean[1];
+}

@@ -1,0 +1,27 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'One reed-cutting session completed by a volunteer crew in one sector of the reserve.'} test::silvermarsh4::domain::ReedCut
+{
+  cutId: Integer[1];
+  sessionCode: String[1];
+  sectorName: String[1];
+  crewName: String[1];
+  habitatType: String[1];
+  cutOn: StrictDate[1];
+  metresCut: Float[1];
+  volunteerHours: Float[1];
+  cutNote: String[0..1];
+}

@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::russetcanyon2::service::SegmentGradeSurvey
+{
+  pattern: '/russetcanyon2/v1/segment-grade/{processingDate}/{minimumGrade}/{surfacePrefix}';
+  title: 'Russet Canyon 2 - Segment Grade Survey';
+  owners:
+  [
+    'canyon-trail-survey',
+    'canyon-survey-desk'
+  ];
+  documentation: 'Resolves the segment extent at a processing instant, keeps the segments that clear a grade bound, whose length clears a bound derived from that grade, and whose normalised surface description carries the requested prefix, then reaches the trail head through the association join for the trail name.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], minimumGrade: Integer[1], surfacePrefix: String[1]|test::russetcanyon2::domain::TrailSegment.all($processingDate)->filter(
+      s|($s.gradePercent >= $minimumGrade) && ($s.lengthM > ($minimumGrade * 10)) && $s.surfaceType->toUpper()->startsWith($surfacePrefix)
+    )->project(
+      [
+        s|$s.segmentCode,
+        s|$s.surfaceType->toUpper(),
+        s|$s.gradePercent,
+        s|$s.lengthM,
+        s|$s.head($processingDate).trailName
+      ],
+      [
+        'Segment/Code',
+        'Segment/Surface',
+        'Segment/Grade',
+        'Segment/LengthM',
+        'Segment/TrailName'
+      ]
+    )->sort(
+      [
+        asc('Segment/Code')
+      ]
+    )->limit(5)};
+    mapping: test::russetcanyon2::mapping::CanyonMapping;
+    runtime: test::russetcanyon2::runtime::CanyonRuntime;
+  }
+  testSuites:
+  [
+    segmentGradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          canyonConnection:
+            Relational
+            #{
+              canyon.trail_head:
+                'trail_code,trail_name,elevation_m,access_note,in_z,out_z\n'+
+                'TH-01,Russet Rim Trail Draft,880,,2026-01-01,2026-02-01\n'+
+                'TH-01,Russet Rim Trail,905,gate closed at dusk,2026-02-01,9999-12-31\n'+
+                'TH-02,Ochre Bench Trail,640,,2026-02-01,9999-12-31\n';
+              canyon.trail_segment:
+                'segment_code,trail_code,surface_type,length_m,grade_percent,in_z,out_z\n'+
+                'SG-01,TH-01,gravel path,1400,18,2026-01-01,2026-02-01\n'+
+                'SG-01,TH-01,gravel path,1400,14,2026-02-01,9999-12-31\n'+
+                'SG-02,TH-01,gravel track,900,7,2026-02-01,9999-12-31\n'+
+                'SG-03,TH-02,boardwalk,300,22,2026-02-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        gradeBoundAndSupersededVersion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-03-01,
+            minimumGrade = 10,
+            surfacePrefix = 'GRAVEL'
+          ]
+          asserts:
+          [
+            onlyTheCurrentGradedGravelSegment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment/Code":"SG-01","Segment/Surface":"GRAVEL PATH","Segment/Grade":14,"Segment/LengthM":1400,"Segment/TrailName":"Russet Rim Trail"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

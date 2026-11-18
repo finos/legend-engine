@@ -1,0 +1,62 @@
+name: ember-reef-5
+title: "Reef Buoy Observatory — Seven Processing-Temporal Report Extents Read at the Latest Version"
+description: |
+  A fringing-reef observatory publishing hourly crest-buoy and daily lagoon-buoy
+  water-quality reports, diver transect surveys and a satellite thermal stress
+  index. Every report class is processing-temporal and comes in a primary and a
+  revised-calibration variant of identical shape, except the stress index. Each
+  of seven parameterless services projects every property of one class at the
+  latest processing version from a quoted lower-case column store, so a
+  superseded version never surfaces. The data space exposes all seven services
+  as executables and carries vendor and privacy stereotypes and tagged values.
+
+modelSources:
+  model:
+    root: ember-reef-5
+    files:
+      - test/emberreef5/connection/ReefBuoyConnection.pure
+      - test/emberreef5/dataspace/ReefDataSpace.pure
+      - test/emberreef5/domain/ReefDomain.pure
+      - test/emberreef5/mapping/ReefBuoyMapping.pure
+      - test/emberreef5/runtime/ReefBuoyRuntime.pure
+      - test/emberreef5/service/ReefBuoyServices.pure
+      - test/emberreef5/store/ReefBuoyDb.pure
+
+features:
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:mapping-test
+  - execution:service
+  - execution:service-ownership-did
+  - execution:service-test
+  - grammar:class-temporal-stereotype
+  - grammar:tagged-value
+  - grammar:profile
+  - grammar:quoted-identifier
+  - scaffolding:relational-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - query:distinct
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - coral-reef
+  - data-space
+  - h2
+  - latest-processing-date
+  - mapping-test
+  - ocean-buoys
+  - processing-temporal
+  - quoted-identifiers
+  - service-test
+  - snowflake
+  - water-quality

@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::kindlyquokka3::store::SanctuaryFieldStore
+(
+  Schema fieldlog
+  (
+    Table browse_observation
+    (
+      obs_ref VARCHAR(60) PRIMARY KEY,
+      col_lbl VARCHAR(120),
+      sanct_nm VARCHAR(120),
+      hab_bnd VARCHAR(120),
+      shltr_cd VARCHAR(120),
+      brws_spc_cd VARCHAR(120),
+      frg_stg VARCHAR(120),
+      obsvr_init VARCHAR(120),
+      wthr_summ VARCHAR(120),
+      moon_phs_lbl VARCHAR(120),
+      trk_surf_knd VARCHAR(120),
+      obs_dt DATE,
+      sght_ts TIMESTAMP,
+      qkka_cnt INTEGER,
+      pch_yng_cnt INTEGER,
+      brws_cov_pct FLOAT,
+      trnsct_len_m FLOAT,
+      notes_txt VARCHAR(240)
+    )
+
+    Table patrol_shift
+    (
+      shift_ref VARCHAR(60) PRIMARY KEY,
+      ranger_init VARCHAR(120),
+      shift_band VARCHAR(120),
+      patrolled_dt DATE,
+      distance_km FLOAT,
+      checkpoint_cnt INTEGER
+    )
+  )
+)

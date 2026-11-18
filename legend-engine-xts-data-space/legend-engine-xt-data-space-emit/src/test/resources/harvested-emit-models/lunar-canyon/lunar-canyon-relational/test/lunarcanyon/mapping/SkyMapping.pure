@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarcanyon::mapping::SkyMapping
+(
+  *test::lunarcanyon::domain::SkySession[session]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarcanyon::store::SkyDB]sky.sky_session.session_code
+    )
+    ~mainTable [test::lunarcanyon::store::SkyDB]sky.sky_session
+    sessionCode: [test::lunarcanyon::store::SkyDB]sky.sky_session.session_code,
+    observedOn: [test::lunarcanyon::store::SkyDB]sky.sky_session.observed_on,
+    startedAt: [test::lunarcanyon::store::SkyDB]sky.sky_session.started_at,
+    catalogueCode: [test::lunarcanyon::store::SkyDB]sky.sky_session.catalogue_code,
+    seeingIndex: [test::lunarcanyon::store::SkyDB]sky.sky_session.seeing_index,
+    exposureCount: [test::lunarcanyon::store::SkyDB]sky.sky_session.exposure_count,
+    filterCode: [test::lunarcanyon::store::SkyDB]sky.sky_session.filter_code,
+    logNote: [test::lunarcanyon::store::SkyDB]sky.sky_session.log_note,
+    domeCode: [test::lunarcanyon::store::SkyDB]@Session_Telescope_J | [test::lunarcanyon::store::SkyDB]sky.telescope.dome_code
+  }
+
+  *test::lunarcanyon::domain::Telescope[telescope]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarcanyon::store::SkyDB]sky.telescope.telescope_code
+    )
+    ~mainTable [test::lunarcanyon::store::SkyDB]sky.telescope
+    telescopeCode: [test::lunarcanyon::store::SkyDB]sky.telescope.telescope_code,
+    telescopeName: [test::lunarcanyon::store::SkyDB]sky.telescope.telescope_name,
+    mirrorCm: [test::lunarcanyon::store::SkyDB]sky.telescope.mirror_cm,
+    mountKind: [test::lunarcanyon::store::SkyDB]sky.telescope.mount_kind,
+    domeCode: [test::lunarcanyon::store::SkyDB]sky.telescope.dome_code
+  }
+
+  *test::lunarcanyon::domain::Observer[observer]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarcanyon::store::SkyDB]sky.observer.observer_code
+    )
+    ~mainTable [test::lunarcanyon::store::SkyDB]sky.observer
+    observerCode: [test::lunarcanyon::store::SkyDB]sky.observer.observer_code,
+    observerName: [test::lunarcanyon::store::SkyDB]sky.observer.observer_name,
+    certifications: [test::lunarcanyon::store::SkyDB]sky.observer.certifications,
+    homeSite: [test::lunarcanyon::store::SkyDB]sky.observer.home_site
+  }
+
+  test::lunarcanyon::domain::Session_Telescope: Relational
+  {
+    AssociationMapping
+    (
+      telescope[session, telescope]: [test::lunarcanyon::store::SkyDB]@Session_Telescope_J,
+      sessions[telescope, session]: [test::lunarcanyon::store::SkyDB]@Session_Telescope_J
+    )
+  }
+
+  test::lunarcanyon::domain::Session_Observer: Relational
+  {
+    AssociationMapping
+    (
+      observer[session, observer]: [test::lunarcanyon::store::SkyDB]@Session_Observer_J,
+      filedSessions[observer, session]: [test::lunarcanyon::store::SkyDB]@Session_Observer_J
+    )
+  }
+
+  testSuites:
+  [
+    sessionSuite:
+    {
+      function: |test::lunarcanyon::domain::SkySession.all()->project(
+        [
+          s|$s.sessionCode,
+          s|$s.catalogueCode,
+          s|$s.exposureCount,
+          s|$s.seeingIndex,
+          s|$s.filterCode,
+          s|$s.domeCode,
+          s|$s.telescope.telescopeName,
+          s|$s.telescope.mirrorCm,
+          s|$s.observer.observerName,
+          s|$s.observer.certifications
+        ],
+        [
+          'sessionCode',
+          'catalogueCode',
+          'exposureCount',
+          'seeingIndex',
+          'filterCode',
+          'domeCode',
+          'telescopeName',
+          'mirrorCm',
+          'observerName',
+          'certifications'
+        ]
+      )->sort([asc('sessionCode')]);
+      tests:
+      [
+        navigatedBothAssociations:
+        {
+          doc: 'Sessions whose instrument and observer both resolve through their association joins, a session whose instrument key has no counterpart row, a session whose instrument key is null, and rows carrying nulls in the optional projected columns.';
+          data:
+          [
+            test::lunarcanyon::store::SkyDB:
+              Relational
+              #{
+                sky.sky_session:
+                  'session_code,telescope_code,observer_code,observed_on,started_at,catalogue_code,seeing_index,exposure_count,filter_code,log_note\n'+
+                  'SS01,TL1,OB1,2025-09-01,2025-09-01 21:30:00,NGC,2.5,40,V,clear night\n'+
+                  'SS02,TL2,OB2,2025-09-02,2025-09-02 22:15:00,IC,3.25,25,R,thin cirrus\n'+
+                  'SS03,TL1,OB2,2025-09-03,2025-09-03 20:45:00,NGC,,60,,no filter wheel\n'+
+                  'SS04,TLX,OB1,2025-09-04,2025-09-04 23:05:00,MESSIER,1.75,15,B,instrument retired\n'+
+                  'SS05,,OB3,2025-09-05,,SHARPLESS,4.5,5,V,visual only\n';
+
+                sky.telescope:
+                  'telescope_code,telescope_name,mirror_cm,mount_kind,dome_code\n'+
+                  'TL1,Ridge Reflector,60.0,EQUATORIAL,DOME-A\n'+
+                  'TL2,Vale Refractor,20.0,ALTAZIMUTH,DOME-B\n';
+
+                sky.observer:
+                  'observer_code,observer_name,certifications,home_site\n'+
+                  'OB1,Mira Halden,DEEP_SKY;ASTROMETRY,Ridge Camp\n'+
+                  'OB2,Tomas Rell,PHOTOMETRY,Vale Cottage\n'+
+                  'OB3,Yuki Sorne,,Hill Gate\n';
+              }#
+          ];
+          asserts:
+          [
+            associationNavigationRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sessionCode":"SS01","catalogueCode":"NGC","exposureCount":40,"seeingIndex":2.5,"filterCode":"V","domeCode":"DOME-A","telescopeName":"Ridge Reflector","mirrorCm":60.0,"observerName":"Mira Halden","certifications":"DEEP_SKY;ASTROMETRY"},{"sessionCode":"SS02","catalogueCode":"IC","exposureCount":25,"seeingIndex":3.25,"filterCode":"R","domeCode":"DOME-B","telescopeName":"Vale Refractor","mirrorCm":20.0,"observerName":"Tomas Rell","certifications":"PHOTOMETRY"},{"sessionCode":"SS03","catalogueCode":"NGC","exposureCount":60,"seeingIndex":null,"filterCode":null,"domeCode":"DOME-A","telescopeName":"Ridge Reflector","mirrorCm":60.0,"observerName":"Tomas Rell","certifications":"PHOTOMETRY"},{"sessionCode":"SS04","catalogueCode":"MESSIER","exposureCount":15,"seeingIndex":1.75,"filterCode":"B","domeCode":null,"telescopeName":null,"mirrorCm":null,"observerName":"Mira Halden","certifications":"DEEP_SKY;ASTROMETRY"},{"sessionCode":"SS05","catalogueCode":"SHARPLESS","exposureCount":5,"seeingIndex":4.5,"filterCode":"V","domeCode":null,"telescopeName":null,"mirrorCm":null,"observerName":"Yuki Sorne","certifications":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

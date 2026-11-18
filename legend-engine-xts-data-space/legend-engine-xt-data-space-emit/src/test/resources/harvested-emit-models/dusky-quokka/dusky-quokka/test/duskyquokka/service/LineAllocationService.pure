@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyquokka::service::LineAllocationService
+{
+  pattern: '/transit/v1/line-allocation';
+  title: 'Line Allocation';
+  owners:
+  [
+    'transit-network-operations',
+    'depot-planning'
+  ];
+  documentation: 'Projects each transit line beside the depot name its binding reaches through the declared depot join, so the plan emits an inner join per traversed path.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::duskyquokka::domain::TransitLine.all()->project(
+      [
+        col(
+          l|$l.lineCode,
+          'Line'
+        ),
+        col(
+          l|$l.lineName,
+          'Name'
+        ),
+        col(
+          l|$l.serviceTier,
+          'Tier'
+        ),
+        col(
+          l|$l.homeDepotName,
+          'Depot'
+        )
+      ]
+    );
+    mapping: test::duskyquokka::mapping::TransitMapping;
+    runtime: test::duskyquokka::runtime::TransitRuntime;
+  }
+  testSuites:
+  [
+    lineAllocationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              transit.depot:
+                'depot_id,depot_code,depot_name,district_name,opened_on,staffed_overnight\n'+
+                '1,DEP-N,Northgate Depot,Northgate,1998-04-12,true\n'+
+                '2,DEP-S,Southbrook Depot,Southbrook,2006-09-30,false\n';
+
+              transit.line:
+                'line_id,line_code,line_name,service_tier,route_km,depot_id\n'+
+                '1,L-11,Ridgeway Loop,EXPRESS,18.4,1\n'+
+                '2,L-12,Marshside Link,LOCAL,9.6,2\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        linesWithDepot:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoLinesJoinedToDepots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Line":"L-11","Name":"Ridgeway Loop","Tier":"EXPRESS","Depot":"Northgate Depot"},{"Line":"L-12","Name":"Marshside Link","Tier":"LOCAL","Depot":"Southbrook Depot"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

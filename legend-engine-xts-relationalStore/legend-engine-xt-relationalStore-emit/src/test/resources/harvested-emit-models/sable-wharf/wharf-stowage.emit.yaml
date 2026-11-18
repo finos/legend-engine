@@ -1,0 +1,38 @@
+name: wharf-stowage
+title: "Sable Wharf - point-in-time stowage projection with per-column milestoned resolution and subtype casts"
+description: |
+  A single-execution service whose only query is one wide aliased projection over
+  a business-temporal extent. The business-date parameter both opens the extent
+  and is passed again into the milestoned stowage-plan property inside every
+  column lambda, so each column re-resolves the same milestoned edge before
+  casting to a concrete specification or cargo-unit subtype.
+  Several columns are only well typed because of a trailing multiplicity
+  coercion: collections are filtered on an enumeration constant and then read as
+  scalars, and an enumeration-valued column is coerced to a string.
+modelSources:
+  model:
+    root: wharf-stowage
+    files:
+      - test/sablewharf/service/BerthStowageAsOf.pure
+  dependencies:
+    - source: wharf-berths.emit.yaml
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:subtype-cast
+stores: []
+complexity: intermediate
+tags:
+  - business-temporal
+  - collection-coercion
+  - h2
+  - point-in-time
+  - projection
+  - service-test
+  - subtype-cast

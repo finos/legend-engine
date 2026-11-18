@@ -1,0 +1,41 @@
+name: sunlit-lagoon-2
+title: "Sunlit Lagoon 2 — Public Library Circulation"
+description: |
+  A public-library circulation model that separates raw checkout and borrower landings from
+  their curated circulation view. Relational mappings read branch and member registers,
+  applying a programme literal and membership-tier literal list, while an independent
+  model-to-model mapping classifies eight circulation states and preserves source channel
+  details through a tested graph-fetch projection.
+modelSources:
+  model:
+    root: sunlit-lagoon-2
+    files:
+      - test/sunlitlagoon2/domain/LibraryCirculation.pure
+      - test/sunlitlagoon2/function/CirculationFunctions.pure
+      - test/sunlitlagoon2/mapping/CirculationMapping.pure
+      - test/sunlitlagoon2/mapping/LandingRelationalMapping.pure
+      - test/sunlitlagoon2/mapping/LibraryRelationalMapping.pure
+      - test/sunlitlagoon2/runtime/CirculationRuntime.pure
+      - test/sunlitlagoon2/store/CirculationStores.pure
+features:
+  - execution:mapping-test
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:relational-literal
+  - mapping:relational-literal-list
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - conditional-transform
+  - graph-fetch
+  - h2
+  - library-circulation
+  - m2m
+  - relational-literal
+  - relational-literal-list
+  - runtime

@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace <<test::emberreef5::profile::ReefPrivacyProfile.publicObservation, test::emberreef5::profile::ReefVendorProfile.vendorSourced>> {test::emberreef5::profile::ReefVendorProfile.licenceStatus = 'open-observation', test::emberreef5::profile::ReefVendorProfile.provider = 'reef-buoy-collective'} test::emberreef5::dataspace::ReefBuoyDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'observed';
+      description: 'Latest processing versions of every buoy, survey and stress report.';
+      mapping: test::emberreef5::mapping::ReefBuoyMapping;
+      defaultRuntime: test::emberreef5::runtime::ReefBuoyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'observed';
+  title: 'Reef Buoy Observatory';
+  description: 'Crest and lagoon buoy reports, diver transect surveys and the satellite thermal stress index for a fringing reef, each published at its latest processing version.';
+  elements:
+  [
+    test::emberreef5::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'CrestBuoyHourly extract';
+      description: 'Latest processing versions of the CrestBuoyHourly report.';
+      executable: test::emberreef5::service::CrestBuoyHourlyExtract;
+      executionContextKey: 'observed';
+    },
+    {
+      id: 2;
+      title: 'CrestBuoyHourlyRevised extract';
+      description: 'Latest processing versions of the CrestBuoyHourlyRevised report.';
+      executable: test::emberreef5::service::CrestBuoyHourlyRevisedExtract;
+      executionContextKey: 'observed';
+    },
+    {
+      id: 3;
+      title: 'LagoonBuoyDaily extract';
+      description: 'Latest processing versions of the LagoonBuoyDaily report.';
+      executable: test::emberreef5::service::LagoonBuoyDailyExtract;
+      executionContextKey: 'observed';
+    },
+    {
+      id: 4;
+      title: 'LagoonBuoyDailyRevised extract';
+      description: 'Latest processing versions of the LagoonBuoyDailyRevised report.';
+      executable: test::emberreef5::service::LagoonBuoyDailyRevisedExtract;
+      executionContextKey: 'observed';
+    },
+    {
+      id: 5;
+      title: 'PolypTransectSurvey extract';
+      description: 'Latest processing versions of the PolypTransectSurvey report.';
+      executable: test::emberreef5::service::PolypTransectSurveyExtract;
+      executionContextKey: 'observed';
+    },
+    {
+      id: 6;
+      title: 'PolypTransectSurveyRevised extract';
+      description: 'Latest processing versions of the PolypTransectSurveyRevised report.';
+      executable: test::emberreef5::service::PolypTransectSurveyRevisedExtract;
+      executionContextKey: 'observed';
+    },
+    {
+      id: 7;
+      title: 'ThermalStressIndex extract';
+      description: 'Latest processing versions of the ThermalStressIndex report.';
+      executable: test::emberreef5::service::ThermalStressIndexExtract;
+      executionContextKey: 'observed';
+    }
+  ];
+  supportInfo: Combined
+  {
+    emails: ['reef-buoy-observatory-stewards'];
+  };
+}

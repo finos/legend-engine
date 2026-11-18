@@ -1,0 +1,65 @@
+name: scarlet-thistle-4
+title: "Scarlet Thistle 4 — An Environment-Keyed Volunteer Contact Digest Whose Seven Grouping Keys And Folded Offering Aggregate Are Reached Entirely Through Associations"
+description: |
+  A trail volunteer register published as a single environment-keyed endpoint and nothing else.
+  The contact extent carries only two published attributes of its own; the remaining five grouping
+  keys are reached through a to-one subscription association, and the one aggregate reaches a
+  second hop further to fold the to-many offering names of that subscription into a single
+  delimited digest. Because the offering traversal fans the extent out before the grouping, the
+  body closes with a distinct reduction, and the eight declared aliases — seven keys plus the
+  folded digest — are the whole published shape.
+
+  The subscription hop is optional, so a contact registered before a programme was allocated to it
+  still appears with its association-reached keys absent and no digest at all, and a subscription
+  publishing no offerings is observably distinguishable from one publishing several. Two contacts
+  sharing a subscription differ only in the two extent keys, so the traversal genuinely decides
+  the row identity rather than merely decorating it.
+
+  The multi-execution key names two runtimes over one mapping, so the environment discriminator
+  chooses only the physical binding while the model, the mapping and the query body stay fixed.
+  The suite asserts one key resolving to rows with the several-offering, single-offering,
+  empty-collection and absent-subscription cases all present, and the other key resolving cleanly
+  to no rows at all, so key allocation is exercised independently of the data it returns.
+modelSources:
+  model:
+    root: scarlet-thistle-4
+    files:
+      - test/scarletthistle4/connection/ThistleConnections.pure
+      - test/scarletthistle4/domain/ThistleDomain.pure
+      - test/scarletthistle4/mapping/ThistleMapping.pure
+      - test/scarletthistle4/runtime/ThistleRuntimes.pure
+      - test/scarletthistle4/service/ContactProgrammeDigestByEnv.pure
+      - test/scarletthistle4/store/ThistleDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-primary-key
+  - mapping:relational-main-table-alias
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - association-reached-grouping-key
+  - distinct-reduction
+  - environment-keyed-execution
+  - folded-aggregate
+  - h2
+  - multi-execution-service
+  - optional-to-one-hop
+  - service-test
+  - tabular-data-set
+  - trail-volunteer-register

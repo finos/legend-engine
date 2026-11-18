@@ -1,0 +1,57 @@
+name: verdant-quokka-4
+title: "Verdant Quokka 4 - reef transect survey register over four relational stores with an included site store"
+description: |
+  A volunteer coral-reef survey register. Reef sites, transects and organism sightings live in a
+  survey store that includes a separate site store; two single-column joins reach into the
+  included store and a three-column composite join ties coral sightings to their transect.
+  Coral and fish sightings extend a mapped sighting superclass and map their inherited
+  properties from their own tables. Site conditions, taxon statuses and diver permits sit in
+  three business-milestoned stores, each queried at a survey date so out-of-range rows drop out.
+  Class mappings declare main tables and multi-column keys, stamp constant literals, derive a
+  transect area from two columns and convert temperatures and depths arithmetically, and an
+  included condition mapping resolves alongside the survey mapping.
+modelSources:
+  model:
+    root: verdant-quokka-4
+    files:
+      - test/verdantquokka4/domain/ReefDomain.pure
+      - test/verdantquokka4/mapping/ReefConditionMapping.pure
+      - test/verdantquokka4/mapping/ReefCrewMapping.pure
+      - test/verdantquokka4/mapping/ReefSurveyMapping.pure
+      - test/verdantquokka4/mapping/ReefTaxonMapping.pure
+      - test/verdantquokka4/store/ReefStores.pure
+features:
+  - execution:mapping-test
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:tagged-value
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-association-implementation
+  - scaffolding:relational-mapping
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-property-expression
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - scaffolding:class
+  - scaffolding:relational-store
+  - store:relational-composite-join
+  - store:relational-inner-join
+  - store:relational-join
+  - store:relational-multi-column-primary-key
+  - store:relational-multi-table
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - composite-join
+  - coral-reef
+  - duckdb
+  - inheritance
+  - milestoning
+  - relational
+  - store-include
+  - survey-register

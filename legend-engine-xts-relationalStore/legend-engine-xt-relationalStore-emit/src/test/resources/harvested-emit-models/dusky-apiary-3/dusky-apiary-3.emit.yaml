@@ -1,0 +1,36 @@
+name: dusky-apiary-3
+title: "Dusky Apiary Field Register"
+description: |
+  An invented apiary field register linking hives, yard locations, inspections
+  and forage plots through a small relational store.
+modelSources:
+  model:
+    root: dusky-apiary-3
+    files:
+      - test/duskyapiary3/connection/ApiaryConnections.pure
+      - test/duskyapiary3/data/ApiaryTestData.pure
+      - test/duskyapiary3/domain/ApiaryDomain.pure
+      - test/duskyapiary3/mapping/ApiaryMapping.pure
+      - test/duskyapiary3/relational/ApiaryDatabase.pure
+      - test/duskyapiary3/runtime/ApiaryRuntime.pure
+stores:
+  - relational
+features:
+  - grammar:association
+  - grammar:constraint
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+complexity: intermediate
+tags:
+  - apiary
+  - enumeration
+  - field-register
+  - relational-joins

@@ -1,0 +1,55 @@
+name: sable-canyon-4
+title: "Sable Canyon — Tier-Keyed Trail Condition Board with Banded Washout Readings"
+description: |
+  A canyon trail-maintenance model whose stereotyped and tagged segment class is
+  mapped onto a single relational table with an enumerated walking surface, and
+  published through one multi-execution endpoint keyed by publication tier. The
+  endpoint bands each segment by its washout reading through nested conditional
+  arms — impassable, note-derived restricted, caution, clear — and yields no band
+  at all when the reading is absent. A JSON-schema file generation sequenced by a
+  generation specification emits the digest contract, and two local H2 runtimes
+  stand in for the field and archive tiers.
+
+modelSources:
+  model:
+    root: sable-canyon-4
+    files:
+      - test/sablecanyon4/connection/CanyonConnections.pure
+      - test/sablecanyon4/domain/CanyonDomain.pure
+      - test/sablecanyon4/generation/CanyonGenerationSpecification.pure
+      - test/sablecanyon4/generation/SegmentDigestJsonSchema.pure
+      - test/sablecanyon4/mapping/CanyonMapping.pure
+      - test/sablecanyon4/runtime/CanyonRuntimes.pure
+      - test/sablecanyon4/service/SegmentConditionService.pure
+      - test/sablecanyon4/store/CanyonDB.pure
+
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service-test
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional
+  - enumeration
+  - file-generation
+  - h2
+  - json-schema
+  - multi-execution
+  - profile
+  - service-test
+  - trail-maintenance

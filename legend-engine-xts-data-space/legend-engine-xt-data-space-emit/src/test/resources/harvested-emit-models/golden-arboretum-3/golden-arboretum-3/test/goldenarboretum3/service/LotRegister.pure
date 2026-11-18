@@ -1,0 +1,145 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenarboretum3::service::LotRegister
+{
+  pattern: '/nursery/v1/lots/{bedName}/{minSown}';
+  title: 'Propagation Lot Register';
+  documentation: 'Publishes the propagation-lot register for one bed above a sown-count floor, spelling out the vigour grade and the numeric health flag through the mapped conditionals and reaching the bed name and the cross-store species and growing-medium names through the declared joins.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {bedName: String[1], minSown: Integer[1]|test::goldenarboretum3::domain::PropagationLot.all()->filter(
+      l|($l.bedName == $bedName) && ($l.sownCount >= $minSown)
+    )->project(
+      [
+        l|$l.lotCode,
+        l|$l.lotLabel,
+        l|$l.vigourLabel,
+        l|$l.healthLabel,
+        l|$l.sourceRegister,
+        l|$l.sownCount,
+        l|$l.struckCount,
+        l|$l.bedName,
+        l|$l.speciesName,
+        l|$l.familyName,
+        l|$l.substrateName
+      ],
+      [
+        'lot/code',
+        'lot/label',
+        'lot/vigour',
+        'lot/health',
+        'lot/register',
+        'lot/counts/sown',
+        'lot/counts/struck',
+        'lot/bed/name',
+        'lot/species/name',
+        'lot/species/family',
+        'lot/substrate/name'
+      ]
+    )->sort(
+      [
+        asc('lot/code')
+      ]
+    )};
+    mapping: test::goldenarboretum3::mapping::NurseryCoreMapping;
+    runtime: test::goldenarboretum3::runtime::NurseryCoreRuntime;
+  }
+  testSuites:
+  [
+    lotRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryRegisterConnection:
+            Relational
+            #{
+              nursery.propagation_lot:
+                'lot_code,lot_label,bed_code,species_code,substrate_code,stage_code,vigour_code,health_flag,sown_count,struck_count,potted_on,keeper_note\n'+
+                'LOT-01,Winter whips,BED-1,SP-OAK,SUB-LOAM,POTTED,A,1,240,201,2026-02-10,first flush\n'+
+                'LOT-02,Spring liners,BED-1,SP-BEECH,SUB-LOAM,POTTED,H,0,180,150,2026-02-11,\n'+
+                'LOT-03,Privet plugs,BED-2,SP-HAZEL,SUB-BARK,SOWN,C,1,320,288,2026-02-12,\n';
+
+              nursery.nursery_bed:
+                'bed_code,bed_name,zone_code,bench_metres,shaded_flag\n'+
+                'BED-1,Long frame,ZONE-N,24,1\n'+
+                'BED-2,Cold frame,ZONE-N,18,0\n';
+              reference.species_ref:
+                'species_code,species_name,family_name,native_range\n'+
+                'SP-OAK,Sessile oak,Fagaceae,western uplands\n'+
+                'SP-BEECH,Common beech,Fagaceae,lowland scarp\n'+
+                'SP-HAZEL,Common hazel,Betulaceae,mixed woodland\n';
+
+              reference.substrate_ref:
+                'substrate_code,substrate_name,drainage_class\n'+
+                'SUB-LOAM,Sieved loam,MODERATE\n'+
+                'SUB-BARK,Composted bark,FREE\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        longFrameAboveFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            bedName = 'Long frame',
+            minSown = 100
+          ]
+          asserts:
+          [
+            twoLongFrameLotsWithBothConditionalOutcomes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"lot/code":"LOT-01","lot/label":"Winter whips","lot/vigour":"EXCEPTIONAL","lot/health":"CHECKED","lot/register":"NURSERY REGISTER","lot/counts/sown":240,"lot/counts/struck":201,"lot/bed/name":"Long frame","lot/species/name":"Sessile oak","lot/species/family":"Fagaceae","lot/substrate/name":"Sieved loam"},{"lot/code":"LOT-02","lot/label":"Spring liners","lot/vigour":"FAILING","lot/health":"AWAITING CHECK","lot/register":"NURSERY REGISTER","lot/counts/sown":180,"lot/counts/struck":150,"lot/bed/name":"Long frame","lot/species/name":"Common beech","lot/species/family":"Fagaceae","lot/substrate/name":"Sieved loam"}]';
+                  }#;
+              }#
+          ]
+        },
+        bedWithNoQualifyingLots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            bedName = 'Cold frame',
+            minSown = 5000
+          ]
+          asserts:
+          [
+            noLotsAboveThatFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenarboretum2::service::SurveyTrace
+{
+  pattern: '/arboretum/v1/survey-trace/{surveyYear}';
+  title: 'Arboretum Collections - Canopy Survey Trace';
+  owners:
+  [
+    'arboretum-collections',
+    'grove-records'
+  ];
+  documentation: 'Structurally different second endpoint over the same mapping: it starts from the canopy measurements of one survey year, walks each measurement onto its specimen and that specimen joined cultivar column, de-duplicates the projection and orders it on one projected column.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {surveyYear: Integer[1]|test::goldenarboretum2::domain::CanopySurvey.all()->filter(
+      c|$c.surveyYear == $surveyYear
+    )->project(
+      [
+        c|$c.surveyCode,
+        c|$c.canopyM2,
+        c|$c.specimen.specimenCode,
+        c|$c.specimen.cultivarName
+      ],
+      [
+        'Survey',
+        'Canopy',
+        'Specimen',
+        'Cultivar'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Survey')
+      ]
+    )};
+    mapping: test::goldenarboretum2::mapping::ArboretumMapping;
+    runtime: test::goldenarboretum2::runtime::ArboretumH2Runtime;
+  }
+  testSuites:
+  [
+    surveyTraceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              grove.grove_zone:
+                'grove_code,grove_name,curator_name\n'+
+                'GZ-1,North Grove,Ash Curator\n';
+
+              grove.grove_bed:
+                'bed_code,bed_name,grove_code,soil_type\n'+
+                'GB-1,Ridge Bed,GZ-1,LOAM\n';
+
+              grove.cultivar:
+                'cultivar_code,cultivar_name,leaf_habit\n'+
+                'CV-1,Golden Ash,DECIDUOUS\n'+
+                'CV-2,Silver Fir,EVERGREEN\n';
+
+              grove.tree_specimen:
+                'specimen_code,bed_code,cultivar_code,height_cm,girth_mm,condition_code\n'+
+                'TS-01,GB-1,CV-1,820,240,HEALTHY\n'+
+                'TS-02,GB-1,CV-2,410,120,MONITOR\n';
+
+              grove.canopy_survey:
+                'survey_code,specimen_code,canopy_m2,survey_year\n'+
+                'CS-01,TS-01,18.5,2026\n'+
+                'CS-02,TS-01,20.25,2027\n'+
+                'CS-03,TS-02,9.25,2026\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        surveyYearSelectsRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyYear = 2026
+          ]
+          asserts:
+          [
+            bothMeasurementsOfThatYear:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"CS-01","Canopy":18.5,"Specimen":"TS-01","Cultivar":"Golden Ash"},{"Survey":"CS-03","Canopy":9.25,"Specimen":"TS-02","Cultivar":"Silver Fir"}]';
+                  }#;
+              }#
+          ]
+        },
+        surveyYearSelectsNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyYear = 2030
+          ]
+          asserts:
+          [
+            noMeasurementInThatYear:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

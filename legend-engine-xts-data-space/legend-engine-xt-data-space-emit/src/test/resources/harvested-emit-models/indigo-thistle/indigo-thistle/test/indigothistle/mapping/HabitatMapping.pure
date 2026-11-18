@@ -1,0 +1,173 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::indigothistle::mapping::HabitatMapping
+(
+  *demo::indigothistle::domain::Observer[observer]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::indigothistle::store::HabitatDB]fieldwork.observer.observer_id
+    )
+    ~mainTable [demo::indigothistle::store::HabitatDB]fieldwork.observer
+    observerCode: [demo::indigothistle::store::HabitatDB]fieldwork.observer.observer_code,
+    fullName: [demo::indigothistle::store::HabitatDB]fieldwork.observer.full_name,
+    certified: [demo::indigothistle::store::HabitatDB]fieldwork.observer.certified,
+    enrolledOn: [demo::indigothistle::store::HabitatDB]fieldwork.observer.enrolled_on,
+    baseCampName: [demo::indigothistle::store::HabitatDB]@ObserverBaseCamp | fieldwork.base_camp.base_name
+  }
+
+  *demo::indigothistle::domain::Sighting[sighting]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::indigothistle::store::HabitatDB]fieldwork.sighting.sighting_id
+    )
+    ~mainTable [demo::indigothistle::store::HabitatDB]fieldwork.sighting
+    sightingReference: [demo::indigothistle::store::HabitatDB]fieldwork.sighting.sighting_reference,
+    speciesCode: [demo::indigothistle::store::HabitatDB]fieldwork.sighting.species_code,
+    observedAt: [demo::indigothistle::store::HabitatDB]fieldwork.sighting.observed_at,
+    individualsCounted: [demo::indigothistle::store::HabitatDB]fieldwork.sighting.individuals_counted,
+    ringedPresent: [demo::indigothistle::store::HabitatDB]fieldwork.sighting.ringed_present,
+    baseCampRegionCode: [demo::indigothistle::store::HabitatDB]@SightingObserver > @ObserverBaseCamp | fieldwork.base_camp.region_code,
+    baseCampElevationMetres: [demo::indigothistle::store::HabitatDB]@SightingObserver > @ObserverBaseCamp | fieldwork.base_camp.elevation_metres
+  }
+
+  demo::indigothistle::domain::Observer_Sighting: Relational
+  {
+    AssociationMapping
+    (
+      recordingObserver[sighting,observer]: [demo::indigothistle::store::HabitatDB]@SightingObserver,
+      recordedSightings[observer,sighting]: [demo::indigothistle::store::HabitatDB]@SightingObserver
+    )
+  }
+
+  testSuites:
+  [
+    sightingReachSuite:
+    {
+      function: |demo::indigothistle::domain::Sighting.all()->project(
+  [
+    x|$x.sightingReference,
+    x|$x.speciesCode,
+    x|$x.individualsCounted,
+    x|$x.baseCampRegionCode,
+    x|$x.recordingObserver.fullName
+  ],
+  [
+    'Reference',
+    'Species',
+    'Counted',
+    'Region',
+    'Observer'
+  ]
+);
+      tests:
+      [
+        twoHopReach:
+        {
+          doc: 'Projects a sighting together with the region code reached two inner-join hops away and the observer name reached through the association binding.';
+          data:
+          [
+            demo::indigothistle::store::HabitatDB:
+              Relational
+              #{
+                fieldwork.base_camp:
+                  'base_id,base_name,region_code,elevation_metres\n'+
+                  '1,North Ridge Camp,NR,412.50\n'+
+                  '2,Reedbed Camp,RB,8.25\n';
+
+                fieldwork.observer:
+                  'observer_id,observer_code,full_name,certified,enrolled_on,base_id\n'+
+                  '1,OBS-001,Example Observer Alpha,true,2019-04-02,1\n'+
+                  '2,OBS-002,Example Observer Beta,false,2021-09-14,2\n';
+
+                fieldwork.sighting:
+                  'sighting_id,sighting_reference,species_code,observed_at,individuals_counted,ringed_present,observer_id\n'+
+                  '1,SGT-1001,WHTHR,2024-03-11 06:45:00.000,4,true,1\n'+
+                  '2,SGT-1002,REDPO,2024-03-12 07:15:00.000,11,false,2\n';
+              }#
+          ];
+          asserts:
+          [
+            bothSightingsReachTheirCamp:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reference":"SGT-1001","Species":"WHTHR","Counted":4,"Region":"NR","Observer":"Example Observer Alpha"},{"Reference":"SGT-1002","Species":"REDPO","Counted":11,"Region":"RB","Observer":"Example Observer Beta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    observerRosterSuite:
+    {
+      function: |demo::indigothistle::domain::Observer.all()->project(
+  [
+    x|$x.observerCode,
+    x|$x.fullName,
+    x|$x.certified,
+    x|$x.baseCampName
+  ],
+  [
+    'Code',
+    'Name',
+    'Certified',
+    'Camp'
+  ]
+);
+      tests:
+      [
+        observerRoster:
+        {
+          doc: 'Projects the observer roster with the camp name reached through the single declared camp join.';
+          data:
+          [
+            demo::indigothistle::store::HabitatDB:
+              Relational
+              #{
+                fieldwork.base_camp:
+                  'base_id,base_name,region_code,elevation_metres\n'+
+                  '1,North Ridge Camp,NR,412.50\n'+
+                  '2,Reedbed Camp,RB,8.25\n';
+
+                fieldwork.observer:
+                  'observer_id,observer_code,full_name,certified,enrolled_on,base_id\n'+
+                  '1,OBS-001,Example Observer Alpha,true,2019-04-02,1\n'+
+                  '2,OBS-002,Example Observer Beta,false,2021-09-14,2\n';
+              }#
+          ];
+          asserts:
+          [
+            twoObservers:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"OBS-001","Name":"Example Observer Alpha","Certified":true,"Camp":"North Ridge Camp"},{"Code":"OBS-002","Name":"Example Observer Beta","Certified":false,"Camp":"Reedbed Camp"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

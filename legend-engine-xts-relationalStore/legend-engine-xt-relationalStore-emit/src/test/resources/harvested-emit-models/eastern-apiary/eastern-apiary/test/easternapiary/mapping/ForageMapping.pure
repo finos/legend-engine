@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easternapiary::mapping::ForageMapping
+(
+  test::easternapiary::domain::ForageSite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternapiary::store::ForageDatabase]FORAGE.FORAGE_SITE.SITE_CODE
+    )
+    ~mainTable [test::easternapiary::store::ForageDatabase]FORAGE.FORAGE_SITE
+    siteCode: [test::easternapiary::store::ForageDatabase]FORAGE.FORAGE_SITE.SITE_CODE,
+    siteName: [test::easternapiary::store::ForageDatabase]FORAGE.FORAGE_SITE.SITE_NAME,
+    county: [test::easternapiary::store::ForageDatabase]FORAGE.FORAGE_SITE.COUNTY
+  }
+
+  test::easternapiary::domain::HiveColony[colony]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternapiary::store::ForageDatabase]FORAGE.HIVE_COLONY.COLONY_CODE
+    )
+    ~mainTable [test::easternapiary::store::ForageDatabase]FORAGE.HIVE_COLONY
+    colonyCode: [test::easternapiary::store::ForageDatabase]FORAGE.HIVE_COLONY.COLONY_CODE,
+    frameCount: [test::easternapiary::store::ForageDatabase]FORAGE.HIVE_COLONY.FRAME_COUNT,
+    site[site]: [test::easternapiary::store::ForageDatabase]@ForageSite_HiveColony
+  }
+
+  testSuites:
+  [
+    colonyPlacementSuite:
+    {
+      function: |test::easternapiary::domain::HiveColony.all()->project([x|$x.colonyCode, x|($x.site.siteName + ' / ' + $x.site.county), x|$x.frameCount], ['Colony', 'SitePlacement', 'Frames'])->distinct()->limit(5);
+      tests:
+      [
+        placementsAcrossJoin:
+        {
+          doc: 'Projects every colony together with a placement label built from the site name and county reached through the declared join, then de-duplicates and caps the result.';
+          data:
+          [
+            test::easternapiary::store::ForageDatabase:
+              Relational
+              #{
+                FORAGE.FORAGE_SITE:
+                  'SITE_CODE,SITE_NAME,COUNTY\n'+
+                  'FS-1,Willow Bend,Ulster\n'+
+                  'FS-2,Cedar Hollow,Greene\n';
+                FORAGE.HIVE_COLONY:
+                  'COLONY_CODE,SITE_CODE,FRAME_COUNT\n'+
+                  'HC-1,FS-1,10\n'+
+                  'HC-2,FS-1,8\n'+
+                  'HC-3,FS-2,12\n';
+              }#
+          ];
+          asserts:
+          [
+            threePlacements:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Colony":"HC-1","SitePlacement":"Willow Bend / Ulster","Frames":10},{"Colony":"HC-2","SitePlacement":"Willow Bend / Ulster","Frames":8},{"Colony":"HC-3","SitePlacement":"Cedar Hollow / Greene","Frames":12}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

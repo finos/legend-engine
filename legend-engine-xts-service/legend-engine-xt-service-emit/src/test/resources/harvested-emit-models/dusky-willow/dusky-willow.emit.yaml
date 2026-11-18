@@ -1,0 +1,66 @@
+name: dusky-willow
+title: "Dusky Willow — Community tool-lending slips resolved by a model-to-model mapping (enumeration mappings, derived properties, a reusable data element and a graph-fetch service)"
+description: |
+  A community tool-lending library where the counter volunteers write slips in
+  free text and everything downstream reads a resolved digest instead. The raw
+  slip class carries the library's arithmetic as derived properties — a
+  normalised reference, an overdue remainder measured against the fourteen-day
+  allowance, a three-way deposit band that also covers the slip with no deposit at
+  all, and a nested handling index — and the model-to-model mapping consumes
+  those derived properties rather than repeating them. The coppice state and the
+  tool bench arrive as free text and leave as enumerated members through two
+  enumeration mappings, each with a fall-through arm for wording the vocabulary
+  never anticipated. The digest class inherits its reference and desk from a
+  constrained abstract library record, is shelved through an association onto
+  the shelf bays, and is asserted twice: once in the mapping's own test suite
+  over every vocabulary arm and deposit band, and once through a graph-fetch
+  service whose fixture is a reusable data element referenced by the test rather
+  than inlined, run twice against two different handling floors.
+
+modelSources:
+  model:
+    root: dusky-willow
+    files:
+      - test/duskywillow/connection/WillowConnections.pure
+      - test/duskywillow/data/WillowStubData.pure
+      - test/duskywillow/domain/WillowDomain.pure
+      - test/duskywillow/mapping/CoppiceDigestM2M.pure
+      - test/duskywillow/mapping/WillowEnumMappings.pure
+      - test/duskywillow/runtime/WillowRuntime.pure
+      - test/duskywillow/service/CoppiceDigestService.pure
+
+features:
+  - execution:data-element
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:derived-property
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - query:filter
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores:
+  - model
+complexity: intermediate
+tags:
+  - association
+  - class-inheritance
+  - constraints
+  - derived-property
+  - enumeration-mapping
+  - graph-fetch
+  - m2m
+  - mapping-test
+  - reusable-test-data
+  - service-test
+  - tool-lending

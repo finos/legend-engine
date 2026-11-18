@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::tds::*;
+import test::mapleaviary6::domain::*;
+import test::mapleaviary6::function::*;
+
+function test::mapleaviary6::function::sackBand(grade: String[1], sacks: Integer[1], hours: Float[1]): String[1]
+{
+  if($grade->trim()->isEmpty(), |'UNBANDED',
+    |if($grade->toUpper()->in(['VOID']), |'WITHDRAWN',
+      |if($sacks >= 40, |'FULL-STONE',
+        |if($sacks >= 25, |'HEAVY-STONE',
+          |if($sacks >= 12, |if($hours >= 5.0, |'SLOW-STONE', |'BRISK-STONE'),
+            |if($sacks >= 4, |'LIGHT-STONE',
+              |if($hours >= 2.0, |'IDLE-TURN', |'NO-TURN')))))))
+}
+
+function test::mapleaviary6::function::millRegister(): TabularDataSet[1]
+{
+  MillingRun.all()->filter(
+    r|(!($r.runGrade == 'VOID')) && ($r.checks->exists(c|!($c.checkGrade == 'CLEARED')))
+  )->project(
+    [
+      r|$r.eventCode,
+      r|$r.millCode,
+      r|$r.estateName,
+      r|$r.grainKind,
+      r|sackBand($r.runGrade, $r.sackCount, $r.stoneHours),
+      r|$r.sackCount,
+      r|$r.stoneHours
+    ],
+    ['Run', 'Mill', 'Estate', 'Grain', 'Band', 'Sacks', 'StoneHours']
+  )->sort([asc('Run')])
+}
+
+function test::mapleaviary6::function::sailRank(): TabularDataSet[1]
+{
+  millRegister()->olapGroupBy(
+    ['Estate'],
+    desc('Sacks'),
+    r|$r->rank(),
+    'EstateRank'
+  )->sort([asc('Estate'), asc('EstateRank'), asc('Run')])
+}
+
+function test::mapleaviary6::function::sackBoard(minimumSacks: Integer[1]): TabularDataSet[1]
+{
+  MillingRun.all()->filter(
+    r|$r.sackCount >= $minimumSacks
+  )->project(
+    [
+      r|$r.eventCode,
+      r|$r.estateName,
+      r|$r.sackCount,
+      r|($r.stoneHours * 1.0) / $r.sackCount
+    ],
+    ['Run', 'Estate', 'Sacks', 'HoursPerSack']
+  )->sort([desc('Sacks'), asc('Run')])->limit(5)
+}

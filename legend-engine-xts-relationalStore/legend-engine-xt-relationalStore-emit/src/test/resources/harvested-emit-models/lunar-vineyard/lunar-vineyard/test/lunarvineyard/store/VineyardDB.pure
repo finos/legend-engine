@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::lunarvineyard::store::VineyardDB
+(
+  Schema vineyard
+  (
+    Table vine_block
+    (
+      block_code VARCHAR(20) PRIMARY KEY,
+      sector_code VARCHAR(30) NOT NULL
+    )
+    Table irrigation_cycle
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      cycle_id VARCHAR(20) PRIMARY KEY,
+      applied_on DATE NOT NULL,
+      valve_code VARCHAR(20) NOT NULL,
+      schedule_code VARCHAR(20) NOT NULL,
+      litres_applied INTEGER NOT NULL,
+      soil_moisture_pct INTEGER NOT NULL,
+      block_code VARCHAR(20) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+  )
+
+  Join Cycle_Block(vineyard.irrigation_cycle.block_code = vineyard.vine_block.block_code)
+)

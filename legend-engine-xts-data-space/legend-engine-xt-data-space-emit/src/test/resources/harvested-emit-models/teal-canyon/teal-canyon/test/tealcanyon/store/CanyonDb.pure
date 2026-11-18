@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::tealcanyon::store::CanyonDb
+(
+  Schema canyon
+  (
+    Table river_reach
+    (
+      reach_code VARCHAR(12) PRIMARY KEY,
+      reach_name VARCHAR(80),
+      reach_length_km DECIMAL(9,2)
+    )
+    Table gauge_station
+    (
+      station_code VARCHAR(12) PRIMARY KEY,
+      installed_on DATE PRIMARY KEY,
+      reach_code VARCHAR(12),
+      station_name VARCHAR(80),
+      elevation_m INTEGER,
+      telemetry_live BIT
+    )
+    Table survey_team
+    (
+      team_code VARCHAR(8) PRIMARY KEY,
+      team_name VARCHAR(80)
+    )
+    Table field_survey
+    (
+      survey_id VARCHAR(12) PRIMARY KEY,
+      surveyed_at TIMESTAMP PRIMARY KEY,
+      station_code VARCHAR(12),
+      team_code VARCHAR(8),
+      discharge_cms DECIMAL(9,2),
+      turbidity_ntu INTEGER
+    )
+  )
+
+  Join Station_Reach(canyon.gauge_station.reach_code = canyon.river_reach.reach_code)
+  Join Survey_Station(canyon.field_survey.station_code = canyon.gauge_station.station_code)
+  Join Survey_Team(canyon.field_survey.team_code = canyon.survey_team.team_code)
+)

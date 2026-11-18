@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::meadowwarren4::mapping::WardenHierarchyMapping
+(
+  *demo::meadowwarren4::domain::WardenPerson[person]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowwarren4::store::WardenDb]staff.warden_person.warden_code
+    )
+    ~mainTable [demo::meadowwarren4::store::WardenDb]staff.warden_person
+    wardenCode: [demo::meadowwarren4::store::WardenDb]staff.warden_person.warden_code,
+    wardenName: [demo::meadowwarren4::store::WardenDb]staff.warden_person.warden_name,
+    depotName: [demo::meadowwarren4::store::WardenDb]staff.warden_person.depot_name,
+    contactNote: [demo::meadowwarren4::store::WardenDb]staff.warden_person.contact_note
+  }
+
+  *demo::meadowwarren4::domain::HierarchyFlat[flat]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowwarren4::store::WardenDb]staff.hierarchy_flat.flat_ref
+    )
+    ~mainTable [demo::meadowwarren4::store::WardenDb]staff.hierarchy_flat
+    flatRef: [demo::meadowwarren4::store::WardenDb]staff.hierarchy_flat.flat_ref,
+    plotRef: [demo::meadowwarren4::store::WardenDb]staff.hierarchy_flat.plot_ref,
+    pathNote: [demo::meadowwarren4::store::WardenDb]staff.hierarchy_flat.path_note,
+    depthLevel: [demo::meadowwarren4::store::WardenDb]staff.hierarchy_flat.depth_level
+  }
+
+  testSuites:
+  [
+    flattenedHierarchySuite:
+    {
+      function: |demo::meadowwarren4::domain::HierarchyFlat.all(%2026-06-01)->project(
+        [
+          x|$x.flatRef,
+          x|$x.plotRef,
+          x|$x.pathNote,
+          x|$x.depthLevel
+        ],
+        [
+          'Flat Ref',
+          'Plot Ref',
+          'Path Note',
+          'Depth Level'
+        ]
+      )->sort([asc('Flat Ref')]);
+      tests:
+      [
+        onlyRowsValidOnTheSuppliedDate:
+        {
+          doc: 'The externally declared flattened hierarchy is opened at an explicit instant, so the row whose validity window closed before that instant is absent and the open-ended row is present.';
+          data:
+          [
+            demo::meadowwarren4::store::WardenDb:
+              Relational
+              #{
+                staff.hierarchy_flat:
+                  'flat_ref,plot_ref,path_note,depth_level,from_z,thru_z\n'+
+                  'FL-01,P-01,north meadow > east warren,2,2026-01-01,9999-12-31\n'+
+                  'FL-02,P-02,north meadow > west warren,2,2026-01-01,9999-12-31\n'+
+                  'FL-03,P-03,south meadow > old warren,3,2019-01-01,2019-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            twoOpenHierarchyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Flat Ref":"FL-01","Plot Ref":"P-01","Path Note":"north meadow > east warren","Depth Level":2},{"Flat Ref":"FL-02","Plot Ref":"P-02","Path Note":"north meadow > west warren","Depth Level":2}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

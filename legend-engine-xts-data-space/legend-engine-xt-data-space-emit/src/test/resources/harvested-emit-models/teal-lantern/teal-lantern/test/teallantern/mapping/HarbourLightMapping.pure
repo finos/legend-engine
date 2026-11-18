@@ -1,0 +1,161 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::teallantern::mapping::HarbourLightMapping
+(
+  test::teallantern::domain::LanternStation[station_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::teallantern::store::HarbourLightDb]harbour.lantern_station.station_id
+    )
+    ~mainTable [test::teallantern::store::HarbourLightDb]harbour.lantern_station
+    stationCode: [test::teallantern::store::HarbourLightDb]harbour.lantern_station.station_code,
+    stationName: [test::teallantern::store::HarbourLightDb]harbour.lantern_station.station_name,
+    reachCode: [test::teallantern::store::HarbourLightDb]harbour.lantern_station.reach_code,
+    elevationM: [test::teallantern::store::HarbourLightDb]harbour.lantern_station.elevation_m,
+    commissionedOn: [test::teallantern::store::HarbourLightDb]harbour.lantern_station.commissioned_on,
+    lastCheckedAt: [test::teallantern::store::HarbourLightDb]harbour.lantern_station.last_checked_at
+  }
+
+  test::teallantern::domain::LampUnit[lamp_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::teallantern::store::HarbourLightDb]harbour.lamp_unit.lamp_id
+    )
+    ~mainTable [test::teallantern::store::HarbourLightDb]harbour.lamp_unit
+    lampCode: [test::teallantern::store::HarbourLightDb]harbour.lamp_unit.lamp_code,
+    lampKind: [test::teallantern::store::HarbourLightDb]harbour.lamp_unit.lamp_kind,
+    lumenOutput: [test::teallantern::store::HarbourLightDb]harbour.lamp_unit.lumen_output,
+    installedOn: [test::teallantern::store::HarbourLightDb]harbour.lamp_unit.installed_on
+  }
+
+  test::teallantern::domain::LampInspection[inspection_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::teallantern::store::HarbourLightDb]works.lamp_inspection.inspection_id
+    )
+    ~mainTable [test::teallantern::store::HarbourLightDb]works.lamp_inspection
+    inspectionId: [test::teallantern::store::HarbourLightDb]works.lamp_inspection.inspection_id,
+    inspectorName: [test::teallantern::store::HarbourLightDb]works.lamp_inspection.inspector_name,
+    inspectedOn: [test::teallantern::store::HarbourLightDb]works.lamp_inspection.inspected_on,
+    glareScore: [test::teallantern::store::HarbourLightDb]works.lamp_inspection.glare_score,
+    faultNote: [test::teallantern::store::HarbourLightDb]works.lamp_inspection.fault_note
+  }
+
+  test::teallantern::domain::KeeperCrew[crew_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::teallantern::store::HarbourLightDb]works.keeper_crew.crew_id
+    )
+    ~mainTable [test::teallantern::store::HarbourLightDb]works.keeper_crew
+    crewName: [test::teallantern::store::HarbourLightDb]works.keeper_crew.crew_name,
+    shiftKind: [test::teallantern::store::HarbourLightDb]works.keeper_crew.shift_kind,
+    rosteredOn: [test::teallantern::store::HarbourLightDb]works.keeper_crew.rostered_on
+  }
+
+  test::teallantern::domain::Station_Lamp: Relational
+  {
+    AssociationMapping
+    (
+      station[lamp_set, station_set]: [test::teallantern::store::HarbourLightDb]@Station_Lamp,
+      lamps[station_set, lamp_set]: [test::teallantern::store::HarbourLightDb]@Station_Lamp
+    )
+  }
+
+  test::teallantern::domain::Lamp_Inspection: Relational
+  {
+    AssociationMapping
+    (
+      lamp[inspection_set, lamp_set]: [test::teallantern::store::HarbourLightDb]@Lamp_Inspection,
+      inspections[lamp_set, inspection_set]: [test::teallantern::store::HarbourLightDb]@Lamp_Inspection
+    )
+  }
+
+  test::teallantern::domain::Station_Crew: Relational
+  {
+    AssociationMapping
+    (
+      rosteredStation[crew_set, station_set]: [test::teallantern::store::HarbourLightDb]@Station_Crew,
+      crews[station_set, crew_set]: [test::teallantern::store::HarbourLightDb]@Station_Crew
+    )
+  }
+
+  testSuites:
+  [
+    stationRosterSuite:
+    {
+      function: |test::teallantern::domain::LanternStation.all()->project(
+        [
+          col(s|$s.stationCode, 'Station'),
+          col(s|$s.stationName, 'Name'),
+          col(s|$s.elevationM, 'ElevationM'),
+          col(s|$s.lamps->count(), 'Lamps'),
+          col(s|$s.crews->count(), 'Crews')
+        ]
+      )->sort([asc('Station')]);
+      tests:
+      [
+        stationsWithCounts:
+        {
+          doc: 'Projects each station with a nullable name and elevation alongside the lamps fitted to it and the crews rostered on it, so both association ends are folded in the same row and the two counts stay independent of one another.';
+          data:
+          [
+            test::teallantern::store::HarbourLightDb:
+              Relational
+              #{
+                harbour.lantern_station:
+                  'station_id,station_code,station_name,reach_code,elevation_m,commissioned_on,last_checked_at\n'+
+                  '1,ST-01,North Mole Light,RCH-N,12.5,1998-04-01,2026-01-02 06:00:00\n'+
+                  '2,ST-02,,RCH-S,,2004-09-15,\n';
+
+                harbour.lamp_unit:
+                  'lamp_id,station_id,lamp_code,lamp_kind,lumen_output,installed_on\n'+
+                  '1,1,LMP-01,BEACON,4200.0,2019-05-01\n'+
+                  '2,1,LMP-02,SECTOR,3100.0,2020-06-01\n'+
+                  '3,2,LMP-03,BEACON,,2021-07-01\n';
+
+                works.keeper_crew:
+                  'crew_id,station_id,crew_name,shift_kind,rostered_on\n'+
+                  '1,1,North Watch,NIGHT,2026-01-04\n'+
+                  '2,2,South Watch,DAY,2026-01-05\n'+
+                  '3,2,South Relief,NIGHT,2026-01-06\n';
+
+                works.lamp_inspection:
+                  'inspection_id,lamp_id,inspector_name,inspected_on,glare_score,fault_note\n'+
+                  '1,1,A Reyes,2025-12-07,1,\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Station" : "ST-01",\n  "Name" : "North Mole Light",\n  "ElevationM" : 12.5,\n  "Lamps" : 2,\n  "Crews" : 1\n}, {\n  "Station" : "ST-02",\n  "Name" : null,\n  "ElevationM" : null,\n  "Lamps" : 1,\n  "Crews" : 2\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::ambertundra5::store::ReadingDb
+(
+  include test::ambertundra5::store::SiteDb
+
+  Schema probe
+  (
+    Table borehole
+    (
+      bore_code VARCHAR(16) PRIMARY KEY,
+      site_code VARCHAR(16) NOT NULL,
+      region_code VARCHAR(16) NOT NULL,
+      bore_tag VARCHAR(16) NOT NULL,
+      depth_cm INTEGER NOT NULL,
+      retired_at TIMESTAMP
+    )
+    Table thaw_reading
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      reading_id INTEGER PRIMARY KEY,
+      bore_code VARCHAR(16) NOT NULL,
+      kind_code VARCHAR(4),
+      temp_dc INTEGER,
+      probe_label VARCHAR(16) NOT NULL,
+      sensor_offset_cm INTEGER,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+
+    View site_bore_view
+    (
+      ~groupBy
+      (
+        probe.borehole.site_code
+      )
+      site_code: probe.borehole.site_code PRIMARY KEY,
+      bore_count: count(probe.borehole.bore_code),
+      max_depth_cm: max(probe.borehole.depth_cm)
+    )
+  )
+
+  Join Reading_Bore(probe.thaw_reading.bore_code = probe.borehole.bore_code and probe.borehole.depth_cm > 0)
+  Join Bore_Site(probe.borehole.site_code = site.field_site.site_code and probe.borehole.region_code = site.field_site.region_code)
+
+  Filter LiveBoreFilter(or(isNull(probe.borehole.retired_at), greaterThan(probe.borehole.retired_at, now())))
+)

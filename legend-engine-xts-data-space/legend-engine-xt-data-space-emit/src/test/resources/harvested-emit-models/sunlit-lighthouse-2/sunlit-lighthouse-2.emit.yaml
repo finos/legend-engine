@@ -1,0 +1,43 @@
+name: sunlit-lighthouse-2
+title: "Sunlit Lighthouse 2 — A Governed Data Space Over A Joined Coastal Lamp Station Register"
+description: |
+  A coastal lamp station register published through a single governed entry point. One data
+  space carries a stereotype and two tagged values from its own profile, names a mail support
+  contact, and declares one execution context binding the station mapping to the engine
+  runtime that resolves the relational store. The mapped class is flat: the station columns
+  come from the main table, the reach and district names arrive across a shoreline join, and
+  the range band is derived from a nested conditional over the declared lamp range. The
+  runtime pairs the store with a local relational connection that stands the schema up from
+  its own setup statements, so the data space, mapping, store and runtime are all reachable
+  from the published context.
+
+modelSources:
+  model:
+    root: sunlit-lighthouse-2
+    files:
+      - test/sunlitlighthouse2/connection/BeaconConnections.pure
+      - test/sunlitlighthouse2/dataspace/BeaconDataSpace.pure
+      - test/sunlitlighthouse2/domain/BeaconDomain.pure
+      - test/sunlitlighthouse2/mapping/BeaconMapping.pure
+      - test/sunlitlighthouse2/profile/BeaconProfile.pure
+      - test/sunlitlighthouse2/runtime/BeaconRuntimes.pure
+      - test/sunlitlighthouse2/store/BeaconDatabase.pure
+
+features:
+  - execution:data-space
+  - grammar:profile
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - conditional-transform
+  - data-space
+  - engine-runtime
+  - lamp-station-register
+  - profile-annotation
+  - relational-join
+  - support-email

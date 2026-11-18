@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::zephyrfossil4::domain::*;
+import demo::zephyrfossil4::profile::*;
+import meta::pure::profiles::*;
+
+Class <<CatalogueStewardship.curated>> {doc.doc = 'A specimen repository as the fossil catalogue publishes it: the name it is listed under, an optional short label and an optional statement of what it collects, plus the territory it was established in and the lifecycle it stands at. Both typed attributes are backed by a closed enumeration, so neither can carry a free string.', CatalogueStewardship.curator = 'catalogue-registry', CatalogueStewardship.reviewCadence = 'annual'} demo::zephyrfossil4::domain::SpecimenRepository
+{
+  {doc.doc = 'Name the catalogue lists the repository under.'} repositoryName: String[1];
+  {doc.doc = 'Short label the catalogue abbreviates the repository to; absent until a label has been agreed.'} shortLabel: String[0..1];
+  {doc.doc = 'Statement of what the repository collects; absent while the repository has published none.'} purposeText: String[0..1];
+  {doc.doc = 'Territory the repository was established in, unknown when the founding territory was never recorded.'} establishedIn: EstablishmentTerritory[1];
+  {doc.doc = 'Whether the repository is still accessioning material or has been wound down.'} lifecycle: RepositoryLifecycle[1];
+}
+
+Class <<QueryBinding.queryEntryPoint>> {doc.doc = 'Read entry point the external query language binds against. The class carries no state of its own: it exists so the published schema has a typed root, and the one parameterised property on it resolves a repository by the name it is listed under.', QueryBinding.schemaNamespace = 'fossil.catalogue', QueryBinding.operationName = 'catalogueQuery'} demo::zephyrfossil4::domain::CatalogueQueryRoot
+{
+  {doc.doc = 'Resolves the repository listed under a name, yielding nothing when the catalogue lists none. The published register is a closed set of repositories, so the resolution narrows that set on the requested name and takes the head of what survives.', QueryBinding.operationName = 'repositoryByName', QueryBinding.returnsNullable = 'true'}
+  repositoryByName(listedName: String[1])
+  {
+    [
+      ^SpecimenRepository(repositoryName = 'Ridge Quarry Repository', shortLabel = 'RQR', purposeText = 'Vertebrate material lifted from the escarpment quarries.', establishedIn = EstablishmentTerritory.ARGENTINA, lifecycle = RepositoryLifecycle.ACCESSIONING),
+      ^SpecimenRepository(repositoryName = 'Coastal Marl Repository', purposeText = 'Marine invertebrate material from the coastal marls.', establishedIn = EstablishmentTerritory.NEW_ZEALAND, lifecycle = RepositoryLifecycle.ACCESSIONING),
+      ^SpecimenRepository(repositoryName = 'Highland Ash Repository', shortLabel = 'HAR', establishedIn = EstablishmentTerritory.UNKNOWN_TERRITORY, lifecycle = RepositoryLifecycle.ACCESSIONING),
+      ^SpecimenRepository(repositoryName = 'Old Siding Repository', shortLabel = 'OSR', purposeText = 'Plant compressions recovered before the siding closed.', establishedIn = EstablishmentTerritory.PORTUGAL, lifecycle = RepositoryLifecycle.WOUND_DOWN)
+    ]->filter(r | $r.repositoryName->trim()->toLower() == $listedName->trim()->toLower())->first()
+  }: SpecimenRepository[0..1];
+}
+
+Class <<QueryBinding.mutationEntryPoint>> {doc.doc = 'Write entry point the external query language binds against. The class carries no state of its own: the one parameterised property on it accepts a whole repository record and yields exactly one published record back, settling the short label the catalogue lists it under by narrowing a collection of candidate labels to a single value.', QueryBinding.schemaNamespace = 'fossil.catalogue', QueryBinding.operationName = 'catalogueMutation'} demo::zephyrfossil4::domain::CatalogueMutationRoot
+{
+  {doc.doc = 'Publishes a repository record: the name is trimmed, and the short label is the first label that survives blank-stripping out of the label offered and the stem taken from the name, coerced from that collection to the single value the published record requires.', QueryBinding.operationName = 'publishRepository', QueryBinding.returnsNullable = 'false'}
+  publishRepository(offered: SpecimenRepository[1])
+  {
+    ^SpecimenRepository(
+      repositoryName = $offered.repositoryName->trim(),
+      shortLabel = $offered.shortLabel->concatenate($offered.repositoryName->trim()->substring(0, 3)->toUpper())->filter(label | $label->trim()->length() > 0)->first()->toOne(),
+      purposeText = $offered.purposeText,
+      establishedIn = $offered.establishedIn,
+      lifecycle = $offered.lifecycle
+    )
+  }: SpecimenRepository[1];
+}

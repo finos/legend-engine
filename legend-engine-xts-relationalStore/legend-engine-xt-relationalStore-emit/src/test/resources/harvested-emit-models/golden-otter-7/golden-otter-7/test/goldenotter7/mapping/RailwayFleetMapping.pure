@@ -1,0 +1,224 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenotter7::mapping::RailwayFleetMapping
+(
+  include mapping test::goldenotter7::mapping::RailwayEnumMappings
+
+  *test::goldenotter7::domain::Locomotive[loco]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter7::store::RailwayFleetDB]fleet.locomotive.loco_code
+    )
+    ~mainTable [test::goldenotter7::store::RailwayFleetDB]fleet.locomotive
+    locoCode: [test::goldenotter7::store::RailwayFleetDB]fleet.locomotive.loco_code,
+    locoName: [test::goldenotter7::store::RailwayFleetDB]fleet.locomotive.loco_name,
+    gaugeMm: [test::goldenotter7::store::RailwayFleetDB]fleet.locomotive.gauge_mm,
+    gauge: EnumerationMapping TrackGaugeMapping: [test::goldenotter7::store::RailwayFleetDB]fleet.locomotive.gauge_code,
+    powerSource: EnumerationMapping PowerSourceMapping: [test::goldenotter7::store::RailwayFleetDB]fleet.locomotive.power_code,
+    serviceState: EnumerationMapping ServiceStateMapping: [test::goldenotter7::store::RailwayFleetDB]fleet.locomotive.service_code,
+    tractiveEffortKn: [test::goldenotter7::store::RailwayFleetDB]fleet.locomotive.tractive_effort_kn,
+    liveryTitle: [test::goldenotter7::store::RailwayFleetDB]@Loco_Livery | reference.livery_scheme.livery_name
+  }
+
+  *test::goldenotter7::domain::LiveryScheme[livery]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter7::store::RailwayFleetDB]reference.livery_scheme.livery_code
+    )
+    ~mainTable [test::goldenotter7::store::RailwayFleetDB]reference.livery_scheme
+    liveryCode: [test::goldenotter7::store::RailwayFleetDB]reference.livery_scheme.livery_code,
+    liveryName: [test::goldenotter7::store::RailwayFleetDB]reference.livery_scheme.livery_name,
+    baseColour: [test::goldenotter7::store::RailwayFleetDB]reference.livery_scheme.base_colour
+  }
+
+  *test::goldenotter7::domain::InspectionTicket[ticket]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter7::store::RailwayFleetDB]works.inspection_ticket.ticket_code
+    )
+    ~mainTable [test::goldenotter7::store::RailwayFleetDB]works.inspection_ticket
+    ticketCode: [test::goldenotter7::store::RailwayFleetDB]works.inspection_ticket.ticket_code,
+    locoCode: [test::goldenotter7::store::RailwayFleetDB]works.inspection_ticket.loco_code,
+    outcome: EnumerationMapping InspectionOutcomeMapping: [test::goldenotter7::store::RailwayFleetDB]works.inspection_ticket.outcome_code,
+    inspectedOn: [test::goldenotter7::store::RailwayFleetDB]works.inspection_ticket.inspected_on,
+    labourHours: [test::goldenotter7::store::RailwayFleetDB]works.inspection_ticket.labour_hours
+  }
+
+  *test::goldenotter7::domain::Inspector[inspector]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter7::store::RailwayFleetDB]works.inspector.inspector_code
+    )
+    ~mainTable [test::goldenotter7::store::RailwayFleetDB]works.inspector
+    inspectorCode: [test::goldenotter7::store::RailwayFleetDB]works.inspector.inspector_code,
+    inspectorName: [test::goldenotter7::store::RailwayFleetDB]works.inspector.inspector_name,
+    grade: EnumerationMapping InspectorGradeMapping: [test::goldenotter7::store::RailwayFleetDB]works.inspector.grade_code
+  }
+
+  test::goldenotter7::domain::Loco_Livery: Relational
+  {
+    AssociationMapping
+    (
+      livery[loco, livery]: [test::goldenotter7::store::RailwayFleetDB]@Loco_Livery,
+      liveriedLocomotives[livery, loco]: [test::goldenotter7::store::RailwayFleetDB]@Loco_Livery
+    )
+  }
+
+  test::goldenotter7::domain::Ticket_Inspector: Relational
+  {
+    AssociationMapping
+    (
+      inspector[ticket, inspector]: [test::goldenotter7::store::RailwayFleetDB]@Ticket_Inspector,
+      signedTickets[inspector, ticket]: [test::goldenotter7::store::RailwayFleetDB]@Ticket_Inspector
+    )
+  }
+
+  testSuites:
+  [
+    locoLiverySuite:
+    {
+      function: |test::goldenotter7::domain::Locomotive.all(%2026-06-15)->filter(
+  l|$l.tractiveEffortKn >= 40.0
+)->project(
+  [
+    l|$l.locoCode,
+    l|$l.locoName,
+    l|$l.gauge,
+    l|$l.powerSource,
+    l|$l.serviceState,
+    l|$l.liveryTitle,
+    l|$l.livery.baseColour
+  ],
+  [
+    'LocoCode',
+    'LocoName',
+    'Gauge',
+    'PowerSource',
+    'ServiceState',
+    'LiveryTitle',
+    'BaseColour'
+  ]
+)->sort(
+  [
+    asc('LocoCode')
+  ]
+);
+      tests:
+      [
+        liveryHitAndMiss:
+        {
+          doc: 'Reads the fleet as of a business date so the locomotive whose only window closed a year earlier is milestoned away, decodes the gauge, power and running-plan codes through their enumeration mappings, resolves the livery both as a joined title and through the association, and leaves the locomotive that carries no livery code with an empty painting scheme.';
+          data:
+          [
+            test::goldenotter7::store::RailwayFleetDB:
+              Relational
+              #{
+                fleet.locomotive:
+                  'loco_code,loco_name,gauge_mm,gauge_code,power_code,service_code,tractive_effort_kn,livery_code,from_z,thru_z\n'+
+                  'LOCO-1,Fern Valley,597,NG,ST,AC,48.5,LIV-1,2026-01-01,9999-12-31\n'+
+                  'LOCO-2,Slate Quarryman,597,NG,DL,WS,62.25,LIV-2,2026-01-01,9999-12-31\n'+
+                  'LOCO-3,Old Halt Pilot,1000,MG,ST,SD,30.5,LIV-1,2026-01-01,9999-12-31\n'+
+                  'LOCO-4,Bramble Tank,597,NG,EL,AC,41.75,,2026-01-01,9999-12-31\n'+
+                  'LOCO-5,Retired Pioneer,597,NG,ST,SD,55.5,LIV-1,2024-01-01,2025-06-01\n';
+                reference.livery_scheme:
+                  'livery_code,livery_name,base_colour,from_z,thru_z\n'+
+                  'LIV-1,Lined Bracken Green,GREEN,2026-01-01,9999-12-31\n'+
+                  'LIV-2,Works Grey,GREY,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            threeLocomotivesInWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LocoCode":"LOCO-1","LocoName":"Fern Valley","Gauge":"NARROW","PowerSource":"STEAM","ServiceState":"ACTIVE","LiveryTitle":"Lined Bracken Green","BaseColour":"GREEN"},{"LocoCode":"LOCO-2","LocoName":"Slate Quarryman","Gauge":"NARROW","PowerSource":"DIESEL","ServiceState":"WORKSHOP","LiveryTitle":"Works Grey","BaseColour":"GREY"},{"LocoCode":"LOCO-4","LocoName":"Bramble Tank","Gauge":"NARROW","PowerSource":"ELECTRIC","ServiceState":"ACTIVE","LiveryTitle":null,"BaseColour":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    ticketBatchSuite:
+    {
+      function: |test::goldenotter7::domain::InspectionTicket.all(%2026-06-15)->project(
+  [
+    t|$t.ticketCode,
+    t|$t.locoCode,
+    t|$t.outcome,
+    t|$t.labourHours,
+    t|$t.inspector.inspectorName,
+    t|$t.inspector.grade
+  ],
+  [
+    'TicketCode',
+    'LocoCode',
+    'Outcome',
+    'LabourHours',
+    'InspectorName',
+    'InspectorGrade'
+  ]
+)->sort(
+  [
+    asc('TicketCode')
+  ]
+);
+      tests:
+      [
+        landedBatchPicture:
+        {
+          doc: 'Reads workshop tickets as they were landed at a given load point: the ticket whose landed batch window was closed by a later restatement drops out, the remaining tickets keep the inspector resolved through the ticket-to-inspector join, and the ticket landed without an inspector code reports an empty signatory.';
+          data:
+          [
+            test::goldenotter7::store::RailwayFleetDB:
+              Relational
+              #{
+                works.inspection_ticket:
+                  'ticket_code,loco_code,outcome_code,inspected_on,labour_hours,inspector_code,batch_in_z,batch_out_z\n'+
+                  'WT-01,LOCO-1,PA,2026-05-02,6.5,INSP-1,2026-05-03,9999-12-31\n'+
+                  'WT-02,LOCO-2,AD,2026-04-11,3.25,INSP-2,2026-04-12,2026-06-01\n'+
+                  'WT-03,LOCO-3,FA,2026-06-01,12.75,,2026-06-02,9999-12-31\n';
+                works.inspector:
+                  'inspector_code,inspector_name,grade_code,batch_in_z,batch_out_z\n'+
+                  'INSP-1,Wren Hollis,SR,2026-05-01,9999-12-31\n'+
+                  'INSP-2,Ida Fenwick,RT,2026-04-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            twoTicketsStillLanded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TicketCode":"WT-01","LocoCode":"LOCO-1","Outcome":"PASSED","LabourHours":6.5,"InspectorName":"Wren Hollis","InspectorGrade":"SENIOR"},{"TicketCode":"WT-03","LocoCode":"LOCO-3","Outcome":"FAILED","LabourHours":12.75,"InspectorName":null,"InspectorGrade":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

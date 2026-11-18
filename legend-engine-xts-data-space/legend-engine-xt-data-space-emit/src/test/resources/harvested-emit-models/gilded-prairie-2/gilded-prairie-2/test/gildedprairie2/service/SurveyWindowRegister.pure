@@ -1,0 +1,152 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedprairie2::service::SurveyWindowRegister
+{
+  pattern: '/gildedprairie2/v1/survey-window-register';
+  title: 'Surveys Inside A Day Window Behind A Reference Date';
+  owners:
+  [
+    'prairie-survey-platform',
+    'grassland-stewardship'
+  ];
+  documentation: 'Computes the lower bound of the survey window inside the query by shifting a caller-supplied reference date back by a caller-supplied number of days, so the boundary is part of the generated statement rather than a caller-side computation. The shifted bound is compared against the survey date while the processing-temporal window predicate is applied to the same rows, and the surviving surveys are projected with the plot name reached one join away and ordered by date.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: DateTime[1], referenceDate: StrictDate[1], windowDays: Integer[1]|test::gildedprairie2::domain::Survey.all($asOf)->filter(
+      s|($s.surveyedOn->toOne() >= $referenceDate->adjust(-$windowDays, meta::pure::functions::date::DurationUnit.DAYS)) && ($s.surveyedOn->toOne() <= $referenceDate)
+    )->project(
+      [
+        s|$s.surveyCode,
+        s|$s.surveyedOn,
+        s|$s.observerName,
+        s|$s.plotName
+      ],
+      [
+        'SurveyCode',
+        'SurveyedOn',
+        'Observer',
+        'PlotName'
+      ]
+    )->sort(
+      [
+        asc('SurveyedOn'),
+        asc('SurveyCode')
+      ]
+    );};
+    mapping: test::gildedprairie2::mapping::PrairieSurveyMapping;
+    runtime: test::gildedprairie2::runtime::PrairieSurveyRuntime;
+  }
+  testSuites:
+  [
+    surveyWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              prairie_survey.survey:
+                'survey_code,plot_code,surveyed_on,observer_name,in_z,out_z\n'+
+                'SV-01,PL-01,2024-05-20,A. Fieldhand,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'SV-02,PL-01,2024-05-02,B. Fieldhand,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'SV-03,PL-01,2024-05-01,C. Fieldhand,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'SV-04,PL-01,2024-04-30,D. Fieldhand,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'SV-05,PL-01,2024-06-15,E. Fieldhand,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'SV-06,PL-01,2024-05-10,F. Fieldhand,2019-01-01 00:00:00,2019-12-31 00:00:00\n';
+              prairie_plot.plot:
+                'plot_code,plot_name,region_code,established_on,plot_area_m2,in_z,out_z\n'+
+                'PL-01,North Ridge Sward,RG-01,2019-04-01,2400.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        thirtyDayWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            referenceDate = %2024-05-31,
+            windowDays = 30
+          ]
+          asserts:
+          [
+            windowBoundaryRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SurveyCode":"SV-03","SurveyedOn":"2024-05-01","Observer":"C. Fieldhand","PlotName":"North Ridge Sward"},{"SurveyCode":"SV-02","SurveyedOn":"2024-05-02","Observer":"B. Fieldhand","PlotName":"North Ridge Sward"},{"SurveyCode":"SV-01","SurveyedOn":"2024-05-20","Observer":"A. Fieldhand","PlotName":"North Ridge Sward"}]';
+                  }#;
+              }#
+          ]
+        },
+        narrowWindowExcludesEarlierSurveys:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            referenceDate = %2024-05-31,
+            windowDays = 15
+          ]
+          asserts:
+          [
+            onlyLatestSurveyInWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SurveyCode":"SV-01","SurveyedOn":"2024-05-20","Observer":"A. Fieldhand","PlotName":"North Ridge Sward"}]';
+                  }#;
+              }#
+          ]
+        },
+        supersededSurveyVersionOutOfRange:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            referenceDate = %2024-05-10,
+            windowDays = 1
+          ]
+          asserts:
+          [
+            closedVersionExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

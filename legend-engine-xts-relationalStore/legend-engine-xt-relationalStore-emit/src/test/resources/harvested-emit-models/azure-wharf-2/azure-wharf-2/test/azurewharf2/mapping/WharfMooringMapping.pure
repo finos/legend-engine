@@ -1,0 +1,210 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::azurewharf2::mapping::WharfMooringMapping
+(
+  *test::azurewharf2::domain::MooringLog[mooringLog]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurewharf2::store::WharfDb]wharf.mooring_log.log_id
+    )
+    ~mainTable [test::azurewharf2::store::WharfDb]wharf.mooring_log
+    logCode: [test::azurewharf2::store::WharfDb]wharf.mooring_log.log_code,
+    berthName: [test::azurewharf2::store::WharfDb]@LogToBerth | wharf.berth.berth_name,
+    quayName: [test::azurewharf2::store::WharfDb]@LogToBerth > @BerthToQuay | wharf.quay.quay_name,
+    vesselName: [test::azurewharf2::store::WharfDb]@LogToVessel | wharf.vessel.vessel_name,
+    crewName: [test::azurewharf2::store::WharfDb]@LogToCrew | wharf.watch_crew.crew_name,
+    hullLabel: case(
+                 equal(toUpper(trim([test::azurewharf2::store::WharfDb]wharf.mooring_log.hull_note)), 'SOUND'),
+                 'HULL SOUND',
+                 case(
+                   equal(toUpper(trim([test::azurewharf2::store::WharfDb]wharf.mooring_log.hull_note)), 'SCUFFED'),
+                   'HULL SCUFFED',
+                   case(
+                     equal(toUpper(trim([test::azurewharf2::store::WharfDb]wharf.mooring_log.hull_note)), 'HOLED'),
+                     'HULL HOLED',
+                     case(
+                       and(
+                         isNotEmpty([test::azurewharf2::store::WharfDb]wharf.mooring_log.hull_note),
+                         notEqual(trim([test::azurewharf2::store::WharfDb]wharf.mooring_log.hull_note), '')
+                       ),
+                       'HULL UNCLASSED',
+                       sqlNull()
+                     )
+                   )
+                 )
+               ),
+    deckLabel: case(
+                 or(
+                   isEmpty([test::azurewharf2::store::WharfDb]wharf.mooring_log.deck_note),
+                   equal(trim([test::azurewharf2::store::WharfDb]wharf.mooring_log.deck_note), '')
+                 ),
+                 'DECK UNRECORDED',
+                 case(
+                   equal(toUpper(trim([test::azurewharf2::store::WharfDb]wharf.mooring_log.deck_note)), 'CLEAR'),
+                   'DECK CLEAR',
+                   'DECK OBSTRUCTED'
+                 )
+               ),
+    lampLabel: case(
+                 or(
+                   isEmpty([test::azurewharf2::store::WharfDb]wharf.mooring_log.lamp_note),
+                   equal(trim([test::azurewharf2::store::WharfDb]wharf.mooring_log.lamp_note), '')
+                 ),
+                 'LAMP UNRECORDED',
+                 toUpper(trim([test::azurewharf2::store::WharfDb]wharf.mooring_log.lamp_note))
+               ),
+    crateCount: coalesce([test::azurewharf2::store::WharfDb]wharf.mooring_log.crate_count, 0),
+    checkedOn: [test::azurewharf2::store::WharfDb]wharf.mooring_log.checked_on
+  }
+
+  *test::azurewharf2::domain::Berth[berth]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurewharf2::store::WharfDb]wharf.berth.berth_code
+    )
+    ~mainTable [test::azurewharf2::store::WharfDb]wharf.berth
+    berthCode: [test::azurewharf2::store::WharfDb]wharf.berth.berth_code,
+    berthName: [test::azurewharf2::store::WharfDb]wharf.berth.berth_name
+  }
+
+  *test::azurewharf2::domain::Quay[quay]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurewharf2::store::WharfDb]wharf.quay.quay_code
+    )
+    ~mainTable [test::azurewharf2::store::WharfDb]wharf.quay
+    quayCode: [test::azurewharf2::store::WharfDb]wharf.quay.quay_code,
+    quayName: [test::azurewharf2::store::WharfDb]wharf.quay.quay_name
+  }
+
+  *test::azurewharf2::domain::Vessel[vessel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurewharf2::store::WharfDb]wharf.vessel.vessel_code
+    )
+    ~mainTable [test::azurewharf2::store::WharfDb]wharf.vessel
+    vesselCode: [test::azurewharf2::store::WharfDb]wharf.vessel.vessel_code,
+    vesselName: [test::azurewharf2::store::WharfDb]wharf.vessel.vessel_name
+  }
+
+  *test::azurewharf2::domain::WatchCrew[watchCrew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurewharf2::store::WharfDb]wharf.watch_crew.crew_code
+    )
+    ~mainTable [test::azurewharf2::store::WharfDb]wharf.watch_crew
+    crewCode: [test::azurewharf2::store::WharfDb]wharf.watch_crew.crew_code,
+    crewName: [test::azurewharf2::store::WharfDb]wharf.watch_crew.crew_name
+  }
+
+  testSuites:
+  [
+    mooringLogSuite:
+    {
+      function: |test::azurewharf2::domain::MooringLog.all()->project(
+  [
+    l|$l.logCode,
+    l|$l.berthName,
+    l|$l.quayName,
+    l|$l.vesselName,
+    l|$l.crewName,
+    l|$l.hullLabel,
+    l|$l.deckLabel,
+    l|$l.lampLabel,
+    l|$l.crateCount
+  ],
+  [
+    'Log',
+    'Berth',
+    'Quay',
+    'Vessel',
+    'Crew',
+    'HullLabel',
+    'DeckLabel',
+    'LampLabel',
+    'Crates'
+  ]
+)->sort(
+  [
+    asc('Log')
+  ]
+);
+      tests:
+      [
+        everyHullBandAndBothDeckArms:
+        {
+          doc: 'Covers the four hull banding arms and the unwritten-hull null fallback, both deck arms and the unwritten-deck default, the lamp default and its upper-cased pass-through, the defaulted crate count and the one-hop and two-hop inner joins onto the berth and its quay.';
+          data:
+          [
+            test::azurewharf2::store::WharfDb:
+              Relational
+              #{
+                wharf.mooring_log:
+                  'log_id,log_code,berth_code,vessel_code,crew_code,hull_note,deck_note,lamp_note,crate_count,checked_on\n'+
+                  '1,ML-01,BR-01,VS-01,CW-01,sound,,lit,4,2026-04-02\n'+
+                  '2,ML-02,BR-01,VS-02,CW-01,scuffed,,,3,2026-04-03\n'+
+                  '3,ML-03,BR-02,VS-01,CW-02,holed,,dark,,2026-04-04\n'+
+                  '4,ML-04,BR-02,VS-02,CW-02,splintered,,lit,2,2026-04-05\n'+
+                  '5,ML-05,BR-03,VS-03,CW-02,,,lit,1,2026-04-06\n'+
+                  '6,ML-06,BR-03,VS-03,CW-01,sound,clear,lit,5,2026-04-07\n'+
+                  '7,ML-07,BR-01,VS-01,CW-01,sound,crates stacked,dark,6,2026-04-08\n';
+
+                wharf.berth:
+                  'berth_code,quay_code,berth_name\n'+
+                  'BR-01,QY-01,North Berth One\n'+
+                  'BR-02,QY-01,North Berth Two\n'+
+                  'BR-03,QY-02,South Berth One\n';
+
+                wharf.quay:
+                  'quay_code,quay_name\n'+
+                  'QY-01,North Quay\n'+
+                  'QY-02,South Quay\n';
+
+                wharf.vessel:
+                  'vessel_code,vessel_name\n'+
+                  'VS-01,Kelp Runner\n'+
+                  'VS-02,Tide Wren\n'+
+                  'VS-03,Foam Lark\n';
+
+                wharf.watch_crew:
+                  'crew_code,crew_name\n'+
+                  'CW-01,Early Watch\n'+
+                  'CW-02,Late Watch\n';
+              }#
+          ];
+          asserts:
+          [
+            sevenInspectionRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Log":"ML-01","Berth":"North Berth One","Quay":"North Quay","Vessel":"Kelp Runner","Crew":"Early Watch","HullLabel":"HULL SOUND","DeckLabel":"DECK UNRECORDED","LampLabel":"LIT","Crates":4},{"Log":"ML-02","Berth":"North Berth One","Quay":"North Quay","Vessel":"Tide Wren","Crew":"Early Watch","HullLabel":"HULL SCUFFED","DeckLabel":"DECK UNRECORDED","LampLabel":"LAMP UNRECORDED","Crates":3},{"Log":"ML-03","Berth":"North Berth Two","Quay":"North Quay","Vessel":"Kelp Runner","Crew":"Late Watch","HullLabel":"HULL HOLED","DeckLabel":"DECK UNRECORDED","LampLabel":"DARK","Crates":0},{"Log":"ML-04","Berth":"North Berth Two","Quay":"North Quay","Vessel":"Tide Wren","Crew":"Late Watch","HullLabel":"HULL UNCLASSED","DeckLabel":"DECK UNRECORDED","LampLabel":"LIT","Crates":2},{"Log":"ML-05","Berth":"South Berth One","Quay":"South Quay","Vessel":"Foam Lark","Crew":"Late Watch","HullLabel":null,"DeckLabel":"DECK UNRECORDED","LampLabel":"LIT","Crates":1},{"Log":"ML-06","Berth":"South Berth One","Quay":"South Quay","Vessel":"Foam Lark","Crew":"Early Watch","HullLabel":"HULL SOUND","DeckLabel":"DECK CLEAR","LampLabel":"LIT","Crates":5},{"Log":"ML-07","Berth":"North Berth One","Quay":"North Quay","Vessel":"Kelp Runner","Crew":"Early Watch","HullLabel":"HULL SOUND","DeckLabel":"DECK OBSTRUCTED","LampLabel":"DARK","Crates":6}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

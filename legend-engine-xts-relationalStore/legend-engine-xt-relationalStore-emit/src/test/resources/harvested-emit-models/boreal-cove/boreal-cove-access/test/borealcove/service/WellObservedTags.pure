@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealcove::service::WellObservedTags
+{
+  pattern: '/borealcove/v1/well-observed-tags';
+  title: 'Boreal Cove - Well Observed Tags By Region Set';
+  owners:
+  [
+    'field-survey-platform',
+    'wildlife-tracking-ops'
+  ];
+  documentation: 'Narrows the tagged-animal extent by species, a mass range, an optional region whose re-sighting floor is resolved by a standalone helper, a literal region set, a caller-supplied habitat list and a named surveyor, then projects and orders the survivors.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {speciesCode: String[1], minMass: Integer[1], maxWingSpan: Integer[1], regionFilter: String[0..1], habitatCodes: String[*]|test::borealcove::domain::TaggedAnimal.all()->filter(
+      a|$a.speciesCode == $speciesCode
+    )->filter(
+      a|$a.massGrams > $minMass
+    )->filter(
+      a|$a.wingSpanMm <= $maxWingSpan
+    )->filter(
+      a|$regionFilter->isEmpty() || ($a.sightingCount > test::borealcove::domain::resightingFloor($regionFilter))
+    )->filter(
+      a|$a.regionCode->in(['NORTHSHORE', 'EASTRIDGE', 'WESTFLATS'])
+    )->filter(
+      a|$a.habitatCode->in($habitatCodes)
+    )->filter(
+      a|$a.surveyorName == 'Wren Halloway'
+    )->project(
+      [
+        a|$a.tagCode,
+        a|$a.speciesCode,
+        a|$a.regionCode,
+        a|$a.habitatCode,
+        a|$a.massGrams
+      ],
+      [
+        'TagCode',
+        'SpeciesCode',
+        'RegionCode',
+        'HabitatCode',
+        'MassGrams'
+      ]
+    )->sort(
+      [
+        asc('TagCode')
+      ]
+    )};
+    key: 'range';
+    executions['northshore']:
+    {
+      mapping: test::borealcove::mapping::SurveyMapping;
+      runtime: test::borealcove::runtime::NorthshoreRuntime;
+    }
+    executions['eastridge']:
+    {
+      mapping: test::borealcove::mapping::SurveyMapping;
+      runtime: test::borealcove::runtime::EastridgeRuntime;
+    }
+    executions['westflats']:
+    {
+      mapping: test::borealcove::mapping::SurveyMapping;
+      runtime: test::borealcove::runtime::WestflatsRuntime;
+    }
+    executions['southfen']:
+    {
+      mapping: test::borealcove::mapping::SurveyMapping;
+      runtime: test::borealcove::runtime::SouthfenRuntime;
+    }
+    executions['uplands']:
+    {
+      mapping: test::borealcove::mapping::SurveyMapping;
+      runtime: test::borealcove::runtime::UplandsRuntime;
+    }
+    executions['islets']:
+    {
+      mapping: test::borealcove::mapping::SurveyMapping;
+      runtime: test::borealcove::runtime::IsletsRuntime;
+    }
+  }
+}

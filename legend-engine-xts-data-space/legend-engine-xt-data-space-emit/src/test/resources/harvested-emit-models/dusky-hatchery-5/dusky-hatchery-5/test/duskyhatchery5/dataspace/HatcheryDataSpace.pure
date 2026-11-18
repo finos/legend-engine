@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace {meta::pure::profiles::doc.doc = 'A curated entry point over the processing-temporal hatchery model.'} test::duskyhatchery5::dataspace::HatcheryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'dev';
+      description: 'Development tier over the milestoned hatchery store.';
+      mapping: test::duskyhatchery5::mapping::HatcheryMapping;
+      defaultRuntime: test::duskyhatchery5::runtime::HatcheryRuntime;
+    }
+  ];
+  defaultExecutionContext: 'dev';
+  title: 'Hatchery Rearing Programme';
+  description: 'Publishes the rearing programme of a fish hatchery as of any processing instant: pond conditions, fry batches and their species and tallies, and the logged feeding runs. Every endpoint takes the processing instant it should be resolved at, and the layout element is the consumer-facing overview of the three milestoned classes.';
+  diagrams:
+  [
+    {
+      title: 'Hatchery Rearing Overview';
+      diagram: test::duskyhatchery5::diagram::HatcheryDiagram;
+    }
+  ];
+  elements:
+  [
+    test::duskyhatchery5::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Pond condition at a processing instant';
+      description: 'The temperature-filtered pond projection published as an executable of this entry point.';
+      executable: test::duskyhatchery5::service::PondConditionService;
+      executionContextKey: 'dev';
+    },
+    {
+      id: 2;
+      title: 'Fry batch roster by species';
+      description: 'The species-parameterised batch roster resolved across the pond join.';
+      executable: test::duskyhatchery5::service::BatchRosterService;
+      executionContextKey: 'dev';
+    },
+    {
+      id: 3;
+      title: 'Feed totals by ration kind';
+      description: 'The aggregate ration totals over the milestoned feeding log.';
+      executable: test::duskyhatchery5::service::FeedTotalsService;
+      executionContextKey: 'dev';
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'hatchery-operations@example.com';
+  };
+}

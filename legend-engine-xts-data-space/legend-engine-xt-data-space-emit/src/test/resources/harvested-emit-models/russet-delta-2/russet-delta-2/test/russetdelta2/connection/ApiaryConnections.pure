@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::russetdelta2::connection::ApiaryH2Connection
+{
+  store: test::russetdelta2::store::ApiaryDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection test::russetdelta2::connection::HarvestH2Connection
+{
+  store: test::russetdelta2::store::HarvestDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection test::russetdelta2::connection::ApiaryWarehouseConnection
+{
+  store: test::russetdelta2::store::ApiaryDb;
+  type: Snowflake;
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'APIARY_DB';
+    account: 'apiary_yard_account';
+    warehouse: 'APIARY_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'apiary_org';
+    role: 'APIARY_READER';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'APIARY_YARD_READER';
+    privateKeyVaultReference: 'apiary.yard.privateKey';
+    passPhraseVaultReference: 'apiary.yard.passPhrase';
+  };
+}
+
+RelationalDatabaseConnection test::russetdelta2::connection::HarvestWarehouseConnection
+{
+  store: test::russetdelta2::store::HarvestDb;
+  type: Snowflake;
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'HARVEST_DB';
+    account: 'apiary_harvest_account';
+    warehouse: 'HARVEST_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'apiary_org';
+    role: 'HARVEST_READER';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'APIARY_HARVEST_READER';
+    privateKeyVaultReference: 'apiary.harvest.privateKey';
+    passPhraseVaultReference: 'apiary.harvest.passPhrase';
+  };
+}

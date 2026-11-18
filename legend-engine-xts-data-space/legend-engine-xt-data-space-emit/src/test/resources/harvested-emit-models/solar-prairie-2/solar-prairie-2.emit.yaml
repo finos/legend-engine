@@ -1,0 +1,57 @@
+name: solar-prairie-2
+title: "Solar Prairie Restoration Station — A Hub Class Reached From Thirteen Record Classes Through Declared Associations"
+description: |
+  A relational model for a prairie restoration station, shaped as one hub class surrounded by thirteen
+  record classes. A single schema holds the site table plus one table per record kind, and one join per
+  record kind resolves a record back to its site; a further join pairs two of the record tables directly.
+  One mapping binds every mapped class to its own main table alias under an explicitly declared primary
+  key, resolves the site name and district of each record across that record's join, and implements every
+  declared association as a relational association mapping over the same join. A fifteenth class is kept
+  as unmapped reference material. Two Snowflake connections authenticated by delegated token exchange
+  back two runtimes over the one store, three tabular endpoints publish a district-scoped record query, a
+  rate-filtered record query and an unfiltered projection, and one data space presents the endpoints under
+  two execution contexts, one per runtime.
+modelSources:
+  model:
+    root: solar-prairie-2
+    files:
+      - test/solarprairie2/connection/PrairieConnections.pure
+      - test/solarprairie2/dataspace/PrairieDataSpace.pure
+      - test/solarprairie2/domain/PrairieDomain.pure
+      - test/solarprairie2/mapping/PrairieMapping.pure
+      - test/solarprairie2/runtime/PrairieRuntimes.pure
+      - test/solarprairie2/service/PollinatorVisitsService.pure
+      - test/solarprairie2/service/SoilSamplesByDistrictService.pure
+      - test/solarprairie2/service/TrailSectionsService.pure
+      - test/solarprairie2/store/PrairieFieldDB.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - data-space
+  - h2
+  - hub-and-spoke
+  - inner-join
+  - main-table-alias
+  - prairie-restoration
+  - primary-key
+  - snowflake
+  - snowflake-connection
+  - tabular-endpoint

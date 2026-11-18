@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskybeacon::service::RecentTelescopes
+{
+  pattern: '/sky/v1/telescopes/recent';
+  title: 'Recently Commissioned Telescopes';
+  owners:
+  [
+    'sky-survey',
+    'dome-operations'
+  ];
+  documentation: 'Returns the large-aperture telescopes commissioned within a requested window of a reference date, resolving each telescope back to its observatory through the inner join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], maxAgeDays: Integer[1]|let cutoff = $asOfDate->adjust(0 - $maxAgeDays, meta::pure::functions::date::DurationUnit.DAYS);
+      test::duskybeacon::domain::Telescope.all()->filter(
+        t|($t.commissionedOn >= $cutoff) && ($t.apertureCm >= 100)
+      )->project(
+        [
+          t|$t.instrumentCode,
+          t|$t.apertureCm,
+          t|$t.observatory.obsName->toOne(),
+          t|$t.observatory.elevationM->toOne()
+        ],
+        [
+          'Instrument',
+          'Aperture',
+          'Observatory',
+          'Elevation'
+        ]
+      )->sort(
+        [
+          asc('Instrument')
+        ]
+      );};
+    mapping: test::duskybeacon::mapping::SkyMapping;
+    runtime: test::duskybeacon::runtime::SkyRuntime;
+  }
+  testSuites:
+  [
+    recentTelescopesSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyConnection:
+            Reference
+            #{
+              test::duskybeacon::data::SkyTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        within120Days:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            maxAgeDays = 120
+          ]
+          asserts:
+          [
+            recentWide:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Instrument":"T-200","Aperture":150,"Observatory":"Ridgecrest Dome","Elevation":1820}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

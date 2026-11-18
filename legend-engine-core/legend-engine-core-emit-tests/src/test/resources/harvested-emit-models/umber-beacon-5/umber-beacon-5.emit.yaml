@@ -1,0 +1,42 @@
+name: umber-beacon-5
+title: "Urban Canopy Registry — Milestoned Association across a Mixed-Temporality Registry Hierarchy"
+description: |
+  A store-less urban tree-canopy registry whose interest is the interaction
+  between milestoning and an inheritance hierarchy. An abstract registry entry
+  carries the shared identity shape and a local profile's stereotype and tagged
+  values, so the annotations stay visible through the subtype that extends it.
+  Two of the four classes are business-temporal, and the single association
+  connects exactly those two, making the association itself milestoned: a
+  business date has to be agreed across both ends before either end resolves.
+  A plain property from the versioned specimen to the unversioned plot lets one
+  traversal cross from a milestoned grain into an unmilestoned one, and two
+  enumerations type both mandatory and optional properties on either side of
+  the temporal boundary.
+
+modelSources:
+  model:
+    root: umber-beacon-5
+    files:
+      - test/umberbeacon5/domain/Associations.pure
+      - test/umberbeacon5/domain/CanopyElements.pure
+      - test/umberbeacon5/domain/Stewardship.pure
+      - test/umberbeacon5/domain/Vocabularies.pure
+
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - business-temporal
+  - enumeration
+  - inheritance
+  - milestoned-association
+  - store-less
+  - tagged-value
+  - urban-canopy

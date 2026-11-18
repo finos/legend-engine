@@ -1,0 +1,75 @@
+name: verdant-otter-2
+title: "Verdant Otter — Canal Lock Passage Register (processing-temporal register read through composed mappings and point-in-time tabular projections)"
+description: |
+  A canal navigation register whose every corrected class is processing-temporal:
+  lock chambers, licensed vessels, keeper shifts and the passages recorded
+  through the chambers each carry the temporal stereotype and each sits on its
+  own milestoned sibling table, while a static reach reference table in an
+  included store supplies the reach names the corrected tables reach across
+  declared equality joins. The bindings are assembled by composition — a reach
+  mapping is pulled into the waterway mapping that owns the corrected class
+  mappings, and that mapping is in turn included by the outer mapping that owns
+  the test suite — so the resolved mapping set spans three elements and one
+  connection has to serve every store reached that way. Services enter the model
+  only through the milestoned accessor with a point-in-time date parameter and
+  produce wide tabular projections over a mixed primitive surface of strings,
+  fixed-precision numerics, floats, dates and timestamps, so the milestoning
+  window is the only predicate the plan carries; their fixtures hold a
+  correction closed out before the requested instant and a version opened after
+  it, proving the out-of-range rows drop. Two associations relate the corrected
+  chamber and vessel to their passages with an explicit multiplicity at each
+  end, and a two-context data space publishes the composed mapping, the model
+  elements and the executable projections behind one discovery surface.
+
+modelSources:
+  model:
+    root: verdant-otter-2
+    files:
+      - test/verdantotter2/connection/PassageH2Connection.pure
+      - test/verdantotter2/dataspace/WaterwayDataSpace.pure
+      - test/verdantotter2/domain/WaterwayDomain.pure
+      - test/verdantotter2/mapping/PassageMapping.pure
+      - test/verdantotter2/mapping/ReachMapping.pure
+      - test/verdantotter2/mapping/WaterwayMapping.pure
+      - test/verdantotter2/runtime/PassageRuntimes.pure
+      - test/verdantotter2/service/KeeperShiftsAsOf.pure
+      - test/verdantotter2/service/LockChambersAsOf.pure
+      - test/verdantotter2/service/PassagesAsOf.pure
+      - test/verdantotter2/store/WaterwayDB.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - canal-navigation
+  - data-space
+  - h2
+  - join-reached-column
+  - mapping-include
+  - mapping-test
+  - point-in-time-query
+  - processing-temporal
+  - relational
+  - service-test
+  - tabular-projection

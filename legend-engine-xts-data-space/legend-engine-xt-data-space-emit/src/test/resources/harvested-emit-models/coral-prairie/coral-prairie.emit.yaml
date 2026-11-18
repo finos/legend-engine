@@ -1,0 +1,59 @@
+name: coral-prairie
+title: "Coral Prairie Restoration Register — Association-Implemented Navigation over a Multi-Table Grassland Store"
+description: |
+  A prairie restoration register whose plot hub navigates to management zones, burn units,
+  seed mixes, soil series and field technicians through associations implemented over named
+  inner joins, one end of which resolves through a two-link join chain. Nested string
+  transforms derive the plot code, display name and slug from the landed columns. Three
+  single-execution services publish the plot register, the zone register and a filtered
+  species-rich selection as tabular projections, and a data space groups the mapping, the
+  runtime and the three services as sample executables behind an email support contact.
+modelSources:
+  model:
+    root: coral-prairie
+    files:
+      - test/coralprairie/connection/PrairieConnections.pure
+      - test/coralprairie/data/PrairieTestData.pure
+      - test/coralprairie/dataspace/PrairieDataSpace.pure
+      - test/coralprairie/domain/PrairieDomain.pure
+      - test/coralprairie/mapping/PrairieMapping.pure
+      - test/coralprairie/runtime/PrairieRuntimes.pure
+      - test/coralprairie/service/PlotRegisterService.pure
+      - test/coralprairie/service/TallgrassPlotService.pure
+      - test/coralprairie/service/ZoneRegisterService.pure
+      - test/coralprairie/store/PrairieStore.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+complexity: advanced
+tags:
+  - association-hub
+  - data-space
+  - grassland-restoration
+  - h2
+  - multi-hop-join
+  - relational
+  - service-test
+  - snowflake
+  - tabular-data-set
+stores:
+  - relational

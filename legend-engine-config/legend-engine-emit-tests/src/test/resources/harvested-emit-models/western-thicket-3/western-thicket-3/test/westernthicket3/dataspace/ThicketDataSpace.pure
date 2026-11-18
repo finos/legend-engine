@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::westernthicket3::dataspace::ThicketDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'wood';
+      description: 'Wood tier - the cutting register, the stands it was cut on and the grove tallies behind them, served through the working wood warehouse.';
+      mapping: test::westernthicket3::mapping::ThicketSurveyMapping;
+      defaultRuntime: test::westernthicket3::runtime::ThicketWoodRuntime;
+    },
+    {
+      name: 'archive';
+      description: 'Archive tier - the same curated register bound to the archive warehouse the closed cutting cycles are kept in.';
+      mapping: test::westernthicket3::mapping::ThicketSurveyMapping;
+      defaultRuntime: test::westernthicket3::runtime::ThicketArchiveRuntime;
+    },
+    {
+      name: 'reference';
+      description: 'Reference tier - only the grove and stand books, bound to the working wood warehouse.';
+      mapping: test::westernthicket3::mapping::ThicketRefMapping;
+      defaultRuntime: test::westernthicket3::runtime::ThicketRefRuntime;
+    }
+  ];
+  defaultExecutionContext: 'wood';
+  title: 'Western Thicket Coppice Wood';
+  description: 'A governed entry point over the coppice cutting register, the stands and groves it hangs off, the warden roster it is walked by and the banded tally sheets the wood writes down before anything is coded.';
+  elements:
+  [
+    test::westernthicket3::domain::CutSurveyRecord,
+    test::westernthicket3::domain::GroveRef,
+    test::westernthicket3::domain::StandRef
+  ];
+  supportInfo: Email
+  {
+    address: 'coppice-survey-desk@thicketwood.invalid';
+  };
+}

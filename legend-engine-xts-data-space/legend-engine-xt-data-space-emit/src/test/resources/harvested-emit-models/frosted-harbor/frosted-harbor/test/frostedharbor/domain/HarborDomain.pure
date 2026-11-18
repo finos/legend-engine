@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::frostedharbor::domain::BerthGrade
+{
+  Prime,
+  Standard,
+  Reserve,
+  Layup
+}
+
+Enum test::frostedharbor::domain::CargoKind
+{
+  Crate,
+  Pallet,
+  Drum
+}
+
+Class test::frostedharbor::domain::HarborRecord
+{
+  recordCode: String[1];
+  loggedBy: String[1];
+}
+
+Class test::frostedharbor::domain::Dock
+[
+  zoneCodeStamped: $this.zoneCode->length() > 0,
+  berthCountNonNegative: $this.berthCount >= 0
+]
+{
+  dockCode: String[1];
+  dockName: String[1];
+  zoneCode: String[1];
+  berthCount: Integer[1];
+  maxCapacityTon: Integer[1];
+}
+
+Class test::frostedharbor::domain::Berth
+[
+  capacityWithinBounds: ($this.capacityTon > 0) && ($this.capacityTon <= 5000)
+]
+{
+  berthCode: String[1];
+  capacityTon: Integer[1];
+}
+
+Class <<temporal.businesstemporal>> test::frostedharbor::domain::BerthAssignment extends test::frostedharbor::domain::HarborRecord
+[
+  attachLevelWithinBounds: ($this.attachLevel >= 0) && ($this.attachLevel <= 100),
+  baseLevelWithinBounds: ($this.baseLevel >= 0) && ($this.baseLevel <= 100),
+  levelsStayOrdered: $this.baseLevel <= $this.peakLevel
+]
+{
+  grade: test::frostedharbor::domain::BerthGrade[1];
+  attachLevel: Integer[1];
+  baseLevel: Integer[1];
+  peakLevel: Integer[1];
+  periodCode: String[1];
+  reportedOn: StrictDate[1];
+  dockZone: String[1];
+  periodTail() {$this.periodCode->substring($this.periodCode->length() - 1, $this.periodCode->length())->toUpper()}: String[1];
+  levelSpan() {$this.peakLevel - $this.baseLevel}: Integer[1];
+}
+
+Class test::frostedharbor::domain::CargoLoad extends test::frostedharbor::domain::HarborRecord
+{
+  kind: test::frostedharbor::domain::CargoKind[1];
+  massKg: Integer[1];
+  rosterLabel: String[1];
+  sourceKind: String[1];
+}
+
+Class test::frostedharbor::domain::BerthInspection
+{
+  inspectionCode: String[1];
+  inspectedOn: StrictDate[1];
+  inspectorName: String[1];
+}
+
+Association test::frostedharbor::domain::Dock_Berth
+{
+  berthDock: test::frostedharbor::domain::Dock[1];
+  dockBerths: test::frostedharbor::domain::Berth[*];
+}
+
+Association test::frostedharbor::domain::Berth_Assignment
+{
+  assignmentBerth: test::frostedharbor::domain::Berth[1];
+  berthAssignments: test::frostedharbor::domain::BerthAssignment[*];
+}
+
+Association test::frostedharbor::domain::Berth_Inspection
+{
+  inspectionBerth: test::frostedharbor::domain::Berth[1];
+  berthInspections: test::frostedharbor::domain::BerthInspection[*];
+}

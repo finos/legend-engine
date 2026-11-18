@@ -1,0 +1,42 @@
+name: silver-marsh
+title: "Botanical Garden Survey — Multi-Execution Service over a Nested-Join Relational Mapping"
+description: |
+  A botanical-garden corpus over a three-table H2 store. Plants belong to beds
+  and beds to gardens, so a query from plant to garden resolves the chained
+  Plant_Bed > Bed_Garden nested join. A mapping testSuite asserts the nested
+  projection, and a tier-keyed multi-execution service asserts a parameterised,
+  sorted query, driving EMIT test execution and execution-plan generation.
+modelSources:
+  model:
+    root: silver-marsh
+    files:
+      - test/silvermarsh/connection/GardenH2Connection.pure
+      - test/silvermarsh/domain/GardenDomain.pure
+      - test/silvermarsh/mapping/GardenMapping.pure
+      - test/silvermarsh/runtime/GardenRuntime.pure
+      - test/silvermarsh/service/PlantsByGarden.pure
+      - test/silvermarsh/store/GardenDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - botanical-garden
+  - h2
+  - mapping-test
+  - multi-execution
+  - nested-join
+  - plan-generation
+  - relational
+  - service-test

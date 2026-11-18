@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::duskydelta::connection::ApiaryWarehouseConnection
+{
+  store: test::duskydelta::store::ApiaryDatabase;
+  type: Snowflake;
+  timezone: +0100;
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'APIARY_FIELD_DB';
+    account: 'apiary_field_account';
+    warehouse: 'APIARY_FIELD_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'apiary_field_org';
+    role: 'APIARY_FIELD_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'apiary_field_oauth_key';
+    scopeName: 'SESSION:ROLE:APIARY_FIELD_READER';
+  };
+}
+
+
+###Connection
+RelationalDatabaseConnection test::duskydelta::connection::ColonyRegistryWarehouseConnection
+{
+  store: test::duskydelta::store::ColonyRegistryDatabase;
+  type: Snowflake;
+  timezone: +0100;
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'COLONY_REGISTRY_DB';
+    account: 'colony_registry_account';
+    warehouse: 'COLONY_REGISTRY_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'colony_registry_org';
+    role: 'COLONY_REGISTRY_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'colony_registry_oauth_key';
+    scopeName: 'SESSION:ROLE:COLONY_REGISTRY_READER';
+  };
+}

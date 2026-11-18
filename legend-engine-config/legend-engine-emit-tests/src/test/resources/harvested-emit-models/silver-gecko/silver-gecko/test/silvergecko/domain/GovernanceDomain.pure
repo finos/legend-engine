@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::silvergecko::domain::*;
+
+Class {doc.doc = 'A staffed field station from which collecting trips into the surrounding reserve depart.'} test::silvergecko::domain::FieldStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  latitude: Float[1];
+  longitude: Float[1];
+  establishedOn: StrictDate[1];
+}
+
+Class {doc.doc = 'A marked plot inside a reserve from which specimens are collected.'} test::silvergecko::domain::CollectionPlot
+{
+  plotCode: String[1];
+  habitatName: String[1];
+  areaHectares: Float[1];
+  surveyedAt: DateTime[1];
+  grid: SamplingGrid[0..1];
+}
+
+Class {doc.doc = 'One pressed and mounted plant sheet held in the herbarium.'} test::silvergecko::domain::SpecimenSheet
+{
+  sheetCode: String[1];
+  taxonName: String[1];
+  collectedOn: StrictDate[1];
+  pressCount: Integer[1];
+  origin: ProvenanceOrigin[1];
+  lineage: CatalogueLineage[0..1];
+}
+
+Class {doc.doc = 'A stewardship rule that governs how a category of herbarium material may be handled.'} test::silvergecko::domain::StewardshipRule
+{
+  ruleCode: String[1];
+  category: StewardshipCategory[1];
+  effectiveFrom: StrictDate[1];
+  noteLines: String[*];
+}
+
+Class {doc.doc = 'Junction object binding one sheet to the curator answerable for it.'} test::silvergecko::domain::StewardshipAssignment
+{
+  assignedAt: DateTime[1];
+  assignmentNote: String[0..1];
+}
+
+Class {doc.doc = 'A member of the curation team who signs off on herbarium work.'} test::silvergecko::domain::Curator
+{
+  curatorCode: String[1];
+  displayName: String[1];
+  startedOn: StrictDate[1];
+}
+
+Class {doc.doc = 'A movement of a sheet to a partner institution and its expected return.'} test::silvergecko::domain::SpecimenTransfer
+{
+  transferCode: String[1];
+  shippedOn: StrictDate[1];
+  dueBackOn: StrictDate[1];
+}
+
+Class {doc.doc = 'The registry entry created when material is taken into the permanent collection.'} test::silvergecko::domain::AccessionEntry
+{
+  entryCode: String[1];
+  accessionedOn: StrictDate[1];
+  shelfLabel: String[1];
+}
+
+Class {doc.doc = 'One round of curation review over a batch of herbarium records.'} test::silvergecko::domain::ReviewCycle
+{
+  cycleCode: String[1];
+  openedAt: DateTime[1];
+  closedAt: DateTime[0..1];
+}
+
+Class {doc.doc = 'How long records in a stewardship category are kept before disposal review.'} test::silvergecko::domain::RetentionSchedule
+{
+  scheduleCode: String[1];
+  retentionYears: Integer[1];
+  category: StewardshipCategory[1];
+}
+
+Class {doc.doc = 'A queued imaging job that turns a physical sheet into a catalogued image.'} test::silvergecko::domain::DigitisationTask
+{
+  taskCode: String[1];
+  queuedAt: DateTime[1];
+  pageCount: Integer[1];
+}
+
+Class {doc.doc = 'A named habitat band used when scoping stewardship rules.'} test::silvergecko::domain::HabitatZone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+  elevationMetres: Float[1];
+}
+
+Class {doc.doc = 'A conservation treatment applied to fragile herbarium material.'} test::silvergecko::domain::ConservationTreatment
+{
+  treatmentCode: String[1];
+  performedOn: StrictDate[1];
+  materialUsed: String[1];
+  hoursSpent: Float[1];
+}

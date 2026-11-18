@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::ivorythicket::domain::*;
+
+Class test::ivorythicket::domain::Inspection
+{
+  inspectionRef: String[1];
+  inspectedOn: StrictDate[1];
+  faultsFound: Integer[1];
+  severity: FaultSeverity[0..1];
+  frameKind: FrameKind[1];
+}
+
+Class test::ivorythicket::domain::DockingStation
+{
+  stationRef: String[1];
+  stationName: String[1];
+  standCount: Integer[1];
+}
+
+Class test::ivorythicket::domain::Mechanic
+{
+  mechanicRef: String[1];
+  fullName: String[1];
+}
+
+Association test::ivorythicket::domain::CycleRecord_Inspection
+{
+  cycle: CycleRecord[1];
+  inspections: Inspection[*];
+}
+
+Association test::ivorythicket::domain::DockingStation_CycleRecord
+{
+  station: DockingStation[1];
+  dockedCycles: CycleRecord[*];
+}
+
+Association test::ivorythicket::domain::CargoCycle_Mechanic
+{
+  cargoCycle: CargoCycle[0..1];
+  mechanics: Mechanic[*];
+}

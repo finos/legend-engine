@@ -1,0 +1,142 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::kindlyprairie3::domain::*;
+import test::kindlyprairie3::function::*;
+
+Class {meta::pure::profiles::doc.doc = 'A row of the grassland ringing sheet exactly as transcribed at the netting line.'} test::kindlyprairie3::domain::RingingSheetRow
+[
+  registryIsPrairieRinging: $this.registryCode->trim()->toLower() == 'prairie-ringing',
+  sheetPrefixIsRecognised: $this.sheetRef->trim()->substring(0, 3)->toUpper() == 'PRS'
+]
+{
+  sheetRef: String[1];
+  registryCode: String[1];
+  rawSpeciesCode: String[0..1];
+  rawRingCode: String[0..1];
+  rawObserver: String[0..1];
+  rawWingChordMm: String[0..1];
+  rawMassGrams: String[0..1];
+  rawHabitat: String[0..1];
+  rawVisitDate: String[0..1];
+  captures: CaptureNoteRow[*];
+  observerInitials()
+  {
+    if($this.rawObserver->isEmpty(),
+       | 'UNSIGNED',
+       | $this.rawObserver->toOne()->trim()->toUpper())
+  }: String[1];
+  ringedCaptureTally()
+  {
+    $this.captures->filter(c | $c.ringApplied)->size()
+  }: Integer[1];
+  captureNoteDigest()
+  {
+    if($this.captures->isEmpty(),
+       | [],
+       | $this.captures->map(c | $c.captureCode->trim()->toUpper() + '/' + $c.ringApplied->toString())->joinStrings('; '))
+  }: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single capture recorded against a ringing sheet row.'} test::kindlyprairie3::domain::CaptureNoteRow
+{
+  captureCode: String[1];
+  ringApplied: Boolean[1];
+  wingBandCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A row of the station sheet holding transect, mist-net and sward transcriptions.'} test::kindlyprairie3::domain::StationSheetRow
+[
+  stationRegistryIsPrairieStations: $this.registryCode->trim()->toLower() == 'prairie-stations'
+]
+{
+  stationRef: String[1];
+  registryCode: String[1];
+  rawTransectCount: String[0..1];
+  rawMistNetMetres: String[0..1];
+  rawGrassHeightCm: String[0..1];
+  rawWarden: String[0..1];
+  visits: StationVisitRow[*];
+  wardenTag()
+  {
+    if($this.rawWarden->isEmpty(),
+       | 'UNWARDENED',
+       | $this.rawWarden->toOne()->trim()->toUpper())
+  }: String[1];
+  netHoursTally()
+  {
+    $this.visits.netHours->sum()
+  }: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single warden visit made to a ringing station.'} test::kindlyprairie3::domain::StationVisitRow
+{
+  visitCode: String[1];
+  netHours: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The refined ringing record assembled from a sheet row and its nested captures.'} test::kindlyprairie3::domain::RingingDigest
+[
+  registerLabelIsFixed: $this.registerLabel == 'prairie grassland ringing register',
+  massIsWithinRingingBand: withinBand($this.massGrams, 8, 90, 2)
+]
+{
+  ringKey: String[1];
+  registerLabel: String[1];
+  speciesLabel: String[1];
+  observerLabel: String[1];
+  conditionLabel: String[1];
+  captureSummary: String[0..1];
+  wingChordMm: Integer[0..1];
+  massGrams: Float[1];
+  ring: RingRef[1];
+  habitat: HabitatBand[1];
+  visit: VisitWindow[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The refined station record assembled from a station sheet row.'} test::kindlyprairie3::domain::StationDigest
+[
+  stationRegisterLabelIsFixed: $this.registerLabel == 'prairie grassland station register'
+]
+{
+  stationKey: String[1];
+  registerLabel: String[1];
+  wardenLabel: String[1];
+  visitSummary: String[0..1];
+  grassBandLabel: String[1];
+  netMetres: Integer[0..1];
+  transect: TransectRef[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A one-property wrapper naming the ring fitted to a captured bird.'} test::kindlyprairie3::domain::RingRef
+{
+  code: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A one-property wrapper holding the banded sward assessment of a netting line.'} test::kindlyprairie3::domain::HabitatBand
+{
+  band: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The visit window a ringing sheet row was transcribed in.'} test::kindlyprairie3::domain::VisitWindow
+{
+  recordedOn: String[1];
+  seasonLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A one-property wrapper naming the transect batch walked from a station.'} test::kindlyprairie3::domain::TransectRef
+{
+  transectCode: String[1];
+}

@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Enum {meta::pure::profiles::doc.doc = 'Condition band recorded for a park fixture at survey time.'} test::cobaltarboretum::domain::FixtureCondition
+{
+  Pristine,
+  Serviceable,
+  Weathered,
+  Failing
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Kind of quantity captured by a site measure row.'} test::cobaltarboretum::domain::MeasureKind
+{
+  CanopySpreadMetres,
+  TrunkGirthCentimetres,
+  ShadeCoveragePercent,
+  SoilMoisturePercent
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Planning category assigned to a park zone.'} test::cobaltarboretum::domain::ZoneCategory
+{
+  Woodland,
+  Meadow,
+  Wetland,
+  HardLandscape,
+  Nursery
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Delivery mode of an irrigation node.'} test::cobaltarboretum::domain::IrrigationMode
+{
+  DripLine,
+  SubSurface,
+  Sprinkler,
+  ManualHose
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Surface material laid on a path segment.'} test::cobaltarboretum::domain::SurfaceMaterial
+{
+  BoundGravel,
+  ResinBound,
+  Flagstone,
+  WoodChip
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Banded canopy density used by the hierarchy snapshot.'} test::cobaltarboretum::domain::CanopyDensityBand
+{
+  Sparse,
+  Moderate,
+  Dense,
+  Closed
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Dispatch urgency attached to a maintenance window.'} test::cobaltarboretum::domain::DispatchPriority
+{
+  Routine,
+  Elevated,
+  Urgent
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Method used to collect a survey campaign observation.'} test::cobaltarboretum::domain::SurveyMethod
+{
+  GroundWalk,
+  AerialImagery,
+  HandheldLidar,
+  VolunteerReport
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Role held by a member of a steward team.'} test::cobaltarboretum::domain::StewardRole
+{
+  Arborist,
+  Ranger,
+  Volunteer,
+  Contractor
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Structural kind of a shade structure.'} test::cobaltarboretum::domain::ShadeStructureKind
+{
+  Pergola,
+  SailCanopy,
+  Gazebo
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Accessibility grading of a trail marker route.'} test::cobaltarboretum::domain::TrailDifficulty
+{
+  StepFree,
+  Gentle,
+  Steep
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Kind of water feature maintained inside a zone.'} test::cobaltarboretum::domain::WaterFeatureKind
+{
+  ReflectingPool,
+  Rill,
+  Fountain,
+  RainGarden
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Selector naming the attribute a zone attribution row carries.'} test::cobaltarboretum::domain::AttributionSelector
+{
+  StewardshipShare,
+  BudgetCentreLabel,
+  IrrigationQuota
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Marker describing where a revision log entry originated.'} test::cobaltarboretum::domain::RevisionSource
+{
+  FieldTablet,
+  BulkImport,
+  PublicPortal
+}

@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cobaltorchard2::mapping::InspectionMapping
+(
+  *test::cobaltorchard2::domain::TreeInspection[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltorchard2::store::OrchardDB]orchard.tree_inspection.inspection_id,
+      [test::cobaltorchard2::store::OrchardDB]orchard.tree_inspection.sequence_no
+    )
+    ~mainTable [test::cobaltorchard2::store::OrchardDB]orchard.tree_inspection
+    inspectionId: [test::cobaltorchard2::store::OrchardDB]orchard.tree_inspection.inspection_id,
+    sequenceNo: [test::cobaltorchard2::store::OrchardDB]orchard.tree_inspection.sequence_no,
+    blockCode: [test::cobaltorchard2::store::OrchardDB]orchard.tree_inspection.block_code,
+    inspectionKind: [test::cobaltorchard2::store::OrchardDB]orchard.tree_inspection.inspection_kind,
+    canopyNote: [test::cobaltorchard2::store::OrchardDB]orchard.tree_inspection.canopy_note,
+    recordedAt: [test::cobaltorchard2::store::OrchardDB]orchard.tree_inspection.recorded_at
+  }
+
+  testSuites:
+  [
+    inspectionExtentSuite:
+    {
+      function: |test::cobaltorchard2::domain::TreeInspection.all()->project(
+  [
+    i|$i.inspectionId,
+    i|$i.sequenceNo,
+    i|$i.blockCode,
+    i|$i.inspectionKind,
+    i|$i.canopyNote
+  ],
+  [
+    'InspectionId',
+    'SequenceNo',
+    'Block',
+    'Kind',
+    'CanopyNote'
+  ]
+)->sort(
+  [
+    asc('InspectionId'),
+    asc('SequenceNo')
+  ]
+);
+      tests:
+      [
+        compositeKeyAndOptionalNote:
+        {
+          doc: 'Reads the whole inspection extent through the aliased main table, carrying two rows that share an identifier but differ in the second key column, a row whose optional canopy note is absent, and a row outside every service window.';
+          data:
+          [
+            test::cobaltorchard2::store::OrchardDB:
+              Relational
+              #{
+                orchard.tree_inspection:
+                  'inspection_id,sequence_no,block_code,inspection_kind,canopy_note,recorded_at\n'+
+                  'TI-01,1,BLK-NORTH,CANOPY,upper canopy thinning,2999-04-02 08:15:00\n'+
+                  'TI-01,2,BLK-NORTH,CANOPY,,2999-04-02 09:30:00\n'+
+                  'TI-02,1,BLK-SOUTH,ROOTZONE,mulch depth checked,2999-04-03 07:45:00\n'+
+                  'TI-03,1,BLK-WEST,CANOPY,storm damage survey,1999-05-11 06:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            fourInspectionRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"InspectionId":"TI-01","SequenceNo":1,"Block":"BLK-NORTH","Kind":"CANOPY","CanopyNote":"upper canopy thinning"},{"InspectionId":"TI-01","SequenceNo":2,"Block":"BLK-NORTH","Kind":"CANOPY","CanopyNote":null},{"InspectionId":"TI-02","SequenceNo":1,"Block":"BLK-SOUTH","Kind":"ROOTZONE","CanopyNote":"mulch depth checked"},{"InspectionId":"TI-03","SequenceNo":1,"Block":"BLK-WEST","Kind":"CANOPY","CanopyNote":"storm damage survey"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

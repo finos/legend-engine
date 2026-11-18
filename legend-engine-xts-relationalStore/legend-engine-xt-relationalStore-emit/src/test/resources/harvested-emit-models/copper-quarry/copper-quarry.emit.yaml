@@ -1,0 +1,55 @@
+name: copper-quarry
+title: "Copper Quarry — a dressing yard register published as a tabular projection through one single-execution service"
+description: |
+  A stone dressing yard register served through a single service. One relational table holds the
+  dressed blocks; a class mapping with an explicit primary key and main-table alias binds them to
+  the register class, and an engine runtime pairs that mapping with the yard connection.
+  The single-execution service projects five columns into a tabular result and sorts them on the
+  block reference. The reportable mass floor and the label written on a block that never received a
+  finish are both held in standalone functions the query calls, so the predicate resolves through
+  function calls rather than inline literals while still pushing down to a single statement over the
+  yard table.
+  The service test drives the projection end to end through a referenced relational fixture of three
+  blocks — one reportable, one below the mass floor and one that left the yard undressed — and
+  asserts the single tabular row that survives, so parse, compile, plan generation and execution are
+  all exercised.
+modelSources:
+  model:
+    root: copper-quarry
+    files:
+      - test/copperquarry/connection/YardConnections.pure
+      - test/copperquarry/data/YardFixture.pure
+      - test/copperquarry/domain/YardDomain.pure
+      - test/copperquarry/function/YardThresholds.pure
+      - test/copperquarry/mapping/YardMapping.pure
+      - test/copperquarry/runtime/YardRuntime.pure
+      - test/copperquarry/service/DressedBlockRegister.pure
+      - test/copperquarry/store/YardDb.pure
+features:
+  - execution:plan-generation
+  - execution:test-data
+  - execution:service
+  - execution:service-test
+  - execution:service-user-ownership
+  - grammar:function
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - function-call-predicate
+  - h2
+  - plan-generation
+  - service-test
+  - single-execution
+  - stone-dressing-yard
+  - tabular-data-set

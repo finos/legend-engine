@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::jadecove2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A rock pool on a surveyed shore, resolved out of the shore store together with the reach it belongs to.'} test::jadecove2::domain::TidePool
+{
+  poolCode: String[1];
+  shoreCode: String[1];
+  reachName: String[1];
+  wardenName: String[1];
+  salinityPpt: Decimal[1];
+  waterDepthCm: Integer[1];
+  substrateCode: String[1];
+  surveyorCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An inbound sampling record handed in by a shore walker, before it is folded onto a digest.'} test::jadecove2::domain::PoolIntake
+{
+  intakeCode: String[1];
+  poolCode: String[1];
+  sampleGrade: String[1];
+  sampleNote: String[1];
+  technicianCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The curated digest of a sampling record, carrying the banded grade and the pool it was taken from.'} test::jadecove2::domain::PoolDigest
+{
+  digestCode: String[1];
+  poolCode: String[1];
+  gradeBand: String[1];
+  noteSummary: String[1];
+  technicianLabel: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a digest sourced from the intake documents to the rock pool held in the shore store, with no physical join between them.'} test::jadecove2::domain::Pool_Digest
+{
+  pool: TidePool[0..1];
+  digest: PoolDigest[0..1];
+}

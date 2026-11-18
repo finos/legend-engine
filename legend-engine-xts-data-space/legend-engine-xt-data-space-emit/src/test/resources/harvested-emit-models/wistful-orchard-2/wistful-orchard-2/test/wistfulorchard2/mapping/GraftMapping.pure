@@ -1,0 +1,306 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulorchard2::mapping::GraftMapping
+(
+  *test::wistfulorchard2::domain::GraftRun[graftRun]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.run_id
+    )
+    ~mainTable [test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run
+    recordCode: concat('RUN-', toString([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.run_id)),
+    runName: toUpper([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.run_name),
+    scionCount: [test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.scion_count,
+    canopySpanCm: [test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.canopy_span_cm,
+    spanPerScion: divide(
+                    [test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.canopy_span_cm,
+                    [test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.scion_count
+                  ),
+    band: case(
+            equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'A'),
+            'quince',
+            case(
+              equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'B'),
+              'apple',
+              case(
+                equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'C'),
+                'pear',
+                case(
+                  equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'D'),
+                  'plum',
+                  case(
+                    equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'E'),
+                    'cherry',
+                    case(
+                      equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'F'),
+                      'medlar',
+                      case(
+                        equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'G'),
+                        'damson',
+                        case(
+                          equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'H'),
+                          'mulberry',
+                          sqlNull()
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ),
+    loadLabel: case(
+                 isEmpty([test::wistfulorchard2::store::GraftRegisterStore]@Run_Journal > @Journal_TrayView | [test::wistfulorchard2::store::GraftRegisterStore]journal.tray_load_vw.massTotal),
+                 'unweighed',
+                 toUpper(
+                   case(
+                     isEmpty([test::wistfulorchard2::store::GraftRegisterStore]@Run_JournalTag | [test::wistfulorchard2::store::GraftRegisterStore]journal.journal_tag_vw.journalTag),
+                     'untagged',
+                     case(
+                       isNotEmpty([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.note_text),
+                       'noted',
+                       toString([test::wistfulorchard2::store::GraftRegisterStore]@Run_JournalTag | [test::wistfulorchard2::store::GraftRegisterStore]journal.journal_tag_vw.graftingFlag)
+                     )
+                   )
+                 )
+               ),
+    noteLabel: case(
+                 isEmpty([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.note_text),
+                 'unnoted',
+                 toUpper(
+                   case(
+                     greaterThan(length([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.note_text), 10),
+                     'long',
+                     'short'
+                   )
+                 )
+               ),
+    weightLabel: case(
+                   isEmpty([test::wistfulorchard2::store::GraftRegisterStore]@Run_Journal > @Journal_TrayView | [test::wistfulorchard2::store::GraftRegisterStore]journal.tray_load_vw.massTotal),
+                   'unweighed',
+                   case(
+                     greaterThan([test::wistfulorchard2::store::GraftRegisterStore]@Run_Journal > @Journal_TrayView | [test::wistfulorchard2::store::GraftRegisterStore]journal.tray_load_vw.massTotal, 15.0),
+                     'heavy',
+                     'light'
+                   )
+                 ),
+    gradeLabel: case(
+                  isNotEmpty([test::wistfulorchard2::store::GraftRegisterStore]@Run_Grade | [test::wistfulorchard2::store::GraftRegisterStore]grove.scion_grade.grade_label),
+                  toUpper([test::wistfulorchard2::store::GraftRegisterStore]@Run_Grade | [test::wistfulorchard2::store::GraftRegisterStore]grove.scion_grade.grade_label),
+                  'ungraded'
+                ),
+    bandKnown: case(
+                 or(
+                   equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'A'),
+                   or(
+                     equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'B'),
+                     or(
+                       equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'C'),
+                       or(
+                         equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'D'),
+                         or(
+                           equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'E'),
+                           or(
+                             equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'F'),
+                             or(
+                               equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'G'),
+                               or(
+                                 equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'H'),
+                                 or(
+                                   equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'I'),
+                                   equal([test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.band_code, 'J')
+                                 )
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 ),
+                 'known',
+                 'unknown'
+               ),
+    hardiness: EnumerationMapping HardinessMapping: [test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.hardiness_code,
+    vigour: EnumerationMapping ScionVigourMapping: [test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.vigour_code,
+    plotName: [test::wistfulorchard2::store::GraftRegisterStore]@Run_Grade > @Grade_Plot | [test::wistfulorchard2::store::GraftRegisterStore]grove.grove_plot.plot_name,
+    wardenPost: [test::wistfulorchard2::store::GraftRegisterStore]@Run_Grade > @Grade_Plot > @Plot_Orchard > @Orchard_Warden > @Warden_Post | [test::wistfulorchard2::store::GraftRegisterStore]grove.warden_post.post_name,
+    journalId: [test::wistfulorchard2::store::GraftRegisterStore]graft.graft_run.journal_id,
+    journalTag: [test::wistfulorchard2::store::GraftRegisterStore]@Run_JournalTag | [test::wistfulorchard2::store::GraftRegisterStore]journal.journal_tag_vw.journalTag,
+    seasonFlag: [test::wistfulorchard2::store::GraftRegisterStore]@Run_JournalTag | [test::wistfulorchard2::store::GraftRegisterStore]journal.journal_tag_vw.seasonFlag,
+    massTotal: [test::wistfulorchard2::store::GraftRegisterStore]@Run_Journal > @Journal_TrayView | [test::wistfulorchard2::store::GraftRegisterStore]journal.tray_load_vw.massTotal,
+    loadTally: [test::wistfulorchard2::store::GraftRegisterStore]@Run_Journal > @Journal_TrayView | [test::wistfulorchard2::store::GraftRegisterStore]journal.tray_load_vw.loadTally
+  }
+
+  *test::wistfulorchard2::domain::GroveJournal[groveJournal]: Relational
+  {
+    ~filter [test::wistfulorchard2::store::GraftRegisterStore]GraftingJournalFilter
+    ~primaryKey
+    (
+      [test::wistfulorchard2::store::GraftRegisterStore]journal.graft_journal.journal_id
+    )
+    ~mainTable [test::wistfulorchard2::store::GraftRegisterStore]journal.graft_journal
+    recordCode: concat('JOURNAL-', [test::wistfulorchard2::store::GraftRegisterStore]journal.graft_journal.journal_code),
+    journalCode: [test::wistfulorchard2::store::GraftRegisterStore]journal.graft_journal.journal_code,
+    journalHours: [test::wistfulorchard2::store::GraftRegisterStore]journal.graft_journal.journal_hours,
+    journalDate: [test::wistfulorchard2::store::GraftRegisterStore]journal.graft_journal.journal_date,
+    trayMass: [test::wistfulorchard2::store::GraftRegisterStore]@Journal_TrayView | [test::wistfulorchard2::store::GraftRegisterStore]journal.tray_load_vw.massTotal,
+    trayTally: [test::wistfulorchard2::store::GraftRegisterStore]@Journal_TrayView | [test::wistfulorchard2::store::GraftRegisterStore]journal.tray_load_vw.loadTally
+  }
+
+  test::wistfulorchard2::domain::Hardiness: EnumerationMapping HardinessMapping
+  {
+    TENDER: ['TENDER'],
+    HALF_HARDY: ['HALF_HARDY'],
+    HARDY: ['HARDY'],
+    ALPINE: ['ALPINE']
+  }
+
+  test::wistfulorchard2::domain::ScionVigour: EnumerationMapping ScionVigourMapping
+  {
+    WEAK: ['WEAK'],
+    STRONG: ['STRONG']
+  }
+
+  testSuites:
+  [
+    graftProjectionSuite:
+    {
+      function: |test::wistfulorchard2::domain::GraftRun.all(%2031-06-01)->project(
+  [
+    x|$x.recordCode,
+    x|$x.runName,
+    x|$x.band,
+    x|$x.bandKnown,
+    x|$x.loadLabel,
+    x|$x.noteLabel,
+    x|$x.weightLabel,
+    x|$x.gradeLabel,
+    x|$x.hardiness,
+    x|$x.vigour,
+    x|$x.plotName,
+    x|$x.wardenPost,
+    x|$x.journalTag,
+    x|$x.seasonFlag,
+    x|$x.spanPerScion,
+    x|$x.massTotal,
+    x|$x.loadTally
+  ],
+  [
+    'RecordCode',
+    'RunName',
+    'Band',
+    'BandKnown',
+    'LoadLabel',
+    'NoteLabel',
+    'WeightLabel',
+    'GradeLabel',
+    'Hardiness',
+    'Vigour',
+    'PlotName',
+    'WardenPost',
+    'JournalTag',
+    'SeasonFlag',
+    'SpanPerScion',
+    'MassTotal',
+    'LoadTally'
+  ]
+)->sort(
+  [
+    asc('RunName')
+  ]
+);
+      tests:
+      [
+        allArms:
+        {
+          data:
+          [
+            test::wistfulorchard2::store::GraftRegisterStore: Reference
+              #{
+                test::wistfulorchard2::data::GraftTestData
+              }#
+          ];
+          asserts:
+          [
+            twelveRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"RUN-2","RunName":"APPLE ESPALIER","Band":"apple","BandKnown":"known","LoadLabel":"NOTED","NoteLabel":"LONG","WeightLabel":"heavy","GradeLabel":"DENSE SCION","Hardiness":"TENDER","Vigour":"WEAK","PlotName":"Cordon Plot","WardenPost":"Northern grove post","JournalTag":"G/GRAFTROW","SeasonFlag":"IN_SEASON","SpanPerScion":22.5,"MassTotal":20.0,"LoadTally":2},{"RecordCode":"RUN-5","RunName":"CHERRY MAIDEN","Band":"cherry","BandKnown":"known","LoadLabel":"NOTED","NoteLabel":"LONG","WeightLabel":"heavy","GradeLabel":"DENSE SCION","Hardiness":"HARDY","Vigour":"STRONG","PlotName":"Cordon Plot","WardenPost":"Northern grove post","JournalTag":"G/GRAFTROW","SeasonFlag":"IN_SEASON","SpanPerScion":27.5,"MassTotal":20.0,"LoadTally":2},{"RecordCode":"RUN-7","RunName":"DAMSON STOOL","Band":"damson","BandKnown":"known","LoadLabel":"NOTED","NoteLabel":"LONG","WeightLabel":"heavy","GradeLabel":"DENSE SCION","Hardiness":"HALF_HARDY","Vigour":"STRONG","PlotName":"Cordon Plot","WardenPost":"Northern grove post","JournalTag":"G/GRAFTROW","SeasonFlag":"IN_SEASON","SpanPerScion":27.5,"MassTotal":20.0,"LoadTally":2},{"RecordCode":"RUN-6","RunName":"MEDLAR STANDARD","Band":"medlar","BandKnown":"known","LoadLabel":"Y","NoteLabel":"unnoted","WeightLabel":"heavy","GradeLabel":"DENSE SCION","Hardiness":"ALPINE","Vigour":"WEAK","PlotName":"Cordon Plot","WardenPost":"Northern grove post","JournalTag":"G/GRAFTROW","SeasonFlag":"IN_SEASON","SpanPerScion":7.5,"MassTotal":20.0,"LoadTally":2},{"RecordCode":"RUN-8","RunName":"MULBERRY STEPOVER","Band":"mulberry","BandKnown":"known","LoadLabel":"NOTED","NoteLabel":"LONG","WeightLabel":"heavy","GradeLabel":"DENSE SCION","Hardiness":"TENDER","Vigour":"WEAK","PlotName":"Cordon Plot","WardenPost":"Northern grove post","JournalTag":"G/GRAFTROW","SeasonFlag":"IN_SEASON","SpanPerScion":6.5,"MassTotal":20.0,"LoadTally":2},{"RecordCode":"RUN-11","RunName":"MYSTERY BEND","Band":"apple","BandKnown":"known","LoadLabel":"Y","NoteLabel":"unnoted","WeightLabel":"heavy","GradeLabel":"DENSE SCION","Hardiness":null,"Vigour":"STRONG","PlotName":"Cordon Plot","WardenPost":"Northern grove post","JournalTag":"G/GRAFTROW","SeasonFlag":"IN_SEASON","SpanPerScion":7.5,"MassTotal":20.0,"LoadTally":2},{"RecordCode":"RUN-3","RunName":"PEAR FAN","Band":"pear","BandKnown":"known","LoadLabel":"Y","NoteLabel":"unnoted","WeightLabel":"heavy","GradeLabel":"DENSE SCION","Hardiness":"HALF_HARDY","Vigour":"STRONG","PlotName":"Cordon Plot","WardenPost":"Northern grove post","JournalTag":"G/GRAFTROW","SeasonFlag":"IN_SEASON","SpanPerScion":12.5,"MassTotal":20.0,"LoadTally":2},{"RecordCode":"RUN-4","RunName":"PLUM BUSH","Band":"plum","BandKnown":"known","LoadLabel":"NOTED","NoteLabel":"LONG","WeightLabel":"heavy","GradeLabel":"DENSE SCION","Hardiness":"ALPINE","Vigour":"WEAK","PlotName":"Cordon Plot","WardenPost":"Northern grove post","JournalTag":"G/GRAFTROW","SeasonFlag":"IN_SEASON","SpanPerScion":17.5,"MassTotal":20.0,"LoadTally":2},{"RecordCode":"RUN-9","RunName":"QUIET NOOK","Band":null,"BandKnown":"unknown","LoadLabel":"Y","NoteLabel":"unnoted","WeightLabel":"heavy","GradeLabel":"DENSE SCION","Hardiness":"HARDY","Vigour":"STRONG","PlotName":"Cordon Plot","WardenPost":"Northern grove post","JournalTag":"G/GRAFTROW","SeasonFlag":"IN_SEASON","SpanPerScion":17.5,"MassTotal":20.0,"LoadTally":2},{"RecordCode":"RUN-1","RunName":"QUINCE CORDON","Band":"quince","BandKnown":"known","LoadLabel":"NOTED","NoteLabel":"SHORT","WeightLabel":"heavy","GradeLabel":"DENSE SCION","Hardiness":"HARDY","Vigour":"STRONG","PlotName":"Cordon Plot","WardenPost":"Northern grove post","JournalTag":"G/GRAFTROW","SeasonFlag":"IN_SEASON","SpanPerScion":22.5,"MassTotal":20.0,"LoadTally":2},{"RecordCode":"RUN-12","RunName":"SHALLOW BAR","Band":"pear","BandKnown":"known","LoadLabel":"NOTED","NoteLabel":"SHORT","WeightLabel":"light","GradeLabel":"DENSE SCION","Hardiness":"HARDY","Vigour":"STRONG","PlotName":"Cordon Plot","WardenPost":"Northern grove post","JournalTag":"A/AUDITROW","SeasonFlag":"OFF_SEASON","SpanPerScion":10.5,"MassTotal":5.0,"LoadTally":1},{"RecordCode":"RUN-10","RunName":"SOUTH ROW","Band":"quince","BandKnown":"known","LoadLabel":"NOTED","NoteLabel":"SHORT","WeightLabel":"heavy","GradeLabel":"SPARSE SCION","Hardiness":"HARDY","Vigour":"WEAK","PlotName":"Espalier Plot","WardenPost":"Southern grove post","JournalTag":"G/GRAFTROW","SeasonFlag":"IN_SEASON","SpanPerScion":32.5,"MassTotal":20.0,"LoadTally":2}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    journalSuite:
+    {
+      function: |test::wistfulorchard2::domain::GroveJournal.all()->project(
+  [
+    x|$x.recordCode,
+    x|$x.journalCode,
+    x|$x.journalHours,
+    x|$x.journalDate,
+    x|$x.trayMass,
+    x|$x.trayTally
+  ],
+  [
+    'RecordCode',
+    'JournalCode',
+    'JournalHours',
+    'JournalDate',
+    'TrayMass',
+    'TrayTally'
+  ]
+)->sort(
+  [
+    asc('JournalCode')
+  ]
+);
+      tests:
+      [
+        graftingJournalsOnly:
+        {
+          data:
+          [
+            test::wistfulorchard2::store::GraftRegisterStore: Reference
+              #{
+                test::wistfulorchard2::data::GraftTestData
+              }#
+          ];
+          asserts:
+          [
+            filteredRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"JOURNAL-GRAFTROW","JournalCode":"GRAFTROW","JournalHours":18.5,"JournalDate":"2031-05-01","TrayMass":20.0,"TrayTally":2}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

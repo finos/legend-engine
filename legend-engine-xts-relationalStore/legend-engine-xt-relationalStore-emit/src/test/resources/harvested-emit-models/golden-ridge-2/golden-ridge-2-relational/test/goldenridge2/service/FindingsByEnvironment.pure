@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::goldenridge2::service::FindingsByEnvironment
+{
+  pattern: '/goldenridge/v1/findings-by-environment/{environment}';
+  title: 'Duplicate Findings By Environment';
+  owners:
+  [
+    'herbarium-curation',
+    'ridge-field-survey'
+  ];
+  documentation: 'Environment-keyed counterpart of the duplicate finding query. The execution key selects a whole execution stack, so the same projection is dispatched to the curation or the survey runtime.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {vouchers: String[*]|demo::goldenridge2::domain::DuplicateFinding.all()->filter(
+      d|$d.voucherCode->in($vouchers)
+    )->project(
+      ~[
+        Voucher: d|$d.voucherCode,
+        Verdict: d|$d.duplicateVerdict,
+        Sheets: d|$d.sheetCount
+      ]
+    )->sort(
+      [
+        ~Voucher->ascending()
+      ]
+    )};
+    key: 'environment';
+    executions['curation']:
+    {
+      mapping: demo::goldenridge2::mapping::RidgeCrossMapping;
+      runtime: demo::goldenridge2::runtime::RidgeCurationRuntime;
+    }
+    executions['survey']:
+    {
+      mapping: demo::goldenridge2::mapping::RidgeCrossMapping;
+      runtime: demo::goldenridge2::runtime::RidgeSurveyRuntime;
+    }
+  }
+}

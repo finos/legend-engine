@@ -1,0 +1,29 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::emeraldhatchery3::connection::PondArchiveH2Connection
+{
+  store: test::emeraldhatchery3::store::PondArchiveDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists retired;',
+      'create schema retired;',
+      'create table retired.pond_archive (archive_id integer primary key, pond_code varchar(24) not null, water_source varchar(24) not null, grade_band varchar(16) not null, retired_on date not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

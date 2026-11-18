@@ -1,0 +1,36 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::duskygecko2::diagram::HerpetariumDiagram
+{
+  classView enclosureView
+  {
+    class: test::duskygecko2::domain::Enclosure;
+    position: (100.0,60.0);
+    rectangle: (240.0,140.0);
+  }
+  classView shiftView
+  {
+    class: test::duskygecko2::domain::KeeperShift;
+    position: (420.0,60.0);
+    rectangle: (220.0,110.0);
+  }
+  classView profileView
+  {
+    class: test::duskygecko2::domain::SpeciesProfile;
+    position: (100.0,280.0);
+    rectangle: (240.0,110.0);
+  }
+}

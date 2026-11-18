@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silvermarsh4::mapping::ReserveMapping
+(
+  *test::silvermarsh4::domain::ReedCut[cut]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvermarsh4::store::ReserveDatabase]reserve.reed_cut.cut_id
+    )
+    ~mainTable [test::silvermarsh4::store::ReserveDatabase]reserve.reed_cut
+    cutId: [test::silvermarsh4::store::ReserveDatabase]reserve.reed_cut.cut_id,
+    sessionCode: [test::silvermarsh4::store::ReserveDatabase]reserve.reed_cut.session_code,
+    sectorName: [test::silvermarsh4::store::ReserveDatabase]reserve.reed_cut.sector_name,
+    crewName: [test::silvermarsh4::store::ReserveDatabase]reserve.reed_cut.crew_name,
+    habitatType: [test::silvermarsh4::store::ReserveDatabase]reserve.reed_cut.habitat_type,
+    cutOn: [test::silvermarsh4::store::ReserveDatabase]reserve.reed_cut.cut_on,
+    metresCut: [test::silvermarsh4::store::ReserveDatabase]reserve.reed_cut.metres_cut,
+    volunteerHours: [test::silvermarsh4::store::ReserveDatabase]reserve.reed_cut.volunteer_hours,
+    cutNote: [test::silvermarsh4::store::ReserveDatabase]reserve.reed_cut.cut_note
+  }
+)

@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::silverdelta::store::DeltaDB
+(
+  Schema ringing
+  (
+    Table ringed_bird
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      bird_id INTEGER PRIMARY KEY,
+      ring_code VARCHAR(20) NOT NULL,
+      age_class VARCHAR(10) NOT NULL,
+      wing_length_mm DOUBLE NOT NULL,
+      mass_grams DOUBLE NOT NULL,
+      station_id INTEGER NOT NULL,
+      species_id INTEGER NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table ringing_station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(20) NOT NULL,
+      station_name VARCHAR(120) NOT NULL,
+      delta_arm VARCHAR(60) NOT NULL,
+      staffed_all_season BIT NOT NULL
+    )
+    Table species_taxon
+    (
+      species_id INTEGER PRIMARY KEY,
+      species_code VARCHAR(20) NOT NULL,
+      common_name VARCHAR(120) NOT NULL,
+      migration_strategy VARCHAR(40) NOT NULL
+    )
+    Table capture_event
+    (
+      event_id INTEGER PRIMARY KEY,
+      event_code VARCHAR(20) NOT NULL,
+      captured_on DATE NOT NULL,
+      net_hours DOUBLE NOT NULL,
+      observer_name VARCHAR(120) NOT NULL,
+      condition_code VARCHAR(20) NOT NULL,
+      bird_id INTEGER NOT NULL
+    )
+  )
+
+  Join Bird_Station(ringing.ringed_bird.station_id = ringing.ringing_station.station_id)
+
+  Join Bird_Species(ringing.ringed_bird.species_id = ringing.species_taxon.species_id)
+
+  Join Bird_Capture(ringing.ringed_bird.bird_id = ringing.capture_event.bird_id)
+)

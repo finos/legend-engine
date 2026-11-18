@@ -1,0 +1,245 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::umbermeadow2::service::GrazingRegisterAsOf
+{
+  pattern: '/umbermeadow/v1/grazing-register/{asOf}';
+  title: 'Upland Commons Office - Grazing Register As Of A Business Date';
+  documentation: 'Resolves the herd allocations of the commons register at a single business date, threading that same date through every navigation to a milestoned grazing block, keeping only the active allocations that sit on upland terrain and whose block has at least one crewed patrol round, and returning the deduplicated register rows ordered by allocation code and warden name.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::umbermeadow2::domain::HerdAllocation.all($asOf)->filter(
+      a|(($a.allocationState == test::umbermeadow2::domain::AllocationState.ACTIVE) && ($a.block($asOf).terrainClass == test::umbermeadow2::domain::TerrainClass.UPLAND)) && !$a.block($asOf).patrols.patrolTeam->isEmpty()
+    )->project(
+      [
+        a|$a.allocCode,
+        a|$a.herdName,
+        a|$a.headCount,
+        a|$a.allocationState,
+        a|$a.block($asOf).blockCode,
+        a|$a.block($asOf).blockName,
+        a|$a.block($asOf).terrainClass,
+        a|$a.block($asOf).warden.wardenName,
+        a|$a.block($asOf).warden.contactNote,
+        a|$a.herdName->toUpper(),
+        a|$a.herdName->length(),
+        a|$a.block($asOf).blockName->toOne()->trim()->toUpper()
+      ],
+      [
+        'Allocation Code',
+        'Herd Name',
+        'Head Count',
+        'Allocation State',
+        'Block Code',
+        'Block Name',
+        'Terrain Class',
+        'Warden Name',
+        'Contact Note',
+        'Herd Tag',
+        'Herd Name Width',
+        'Block Tag'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Allocation Code'),
+        asc('Warden Name')
+      ]
+    )};
+    mapping: test::umbermeadow2::mapping::GrazingMapping;
+    runtime: test::umbermeadow2::runtime::CommonsRegisterRuntime;
+  }
+  testSuites:
+  [
+    grazingRegisterAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          commonsRegisterConnection:
+            Relational
+            #{
+              grazing.commons_warden:
+                'warden_code,warden_name,contact_note\n'+
+                'W-01,Rowan Fieldhouse,radio channel four\n'+
+                'W-02,Ash Gatepost,\n';
+
+              grazing.patrol_round:
+                'round_code,block_code,patrol_team\n'+
+                'PR-01,GB-01,dawn team\n'+
+                'PR-02,GB-01,dusk team\n'+
+                'PR-03,GB-02,\n'+
+                'PR-04,GB-03,ridge team\n';
+
+              grazing.grazing_block:
+                'block_code,block_name,terrain_code,warden_code,from_z,thru_z\n'+
+                'GB-01, Windward Common ,UP,W-01,2026-01-01,9999-12-31\n'+
+                'GB-02,Hollow Common,UP,W-02,2026-01-01,9999-12-31\n'+
+                'GB-03,Ridge Common,RI,W-01,2026-01-01,9999-12-31\n'+
+                'GB-04,Retired Common,UP,W-01,2026-01-01,2026-02-01\n';
+
+              grazing.herd_allocation:
+                'alloc_code,block_code,herd_name,head_count,state_code,from_z,thru_z\n'+
+                'HA-01,GB-01,upland ewes,120,AC,2026-02-01,9999-12-31\n'+
+                'HA-02,GB-02,hollow cattle,45,AC,2026-02-01,9999-12-31\n'+
+                'HA-03,GB-03,ridge wethers,60,AC,2026-02-01,9999-12-31\n'+
+                'HA-04,GB-01,rested ewes,30,RE,2026-02-01,9999-12-31\n'+
+                'HA-05,GB-04,retired herd,15,AC,2026-02-01,9999-12-31\n'+
+                'HA-06,GB-01,fell hoggs,80,AC,2026-01-01,2026-02-15\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        activeUplandAllocationsAtTheBusinessDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-01
+          ]
+          asserts:
+          [
+            onlyTheCrewedUplandAllocation:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Allocation Code":"HA-01","Herd Name":"upland ewes","Head Count":120,"Allocation State":"ACTIVE","Block Code":"GB-01","Block Name":" Windward Common ","Terrain Class":"UPLAND","Warden Name":"Rowan Fieldhouse","Contact Note":"radio channel four","Herd Tag":"UPLAND EWES","Herd Name Width":11,"Block Tag":"WINDWARD COMMON"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::umbermeadow2::service::GrazingMirrorAsOf
+{
+  pattern: '/umbermeadow/v1/grazing-mirror/{asOf}';
+  title: 'Upland Commons Office - Grazing Mirror As Of A Business Date';
+  documentation: 'Deploys the same register query shape against the second execution context, so the identical point-in-time navigation, three-clause predicate, wide projection, deduplication and two-key sort are planned again over the mirrored schema through its own mapping and runtime.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::umbermeadow2::domain::HerdAllocation.all($asOf)->filter(
+      a|(($a.allocationState == test::umbermeadow2::domain::AllocationState.ACTIVE) && ($a.block($asOf).terrainClass == test::umbermeadow2::domain::TerrainClass.UPLAND)) && !$a.block($asOf).patrols.patrolTeam->isEmpty()
+    )->project(
+      [
+        a|$a.allocCode,
+        a|$a.herdName,
+        a|$a.headCount,
+        a|$a.allocationState,
+        a|$a.block($asOf).blockCode,
+        a|$a.block($asOf).blockName,
+        a|$a.block($asOf).terrainClass,
+        a|$a.block($asOf).warden.wardenName,
+        a|$a.block($asOf).warden.contactNote,
+        a|$a.herdName->toUpper(),
+        a|$a.herdName->length(),
+        a|$a.block($asOf).blockName->toOne()->trim()->toUpper()
+      ],
+      [
+        'Allocation Code',
+        'Herd Name',
+        'Head Count',
+        'Allocation State',
+        'Block Code',
+        'Block Name',
+        'Terrain Class',
+        'Warden Name',
+        'Contact Note',
+        'Herd Tag',
+        'Herd Name Width',
+        'Block Tag'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Allocation Code'),
+        asc('Warden Name')
+      ]
+    )};
+    mapping: test::umbermeadow2::mapping::GrazingMirrorMapping;
+    runtime: test::umbermeadow2::runtime::CommonsMirrorRuntime;
+  }
+  testSuites:
+  [
+    grazingMirrorAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          commonsMirrorConnection:
+            Relational
+            #{
+              mirror.commons_warden:
+                'warden_code,warden_name,contact_note\n'+
+                'W-01,Rowan Fieldhouse,radio channel four\n'+
+                'W-02,Ash Gatepost,\n';
+
+              mirror.patrol_round:
+                'round_code,block_code,patrol_team\n'+
+                'PR-01,GB-01,dawn team\n'+
+                'PR-02,GB-01,dusk team\n'+
+                'PR-03,GB-02,\n';
+
+              mirror.grazing_block:
+                'block_code,block_name,terrain_code,warden_code,from_z,thru_z\n'+
+                'GB-01,Windward Common,UP,W-01,2026-01-01,9999-12-31\n'+
+                'GB-02,Hollow Common,UP,W-02,2026-01-01,9999-12-31\n'+
+                'GB-05,Old Drift Common,UP,W-02,2026-01-01,2026-02-10\n';
+
+              mirror.herd_allocation:
+                'alloc_code,block_code,herd_name,head_count,state_code,from_z,thru_z\n'+
+                'HA-01,GB-01,upland ewes,120,AC,2026-02-01,9999-12-31\n'+
+                'HA-02,GB-02,hollow cattle,45,AC,2026-02-01,9999-12-31\n'+
+                'HA-07,GB-05,drift herd,25,AC,2026-02-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        mirrorContextPlansTheSameShape:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-01
+          ]
+          asserts:
+          [
+            onlyTheCrewedUplandAllocationInTheMirror:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Allocation Code":"HA-01","Herd Name":"upland ewes","Head Count":120,"Allocation State":"ACTIVE","Block Code":"GB-01","Block Name":"Windward Common","Terrain Class":"UPLAND","Warden Name":"Rowan Fieldhouse","Contact Note":"radio channel four","Herd Tag":"UPLAND EWES","Herd Name Width":11,"Block Tag":"WINDWARD COMMON"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

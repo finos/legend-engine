@@ -1,0 +1,343 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberaviary::service::BroodRollupService
+{
+  pattern: '/ember-aviary/v1/brood-rollup/{canopyCode}';
+  title: 'Ember Aviary - Brood Rollup by Habitat';
+  documentation: 'Totals the chicks and eggs recorded against the boxes of each habitat, keeping only the visits whose recorded condition is one of the codes the wardens accept and whose habitat sits under the requested canopy.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'ember-aviary-platform',
+    'nest-box-monitoring-eng'
+  ];
+  execution: Single
+  {
+    query: canopyCode: String[1]|test::emberaviary::domain::BoxVisit.all()->filter(
+      v|(($v.canopyCode->toOne()->toUpper() == $canopyCode->toUpper()) && ($v.chickCount + $v.eggCount > 0)) && $v.boxName->toOne()->in(['Alder Box One', 'Birch Box Two', 'Cedar Box Three'])
+    )->groupBy(
+      [
+        v|$v.habitatName,
+        v|$v.regionName
+      ],
+      [
+        agg(
+          v|$v.chickCount,
+          y|$y->sum()
+        ),
+        agg(
+          v|$v.eggCount,
+          y|$y->sum()
+        ),
+        agg(
+          v|$v.visitCode,
+          y|$y->count()
+        )
+      ],
+      [
+        'HabitatName',
+        'RegionName',
+        'TotalChicks',
+        'TotalEggs',
+        'VisitCount'
+      ]
+    )->sort(
+      [
+        asc('HabitatName')
+      ]
+    );
+    mapping: test::emberaviary::mapping::AviaryBaseMapping;
+    runtime: test::emberaviary::runtime::AviaryFieldRuntime;
+  }
+  testSuites:
+  [
+    broodRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryFieldConnection:
+            Relational
+            #{
+              reference.warden_team:
+                'warden_team_code,team_name,region_name\n'+
+                'WT-N,North Wardens,Northern Reserve\n'+
+                'WT-S,South Wardens,Southern Reserve\n';
+              reference.habitat:
+                'habitat_code,habitat_name,warden_team_code,canopy_code\n'+
+                'HB-01,Alder Carr,WT-N,CLOSED\n'+
+                'HB-02,Birch Heath,WT-S,OPEN\n';
+              reference.observer:
+                'observer_code,observer_name,role_code,retired_flag\n'+
+                'OB-01,Rowan Field,WARDEN,N\n'+
+                'OB-02,Sage Lane,VOLUNTEER,N\n';
+              field.nest_box:
+                'box_code,box_name,habitat_code,mount_height_cm,installed_on,last_repaired_on\n'+
+                'BX-01,Alder Box One,HB-01,420,2022-02-01,2025-03-01\n'+
+                'BX-02,Birch Box Two,HB-02,240,2023-03-02,2025-04-02\n'+
+                'BX-03,Cedar Box Three,HB-02,150,2024-04-03,\n';
+              field.box_visit:
+                'visit_code,box_code,observer_code,visited_on,chick_count,egg_count,condition_code,ring_mode_code,visit_note\n'+
+                'VS-01,BX-01,OB-01,2026-04-01,3,0,DAMAGED,NR,brood ringed\n'+
+                'VS-02,BX-01,OB-01,2026-04-08,2,1,WEATHERED,RC,second brood\n'+
+                'VS-03,BX-02,OB-02,2026-04-09,0,4,SOUND,NN,clutch counted\n'+
+                'VS-04,BX-02,OB-02,2026-04-16,0,0,SOUND,NN,box empty\n'+
+                'VS-05,BX-03,OB-02,2026-04-17,1,2,SOUND,NR,late brood\n';
+              }#
+        ]
+      ]
+      tests:
+      [
+        openCanopyVisitsRolledUpByHabitat:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            canopyCode = 'OPEN'
+          ]
+          asserts:
+          [
+            oneOpenHabitatGroupWithoutTheEmptyVisit:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HabitatName":"Birch Heath","RegionName":"Southern Reserve","TotalChicks":1,"TotalEggs":6,"VisitCount":2}]';
+                  }#;
+              }#
+          ]
+        },
+        closedCanopyVisitsRolledUpByHabitat:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            canopyCode = 'closed'
+          ]
+          asserts:
+          [
+            oneClosedHabitatGroup:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HabitatName":"Alder Carr","RegionName":"Northern Reserve","TotalChicks":5,"TotalEggs":1,"VisitCount":2}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::emberaviary::service::RecentVisitAgeService
+{
+  pattern: '/ember-aviary/v1/recent-visits/{asOf}/{windowDays}';
+  title: 'Ember Aviary - Recent Visits and Their Age';
+  documentation: 'Lists the box visits that fall inside a rolling window measured back from a supplied reference date, reporting how many days ago each visit happened alongside the brood stage the visit counts imply, newest visit first.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'ember-aviary-platform',
+    'warden-scheduling-eng'
+  ];
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], windowDays: Integer[1]|test::emberaviary::domain::BoxVisit.all()->filter(
+      v|($v.visitedOn >= $asOf->adjust(-$windowDays, meta::pure::functions::date::DurationUnit.DAYS)) && ($v.visitedOn <= $asOf)
+    )->project(
+      [
+        v|$v.visitCode,
+        v|$v.boxName,
+        v|$v.visitedOn->dateDiff($asOf, meta::pure::functions::date::DurationUnit.DAYS),
+        v|$v.stageLabel(),
+        v|$v.chickCount + $v.eggCount
+      ],
+      [
+        'VisitCode',
+        'BoxName',
+        'DaysAgo',
+        'StageLabel',
+        'BroodSize'
+      ]
+    )->sort(
+      [
+        asc('DaysAgo')
+      ]
+    )->take(4)};
+    mapping: test::emberaviary::mapping::AviaryBaseMapping;
+    runtime: test::emberaviary::runtime::AviaryFieldRuntime;
+  }
+  testSuites:
+  [
+    recentVisitAgeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryFieldConnection:
+            Relational
+            #{
+              reference.habitat:
+                'habitat_code,habitat_name,warden_team_code,canopy_code\n'+
+                'HB-01,Alder Carr,WT-N,CLOSED\n'+
+                'HB-02,Birch Heath,WT-S,OPEN\n';
+              field.nest_box:
+                'box_code,box_name,habitat_code,mount_height_cm,installed_on,last_repaired_on\n'+
+                'BX-01,Alder Box One,HB-01,420,2022-02-01,2025-03-01\n'+
+                'BX-02,Birch Box Two,HB-02,240,2023-03-02,2025-04-02\n';
+              field.box_visit:
+                'visit_code,box_code,observer_code,visited_on,chick_count,egg_count,condition_code,ring_mode_code,visit_note\n'+
+                'VS-01,BX-01,OB-01,2026-04-01,3,0,DAMAGED,NR,brood ringed\n'+
+                'VS-02,BX-01,OB-01,2026-04-08,2,1,WEATHERED,RC,second brood\n'+
+                'VS-03,BX-02,OB-02,2026-04-09,0,4,SOUND,NN,clutch counted\n'+
+                'VS-04,BX-02,OB-02,2026-04-16,0,0,SOUND,NN,box empty\n'+
+                'VS-05,BX-02,OB-02,2026-02-02,1,1,SOUND,NR,winter check\n';
+              }#
+        ]
+      ]
+      tests:
+      [
+        visitsInsideTheWindowAgedInDays:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-20,
+            windowDays = 30
+          ]
+          asserts:
+          [
+            fourRecentVisitsWithStageLabels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VisitCode":"VS-04","BoxName":"Birch Box Two","DaysAgo":4,"StageLabel":"nothing found","BroodSize":0},{"VisitCode":"VS-03","BoxName":"Birch Box Two","DaysAgo":11,"StageLabel":"eggs only","BroodSize":4},{"VisitCode":"VS-02","BoxName":"Alder Box One","DaysAgo":12,"StageLabel":"mixed brood","BroodSize":3},{"VisitCode":"VS-01","BoxName":"Alder Box One","DaysAgo":19,"StageLabel":"chicks only","BroodSize":3}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::emberaviary::service::VisitBoardService
+{
+  pattern: '/ember-aviary/v1/visit-board/{minBroodSize}';
+  title: 'Ember Aviary - Warden Visit Board';
+  documentation: 'Publishes the board the wardens read at the hut, keeping the visits whose brood reached at least the requested size and labelling each of them through the transform declared in the mapping that includes the base mapping.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'ember-aviary-platform',
+    'warden-hut-eng'
+  ];
+  execution: Single
+  {
+    query: minBroodSize: Integer[1]|test::emberaviary::domain::VisitBoardRow.all()->filter(
+      r|($r.broodSize >= $minBroodSize) && $r.observerName->in(['Rowan Field', 'Sage Lane'])
+    )->project(
+      [
+        r|$r.visitCode,
+        r|$r.boxName,
+        r|$r.observerName,
+        r|$r.broodSize,
+        r|$r.boardLabel
+      ],
+      [
+        'VisitCode',
+        'BoxName',
+        'ObserverName',
+        'BroodSize',
+        'BoardLabel'
+      ]
+    )->sort(
+      [
+        desc('BroodSize'),
+        asc('VisitCode')
+      ]
+    );
+    mapping: test::emberaviary::mapping::AviaryBoardMapping;
+    runtime: test::emberaviary::runtime::AviaryBoardRuntime;
+  }
+  testSuites:
+  [
+    visitBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryBoardConnection:
+            Relational
+            #{
+              reference.observer:
+                'observer_code,observer_name,role_code,retired_flag\n'+
+                'OB-01,Rowan Field,WARDEN,N\n'+
+                'OB-02,Sage Lane,VOLUNTEER,N\n';
+              field.nest_box:
+                'box_code,box_name,habitat_code,mount_height_cm,installed_on,last_repaired_on\n'+
+                'BX-01,Alder Box One,HB-01,420,2022-02-01,2025-03-01\n'+
+                'BX-02,Birch Box Two,HB-02,240,2023-03-02,2025-04-02\n';
+              field.box_visit:
+                'visit_code,box_code,observer_code,visited_on,chick_count,egg_count,condition_code,ring_mode_code,visit_note\n'+
+                'VS-01,BX-01,OB-01,2026-04-01,4,2,DAMAGED,NR,brood ringed\n'+
+                'VS-02,BX-01,OB-01,2026-04-08,2,0,WEATHERED,RC,second brood\n'+
+                'VS-03,BX-02,OB-02,2026-04-09,0,4,SOUND,NN,clutch counted\n'+
+                'VS-04,BX-02,OB-02,2026-04-16,0,0,SOUND,NN,box empty\n';
+              }#
+        ]
+      ]
+      tests:
+      [
+        boardKeepsTheBroodsAboveTheRequestedSize:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minBroodSize = 2
+          ]
+          asserts:
+          [
+            threeBoardRowsLargestBroodFirst:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VisitCode":"VS-01","BoxName":"Alder Box One","ObserverName":"Rowan Field","BroodSize":6,"BoardLabel":"FULL BROOD AT BX-01"},{"VisitCode":"VS-03","BoxName":"Birch Box Two","ObserverName":"Sage Lane","BroodSize":4,"BoardLabel":"CLUTCH AT bx-02"},{"VisitCode":"VS-02","BoxName":"Alder Box One","ObserverName":"Rowan Field","BroodSize":2,"BoardLabel":"CHICKS AT BX-01"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

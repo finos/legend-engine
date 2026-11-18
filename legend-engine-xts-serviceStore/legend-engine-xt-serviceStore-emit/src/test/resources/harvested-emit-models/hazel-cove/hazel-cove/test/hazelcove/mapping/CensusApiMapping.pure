@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelcove::mapping::CensusApiMapping
+(
+  *test::hazelcove::api::ColonyRecord[recordSet]: ServiceStore
+  {
+    ~service [test::hazelcove::store::CensusApi] CensusServices.colonyRecords
+  }
+
+  *test::hazelcove::api::ColonySheetRow[sheetSet]: ServiceStore
+  {
+    ~service [test::hazelcove::store::CensusApi] CensusServices.colonySheet
+    (
+      ~request
+      (
+        parameters
+        (
+          dataset = 'roster-sheet',
+          season = 'autumn'
+        )
+      )
+    )
+  }
+
+  *test::hazelcove::domain::ColonyProfile[profileSet]: Pure
+  {
+    ~src test::hazelcove::api::ColonyRecord
+    colonyRef: $src.colonyRef,
+    siteLabel: $src.siteLabel,
+    leadWarden: if($src.wardens->isEmpty(), | $src.note, | $src.wardens->at(0)),
+    occupancyIndex: if($src.nestTally->isEmpty(), | $src.reportedIndex, | round($src.nestTally->toOne() / $src.plotHectares->toOne(), 2)),
+    densityBand: if($src.nestTally->isEmpty(),
+                    | $src.note,
+                    | if($src.nestTally->toOne() < 5,
+                         | 'BAND-1-SPARSE',
+                         | if($src.nestTally->toOne() < 15,
+                              | 'BAND-2-THIN',
+                              | if($src.nestTally->toOne() < 40,
+                                   | 'BAND-3-MODEST',
+                                   | if($src.nestTally->toOne() < 90,
+                                        | 'BAND-4-STEADY',
+                                        | if($src.nestTally->toOne() < 180,
+                                             | 'BAND-5-BUSY',
+                                             | if($src.nestTally->toOne() < 360,
+                                                  | 'BAND-6-CROWDED',
+                                                  | if($src.nestTally->toOne() < 700,
+                                                       | 'BAND-7-DENSE',
+                                                       | 'BAND-8-SATURATED'))))))))
+  }
+)

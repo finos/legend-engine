@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::fabledcavern3::mapping::CavernGuidingMapping
+(
+  include mapping test::fabledcavern3::mapping::CavernBaseMapping
+
+  testSuites:
+  [
+    guidedPassageSuite:
+    {
+      function: |test::fabledcavern3::domain::Passage.all()->filter(
+  p|$p.walkingGrade == 'GUIDED'
+)->project(
+  [
+    p|$p.passageCode,
+    p|$p.passageName,
+    p|$p.surveyedLengthM
+  ],
+  [
+    'Passage',
+    'Name',
+    'Length'
+  ]
+)->sort(
+  [
+    asc('Passage')
+  ]
+);
+      tests:
+      [
+        onlyGuidedPassagesAreReadThroughTheIncludedClassMapping:
+        {
+          doc: 'The guiding mapping owns no class mapping of its own: the passage extent, its main-table alias and its primary key all arrive through the included base mapping, and the query still resolves, plans and executes against the store.';
+          data:
+          [
+            test::fabledcavern3::store::CavernDB:
+              Relational
+              #{
+                karst.passage:
+                  'passage_id,passage_code,passage_name,surveyed_length_m,walking_grade\n'+
+                  '1,PS-01,Lantern Gallery,412.5,GUIDED\n'+
+                  '2,PS-02,Sump Crawl,88.25,RIGGED\n'+
+                  '3,PS-03,Echo Chamber,220.0,GUIDED\n';
+              }#
+          ];
+          asserts:
+          [
+            theRiggedPassageIsLeftOutOfTheGuidedSheet:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Passage":"PS-01","Name":"Lantern Gallery","Length":412.5},{"Passage":"PS-03","Name":"Echo Chamber","Length":220.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::emeraldlagoon::connection::LagoonH2Connection
+{
+  store: test::emeraldlagoon::store::LagoonDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists lagoon;',
+      'create schema lagoon;',
+      'create table lagoon.reef_patch (patch_id integer primary key, patch_code varchar(20) not null, zone_code varchar(20) not null, patch_status varchar(20) not null, surveyed_on date not null, cover_pct double not null, depth_m double not null);',
+      'create table lagoon.inflow_reading (reading_id integer primary key, reading_code varchar(20) not null, zone_code varchar(20) not null, reading_status varchar(20) not null, measured_on date not null, litres_per_min double not null, turbidity_ntu double not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

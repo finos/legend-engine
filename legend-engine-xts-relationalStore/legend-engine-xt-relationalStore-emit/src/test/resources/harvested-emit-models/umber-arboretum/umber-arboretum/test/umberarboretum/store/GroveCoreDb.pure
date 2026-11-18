@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::umberarboretum::store::GroveCoreDb
+(
+  Schema arb
+  (
+    Table grove
+    (
+      grove_id INTEGER PRIMARY KEY,
+      grove_code VARCHAR(20) NOT NULL,
+      grove_name VARCHAR(60),
+      team_id INTEGER
+    )
+
+    Table specimen
+    (
+      specimen_id INTEGER PRIMARY KEY,
+      label VARCHAR(40),
+      grove_id INTEGER,
+      taxon_id INTEGER,
+      health_code VARCHAR(4),
+      canopy_pct INTEGER,
+      status_code VARCHAR(12),
+      surveyed_at TIMESTAMP
+    )
+
+    Table care_visit
+    (
+      visit_id INTEGER PRIMARY KEY,
+      specimen_id INTEGER,
+      visit_code VARCHAR(20),
+      outcome_code VARCHAR(12),
+      crew_code VARCHAR(12)
+    )
+
+    View specimen_health_vw
+    (
+      specimen_id: specimen.specimen_id PRIMARY KEY,
+      health_code: specimen.health_code,
+      canopy_band: case(greaterThan(specimen.canopy_pct, 60), 'broad', 'narrow')
+    )
+  )
+
+  Join Specimen_Grove(arb.specimen.grove_id = arb.grove.grove_id)
+  Join Visit_Specimen(arb.care_visit.specimen_id = arb.specimen.specimen_id)
+  Join Specimen_Health(arb.specimen.specimen_id = arb.specimen_health_vw.specimen_id)
+)

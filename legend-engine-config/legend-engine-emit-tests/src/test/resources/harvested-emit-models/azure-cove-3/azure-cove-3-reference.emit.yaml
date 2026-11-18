@@ -1,0 +1,27 @@
+name: azure-cove-3-reference
+title: "Azure Cove 3 — Shoreline Programme Reference Bases and External Link Types"
+description: |
+  Reference-side types that the shoreline survey model builds on. Four of them
+  are pure base classes that local classes specialise — a gauge measure base, a
+  reading value base, a sampling window base and an observation feature base —
+  so every inheritance edge in the survey module resolves a supertype declared
+  outside that module. Four further classes own the far end of associations
+  reached from the survey root, one of them business-temporal so the association
+  carrying a temporal stereotype has milestoned classes on both ends. All of
+  them appear as class views on the survey diagram.
+modelSources:
+  model:
+    root: azure-cove-3-reference
+    files:
+      - test/azurecove3/reference/ShorelineReferenceTypes.pure
+features:
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - base-classes
+  - business-temporal
+  - reference-types
+  - shared-domain
+  - shoreline

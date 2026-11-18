@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::sunlitlighthouse::service::UpkeepInspectionFeed
+{
+  pattern: '/sunlitlighthouse/v1/inspections/{asOf}';
+  title: 'Sunlit Lighthouse - Upkeep Inspection Register As Of A Processing Date';
+  owners:
+  [
+    'trail-network-register',
+    'trail-upkeep-eng'
+  ];
+  documentation: 'Projects the upkeep inspection register as it stood at a requested processing date, keeping only the outcomes the crews report on, so the read resolves to the second schema of the register store.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|demo::sunlitlighthouse::domain::UpkeepInspection.all($asOf)->filter(
+      i|$i.outcomeCode->toOne()->in(['CLEARED', 'REPAIRED', 'DEFERRED'])
+    )->project(
+      [
+        i|$i.inspectionCode,
+        i|$i.markerCode,
+        i|$i.crewCode,
+        i|$i.outcomeCode,
+        i|$i.durationMinutes,
+        i|$i.materialKg,
+        i|$i.inspectedOn
+      ],
+      [
+        'INSPECTION_CODE',
+        'MARKER_CODE',
+        'CREW_CODE',
+        'OUTCOME_CODE',
+        'DURATION_MINUTES',
+        'MATERIAL_KG',
+        'INSPECTED_ON'
+      ]
+    )->sort(
+      [
+        asc('INSPECTION_CODE')
+      ]
+    )->take(50)};
+    mapping: demo::sunlitlighthouse::mapping::TrailRegisterMapping;
+    runtime: demo::sunlitlighthouse::runtime::UpkeepRuntime;
+  }
+  testSuites:
+  [
+    upkeepFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          upkeepWarehouseConnection:
+            Relational
+            #{
+              upkeep.inspection_register:
+                'inspection_code,marker_code,crew_code,outcome_code,duration_minutes,material_kg,inspected_on,logged_at,in_z,out_z\n'+
+                'IN-01,MK-01,CR-A,CLEARED,45,12.5,2026-05-02,2026-05-02 12:00:00,2026-01-01,9999-12-31\n'+
+                'IN-02,MK-02,CR-B,ESCALATED,90,4.25,2026-05-03,2026-05-03 12:00:00,2026-01-01,9999-12-31\n'+
+                'IN-03,MK-03,CR-A,REPAIRED,120,30.0,2026-05-04,2026-05-04 12:00:00,2026-01-01,9999-12-31\n'+
+                'IN-04,MK-01,CR-C,DEFERRED,20,0.5,2026-04-01,2026-04-01 12:00:00,2025-01-01,2026-01-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        reportedOutcomesInsideWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            twoReportedOutcomes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"INSPECTION_CODE":"IN-01","MARKER_CODE":"MK-01","CREW_CODE":"CR-A","OUTCOME_CODE":"CLEARED","DURATION_MINUTES":45,"MATERIAL_KG":12.5,"INSPECTED_ON":"2026-05-02"},{"INSPECTION_CODE":"IN-03","MARKER_CODE":"MK-03","CREW_CODE":"CR-A","OUTCOME_CODE":"REPAIRED","DURATION_MINUTES":120,"MATERIAL_KG":30.0,"INSPECTED_ON":"2026-05-04"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

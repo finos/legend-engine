@@ -1,0 +1,160 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitotter::mapping::OtterMapping
+(
+  *test::sunlitotter::domain::RiverReach[reach]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitotter::store::OtterDB]otter.river_reach.reach_code,
+      [test::sunlitotter::store::OtterDB]otter.river_reach.survey_year
+    )
+    ~mainTable [test::sunlitotter::store::OtterDB]otter.river_reach
+    reachCode: [test::sunlitotter::store::OtterDB]otter.river_reach.reach_code,
+    surveyYear: [test::sunlitotter::store::OtterDB]otter.river_reach.survey_year,
+    reachName: [test::sunlitotter::store::OtterDB]otter.river_reach.reach_name,
+    catchment: [test::sunlitotter::store::OtterDB]otter.river_reach.catchment,
+    protectedSite: [test::sunlitotter::store::OtterDB]otter.river_reach.protected_site
+  }
+
+  *test::sunlitotter::domain::OtterRaft[raft]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitotter::store::OtterDB]otter.otter_raft.raft_code,
+      [test::sunlitotter::store::OtterDB]otter.otter_raft.sighted_on,
+      [test::sunlitotter::store::OtterDB]otter.otter_raft.survey_year
+    )
+    ~mainTable [test::sunlitotter::store::OtterDB]otter.otter_raft
+    raftCode: [test::sunlitotter::store::OtterDB]otter.otter_raft.raft_code,
+    sightedOn: [test::sunlitotter::store::OtterDB]otter.otter_raft.sighted_on,
+    pupTally: [test::sunlitotter::store::OtterDB]otter.otter_raft.pup_tally,
+    adultTally: [test::sunlitotter::store::OtterDB]otter.otter_raft.adult_tally,
+    waterClarityM: [test::sunlitotter::store::OtterDB]otter.otter_raft.water_clarity_m,
+    fishDensity: [test::sunlitotter::store::OtterDB]otter.otter_raft.fish_density,
+    observerGrade: [test::sunlitotter::store::OtterDB]otter.otter_raft.observer_grade,
+    telemetryTagged: [test::sunlitotter::store::OtterDB]otter.otter_raft.telemetry_tagged,
+    reach[reach]: [test::sunlitotter::store::OtterDB]@Raft_Reach
+  }
+
+  testSuites:
+  [
+    raftKeySuite:
+    {
+      function: |test::sunlitotter::domain::OtterRaft.all()->project(
+        [
+          x|$x.raftCode,
+          x|$x.pupTally,
+          x|$x.reach.catchment,
+          x|$x.reach.protectedSite
+        ],
+        [
+          'Raft',
+          'Pups',
+          'Catchment',
+          'Protected'
+        ]
+      )->sort([asc('Raft'), asc('Pups')]);
+      tests:
+      [
+        partialKeyAndNullKeyRows:
+        {
+          doc: 'Two rows agree on the leading key column but differ on the sighted date, and one row leaves the date key column empty, so key resolution over the composite key is observable alongside the alias-qualified join onto the reach table.';
+          data:
+          [
+            test::sunlitotter::store::OtterDB:
+              Relational
+              #{
+                otter.river_reach:
+                  'reach_code,survey_year,reach_name,catchment,protected_site\n'+
+                  'RR-01,2025,Alder Bend,Northfold,true\n'+
+                  'RR-02,2025,Willow Spit,Westfold,false\n';
+                otter.otter_raft:
+                  'raft_code,sighted_on,reach_code,survey_year,pup_tally,adult_tally,water_clarity_m,fish_density,observer_grade,telemetry_tagged\n'+
+                  'OR-10,2025-06-01,RR-01,2025,2,3,1.5,10.250,LEAD,true\n'+
+                  'OR-10,2025-06-08,RR-01,2025,1,1,1.4,9.500,LEAD,true\n'+
+                  'OR-11,,RR-02,2025,4,2,2.0,11.000,RELIEF,false\n';
+              }#
+          ];
+          asserts:
+          [
+            allRaftRowsResolved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Raft":"OR-10","Pups":1,"Catchment":"Northfold","Protected":true},{"Raft":"OR-10","Pups":2,"Catchment":"Northfold","Protected":true},{"Raft":"OR-11","Pups":4,"Catchment":"Westfold","Protected":false}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    catchmentTotalsSuite:
+    {
+      function: |test::sunlitotter::domain::OtterRaft.all()->groupBy(
+        [
+          x|$x.reach.catchment
+        ],
+        [
+          agg(x|$x.groupSize(), y|$y->sum())
+        ],
+        [
+          'Catchment',
+          'GroupSize'
+        ]
+      )->sort([asc('Catchment')]);
+      tests:
+      [
+        totalsPerCatchment:
+        {
+          doc: 'Aggregates the derived group size across the join so the reach attributes drive the grouping key while the summed expression comes from the raft table.';
+          data:
+          [
+            test::sunlitotter::store::OtterDB:
+              Relational
+              #{
+                otter.river_reach:
+                  'reach_code,survey_year,reach_name,catchment,protected_site\n'+
+                  'RR-01,2025,Alder Bend,Northfold,true\n'+
+                  'RR-02,2025,Willow Spit,Westfold,false\n';
+                otter.otter_raft:
+                  'raft_code,sighted_on,reach_code,survey_year,pup_tally,adult_tally,water_clarity_m,fish_density,observer_grade,telemetry_tagged\n'+
+                  'OR-20,2025-06-01,RR-01,2025,2,3,1.5,10.250,LEAD,true\n'+
+                  'OR-21,2025-06-08,RR-01,2025,1,1,1.4,9.500,LEAD,true\n'+
+                  'OR-22,2025-06-09,RR-02,2025,4,2,2.0,11.000,RELIEF,false\n';
+              }#
+          ];
+          asserts:
+          [
+            summedGroupSizes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Catchment":"Northfold","GroupSize":7},{"Catchment":"Westfold","GroupSize":6}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

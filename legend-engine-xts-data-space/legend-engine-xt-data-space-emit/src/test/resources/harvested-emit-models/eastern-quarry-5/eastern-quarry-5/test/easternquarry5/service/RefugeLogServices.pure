@@ -1,0 +1,388 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easternquarry5::service::RefugeOccupancyExtract
+{
+  pattern: '/easternquarry5/v1/refugeoccupancy';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the RefugeOccupancy log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::easternquarry5::domain::RefugeOccupancy.all(%latest)->project(
+      [
+        x|$x.logCode,
+        x|$x.refugeCode,
+        x|$x.nightOf,
+        x|$x.bunksOccupied,
+        x|$x.bunksFree,
+        x|$x.meanStayNights,
+        x|$x.recordedAt
+      ],
+      [
+        'LogCode',
+        'RefugeCode',
+        'NightOf',
+        'BunksOccupied',
+        'BunksFree',
+        'MeanStayNights',
+        'RecordedAt'
+      ]
+    )->sort([asc('LogCode')])->take(50);
+    mapping: test::easternquarry5::mapping::RefugeLogMapping;
+    runtime: test::easternquarry5::runtime::RefugeLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          refugeLogConnection:
+            Relational
+            #{
+              refuge.refuge_occupancy:
+                'log_code,refuge_code,night_of,bunks_occupied,bunks_free,mean_stay_nights,recorded_at,in_z,out_z\n'+
+                'LO-01,RE-01,2026-01-11,11.75,12.25,12.75,2026-01-11 01:30:00,2026-01-05,9999-12-31\n'+
+                'LO-02,RE-02,2026-01-12,,22.25,22.75,2026-01-12 02:30:00,2026-01-05,9999-12-31\n'+
+                'LO-01,RE-01,2026-01-11,31.75,32.25,32.75,2026-01-11 01:30:00,2025-12-01,2026-01-05\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsSurface:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LogCode":"LO-01","RefugeCode":"RE-01","NightOf":"2026-01-11","BunksOccupied":11.75,"BunksFree":12.25,"MeanStayNights":12.75,"RecordedAt":"2026-01-11T01:30:00.000000000+0000"},{"LogCode":"LO-02","RefugeCode":"RE-02","NightOf":"2026-01-12","BunksOccupied":null,"BunksFree":22.25,"MeanStayNights":22.75,"RecordedAt":"2026-01-12T02:30:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::easternquarry5::service::TrailConditionNoteExtract
+{
+  pattern: '/easternquarry5/v1/trailconditionnote';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the TrailConditionNote log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::easternquarry5::domain::TrailConditionNote.all(%latest)->project(
+      [
+        x|$x.noteCode,
+        x|$x.trailCode,
+        x|$x.surfaceState,
+        x|$x.snowDepthCm,
+        x|$x.iceCoverPct,
+        x|$x.observedOn,
+        x|$x.recordedAt
+      ],
+      [
+        'NoteCode',
+        'TrailCode',
+        'SurfaceState',
+        'SnowDepthCm',
+        'IceCoverPct',
+        'ObservedOn',
+        'RecordedAt'
+      ]
+    )->sort([asc('NoteCode')])->take(50);
+    mapping: test::easternquarry5::mapping::RefugeLogMapping;
+    runtime: test::easternquarry5::runtime::RefugeLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          refugeLogConnection:
+            Relational
+            #{
+              refuge.trail_condition_note:
+                'note_code,trail_code,surface_state,snow_depth_cm,ice_cover_pct,observed_on,recorded_at,in_z,out_z\n'+
+                'NO-01,TR-01,state-1,11.75,12.25,2026-01-11,2026-01-11 01:30:00,2026-01-05,9999-12-31\n'+
+                'NO-02,TR-02,state-2,,22.25,2026-01-12,2026-01-12 02:30:00,2026-01-05,9999-12-31\n'+
+                'NO-01,TR-01,state-1,31.75,32.25,2026-01-11,2026-01-11 01:30:00,2025-12-01,2026-01-05\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsSurface:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"NoteCode":"NO-01","TrailCode":"TR-01","SurfaceState":"state-1","SnowDepthCm":11.75,"IceCoverPct":12.25,"ObservedOn":"2026-01-11","RecordedAt":"2026-01-11T01:30:00.000000000+0000"},{"NoteCode":"NO-02","TrailCode":"TR-02","SurfaceState":"state-2","SnowDepthCm":null,"IceCoverPct":22.25,"ObservedOn":"2026-01-12","RecordedAt":"2026-01-12T02:30:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::easternquarry5::service::SnowpackProfileExtract
+{
+  pattern: '/easternquarry5/v1/snowpackprofile';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the SnowpackProfile log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::easternquarry5::domain::SnowpackProfile.all(%latest)->project(
+      [
+        x|$x.profileCode,
+        x|$x.slopeAspect,
+        x|$x.layerCount,
+        x|$x.densityKgM3,
+        x|$x.pitDepthCm,
+        x|$x.takenOn,
+        x|$x.recordedAt
+      ],
+      [
+        'ProfileCode',
+        'SlopeAspect',
+        'LayerCount',
+        'DensityKgM3',
+        'PitDepthCm',
+        'TakenOn',
+        'RecordedAt'
+      ]
+    )->sort([asc('ProfileCode')])->take(50);
+    mapping: test::easternquarry5::mapping::RefugeLogMapping;
+    runtime: test::easternquarry5::runtime::RefugeLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          refugeLogConnection:
+            Relational
+            #{
+              refuge.snowpack_profile:
+                'profile_code,slope_aspect,layer_count,density_kg_m3,pit_depth_cm,taken_on,recorded_at\n'+
+                'PR-01,state-1,11.25,11.75,12.25,2026-01-11,2026-01-11 01:30:00\n'+
+                'PR-02,state-2,21.25,,22.25,2026-01-12,2026-01-12 02:30:00\n'+
+                'PR-03,state-3,41.25,41.75,42.25,2026-01-13,2026-01-13 03:30:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsSurface:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ProfileCode":"PR-01","SlopeAspect":"state-1","LayerCount":11.25,"DensityKgM3":11.75,"PitDepthCm":12.25,"TakenOn":"2026-01-11","RecordedAt":"2026-01-11T01:30:00.000000000+0000"},{"ProfileCode":"PR-02","SlopeAspect":"state-2","LayerCount":21.25,"DensityKgM3":null,"PitDepthCm":22.25,"TakenOn":"2026-01-12","RecordedAt":"2026-01-12T02:30:00.000000000+0000"},{"ProfileCode":"PR-03","SlopeAspect":"state-3","LayerCount":41.25,"DensityKgM3":41.75,"PitDepthCm":42.25,"TakenOn":"2026-01-13","RecordedAt":"2026-01-13T03:30:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::easternquarry5::service::SpringFlowReadingExtract
+{
+  pattern: '/easternquarry5/v1/springflowreading';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the SpringFlowReading log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::easternquarry5::domain::SpringFlowReading.all(%latest)->project(
+      [
+        x|$x.readingCode,
+        x|$x.springCode,
+        x|$x.flowLitresMin,
+        x|$x.waterTempC,
+        x|$x.turbidityNtu,
+        x|$x.sampledOn,
+        x|$x.recordedAt
+      ],
+      [
+        'ReadingCode',
+        'SpringCode',
+        'FlowLitresMin',
+        'WaterTempC',
+        'TurbidityNtu',
+        'SampledOn',
+        'RecordedAt'
+      ]
+    )->sort([asc('ReadingCode')])->take(50);
+    mapping: test::easternquarry5::mapping::RefugeLogMapping;
+    runtime: test::easternquarry5::runtime::RefugeLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          refugeLogConnection:
+            Relational
+            #{
+              refuge.spring_flow_reading:
+                'reading_code,spring_code,flow_litres_min,water_temp_c,turbidity_ntu,sampled_on,recorded_at\n'+
+                'RE-01,SP-01,11.25,11.75,12.25,2026-01-11,2026-01-11 01:30:00\n'+
+                'RE-02,SP-02,21.25,,22.25,2026-01-12,2026-01-12 02:30:00\n'+
+                'RE-03,SP-03,41.25,41.75,42.25,2026-01-13,2026-01-13 03:30:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsSurface:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingCode":"RE-01","SpringCode":"SP-01","FlowLitresMin":11.25,"WaterTempC":11.75,"TurbidityNtu":12.25,"SampledOn":"2026-01-11","RecordedAt":"2026-01-11T01:30:00.000000000+0000"},{"ReadingCode":"RE-02","SpringCode":"SP-02","FlowLitresMin":21.25,"WaterTempC":null,"TurbidityNtu":22.25,"SampledOn":"2026-01-12","RecordedAt":"2026-01-12T02:30:00.000000000+0000"},{"ReadingCode":"RE-03","SpringCode":"SP-03","FlowLitresMin":41.25,"WaterTempC":41.75,"TurbidityNtu":42.25,"SampledOn":"2026-01-13","RecordedAt":"2026-01-13T03:30:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::easternquarry5::service::SupplyDropLogExtract
+{
+  pattern: '/easternquarry5/v1/supplydroplog';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the SupplyDropLog log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::easternquarry5::domain::SupplyDropLog.all(%latest)->project(
+      [
+        x|$x.dropCode,
+        x|$x.refugeCode,
+        x|$x.cratesDelivered,
+        x|$x.payloadKg,
+        x|$x.rotorMinutes,
+        x|$x.droppedOn,
+        x|$x.recordedAt
+      ],
+      [
+        'DropCode',
+        'RefugeCode',
+        'CratesDelivered',
+        'PayloadKg',
+        'RotorMinutes',
+        'DroppedOn',
+        'RecordedAt'
+      ]
+    )->sort([asc('DropCode')])->take(50);
+    mapping: test::easternquarry5::mapping::RefugeLogMapping;
+    runtime: test::easternquarry5::runtime::RefugeLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          refugeLogConnection:
+            Relational
+            #{
+              refuge.supply_drop_log:
+                'drop_code,refuge_code,crates_delivered,payload_kg,rotor_minutes,dropped_on,recorded_at,in_z,out_z\n'+
+                'DR-01,RE-01,11.25,11.75,12.25,2026-01-11,2026-01-11 01:30:00,2026-01-05,9999-12-31\n'+
+                'DR-02,RE-02,21.25,,22.25,2026-01-12,2026-01-12 02:30:00,2026-01-05,9999-12-31\n'+
+                'DR-01,RE-01,31.25,31.75,32.25,2026-01-11,2026-01-11 01:30:00,2025-12-01,2026-01-05\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsSurface:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"DropCode":"DR-01","RefugeCode":"RE-01","CratesDelivered":11.25,"PayloadKg":11.75,"RotorMinutes":12.25,"DroppedOn":"2026-01-11","RecordedAt":"2026-01-11T01:30:00.000000000+0000"},{"DropCode":"DR-02","RefugeCode":"RE-02","CratesDelivered":21.25,"PayloadKg":null,"RotorMinutes":22.25,"DroppedOn":"2026-01-12","RecordedAt":"2026-01-12T02:30:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

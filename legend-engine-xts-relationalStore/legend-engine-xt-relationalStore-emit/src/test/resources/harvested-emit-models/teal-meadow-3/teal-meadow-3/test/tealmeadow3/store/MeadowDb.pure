@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::tealmeadow3::store::MeadowDb
+(
+  Schema meadow
+  (
+    Table dawn_walk
+    (
+      walk_id INTEGER PRIMARY KEY,
+      walk_code VARCHAR(24) NOT NULL,
+      transect_name VARCHAR(60) NOT NULL,
+      species_id INTEGER,
+      counted_total INTEGER NOT NULL,
+      walked_on DATE NOT NULL,
+      sky_code VARCHAR(16)
+    )
+
+    Table dusk_walk
+    (
+      walk_id INTEGER PRIMARY KEY,
+      walk_code VARCHAR(24) NOT NULL,
+      transect_name VARCHAR(60) NOT NULL,
+      species_id INTEGER,
+      counted_total INTEGER NOT NULL,
+      walked_on DATE NOT NULL,
+      sky_code VARCHAR(16)
+    )
+
+    Table meadow_species
+    (
+      species_id INTEGER PRIMARY KEY,
+      species_code VARCHAR(24) NOT NULL,
+      species_name VARCHAR(120) NOT NULL,
+      genus_id INTEGER
+    )
+
+    Table species_genus
+    (
+      genus_id INTEGER PRIMARY KEY,
+      genus_name VARCHAR(120) NOT NULL,
+      family_id INTEGER
+    )
+
+    Table wing_family
+    (
+      family_id INTEGER PRIMARY KEY,
+      family_name VARCHAR(120) NOT NULL
+    )
+  )
+
+  Join Dawn_Species(meadow.dawn_walk.species_id = meadow.meadow_species.species_id)
+  Join Dusk_Species(meadow.dusk_walk.species_id = meadow.meadow_species.species_id)
+  Join Species_Genus(meadow.meadow_species.genus_id = meadow.species_genus.genus_id)
+  Join Genus_Family(meadow.species_genus.family_id = meadow.wing_family.family_id)
+)

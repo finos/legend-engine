@@ -1,0 +1,199 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenisle2::mapping::TrailMapping
+(
+  *test::goldenisle2::domain::SegmentInspection[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenisle2::store::TrailDB]trail.segment_inspection.inspection_code
+    )
+    ~mainTable [test::goldenisle2::store::TrailDB]trail.segment_inspection
+    inspectionCode: [test::goldenisle2::store::TrailDB]trail.segment_inspection.inspection_code,
+    inspectedOn: [test::goldenisle2::store::TrailDB]trail.segment_inspection.inspected_on,
+    erosionScore: [test::goldenisle2::store::TrailDB]trail.segment_inspection.erosion_score,
+    surfaceLabel: case(equal([test::goldenisle2::store::TrailDB]trail.segment_inspection.surface_code, 'STONE_PITCH'), 'stone-pitch', case(equal([test::goldenisle2::store::TrailDB]trail.segment_inspection.surface_code, 'BOARDWALK'), 'boardwalk', case(equal([test::goldenisle2::store::TrailDB]trail.segment_inspection.surface_code, 'AGGREGATE'), 'aggregate', case(equal([test::goldenisle2::store::TrailDB]trail.segment_inspection.surface_code, 'GRASS_SWARD'), 'grass-sward', case(equal([test::goldenisle2::store::TrailDB]trail.segment_inspection.surface_code, 'PEAT_CUT'), 'peat-cut', case(equal([test::goldenisle2::store::TrailDB]trail.segment_inspection.surface_code, 'SAND_TRACK'), 'sand-track', case(equal([test::goldenisle2::store::TrailDB]trail.segment_inspection.surface_code, 'ROCK_SCRAMBLE'), 'rock-scramble', case(equal([test::goldenisle2::store::TrailDB]trail.segment_inspection.surface_code, 'DUNE_MAT'), 'dune-mat', sqlNull())))))))),
+    erosionBand: case(greaterThan([test::goldenisle2::store::TrailDB]trail.segment_inspection.erosion_score, 7), 'severe', case(greaterThan([test::goldenisle2::store::TrailDB]trail.segment_inspection.erosion_score, 4), 'moderate', case(greaterThan([test::goldenisle2::store::TrailDB]trail.segment_inspection.erosion_score, 1), 'light', 'none'))),
+    noteLabel: concat(concat([test::goldenisle2::store::TrailDB]trail.segment_inspection.note, ' ['), concat(case(greaterThan([test::goldenisle2::store::TrailDB]trail.segment_inspection.erosion_score, 7), 'severe', 'watch'), ']')),
+    accessGrade: [test::goldenisle2::store::TrailDB]@Inspection_Condition | [test::goldenisle2::store::TrailDB]trail.segment_condition_view.access_grade,
+    widthClass: [test::goldenisle2::store::TrailDB]@Inspection_Condition | [test::goldenisle2::store::TrailDB]trail.segment_condition_view.width_class,
+    routeName: [test::goldenisle2::store::TrailDB]@Inspection_Segment > @Segment_Route | [test::goldenisle2::store::TrailDB]trail.path_route.route_name,
+    isleName: [test::goldenisle2::store::TrailDB]@Inspection_Segment > @Segment_Route > @Route_District > @District_Isle | [test::goldenisle2::store::TrailDB]isleref.isle.isle_name,
+    landingName: [test::goldenisle2::store::TrailDB]@Inspection_Segment > @Segment_Route > @Route_District > @District_Isle > @Isle_Landing | [test::goldenisle2::store::TrailDB]isleref.landing.landing_name
+  }
+
+  *test::goldenisle2::domain::RouteLoad[routeLoad]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenisle2::store::TrailDB]trail.route_load_view.route_code
+    )
+    ~mainTable [test::goldenisle2::store::TrailDB]trail.route_load_view
+    routeCode: [test::goldenisle2::store::TrailDB]trail.route_load_view.route_code,
+    segmentCount: [test::goldenisle2::store::TrailDB]trail.route_load_view.segment_count
+  }
+
+  testSuites:
+  [
+    inspectionRegisterSuite:
+    {
+      function: |test::goldenisle2::domain::SegmentInspection.all()->project(
+        [
+          x|$x.inspectionCode,
+          x|$x.surfaceLabel,
+          x|$x.erosionBand,
+          x|$x.accessGrade
+        ],
+        [
+          'InspectionCode',
+          'SurfaceLabel',
+          'ErosionBand',
+          'AccessGrade'
+        ]
+      )->sort(
+        [
+          asc('InspectionCode')
+        ]
+      );
+      tests:
+      [
+        everySurfaceArmAndTheNullFallback:
+        {
+          doc: 'Every arm of the surface cascade is hit by one inspection row, the unlisted surface falls through to the null sentinel, and each row carries the access grade the inline condition view derives from its own segment.';
+          data:
+          [
+            test::goldenisle2::store::TrailDB:
+              Reference
+              #{
+                test::goldenisle2::data::TrailFixture
+              }#
+          ];
+          asserts:
+          [
+            surfaceBandsAndGrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"InspectionCode":"IN-01","SurfaceLabel":"stone-pitch","ErosionBand":"severe","AccessGrade":"steep-pitch"},{"InspectionCode":"IN-02","SurfaceLabel":"boardwalk","ErosionBand":"moderate","AccessGrade":"graded-climb"},{"InspectionCode":"IN-03","SurfaceLabel":"aggregate","ErosionBand":"light","AccessGrade":"level-going"},{"InspectionCode":"IN-04","SurfaceLabel":"grass-sward","ErosionBand":"none","AccessGrade":"steep-pitch"},{"InspectionCode":"IN-05","SurfaceLabel":"peat-cut","ErosionBand":"severe","AccessGrade":"graded-climb"},{"InspectionCode":"IN-06","SurfaceLabel":"sand-track","ErosionBand":"moderate","AccessGrade":"level-going"},{"InspectionCode":"IN-07","SurfaceLabel":"rock-scramble","ErosionBand":"light","AccessGrade":"steep-pitch"},{"InspectionCode":"IN-08","SurfaceLabel":"dune-mat","ErosionBand":"light","AccessGrade":"level-going"},{"InspectionCode":"IN-09","SurfaceLabel":null,"ErosionBand":"none","AccessGrade":"graded-climb"},{"InspectionCode":"IN-10","SurfaceLabel":"boardwalk","ErosionBand":"moderate","AccessGrade":"steep-pitch"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    accessChainSuite:
+    {
+      function: |test::goldenisle2::domain::SegmentInspection.all()->project(
+        [
+          x|$x.inspectionCode,
+          x|$x.routeName,
+          x|$x.isleName,
+          x|$x.landingName,
+          x|$x.widthClass,
+          x|$x.noteLabel
+        ],
+        [
+          'InspectionCode',
+          'RouteName',
+          'IsleName',
+          'LandingName',
+          'WidthClass',
+          'NoteLabel'
+        ]
+      )->sort(
+        [
+          asc('InspectionCode')
+        ]
+      );
+      tests:
+      [
+        multiHopReachAndDerivedNote:
+        {
+          doc: 'Each inspection resolves its isle through the segment, route and district hops and its ferry landing through one further hop, alongside the width class taken off the inline view and the note assembled from the recorded note and the erosion cut.';
+          data:
+          [
+            test::goldenisle2::store::TrailDB:
+              Reference
+              #{
+                test::goldenisle2::data::TrailFixture
+              }#
+          ];
+          asserts:
+          [
+            reachedIsleAndLanding:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"InspectionCode":"IN-01","RouteName":"Gannet Cliff Path","IsleName":"Gannet Isle","LandingName":"Cobble Slip","WidthClass":"wide-going","NoteLabel":"washout at the head [severe]"},{"InspectionCode":"IN-02","RouteName":"Gannet Cliff Path","IsleName":"Gannet Isle","LandingName":"Cobble Slip","WidthClass":"wide-going","NoteLabel":"slats lifting [watch]"},{"InspectionCode":"IN-03","RouteName":"Gannet Cliff Path","IsleName":"Gannet Isle","LandingName":"Cobble Slip","WidthClass":"single-file","NoteLabel":"minor scour [watch]"},{"InspectionCode":"IN-04","RouteName":"Gannet Cliff Path","IsleName":"Gannet Isle","LandingName":"Cobble Slip","WidthClass":"single-file","NoteLabel":"sward thinning [watch]"},{"InspectionCode":"IN-05","RouteName":"Tern Dune Path","IsleName":"Tern Isle","LandingName":"Shingle Slip","WidthClass":"wide-going","NoteLabel":"peat hags spreading [severe]"},{"InspectionCode":"IN-06","RouteName":"Tern Dune Path","IsleName":"Tern Isle","LandingName":"Shingle Slip","WidthClass":"wide-going","NoteLabel":"sand drifting [watch]"},{"InspectionCode":"IN-07","RouteName":"Tern Dune Path","IsleName":"Tern Isle","LandingName":"Shingle Slip","WidthClass":"single-file","NoteLabel":"loose blocks [watch]"},{"InspectionCode":"IN-08","RouteName":"Tern Dune Path","IsleName":"Tern Isle","LandingName":"Shingle Slip","WidthClass":"single-file","NoteLabel":"mat edges frayed [watch]"},{"InspectionCode":"IN-09","RouteName":"Gannet Cliff Path","IsleName":"Gannet Isle","LandingName":"Cobble Slip","WidthClass":"single-file","NoteLabel":"settled cobbles [watch]"},{"InspectionCode":"IN-10","RouteName":"Tern Dune Path","IsleName":"Tern Isle","LandingName":"Shingle Slip","WidthClass":"wide-going","NoteLabel":"handrail loose [watch]"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    routeLoadSuite:
+    {
+      function: |test::goldenisle2::domain::RouteLoad.all()->project(
+        [
+          x|$x.routeCode,
+          x|$x.segmentCount
+        ],
+        [
+          'RouteCode',
+          'SegmentCount'
+        ]
+      )->sort(
+        [
+          asc('RouteCode')
+        ]
+      );
+      tests:
+      [
+        segmentsPerRoute:
+        {
+          doc: 'The grouping view counts the segments each route carries without any table of its own behind it.';
+          data:
+          [
+            test::goldenisle2::store::TrailDB:
+              Reference
+              #{
+                test::goldenisle2::data::TrailFixture
+              }#
+          ];
+          asserts:
+          [
+            loadPerRoute:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RouteCode":"R-01","SegmentCount":5},{"RouteCode":"R-02","SegmentCount":5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,148 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::tealglacier3::mapping::TrailMapping
+(
+  *demo::tealglacier3::domain::TrailBridge[trailBridge]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::tealglacier3::store::TrailDb]alpine.trail_bridge.bridge_id
+    )
+    ~mainTable [demo::tealglacier3::store::TrailDb]alpine.trail_bridge
+    bridgeId: [demo::tealglacier3::store::TrailDb]alpine.trail_bridge.bridge_id,
+    bridgeCode: [demo::tealglacier3::store::TrailDb]alpine.trail_bridge.bridge_code,
+    districtCode: [demo::tealglacier3::store::TrailDb]alpine.trail_bridge.district_code,
+    districtName: [demo::tealglacier3::store::TrailDb]@Bridge_District | alpine.district.district_name,
+    spanM: [demo::tealglacier3::store::TrailDb]alpine.trail_bridge.span_m,
+    inspectedOn: [demo::tealglacier3::store::TrailDb]alpine.trail_bridge.inspected_on,
+    loadRated: [demo::tealglacier3::store::TrailDb]alpine.trail_bridge.load_rated
+  }
+
+  *demo::tealglacier3::domain::TrailDistrict[trailDistrict]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::tealglacier3::store::TrailDb]alpine.district.district_code
+    )
+    ~mainTable [demo::tealglacier3::store::TrailDb]alpine.district
+    districtCode: [demo::tealglacier3::store::TrailDb]alpine.district.district_code,
+    districtName: [demo::tealglacier3::store::TrailDb]alpine.district.district_name
+  }
+
+  testSuites:
+  [
+    trailBridgeRegisterSuite:
+    {
+      function: |demo::tealglacier3::domain::TrailBridge.all()->project(
+        [
+          b|$b.bridgeCode,
+          b|$b.districtCode,
+          b|$b.districtName,
+          b|$b.spanLabel,
+          b|$b.spanM,
+          b|$b.inspectedOn,
+          b|$b.loadRated
+        ],
+        [
+          'Bridge',
+          'District',
+          'DistrictName',
+          'SpanLabel',
+          'Span',
+          'Inspected',
+          'LoadRated'
+        ]
+      );
+      tests:
+      [
+        theKeyedBridgeRowWithItsDistrictReachedThroughTheJoin:
+        {
+          doc: 'Resolves the single keyed bridge row through the aliased main relation, reaches the district name across the declared join rather than reading it from the bridge relation, and evaluates the span label off the mapped code and span so the derived value is computed after the row is instantiated.';
+          data:
+          [
+            demo::tealglacier3::store::TrailDb:
+              Relational
+              #{
+                alpine.trail_bridge:
+                  'bridge_id,bridge_code,district_code,span_m,inspected_on,load_rated\n'+
+                  '1,TB-01,DT-01,18,2026-05-04,true\n';
+
+                alpine.district:
+                  'district_code,district_name\n'+
+                  'DT-01,North Cirque\n';
+              }#
+          ];
+          asserts:
+          [
+            bridgeRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bridge":"TB-01","District":"DT-01","DistrictName":"North Cirque","SpanLabel":"TB-01/018M","Span":18,"Inspected":"2026-05-04","LoadRated":true}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    trailDistrictRegisterSuite:
+    {
+      function: |demo::tealglacier3::domain::TrailDistrict.all()->project(
+        [
+          d|$d.districtCode,
+          d|$d.districtName
+        ],
+        [
+          'District',
+          'DistrictName'
+        ]
+      );
+      tests:
+      [
+        theKeyedDistrictRowFromItsOwnAliasedRelation:
+        {
+          doc: 'Resolves the district register from its own aliased main relation, keyed on the reference the bridge relation quotes, so the same store relation is read once as a join target and once as an extent in its own right.';
+          data:
+          [
+            demo::tealglacier3::store::TrailDb:
+              Relational
+              #{
+                alpine.district:
+                  'district_code,district_name\n'+
+                  'DT-01,North Cirque\n';
+              }#
+          ];
+          asserts:
+          [
+            districtRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"District":"DT-01","DistrictName":"North Cirque"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::solarcove3::domain::*;
+import test::solarcove3::external::*;
+import test::solarcove3::function::*;
+
+function {meta::pure::profiles::doc.doc = 'Occupancy band of a dock from the bikes available against its capacity, from empty through to full.'} test::solarcove3::function::availabilityBand(bikesAvailable: Integer[1], capacity: Integer[1]): String[1]
+{
+  if($bikesAvailable == 0,
+     | 'EMPTY',
+     | if(($bikesAvailable * 2) >= $capacity,
+          | if($bikesAvailable >= $capacity,
+               | if($capacity >= 30,
+                    | if(($bikesAvailable - $capacity) >= 0,
+                         | if(((($bikesAvailable * 100) / $capacity) - 50) >= 0,
+                              | 'SATURATED-LARGE',
+                              | 'FULL-LARGE'),
+                         | 'NEAR-FULL-LARGE'),
+                    | 'FULL-SMALL'),
+               | 'HEALTHY'),
+          | 'LOW'))
+}
+
+function {meta::pure::profiles::doc.doc = 'Status remark of a dock, lower-cased when the status code is one of the accepted states and flagged otherwise.'} test::solarcove3::function::statusRemark(statusCode: String[1]): String[1]
+{
+  if($statusCode->in(['ACTIVE', 'LIMITED', 'OUTAGE']),
+     | $statusCode->toLower(),
+     | 'status-not-recognised')
+}
+
+function {meta::pure::profiles::doc.doc = 'Tabular projection of the station cards carried by an external JSON payload, keeping only the stations whose zone is in the requested set and projecting a fixed column list.'} test::solarcove3::function::stationTable(payload: String[1], zones: String[*]): TabularDataSet[1]
+{
+  Station->internalize(StationJsonBinding, $payload)->filter(s | $s.zoneInfo.code->in($zones))->project(
+    [
+      col(s | $s.stationCode, 'Station'),
+      col(s | $s.zoneInfo.code, 'Zone'),
+      col(s | $s.zoneInfo.borough, 'Borough'),
+      col(s | $s.operator.name, 'Operator'),
+      col(s | $s.capacity, 'Capacity')
+    ]
+  )->sort([asc('Station')])
+}

@@ -1,0 +1,244 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::borealwarren2::mapping::BatchMapping
+(
+  include mapping demo::borealwarren2::mapping::CaveReferenceMapping
+
+  *demo::borealwarren2::domain::WheelBatch[wheelBatch]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::borealwarren2::store::CaveDB]cave.wheel_batch.batch_code
+    )
+    ~mainTable [demo::borealwarren2::store::CaveDB]cave.wheel_batch
+    batchCode: [demo::borealwarren2::store::CaveDB]cave.wheel_batch.batch_code,
+    batchName: [demo::borealwarren2::store::CaveDB]cave.wheel_batch.batch_name,
+    milkKind: [demo::borealwarren2::store::CaveDB]cave.wheel_batch.milk_kind,
+    rindDays: [demo::borealwarren2::store::CaveDB]cave.wheel_batch.rind_days,
+    weightKg: [demo::borealwarren2::store::CaveDB]cave.wheel_batch.weight_kg,
+    rindIndex: times([demo::borealwarren2::store::CaveDB]cave.wheel_batch.weight_kg, 2.0),
+    turnedOn: [demo::borealwarren2::store::CaveDB]cave.wheel_batch.turned_on,
+    rindBand: case(
+                equal([demo::borealwarren2::store::CaveDB]cave.wheel_batch.band_code, 'A'),
+                'washed',
+                case(
+                  equal([demo::borealwarren2::store::CaveDB]cave.wheel_batch.band_code, 'B'),
+                  'brushed',
+                  case(
+                    equal([demo::borealwarren2::store::CaveDB]cave.wheel_batch.band_code, 'C'),
+                    'natural',
+                    case(
+                      equal([demo::borealwarren2::store::CaveDB]cave.wheel_batch.band_code, 'D'),
+                      'bloomy',
+                      case(
+                        equal([demo::borealwarren2::store::CaveDB]cave.wheel_batch.band_code, 'E'),
+                        'smoked',
+                        case(
+                          equal([demo::borealwarren2::store::CaveDB]cave.wheel_batch.band_code, 'F'),
+                          'clothed',
+                          case(
+                            equal([demo::borealwarren2::store::CaveDB]cave.wheel_batch.band_code, 'G'),
+                            'waxed',
+                            case(
+                              equal([demo::borealwarren2::store::CaveDB]cave.wheel_batch.band_code, 'H'),
+                              'ashed',
+                              sqlNull()
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+    batchNote: coalesce([demo::borealwarren2::store::CaveDB]cave.wheel_batch.note_text, 'unlabelled'),
+    brushTotal: [demo::borealwarren2::store::CaveDB]@Batch_TurnView | [demo::borealwarren2::store::CaveDB]cellarlog.turn_summary_vw.brushTotal,
+    turnTally: [demo::borealwarren2::store::CaveDB]@Batch_TurnView | [demo::borealwarren2::store::CaveDB]cellarlog.turn_summary_vw.turnTally,
+    gradeLabel: [demo::borealwarren2::store::CaveDB]@Batch_Grade | [demo::borealwarren2::store::CaveDB]cellarlog.batch_grade.grade_label
+  }
+
+  demo::borealwarren2::domain::Cave_Batches: Relational
+  {
+    AssociationMapping
+    (
+      cave[wheelBatch, ripeningCave]: [demo::borealwarren2::store::CaveDB]@Batch_Cave,
+      batches[ripeningCave, wheelBatch]: [demo::borealwarren2::store::CaveDB]@Batch_Cave
+    )
+  }
+
+  testSuites:
+  [
+    batchStructureSuite:
+    {
+      function: |demo::borealwarren2::domain::WheelBatch.all()->filter(
+        b|$b.batchCode->in(['WB-01', 'WB-04', 'WB-09', 'WB-10'])
+      )->graphFetch(
+        #{
+          demo::borealwarren2::domain::WheelBatch{
+            batchCode,
+            batchName,
+            rindBand,
+            batchNote,
+            rindIndex,
+            brushTotal,
+            turnTally,
+            gradeLabel,
+            cave{
+              caveCode,
+              caveName
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          demo::borealwarren2::domain::WheelBatch{
+            batchCode,
+            batchName,
+            rindBand,
+            batchNote,
+            rindIndex,
+            brushTotal,
+            turnTally,
+            gradeLabel,
+            cave{
+              caveCode,
+              caveName
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        bandedBatchesWithViewAndGradeMisses:
+        {
+          doc: 'Graph-fetches four batches so the first conditional arm, an unmatched band code and an absent band code are asserted alongside a summary view row that the store filter removed and two batches that were never graded, proving the view-backed and outer-reached properties come back absent rather than defaulted.';
+          data:
+          [
+            demo::borealwarren2::store::CaveDB:
+              Relational
+              #{
+                cave.ripening_cave:
+                  'cave_code,cave_name,humidity_pct\n'+
+                  'C1,Lower Cellar,92.0\n'+
+                  'C2,Upper Cellar,88.0\n';
+                cave.wheel_batch:
+                  'batch_code,batch_name,cave_code,milk_kind,band_code,note_text,rind_days,weight_kg,turned_on\n'+
+                  'WB-01,Alpine Round,C1,cow,A,washed rind,30,9.0,2026-01-05\n'+
+                  'WB-04,Valley Crottin,C1,goat,D,bloomy rind,15,6.0,2026-01-08\n'+
+                  'WB-09,Quiet Corner,C1,cow,,,4,3.25,2026-01-13\n'+
+                  'WB-10,Stone Ledge,C1,cow,Z,dry rind,2,1.75,2026-01-14\n';
+                cellarlog.turn_event:
+                  'event_id,batch_code,turn_kind,brush_count\n'+
+                  '1,WB-01,brush,3\n'+
+                  '2,WB-01,wash,2\n'+
+                  '3,WB-04,wash,0\n';
+                cellarlog.batch_grade:
+                  'batch_code,grade_label\n'+
+                  'WB-01,gold\n';
+              }#
+          ];
+          asserts:
+          [
+            bandsViewTotalsAndGrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"batchCode":"WB-01","batchName":"Alpine Round","rindBand":"washed","batchNote":"washed rind","rindIndex":18.0,"brushTotal":5,"turnTally":2,"gradeLabel":"gold","cave":{"caveCode":"C1","caveName":"Lower Cellar"}},{"batchCode":"WB-04","batchName":"Valley Crottin","rindBand":"bloomy","batchNote":"bloomy rind","rindIndex":12.0,"brushTotal":null,"turnTally":null,"gradeLabel":null,"cave":{"caveCode":"C1","caveName":"Lower Cellar"}},{"batchCode":"WB-09","batchName":"Quiet Corner","rindBand":null,"batchNote":"unlabelled","rindIndex":6.5,"brushTotal":null,"turnTally":null,"gradeLabel":null,"cave":{"caveCode":"C1","caveName":"Lower Cellar"}},{"batchCode":"WB-10","batchName":"Stone Ledge","rindBand":null,"batchNote":"dry rind","rindIndex":3.5,"brushTotal":null,"turnTally":null,"gradeLabel":null,"cave":{"caveCode":"C1","caveName":"Lower Cellar"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    batchCaveSuite:
+    {
+      function: |demo::borealwarren2::domain::WheelBatch.all()->filter(
+        b|$b.cave.caveCode == 'C2'
+      )->graphFetch(
+        #{
+          demo::borealwarren2::domain::WheelBatch{
+            batchCode,
+            rindBand,
+            brushTotal,
+            gradeLabel,
+            cave{
+              caveName,
+              humidityPct
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          demo::borealwarren2::domain::WheelBatch{
+            batchCode,
+            rindBand,
+            brushTotal,
+            gradeLabel,
+            cave{
+              caveName,
+              humidityPct
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        batchesOfTheOtherCaveOnly:
+        {
+          doc: 'Graph-fetches only the batches whose owning cave is reached through the association, so the inner join to the cave relation isolates one cave and the second batch still reports an absent summary row and an absent grade.';
+          data:
+          [
+            demo::borealwarren2::store::CaveDB:
+              Relational
+              #{
+                cave.ripening_cave:
+                  'cave_code,cave_name,humidity_pct\n'+
+                  'C1,Lower Cellar,92.0\n'+
+                  'C2,Upper Cellar,88.0\n';
+                cave.wheel_batch:
+                  'batch_code,batch_name,cave_code,milk_kind,band_code,note_text,rind_days,weight_kg,turned_on\n'+
+                  'WB-01,Alpine Round,C1,cow,A,washed rind,30,9.0,2026-01-05\n'+
+                  'WB-12,Upper Shelf,C2,cow,B,upper rind,18,5.25,2026-01-16\n'+
+                  'WB-13,Back Wall,C2,goat,C,back rind,9,4.5,2026-01-17\n';
+                cellarlog.turn_event:
+                  'event_id,batch_code,turn_kind,brush_count\n'+
+                  '1,WB-12,brush,2\n';
+                cellarlog.batch_grade:
+                  'batch_code,grade_label\n'+
+                  'WB-12,bronze\n';
+              }#
+          ];
+          asserts:
+          [
+            otherCaveBatches:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"batchCode":"WB-12","rindBand":"brushed","brushTotal":2,"gradeLabel":"bronze","cave":{"caveName":"Upper Cellar","humidityPct":88.0}},{"batchCode":"WB-13","rindBand":"natural","brushTotal":null,"gradeLabel":null,"cave":{"caveName":"Upper Cellar","humidityPct":88.0}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

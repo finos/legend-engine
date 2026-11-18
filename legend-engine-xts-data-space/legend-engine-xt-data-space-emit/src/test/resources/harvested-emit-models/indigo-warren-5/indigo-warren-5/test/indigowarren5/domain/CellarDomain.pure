@@ -1,0 +1,164 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::indigowarren5::domain::*;
+
+Class {doc.doc = 'A farmhouse dairy that owns the ripening caves and the turners who walk them.'} test::indigowarren5::domain::Dairy
+[
+  dairyCodeShape: $this.dairyCode->startsWith('DY-'),
+  dairyNameReadable: $this.dairyName->length() > 2,
+  countyLabelPresent: $this.countyLabel->length() >= 2
+]
+{
+  {doc.doc = 'Code of the dairy.'} dairyCode: String[1];
+  {doc.doc = 'Name the dairy trades under.'} dairyName: String[1];
+  {doc.doc = 'County the dairy sits in.'} countyLabel: String[1];
+}
+
+Class {doc.doc = 'A ripening cave cut under a dairy; its humidity and temperature are read off the cellar wall and may be missing when the gauge was not read.'} test::indigowarren5::domain::Cave
+[
+  caveCodeShape: $this.caveCode->startsWith('CV-'),
+  humidityWithinTheCellarRange: ($this.humidityPct->isEmpty()) || (($this.humidityPct->toOne() >= 60) && ($this.humidityPct->toOne() <= 99)),
+  tempWithinTheCellarRange: ($this.tempC->isEmpty()) || (($this.tempC->toOne() >= 4) && ($this.tempC->toOne() <= 18))
+]
+{
+  {doc.doc = 'Code of the cave.'} caveCode: String[1];
+  {doc.doc = 'Name of the cave, settled by the mapping so an unnamed cut still reads sensibly.'} caveName: String[1];
+  {doc.doc = 'Humidity read off the cave wall.'} humidityPct: Integer[0..1];
+  {doc.doc = 'Temperature read off the cave wall.'} tempC: Integer[0..1];
+}
+
+Class {doc.doc = 'A shelf on a rack inside a cave; the tier counts up from the floor.'} test::indigowarren5::domain::Shelf
+[
+  shelfCodeShape: $this.shelfCode->startsWith('SH-'),
+  tierWithinTheRack: ($this.tier >= 1) && ($this.tier <= 6),
+  capacityAboveNothing: $this.capacity > 0
+]
+{
+  {doc.doc = 'Code of the shelf.'} shelfCode: String[1];
+  {doc.doc = 'Tier the shelf sits on, counting up from the cellar floor.'} tier: Integer[1];
+  {doc.doc = 'How many wheels the shelf holds.'} capacity: Integer[1];
+}
+
+Class {doc.doc = 'A turner who walks a cave rota; the rota label is settled by the mapping so an unrostered turner still reads sensibly.'} test::indigowarren5::domain::Turner
+[
+  turnerCodeShape: $this.turnerCode->startsWith('TN-'),
+  turnerNameReadable: $this.turnerName->length() > 3
+]
+{
+  {doc.doc = 'Code of the turner.'} turnerCode: String[1];
+  {doc.doc = 'Name of the turner.'} turnerName: String[1];
+  {doc.doc = 'Rota the turner walks.'} rotaLabel: String[1];
+}
+
+Class {doc.doc = 'A wheel wrapped in the dairy and laid on a cave shelf; the rind treatment and the crated weight may both be missing while the wheel is still bare.'} test::indigowarren5::domain::Wheel
+[
+  wheelCodeShape: $this.wheelCode->startsWith('WH-'),
+  milkKindKnown: $this.milkKind->in(['EWE', 'GOAT', 'COW', 'BUFFALO']),
+  weightWithinTheCratedRange: ($this.weightGrams->isEmpty()) || (($this.weightGrams->toOne() > 200) && ($this.weightGrams->toOne() <= 9000))
+]
+{
+  {doc.doc = 'Code of the wheel.'} wheelCode: String[1];
+  {doc.doc = 'Milk the wheel was set from.'} milkKind: String[1];
+  {doc.doc = 'Rind treatment given to the wheel.'} rindCode: String[0..1];
+  {doc.doc = 'Weight of the wheel as crated.'} weightGrams: Integer[0..1];
+  {doc.doc = 'Date the wheel was wrapped.'} wrappedOn: StrictDate[1];
+
+  {doc.doc = 'Label for the wheel: the wheel code beside its rind treatment, falling back to the handed-in token while the wheel is still bare.'}
+  preferredLabel(fallback: String[1])
+  {
+    if($this.rindCode->isEmpty(),
+       | $fallback,
+       | $this.wheelCode + '/' + $this.rindCode->toOne())
+  }: String[1];
+
+  {doc.doc = 'Whether the wheel is heavy enough to need two hands on the turn.'}
+  heavyOnTheTurn()
+  {
+    if($this.weightGrams->isEmpty(), | false, | $this.weightGrams->toOne() >= 3000)
+  }: Boolean[1];
+}
+
+Class {doc.doc = 'A rind check written against a wheel on a walk of the cave.'} test::indigowarren5::domain::RindCheck
+[
+  checkCodeShape: $this.checkCode->startsWith('RC-'),
+  scoreWithinTheCheckCard: ($this.rindScore->isEmpty()) || (($this.rindScore->toOne() >= 0) && ($this.rindScore->toOne() <= 20))
+]
+{
+  {doc.doc = 'Code of the check.'} checkCode: String[1];
+  {doc.doc = 'Score the checker wrote on the card.'} rindScore: Integer[0..1];
+  {doc.doc = 'Date of the walk the check was written on.'} checkedOn: StrictDate[1];
+  {doc.doc = 'Note the checker left beside the score.'} noteText: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'An affinage entry standing against a wheel for the window the cellar book held it open; the grade band is settled by the mapping from the rind treatment recorded on the entry.'} test::indigowarren5::domain::AffinageEntry
+[
+  entryCodeShape: $this.entryCode->startsWith('AE-'),
+  gradeBandPublished: $this.gradeBand->length() > 3
+]
+{
+  {doc.doc = 'Code of the entry.'} entryCode: String[1];
+  {doc.doc = 'Band the entry grades to, settled from the rind treatment.'} gradeBand: String[1];
+  {doc.doc = 'Turns the wheel was given under this entry.'} turnCount: Integer[0..1];
+  {doc.doc = 'Note about the room the wheel stood in.'} roomNote: String[0..1];
+}
+
+Association {doc.doc = 'Caves are cut under a dairy.'} test::indigowarren5::domain::Dairy_Cave
+{
+  caves: Cave[*];
+  dairy: Dairy[1];
+}
+
+Association {doc.doc = 'Shelves are racked inside a cave.'} test::indigowarren5::domain::Cave_Shelf
+{
+  shelves: Shelf[*];
+  cave: Cave[1];
+}
+
+Association {doc.doc = 'Wheels are laid on a shelf.'} test::indigowarren5::domain::Shelf_Wheel
+{
+  wheels: Wheel[*];
+  shelf: Shelf[1];
+}
+
+Association {doc.doc = 'Rind checks are written against a wheel.'} test::indigowarren5::domain::Wheel_RindCheck
+{
+  checks: RindCheck[*];
+  wheel: Wheel[1];
+}
+
+Association {doc.doc = 'Wheels are walked by a turner.'} test::indigowarren5::domain::Turner_Wheel
+{
+  turnedWheels: Wheel[*];
+  turner: Turner[1];
+}
+
+Association {doc.doc = 'Turners walk the rota of a cave.'} test::indigowarren5::domain::Cave_Turner
+{
+  turners: Turner[*];
+  turnerCave: Cave[1];
+}
+
+Association {doc.doc = 'Affinage entries stand against a wheel.'} test::indigowarren5::domain::Wheel_AffinageEntry
+{
+  entries: AffinageEntry[*];
+  entryWheel: Wheel[1];
+}
+
+Association {doc.doc = 'Turners are hired by a dairy.'} test::indigowarren5::domain::Dairy_Turner
+{
+  dairyTurners: Turner[*];
+  turnerDairy: Dairy[1];
+}

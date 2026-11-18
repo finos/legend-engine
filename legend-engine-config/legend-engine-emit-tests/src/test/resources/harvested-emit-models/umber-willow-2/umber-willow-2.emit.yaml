@@ -1,0 +1,67 @@
+name: umber-willow-2
+title: "Umber Willow 2 — Floodplain Willow Register, Milestoned Point-In-Time Graph Fetch & Search-Index Store"
+description: |
+  A non-financial floodplain willow restoration model. A single riparian schema
+  carries a business-temporal stand register, a business-temporal canopy section
+  table, two processing-temporal correction tables and a bitemporal stand
+  designation table alongside a plain propagation-scheme table, each mapped
+  through a relational mapping with explicit primary keys and main tables.
+  A search-index store declares two vendor document indices — a willow
+  observation index and a designation audit index with a multi-field keyword —
+  so the governed lake surface and the document surface are described side by
+  side. Two runtimes bind the same mapping: a local test runtime for the
+  embedded suite, and a lake runtime that pairs a Snowflake connection carrying
+  a schema-mapper post-processor with an embedded search-index cluster
+  connection authenticated from a system-property secret. A single service
+  graph-fetches and serialises the stand register as of a supplied effective
+  date, layering canopy-height, reach-zone prefix and clone-name text
+  predicates over the point-in-time projection, and its embedded suite proves
+  that a stand whose business window has closed before the effective date does
+  not survive.
+
+modelSources:
+  model:
+    root: umber-willow-2
+    files:
+      - test/umberwillow2/connection/WillowH2Connection.pure
+      - test/umberwillow2/connection/WillowIndexConnection.pure
+      - test/umberwillow2/connection/WillowLakeConnection.pure
+      - test/umberwillow2/domain/WillowDomain.pure
+      - test/umberwillow2/index/WillowObservationCluster.pure
+      - test/umberwillow2/mapping/WillowMapping.pure
+      - test/umberwillow2/runtime/WillowH2Runtime.pure
+      - test/umberwillow2/runtime/WillowLakeRuntime.pure
+      - test/umberwillow2/service/StandRegisterAsOf.pure
+      - test/umberwillow2/store/WillowDB.pure
+
+features:
+  - execution:service
+  - execution:service-test
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:elasticsearch-store
+  - store:relational-multi-table
+stores:
+  - elasticsearch
+  - relational
+complexity: intermediate
+tags:
+  - bitemporal
+  - business-temporal
+  - elasticsearch
+  - graph-fetch
+  - h2
+  - milestoning
+  - point-in-time
+  - processing-temporal
+  - service
+  - snowflake

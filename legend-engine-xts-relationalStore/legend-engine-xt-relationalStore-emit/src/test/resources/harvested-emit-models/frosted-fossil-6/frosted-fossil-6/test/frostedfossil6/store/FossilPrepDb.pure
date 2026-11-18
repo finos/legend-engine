@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::frostedfossil6::store::FossilPrepDb
+(
+  Schema prep
+  (
+    Table prep_ticket
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      ticket_id INTEGER PRIMARY KEY,
+      ticket_code VARCHAR(24) NOT NULL,
+      specimen_id INTEGER,
+      bench_id INTEGER,
+      stage_code VARCHAR(8),
+      matrix_code VARCHAR(8),
+      grit_level INTEGER,
+      prep_hours DOUBLE,
+      opened_on DATE,
+      note_text VARCHAR(64),
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+
+    Table prep_bench
+    (
+      bench_id INTEGER PRIMARY KEY,
+      bench_label VARCHAR(64) NOT NULL
+    )
+  )
+
+  Schema catalogue
+  (
+    Table specimen_block
+    (
+      specimen_id INTEGER PRIMARY KEY,
+      block_code VARCHAR(24) NOT NULL,
+      block_label VARCHAR(64) NOT NULL,
+      formation_id INTEGER
+    )
+
+    Table rock_formation
+    (
+      formation_id INTEGER PRIMARY KEY,
+      formation_label VARCHAR(64) NOT NULL,
+      quarry_id INTEGER
+    )
+
+    Table quarry_site
+    (
+      quarry_id INTEGER PRIMARY KEY,
+      quarry_label VARCHAR(64) NOT NULL,
+      region_id INTEGER
+    )
+
+    Table field_region
+    (
+      region_id INTEGER PRIMARY KEY,
+      region_label VARCHAR(64) NOT NULL
+    )
+  )
+
+  Join Formation_Quarry(catalogue.rock_formation.quarry_id = catalogue.quarry_site.quarry_id)
+  Join Quarry_Region(catalogue.quarry_site.region_id = catalogue.field_region.region_id)
+  Join Specimen_Formation(catalogue.specimen_block.formation_id = catalogue.rock_formation.formation_id)
+  Join Ticket_Bench(prep.prep_ticket.bench_id = prep.prep_bench.bench_id)
+  Join Ticket_Specimen(prep.prep_ticket.specimen_id = catalogue.specimen_block.specimen_id)
+)

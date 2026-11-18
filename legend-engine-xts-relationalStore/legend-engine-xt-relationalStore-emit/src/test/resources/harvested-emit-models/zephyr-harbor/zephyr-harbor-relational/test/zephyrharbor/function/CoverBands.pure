@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function {meta::pure::profiles::doc.doc = 'Accepts only the kelp cover bands the survey programme publishes, so the station constraint can delegate its check.'} test::zephyrharbor::function::isKnownBand(band: String[0..1]): Boolean[1]
+{
+  if($band->isEmpty(),
+    | true,
+    | ['CANOPY_CLOSED', 'CANOPY_DENSE', 'CANOPY_BROKEN', 'BED_PATCHY', 'BED_SPARSE', 'BED_THIN', 'BED_TRACE', 'BED_BARE', 'UNSURVEYED']->contains($band->toOne())
+  )
+}
+
+function {meta::pure::profiles::doc.doc = 'Collapses an optional inbound note collection to a single line, distinguishing empty, single and multi-line notes.'} test::zephyrharbor::function::noteLine(notes: String[*]): String[0..1]
+{
+  if($notes->size() == 0,
+    | []->cast(@String),
+    | if($notes->size() == 1,
+      | $notes->toOne(),
+      | $notes->at(0) + ' (+more)'
+    )
+  )
+}

@@ -1,0 +1,64 @@
+name: boreal-thicket-4
+title: "Boreal Thicket — Point-In-Time Snow-Course Register Over Included Reference Mappings"
+description: |
+  A non-financial boreal snow-course survey over a business-milestoned stake
+  table and three reference tables. The stake mapping includes three reference
+  mappings, so stand, species and crew class mappings are resolvable without
+  redeclaration, and the stake reaches its stand, tier and species context
+  across joins whose miss leaves the reference columns null. Two
+  single-execution services thread a milestoning instant into the stake
+  traversal: one groups the surviving readings by stand and sums and counts
+  their depths, the other projects the readings of one canopy tier in stake
+  order. A mapping test asserts the included-mapping hops at an instant where
+  one stake window has already closed.
+modelSources:
+  model:
+    root: boreal-thicket-4
+    files:
+      - test/borealthicket4/connection/ThicketConnections.pure
+      - test/borealthicket4/domain/ThicketDomain.pure
+      - test/borealthicket4/mapping/CrewRefMapping.pure
+      - test/borealthicket4/mapping/SpeciesRefMapping.pure
+      - test/borealthicket4/mapping/StandRefMapping.pure
+      - test/borealthicket4/mapping/ThicketMapping.pure
+      - test/borealthicket4/runtime/ThicketRuntimes.pure
+      - test/borealthicket4/service/StakeDepthDigest.pure
+      - test/borealthicket4/service/StakeStandRegister.pure
+      - test/borealthicket4/store/ThicketDb.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-left-outer-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - group-by
+  - h2
+  - mapping-include
+  - mapping-test
+  - point-in-time
+  - relational
+  - service-test
+  - snow-course
+  - tabular-data-set

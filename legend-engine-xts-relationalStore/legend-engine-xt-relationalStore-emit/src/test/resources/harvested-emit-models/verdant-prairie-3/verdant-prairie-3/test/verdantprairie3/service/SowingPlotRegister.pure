@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantprairie3::service::SowingPlotRegister
+{
+  pattern: '/verdantprairie3/sowing-plot-register';
+  title: 'Verdant Prairie - Sowing Plot Register';
+  documentation: 'Publishes the drilled sowing register of the restored prairie: every profile-annotated, primary-keyed sowing plot with the grid square it was drilled into, the seed mix, the steward who signed it off, the soil class, the drill kind and the written note, sorted by plot code.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'sowing-plot-register',
+    'prairie-seed-stewards'
+  ];
+  execution: Single
+  {
+    query: {|test::verdantprairie3::domain::SowingPlot.all()->project(
+      [
+        p|$p.plotCode,
+        p|$p.gridCode,
+        p|$p.seedMix,
+        p|$p.stewardName,
+        p|$p.soilClass,
+        p|$p.drillKind,
+        p|$p.noteText
+      ],
+      [
+        'Plot/Code',
+        'Plot/Grid',
+        'Plot/Mix',
+        'Plot/Steward',
+        'Plot/Soil',
+        'Plot/Drill',
+        'Plot/Note'
+      ]
+    )->sort(
+      [
+        asc('Plot/Code')
+      ]
+    )};
+    mapping: test::verdantprairie3::mapping::PrairieSowingMapping;
+    runtime: test::verdantprairie3::runtime::PrairieSowingH2Runtime;
+  }
+  testSuites:
+  [
+    sowingPlotRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              prairie.sowing_plot:
+                'plot_id,plot_code,grid_code,seed_mix,steward_name,soil_class,drill_kind,note_text,sown_at,checked_at\n'+
+                '1,SP-01,GR-01,Tallgrass Mix,Ada Meadow,LOAM,BROADCAST,First drilling of the north strip,2026-04-02 09:15:00,2026-04-30 08:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theDrilledPlotIsPublishedWithEveryNamedColumn:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            oneSowingRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot/Code":"SP-01","Plot/Grid":"GR-01","Plot/Mix":"Tallgrass Mix","Plot/Steward":"Ada Meadow","Plot/Soil":"LOAM","Plot/Drill":"BROADCAST","Plot/Note":"First drilling of the north strip"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

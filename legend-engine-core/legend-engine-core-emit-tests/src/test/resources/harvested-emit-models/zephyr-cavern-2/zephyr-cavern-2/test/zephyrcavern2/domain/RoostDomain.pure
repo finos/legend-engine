@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<meta::pure::profiles::temporal.businesstemporal>> test::zephyrcavern2::domain::RoostVisit
+{
+  visitCode: String[1];
+  caveCode: String[1];
+  roostCode: String[1];
+  visitedOn: StrictDate[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> test::zephyrcavern2::domain::BatCount
+{
+  countCode: String[1];
+  visit: test::zephyrcavern2::domain::RoostVisit[1];
+  colonyLabel: String[1];
+  count: Integer[1];
+}
+
+Class test::zephyrcavern2::domain::CaveGuide
+{
+  guideCode: String[1];
+  guideName: String[1];
+}
+
+Class test::zephyrcavern2::domain::RoostPayload
+{
+  recordCode: String[1];
+  caveCode: String[1];
+  roostCode: String[1];
+}
+
+Class test::zephyrcavern2::domain::RoostRecord
+[
+  caveLabelIsWellFormed: $this.roostCode->toUpper()->startsWith($this.caveCode->toUpper() + '-')
+]
+{
+  recordCode: String[1];
+  caveCode: String[1];
+  roostCode: String[1];
+  guide: test::zephyrcavern2::domain::CaveGuide[1];
+}
+
+Association test::zephyrcavern2::domain::RoostGuide
+{
+  roostRecord: test::zephyrcavern2::domain::RoostRecord[1];
+  guide: test::zephyrcavern2::domain::CaveGuide[1];
+}
+
+Association <<meta::pure::profiles::temporal.businesstemporal>> test::zephyrcavern2::domain::VisitCount
+{
+  visit: test::zephyrcavern2::domain::RoostVisit[1];
+  count: test::zephyrcavern2::domain::BatCount[*];
+}

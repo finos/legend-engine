@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietridge::mapping::RidgeMapping
+(
+  *test::quietridge::domain::TrailSegment: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_(ridge_segment, forest_segment)
+  }
+
+  test::quietridge::domain::RidgeSegment[ridge_segment]: Relational
+  {
+    ~filter [test::quietridge::store::RidgeDb]RidgeClassFilter
+    ~primaryKey
+    (
+      [test::quietridge::store::RidgeDb]ridge.trail_segment.segment_id
+    )
+    ~mainTable [test::quietridge::store::RidgeDb]ridge.trail_segment
+    segmentCode: [test::quietridge::store::RidgeDb]ridge.trail_segment.segment_code,
+    trailName: [test::quietridge::store::RidgeDb]ridge.trail_segment.trail_name,
+    patrolZone: [test::quietridge::store::RidgeDb]ridge.trail_segment.patrol_zone,
+    elevationGainM: [test::quietridge::store::RidgeDb]ridge.trail_segment.gain_metres,
+    surfaceKind: [test::quietridge::store::RidgeDb]ridge.trail_segment.surface_kind,
+    exposureRating: [test::quietridge::store::RidgeDb]ridge.trail_segment.exposure_rating,
+    hazards[hazard_note]: [test::quietridge::store::RidgeDb]@Segment_Hazard
+  }
+
+  test::quietridge::domain::ForestSegment[forest_segment]: Relational
+  {
+    ~filter [test::quietridge::store::RidgeDb]ForestClassFilter
+    ~primaryKey
+    (
+      [test::quietridge::store::RidgeDb]ridge.trail_segment.segment_id
+    )
+    ~mainTable [test::quietridge::store::RidgeDb]ridge.trail_segment
+    segmentCode: [test::quietridge::store::RidgeDb]ridge.trail_segment.segment_code,
+    trailName: [test::quietridge::store::RidgeDb]ridge.trail_segment.trail_name,
+    patrolZone: [test::quietridge::store::RidgeDb]ridge.trail_segment.patrol_zone,
+    elevationGainM: [test::quietridge::store::RidgeDb]ridge.trail_segment.gain_metres,
+    surfaceKind: [test::quietridge::store::RidgeDb]ridge.trail_segment.surface_kind,
+    canopyCoverPct: [test::quietridge::store::RidgeDb]ridge.trail_segment.canopy_cover_pct,
+    hazards[hazard_note]: [test::quietridge::store::RidgeDb]@Segment_Hazard
+  }
+
+  *test::quietridge::domain::HazardNote[hazard_note]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietridge::store::RidgeDb]ridge.hazard_note.hazard_id
+    )
+    ~mainTable [test::quietridge::store::RidgeDb]ridge.hazard_note
+    hazardKind: [test::quietridge::store::RidgeDb]ridge.hazard_note.hazard_kind,
+    severityLevel: [test::quietridge::store::RidgeDb]ridge.hazard_note.severity_level
+  }
+)

@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazellighthouse4::service::StationFlowRankService
+{
+  pattern: '/waterworks/v1/pump-station/flow-rank';
+  title: 'Waterworks - Pump Station Flow Rank';
+  owners:
+  [
+    'waterworks-network-office'
+  ];
+  documentation: 'Single-execution window query ranking pump stations by rated flow within their district partition, so the plan evaluates an ordered window over the projection before the ranked rows are ordered for output.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::hazellighthouse4::domain::PumpStation.all()->project(
+      [
+        col(
+          s|$s.stationCode,
+          'StationCode'
+        ),
+        col(
+          s|$s.districtLabel,
+          'District'
+        ),
+        col(
+          s|$s.ratedFlowLps,
+          'RatedFlowLps'
+        )
+      ]
+    )->olapGroupBy(
+      ['District'],
+      desc('RatedFlowLps'),
+      w|$w->rank(),
+      'FlowRank'
+    )->sort(
+      [
+        asc('District'),
+        asc('FlowRank'),
+        asc('StationCode')
+      ]
+    );
+    mapping: test::hazellighthouse4::mapping::WaterworksMapping;
+    runtime: test::hazellighthouse4::runtime::WaterworksRuntime;
+  }
+  testSuites:
+  [
+    flowRankSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          waterworksWarehouseConnection:
+            Relational
+            #{
+              waterworks.reservoir:
+                'reservoir_code,reservoir_name,district_name,commissioned_on\n'+
+                'RS-1,Hazel Ridge Reservoir,North Ridge,2015-04-01\n'+
+                'RS-2,Alder Flat Reservoir,South Fen,2017-06-15\n'+
+                'RS-3,Basalt Mesa Reservoir,South Fen,2019-09-30\n'+
+                'RS-4,Granite Bay Reservoir,East Bay,2021-03-20\n';
+
+              waterworks.pump_station:
+                'station_code,reservoir_code,model_name,rated_flow_lps,head_metres,active_flag\n'+
+                'PS-1,RS-1,GX-40,3.5,90.0,true\n'+
+                'PS-2,RS-1,GX-40,3.5,85.0,true\n'+
+                'PS-3,RS-2,HX-52,4.0,110.0,true\n'+
+                'PS-4,RS-9,GX-40,1.5,70.0,false\n'+
+                'PS-5,RS-4,LX-30,2.0,75.0,true\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rankedStationsAcrossPartitions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rankRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"PS-4","District":null,"RatedFlowLps":1.5,"FlowRank":1},{"StationCode":"PS-5","District":"East Bay","RatedFlowLps":2.0,"FlowRank":1},{"StationCode":"PS-1","District":"North Ridge","RatedFlowLps":3.5,"FlowRank":1},{"StationCode":"PS-2","District":"North Ridge","RatedFlowLps":3.5,"FlowRank":1},{"StationCode":"PS-3","District":"South Fen","RatedFlowLps":4.0,"FlowRank":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::wistfullantern3::dataspace::EstateSurveyDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'field';
+      description: 'Field context - the estate binding the wardens query day to day.';
+      mapping: test::wistfullantern3::mapping::EstateMapping;
+      defaultRuntime: test::wistfullantern3::runtime::EstateFieldRuntime;
+    },
+    {
+      name: 'review';
+      description: 'Review context - the same estate binding read through the review runtime when a survey correction is being checked.';
+      mapping: test::wistfullantern3::mapping::EstateMapping;
+      defaultRuntime: test::wistfullantern3::runtime::EstateReviewRuntime;
+    }
+  ];
+  defaultExecutionContext: 'field';
+  title: 'Park Estate Survey';
+  description: 'Discovery surface over the processing-milestoned park estate: the surveyed trees, the benches and the surfaced path segments, each queried at the processing date a consumer asks for.';
+  elements:
+  [
+    test::wistfullantern3::domain::ParkBench,
+    test::wistfullantern3::domain::ParkTree,
+    test::wistfullantern3::domain::PathSegment
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Tree Register As Of';
+      description: 'The register of trees on record at a processing date, narrowed by condition, girth or species and by how long they have been planted.';
+      executable: test::wistfullantern3::service::TreeRegisterAsOf;
+    },
+    {
+      id: 2;
+      title: 'Canopy Spread Ranking';
+      description: 'The canopy spread ranking of the trees on record at a processing date, ranked inside each park partition.';
+      executable: test::wistfullantern3::service::CanopySpreadRankingAsOf;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'estate-survey-desk@parkestate.invalid';
+  };
+}
+
+DataSpace test::wistfullantern3::dataspace::EstateAmenityDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'field';
+      description: 'Field context - the amenity register served through the estate binding.';
+      mapping: test::wistfullantern3::mapping::EstateMapping;
+      defaultRuntime: test::wistfullantern3::runtime::EstateFieldRuntime;
+    }
+  ];
+  defaultExecutionContext: 'field';
+  title: 'Park Estate Amenities';
+  description: 'Discovery surface over the bench and path-segment side of the estate, exposing the amenity register that reads the bench generations on record at a processing date.';
+  elements:
+  [
+    test::wistfullantern3::domain::ParkBench,
+    test::wistfullantern3::domain::PathSegment
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Bench Register As Of';
+      description: 'The bench generations on record at a processing date, excluding the temporary seating.';
+      executable: test::wistfullantern3::service::BenchRegisterAsOf;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'estate-amenity-desk@parkestate.invalid';
+  };
+}

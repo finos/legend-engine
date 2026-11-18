@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::kindlygecko::store::BurrowDatabase
+(
+  Schema survey
+  (
+    Table gecko_sighting
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      sighting_id VARCHAR(16) PRIMARY KEY,
+      enclosure_code VARCHAR(16) NOT NULL,
+      gecko_tag VARCHAR(16) NOT NULL,
+      clutch_count INTEGER NOT NULL,
+      vigour_code VARCHAR(8),
+      length_mm INTEGER,
+      mass_g DOUBLE,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+
+    Table field_log
+    (
+      sighting_id VARCHAR(16) PRIMARY KEY,
+      recorded_by VARCHAR(64) NOT NULL
+    )
+  )
+
+  Schema reference
+  (
+    Table enclosure
+    (
+      enclosure_code VARCHAR(16) PRIMARY KEY,
+      enclosure_name VARCHAR(64) NOT NULL,
+      zone_code VARCHAR(16) NOT NULL
+    )
+
+    Table habitat_zone
+    (
+      zone_code VARCHAR(16) PRIMARY KEY,
+      zone_name VARCHAR(64) NOT NULL
+    )
+  )
+
+  Join SightingEnclosure(survey.gecko_sighting.enclosure_code = reference.enclosure.enclosure_code)
+  Join EnclosureZone(reference.enclosure.zone_code = reference.habitat_zone.zone_code)
+  Join SightingLog(survey.gecko_sighting.sighting_id = survey.field_log.sighting_id)
+)

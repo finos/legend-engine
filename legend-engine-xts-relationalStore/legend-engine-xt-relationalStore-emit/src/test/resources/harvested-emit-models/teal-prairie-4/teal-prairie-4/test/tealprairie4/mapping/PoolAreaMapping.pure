@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealprairie4::mapping::PoolAreaMapping
+(
+  *test::tealprairie4::domain::PoolArea[area]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie4::store::AquaticsDb]aquatics.pool_area.area_id
+    )
+    ~mainTable [test::tealprairie4::store::AquaticsDb]aquatics.pool_area
+    areaCode: [test::tealprairie4::store::AquaticsDb]aquatics.pool_area.area_code,
+    areaLabel: [test::tealprairie4::store::AquaticsDb]aquatics.pool_area.area_label,
+    laneCount: [test::tealprairie4::store::AquaticsDb]aquatics.pool_area.lane_count,
+    areaTag: concat('AREA-', toUpper([test::tealprairie4::store::AquaticsDb]aquatics.pool_area.area_code)),
+    siteLabel: 'Riverside Aquatics Centre',
+    openedOn: [test::tealprairie4::store::AquaticsDb]aquatics.pool_area.opened_on
+  }
+
+  testSuites:
+  [
+    poolAreaRegisterSuite:
+    {
+      function: |test::tealprairie4::domain::PoolArea.all()->project(
+      [
+        a|$a.areaCode,
+        a|$a.areaLabel,
+        a|$a.laneCount,
+        a|$a.areaTag,
+        a|$a.siteLabel
+      ],
+      [
+        'Area',
+        'Label',
+        'Lanes',
+        'Tag',
+        'Site'
+      ]
+    )->sort([asc('Area')]);
+      tests:
+      [
+        theDerivedTagAndTheConstantSiteBothArrive:
+        {
+          doc: 'The register reads the whole extent: the tag column is built by concatenation over the upper-cased area code and the site column is a mapped constant, so both have to arrive for every area alongside the stored columns.';
+          data:
+          [
+            test::tealprairie4::store::AquaticsDb:
+              Relational
+              #{
+                aquatics.pool_area:
+                    'area_id,area_code,area_label,lane_count,opened_on\n'+
+                    '1,pa-1,Main Twenty Five Metre Pool,8,2024-06-01\n'+
+                    '2,pa-2,Teaching Pool,4,2025-02-14\n';
+              }#
+          ];
+          asserts:
+          [
+            twoAreasInAreaOrder:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Area":"pa-1","Label":"Main Twenty Five Metre Pool","Lanes":8,"Tag":"AREA-PA-1","Site":"Riverside Aquatics Centre"},{"Area":"pa-2","Label":"Teaching Pool","Lanes":4,"Tag":"AREA-PA-2","Site":"Riverside Aquatics Centre"}]';
+                  }#;
+              }#
+          ];
+        },
+        aSingleAreaRelationStillCarriesTheConstant:
+        {
+          doc: 'One area alone still receives the mapped constant, so the literal is not sourced from the relation.';
+          data:
+          [
+            test::tealprairie4::store::AquaticsDb:
+              Relational
+              #{
+                aquatics.pool_area:
+                    'area_id,area_code,area_label,lane_count,opened_on\n'+
+                    '7,pa-7,Outdoor Lido,6,2026-01-05\n';
+              }#
+          ];
+          asserts:
+          [
+            theOneAreaCarriesBothDerivedColumns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Area":"pa-7","Label":"Outdoor Lido","Lanes":6,"Tag":"AREA-PA-7","Site":"Riverside Aquatics Centre"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

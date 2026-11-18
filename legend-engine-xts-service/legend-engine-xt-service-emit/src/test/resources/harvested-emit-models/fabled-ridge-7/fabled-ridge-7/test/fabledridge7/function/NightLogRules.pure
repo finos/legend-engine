@@ -1,0 +1,232 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+function {meta::pure::profiles::doc.doc = 'Stamps a log reference and its revision into the key the published report is booked under.'} test::fabledridge7::function::logStamp(logRef: String[1], revision: Integer[1]): String[1]
+{
+  'LOG/' + $logRef->trim()->toUpper() + '/R' + $revision->toString()
+}
+
+function <<test.Test>> {meta::pure::profiles::doc.doc = 'A stamped key folds the hand-written padding and casing of the log reference away and carries the revision it was read at.'} test::fabledridge7::function::testLogStamp(): Boolean[1]
+{
+  assertEquals('LOG/NL-0007/R3', test::fabledridge7::function::logStamp('  nl-0007 ', 3));
+  assertEquals('LOG/NL-0100/R1', test::fabledridge7::function::logStamp('NL-0100', 1));
+}
+
+function {meta::pure::profiles::doc.doc = 'Resolves the observer a night is attributed to, falling back to the unattributed label when the logbook page was left unsigned.'} test::fabledridge7::function::observerLabel(observerCode: String[0..1]): String[1]
+{
+  if($observerCode->isEmpty(),
+     | 'OBS/UNATTRIBUTED',
+     | 'OBS/' + $observerCode->toOne()->trim()->toUpper())
+}
+
+function <<test.Test>> {meta::pure::profiles::doc.doc = 'An unsigned logbook page reports as unattributed while a signed one carries the folded observer code.'} test::fabledridge7::function::testObserverLabel(): Boolean[1]
+{
+  assertEquals('OBS/UNATTRIBUTED', test::fabledridge7::function::observerLabel([]));
+  assertEquals('OBS/AV-2', test::fabledridge7::function::observerLabel(' av-2 '));
+}
+
+function {meta::pure::profiles::doc.doc = 'Bands the seeing read off the sky into the eight steps the observatory grades a night by, and reports an unread sky separately.'} test::fabledridge7::function::seeingBand(seeingArcsec: Float[0..1]): String[1]
+{
+  if($seeingArcsec->isEmpty(),
+     | 'SEEING/UNREAD',
+     | if($seeingArcsec->toOne() <= 0.6,
+          | 'SEEING/1',
+          | if($seeingArcsec->toOne() <= 0.9,
+               | 'SEEING/2',
+               | if($seeingArcsec->toOne() <= 1.2,
+                    | 'SEEING/3',
+                    | if($seeingArcsec->toOne() <= 1.6,
+                         | 'SEEING/4',
+                         | if($seeingArcsec->toOne() <= 2.0,
+                              | 'SEEING/5',
+                              | if($seeingArcsec->toOne() <= 2.6,
+                                   | 'SEEING/6',
+                                   | if($seeingArcsec->toOne() <= 3.4,
+                                        | 'SEEING/7',
+                                        | 'SEEING/8'))))))))
+}
+
+function <<test.Test>> {meta::pure::profiles::doc.doc = 'Every seeing step is reached at its own boundary, and a sky that was never read lands on the unread band rather than on the worst one.'} test::fabledridge7::function::testSeeingBand(): Boolean[1]
+{
+  assertEquals('SEEING/UNREAD', test::fabledridge7::function::seeingBand([]));
+  assertEquals('SEEING/1', test::fabledridge7::function::seeingBand(0.6));
+  assertEquals('SEEING/4', test::fabledridge7::function::seeingBand(1.6));
+  assertEquals('SEEING/8', test::fabledridge7::function::seeingBand(4.1));
+}
+
+function {meta::pure::profiles::doc.doc = 'Bands the cloud cover a night was worked under, keeping the unrecorded case apart from a clear sky.'} test::fabledridge7::function::cloudBand(cloudPct: Integer[0..1]): String[1]
+{
+  if($cloudPct->isEmpty(),
+     | 'CLOUD/UNRECORDED',
+     | if($cloudPct->toOne() <= 10,
+          | 'CLOUD/CLEAR',
+          | if($cloudPct->toOne() <= 40,
+               | 'CLOUD/PARTIAL',
+               | if($cloudPct->toOne() <= 75,
+                    | 'CLOUD/BROKEN',
+                    | 'CLOUD/OVERCAST'))))
+}
+
+function <<test.Test>> {meta::pure::profiles::doc.doc = 'A missing cloud reading is held apart from a clear sky, and the broken and overcast steps are reached at their own boundaries.'} test::fabledridge7::function::testCloudBand(): Boolean[1]
+{
+  assertEquals('CLOUD/UNRECORDED', test::fabledridge7::function::cloudBand([]));
+  assertEquals('CLOUD/CLEAR', test::fabledridge7::function::cloudBand(10));
+  assertEquals('CLOUD/BROKEN', test::fabledridge7::function::cloudBand(75));
+  assertEquals('CLOUD/OVERCAST', test::fabledridge7::function::cloudBand(90));
+}
+
+function {meta::pure::profiles::doc.doc = 'Summarises the filters worked over a night, naming the single filter case and telling a broad-band set apart from a narrow-band one; a multi-filter set is judged on its leading code in sorted order so the summary does not depend on the order the pages were transcribed in.'} test::fabledridge7::function::filterSummary(filterCodes: String[*]): String[1]
+{
+  if($filterCodes->isEmpty(),
+     | 'FILTERS/NONE',
+     | if($filterCodes->size() == 1,
+          | 'FILTERS/SINGLE/' + $filterCodes->at(0)->trim()->toUpper(),
+          | if(['L', 'R', 'G', 'B']->contains($filterCodes->sort()->at(0)->trim()->toUpper()),
+               | 'FILTERS/BROAD/' + $filterCodes->size()->toString(),
+               | 'FILTERS/NARROW/' + $filterCodes->size()->toString())))
+}
+
+function <<test.Test>> {meta::pure::profiles::doc.doc = 'An unfiltered night, a single-filter night and the broad-band and narrow-band sets each report their own summary.'} test::fabledridge7::function::testFilterSummary(): Boolean[1]
+{
+  assertEquals('FILTERS/NONE', test::fabledridge7::function::filterSummary([]));
+  assertEquals('FILTERS/SINGLE/HA', test::fabledridge7::function::filterSummary([' ha ']));
+  assertEquals('FILTERS/BROAD/3', test::fabledridge7::function::filterSummary(['L', 'R', 'G']));
+  assertEquals('FILTERS/NARROW/2', test::fabledridge7::function::filterSummary(['HA', 'OIII']));
+  assertEquals('FILTERS/BROAD/3', test::fabledridge7::function::filterSummary(['R', 'G', 'L']));
+}
+
+function {meta::pure::profiles::doc.doc = 'Summarises the targets a night was spent on, naming the leading target and, once a second one was worked, the target next in sorted order, so a night reads the same however its pages were transcribed.'} test::fabledridge7::function::targetSummary(targetCodes: String[*]): String[1]
+{
+  if($targetCodes->isEmpty(),
+     | 'TARGETS/IDLE',
+     | if($targetCodes->size() == 1,
+          | 'TARGETS/ONE/' + $targetCodes->at(0)->trim()->toUpper(),
+          | 'TARGETS/' + $targetCodes->size()->toString() + '/' + $targetCodes->sort()->at(0)->trim()->toUpper() + '>' + $targetCodes->sort()->at(1)->trim()->toUpper()))
+}
+
+function <<test.Test>> {meta::pure::profiles::doc.doc = 'An idle night, a single-target night and a night that moved between targets each report their own summary, the last one naming the pair it moved across.'} test::fabledridge7::function::testTargetSummary(): Boolean[1]
+{
+  assertEquals('TARGETS/IDLE', test::fabledridge7::function::targetSummary([]));
+  assertEquals('TARGETS/ONE/M13', test::fabledridge7::function::targetSummary(['m13']));
+  assertEquals('TARGETS/2/M31>M33', test::fabledridge7::function::targetSummary(['M31', 'M33']));
+  assertEquals('TARGETS/2/M31>M33', test::fabledridge7::function::targetSummary(['M33', 'M31']));
+}
+
+function {meta::pure::profiles::doc.doc = 'Resolves the instrument a night was worked on, reporting an unnamed instrument as the visitor scope the observatory keeps for unlogged nights.'} test::fabledridge7::function::instrumentLabel(instrumentCode: String[0..1]): String[1]
+{
+  if($instrumentCode->isEmpty(),
+     | 'INSTR/VISITOR-SCOPE',
+     | if($instrumentCode->toOne()->trim()->toUpper()->startsWith('DOME'),
+          | 'INSTR/DOME/' + $instrumentCode->toOne()->trim()->toUpper(),
+          | 'INSTR/PORTABLE/' + $instrumentCode->toOne()->trim()->toUpper()))
+}
+
+function <<test.Test>> {meta::pure::profiles::doc.doc = 'An unlogged instrument falls back to the visitor scope, and a dome instrument is told apart from a portable one.'} test::fabledridge7::function::testInstrumentLabel(): Boolean[1]
+{
+  assertEquals('INSTR/VISITOR-SCOPE', test::fabledridge7::function::instrumentLabel([]));
+  assertEquals('INSTR/DOME/DOME-1', test::fabledridge7::function::instrumentLabel(' dome-1 '));
+  assertEquals('INSTR/PORTABLE/RC-8', test::fabledridge7::function::instrumentLabel('rc-8'));
+}
+
+function {meta::pure::profiles::doc.doc = 'Bands the aperture of the instrument a night was worked on into the classes the observatory publishes.'} test::fabledridge7::function::apertureBand(apertureMm: Integer[0..1]): String[1]
+{
+  if($apertureMm->isEmpty(),
+     | 'APERTURE/UNKNOWN',
+     | if($apertureMm->toOne() >= 600,
+          | 'APERTURE/LARGE',
+          | if($apertureMm->toOne() >= 300,
+               | 'APERTURE/MEDIUM',
+               | if($apertureMm->toOne() >= 150,
+                    | 'APERTURE/SMALL',
+                    | 'APERTURE/RICHFIELD'))))
+}
+
+function <<test.Test>> {meta::pure::profiles::doc.doc = 'An unknown aperture is kept apart from a rich-field one, and the large and medium classes are reached at their own boundaries.'} test::fabledridge7::function::testApertureBand(): Boolean[1]
+{
+  assertEquals('APERTURE/UNKNOWN', test::fabledridge7::function::apertureBand([]));
+  assertEquals('APERTURE/LARGE', test::fabledridge7::function::apertureBand(600));
+  assertEquals('APERTURE/MEDIUM', test::fabledridge7::function::apertureBand(300));
+  assertEquals('APERTURE/RICHFIELD', test::fabledridge7::function::apertureBand(80));
+}
+
+function {meta::pure::profiles::doc.doc = 'Grades a night by composing the seeing read off the sky with the cloud cover it was worked under, so a clear but unsteady night grades apart from a steady but clouded one.'} test::fabledridge7::function::gradeLabel(seeingArcsec: Float[0..1], cloudPct: Integer[0..1]): String[1]
+{
+  if($seeingArcsec->isEmpty(),
+     | if($cloudPct->isEmpty(),
+          | 'GRADE/UNGRADED',
+          | if($cloudPct->toOne() <= 40,
+               | 'GRADE/CLOUD-ONLY-FAIR',
+               | 'GRADE/CLOUD-ONLY-POOR')),
+     | if($seeingArcsec->toOne() <= 1.2,
+          | if($cloudPct->isEmpty(),
+               | 'GRADE/STEADY-UNRECORDED',
+               | if($cloudPct->toOne() <= 10,
+                    | 'GRADE/PHOTOMETRIC',
+                    | if($cloudPct->toOne() <= 40,
+                         | 'GRADE/STEADY-PARTIAL',
+                         | 'GRADE/STEADY-CLOUDED'))),
+          | if($cloudPct->isEmpty(),
+               | 'GRADE/UNSTEADY-UNRECORDED',
+               | if($cloudPct->toOne() <= 10,
+                    | 'GRADE/UNSTEADY-CLEAR',
+                    | 'GRADE/UNSTEADY-CLOUDED'))))
+}
+
+function <<test.Test>> {meta::pure::profiles::doc.doc = 'A photometric night needs both a steady sky and a clear one; a steady night under broken cloud, an unsteady night under a clear sky and a night with neither reading each grade on their own arm.'} test::fabledridge7::function::testGradeLabel(): Boolean[1]
+{
+  assertEquals('GRADE/PHOTOMETRIC', test::fabledridge7::function::gradeLabel(0.8, 5));
+  assertEquals('GRADE/STEADY-CLOUDED', test::fabledridge7::function::gradeLabel(0.8, 60));
+  assertEquals('GRADE/UNSTEADY-CLEAR', test::fabledridge7::function::gradeLabel(2.4, 5));
+  assertEquals('GRADE/UNGRADED', test::fabledridge7::function::gradeLabel([], []));
+  assertEquals('GRADE/CLOUD-ONLY-FAIR', test::fabledridge7::function::gradeLabel([], 20));
+  assertEquals('GRADE/STEADY-UNRECORDED', test::fabledridge7::function::gradeLabel(1.1, []));
+}
+
+function {meta::pure::profiles::doc.doc = 'Reports how far a graded night can be used, taking the filter count into account so a photometric night worked through several filters is published as fully usable.'} test::fabledridge7::function::usabilityLabel(grade: String[1], filterCount: Integer[1]): String[1]
+{
+  if($grade == 'GRADE/PHOTOMETRIC',
+     | if($filterCount >= 3,
+          | 'USE/CALIBRATION',
+          | if($filterCount >= 1,
+               | 'USE/SCIENCE',
+               | 'USE/SCIENCE-UNFILTERED')),
+     | if(['GRADE/STEADY-PARTIAL', 'GRADE/UNSTEADY-CLEAR']->contains($grade),
+          | if($filterCount >= 1,
+               | 'USE/OUTREACH',
+               | 'USE/OUTREACH-UNFILTERED'),
+          | 'USE/LOG-ONLY'))
+}
+
+function <<test.Test>> {meta::pure::profiles::doc.doc = 'A photometric night worked through three filters is usable for calibration, a lesser graded night falls back to outreach and an ungraded one is kept for the log alone.'} test::fabledridge7::function::testUsabilityLabel(): Boolean[1]
+{
+  assertEquals('USE/CALIBRATION', test::fabledridge7::function::usabilityLabel('GRADE/PHOTOMETRIC', 3));
+  assertEquals('USE/SCIENCE', test::fabledridge7::function::usabilityLabel('GRADE/PHOTOMETRIC', 1));
+  assertEquals('USE/SCIENCE-UNFILTERED', test::fabledridge7::function::usabilityLabel('GRADE/PHOTOMETRIC', 0));
+  assertEquals('USE/OUTREACH', test::fabledridge7::function::usabilityLabel('GRADE/UNSTEADY-CLEAR', 2));
+  assertEquals('USE/LOG-ONLY', test::fabledridge7::function::usabilityLabel('GRADE/UNGRADED', 4));
+}
+
+function {meta::pure::profiles::doc.doc = 'Counts the filters a night was worked through, treating an unfiltered night as a zero count so downstream rules never see an empty value.'} test::fabledridge7::function::filterCount(filterCodes: String[*]): Integer[1]
+{
+  if($filterCodes->isEmpty(),
+     | 0,
+     | $filterCodes->size())
+}
+
+function <<test.Test>> {meta::pure::profiles::doc.doc = 'An unfiltered night counts as zero filters while a filtered one counts every filter worked.'} test::fabledridge7::function::testFilterCount(): Boolean[1]
+{
+  assertEquals(0, test::fabledridge7::function::filterCount([]));
+  assertEquals(2, test::fabledridge7::function::filterCount(['HA', 'OIII']));
+}

@@ -1,0 +1,78 @@
+name: meadow-warren-4
+title: "Meadow Warren — An Eight-Arm Conditional Ladder Over Doubly Milestoned Warren Relations Reached Across Two Stores"
+description: |
+  A grazed-meadow warren register whose only executable roots are mapping
+  tests. Every relation in both stores carries a validity window, one carries a
+  correction window as well, and one store includes the other so a join can
+  reach a relation it does not declare. The distinctive shape is where the logic
+  lives: the sward condition of a plot is not stored but chosen by an eight-arm
+  ladder of equality predicates over an indicator column, each arm yielding a
+  source literal that an enumeration mapping declared in a separate included
+  mapping then translates, and a row whose indicator is absent falls through the
+  whole ladder to a null sentinel. A second ladder builds a patrol note by
+  upper-casing and concatenating a code only on the top arm. Three structurally
+  identical count relations are joined to the same metrics relation three ways,
+  one of them additionally through a roll-down join whose condition is a
+  disjunction, and both directions of three associations are spelled out against
+  named joins. The suites open the extents at explicit instants - two instants
+  for the doubly dimensioned barrier relation - and cover every ladder arm, the
+  fall-through, a row outside its validity window and reached columns whose
+  counterpart rows are missing.
+modelSources:
+  model:
+    root: meadow-warren-4
+    files:
+      - test/meadowwarren4/connection/WarrenConnections.pure
+      - test/meadowwarren4/domain/WarrenDomain.pure
+      - test/meadowwarren4/mapping/BarrierMapping.pure
+      - test/meadowwarren4/mapping/WardenHierarchyMapping.pure
+      - test/meadowwarren4/mapping/WarrenEnumerations.pure
+      - test/meadowwarren4/mapping/WarrenMapping.pure
+      - test/meadowwarren4/runtime/WarrenRuntimes.pure
+      - test/meadowwarren4/store/WardenDb.pure
+      - test/meadowwarren4/store/WarrenDb.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - bitemporal
+  - conditional-ladder
+  - cross-store-join
+  - enumeration-mapping
+  - h2
+  - join-reached-property
+  - mapping-include
+  - mapping-test
+  - meadow-warren
+  - null-sentinel
+  - point-in-time
+  - store-include

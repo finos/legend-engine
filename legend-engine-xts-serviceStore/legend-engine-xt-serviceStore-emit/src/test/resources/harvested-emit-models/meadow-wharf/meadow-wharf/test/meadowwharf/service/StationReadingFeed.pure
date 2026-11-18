@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowwharf::service::StationReadingFeed
+{
+  pattern: '/harbour-gauge/v1/station-readings/{stationCode}/{gaugeLabel}';
+  title: 'Harbour Observation Network - Tide Gauge Station Readings';
+  documentation: 'Serves the remote tide-gauge reading documents for one station and gauge as a nested document, so the optional stage, height and observation attributes and the inspector-note collection round-trip through the fetch tree exactly as the endpoint reported them, including when they are absent.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['harbour-observation-network', 'tide-gauge-audit'] };
+  execution: Single
+  {
+    query: {stationCode: String[1], gaugeLabel: String[1]|test::meadowwharf::domain::GaugeReading.all()->filter(r|($r.stationCode == $stationCode) && ($r.gaugeLabel == $gaugeLabel))->graphFetch(#{test::meadowwharf::domain::GaugeReading{stationCode, gaugeLabel, tideStage, heightCentimetres, observedAt, inspectorNotes}}#)->serialize(#{test::meadowwharf::domain::GaugeReading{stationCode, gaugeLabel, tideStage, heightCentimetres, observedAt, inspectorNotes}}#)};
+    mapping: test::meadowwharf::mapping::GaugeReadingMapping;
+    runtime: test::meadowwharf::runtime::HarbourGaugeRuntime;
+  }
+  testSuites:
+  [
+    stationReadingFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harbourGaugeConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/gauge/stations/ST-4180/readings?basin=north-quay&gauge=EBB-2';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '[{"stationCode":"4180","gaugeLabel":"EBB-2","tideStage":"ebb","heightCentimetres":128.5,"observedAt":"2026-04-11T05:20:00","inspectorNotes":["float chamber flushed","staff gauge rechecked"]},{"stationCode":"4180","gaugeLabel":"EBB-2","inspectorNotes":[]}]';
+                      }#;
+                  };
+                },
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/gauge/stations/ST-4180/readings?basin=north-quay&gauge=FLOOD-9';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '[]';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        populatedAndAbsentOptionalsBothSerialise:
+        {
+          parameters:
+          [
+            stationCode = '4180',
+            gaugeLabel = 'EBB-2'
+          ]
+          asserts:
+          [
+            readingDocuments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"stationCode":"4180","gaugeLabel":"EBB-2","tideStage":"ebb","heightCentimetres":128.5,"observedAt":"2026-04-11T05:20:00","inspectorNotes":["float chamber flushed","staff gauge rechecked"]},{"stationCode":"4180","gaugeLabel":"EBB-2","tideStage":null,"heightCentimetres":null,"observedAt":null,"inspectorNotes":[]}]}';
+                  }#;
+              }#
+          ]
+        },
+        gaugeSelectingNoReadings:
+        {
+          parameters:
+          [
+            stationCode = '4180',
+            gaugeLabel = 'FLOOD-9'
+          ]
+          asserts:
+          [
+            emptyReadingDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

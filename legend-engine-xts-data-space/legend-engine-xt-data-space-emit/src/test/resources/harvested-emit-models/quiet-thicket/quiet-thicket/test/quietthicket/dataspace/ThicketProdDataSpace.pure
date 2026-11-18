@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::quietthicket::dataspace::ThicketProdDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'prod';
+      description: 'Production context - the one mapping wired to the production warehouse connection.';
+      mapping: test::quietthicket::mapping::TurbineMapping;
+      defaultRuntime: test::quietthicket::runtime::ThicketProdRuntime;
+    }
+  ];
+  defaultExecutionContext: 'prod';
+  title: 'Turbine Telemetry - Production';
+  description: 'The production sibling product over the single turbine telemetry mapping. It publishes the reading extent with the fleet and site reference classes its join paths traverse, and features the day-scoped reading endpoint.';
+  elements:
+  [
+    test::quietthicket::domain::SensorReading,
+    test::quietthicket::domain::Turbine,
+    test::quietthicket::domain::Site
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Readings on a day';
+      description: 'Day-scoped reading endpoint whose predicate reduces the capture timestamp to its date portion.';
+      executable: test::quietthicket::service::ReadingsOnDay;
+    },
+    {
+      id: 2;
+      title: 'Readings through a day';
+      description: 'Upper-bounded endpoint over the derived capture date, which it also projects as its own column.';
+      executable: test::quietthicket::service::ReadingsThroughDay;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'turbine-telemetry@windfleet.invalid';
+  };
+}

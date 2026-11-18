@@ -1,0 +1,177 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::meadowwarren4::store::WarrenDb
+(
+  include demo::meadowwarren4::store::WardenDb
+
+  Schema warren
+  (
+    Table grazing_plot
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31)
+      )
+      plot_ref VARCHAR(20) PRIMARY KEY,
+      plot_name VARCHAR(80) NOT NULL,
+      block_ref VARCHAR(20),
+      warden_code VARCHAR(20),
+      indicator_level INTEGER,
+      sward_code VARCHAR(20),
+      condition_index INTEGER,
+      aspect_note VARCHAR(200),
+      from_z DATE,
+      thru_z DATE
+    )
+
+    Table plot_metrics
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31)
+      )
+      metric_ref VARCHAR(20) PRIMARY KEY,
+      plot_ref VARCHAR(20),
+      grazing_days INTEGER,
+      sward_height_mm INTEGER,
+      browse_index INTEGER,
+      from_z DATE,
+      thru_z DATE
+    )
+
+    Table burrow_count_east
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31)
+      )
+      entry_ref VARCHAR(20) PRIMARY KEY,
+      plot_ref VARCHAR(20),
+      level_one VARCHAR(20),
+      level_two VARCHAR(20),
+      level_three VARCHAR(20),
+      level_four VARCHAR(20),
+      tally INTEGER,
+      from_z DATE,
+      thru_z DATE
+    )
+
+    Table burrow_count_west
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31)
+      )
+      entry_ref VARCHAR(20) PRIMARY KEY,
+      plot_ref VARCHAR(20),
+      level_one VARCHAR(20),
+      level_two VARCHAR(20),
+      level_three VARCHAR(20),
+      level_four VARCHAR(20),
+      tally INTEGER,
+      from_z DATE,
+      thru_z DATE
+    )
+
+    Table burrow_count_south
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31)
+      )
+      entry_ref VARCHAR(20) PRIMARY KEY,
+      plot_ref VARCHAR(20),
+      level_one VARCHAR(20),
+      level_two VARCHAR(20),
+      level_three VARCHAR(20),
+      level_four VARCHAR(20),
+      tally INTEGER,
+      from_z DATE,
+      thru_z DATE
+    )
+
+    Table warden_role
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31)
+      )
+      role_ref VARCHAR(20) PRIMARY KEY,
+      warden_code VARCHAR(20),
+      role_code VARCHAR(20),
+      band_code VARCHAR(20),
+      from_z DATE,
+      thru_z DATE
+    )
+
+    Table warden_access
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31)
+      )
+      access_ref VARCHAR(20) PRIMARY KEY,
+      warden_code VARCHAR(20),
+      access_kind VARCHAR(20),
+      gate_code VARCHAR(20),
+      from_z DATE,
+      thru_z DATE
+    )
+
+    Table barrier_run
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31),
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+      barrier_ref VARCHAR(20) PRIMARY KEY,
+      plot_ref VARCHAR(20),
+      barrier_kind_code VARCHAR(20),
+      length_metres INTEGER,
+      from_z DATE,
+      thru_z DATE,
+      in_z DATE,
+      out_z DATE
+    )
+  )
+
+  Join Plot_Metrics(warren.grazing_plot.plot_ref = warren.plot_metrics.plot_ref)
+
+  Join East_Metrics(warren.burrow_count_east.plot_ref = warren.plot_metrics.plot_ref)
+
+  Join West_Metrics(warren.burrow_count_west.plot_ref = warren.plot_metrics.plot_ref)
+
+  Join South_Metrics(warren.burrow_count_south.plot_ref = warren.plot_metrics.plot_ref)
+
+  Join Plot_Role
+  (
+    warren.grazing_plot.warden_code = warren.warden_role.warden_code
+      and warren.warden_role.band_code = 'BAND-A'
+  )
+
+  Join Plot_Access(warren.grazing_plot.warden_code = warren.warden_access.warden_code)
+
+  Join East_RollDown
+  (
+    warren.burrow_count_east.level_one = warren.grazing_plot.plot_ref
+      or warren.burrow_count_east.level_two = warren.grazing_plot.plot_ref
+  )
+
+  Join Plot_Warden(warren.grazing_plot.warden_code = staff.warden_person.warden_code)
+
+  Join Plot_Hierarchy(warren.grazing_plot.plot_ref = staff.hierarchy_flat.plot_ref)
+)

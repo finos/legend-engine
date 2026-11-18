@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskyquokka::store::TransitDB
+(
+  Schema transit
+  (
+    Table depot
+    (
+      depot_id INTEGER PRIMARY KEY,
+      depot_code VARCHAR(20) NOT NULL,
+      depot_name VARCHAR(120) NOT NULL,
+      district_name VARCHAR(80) NOT NULL,
+      opened_on DATE NOT NULL,
+      staffed_overnight BIT NOT NULL
+    )
+    Table line
+    (
+      line_id INTEGER PRIMARY KEY,
+      line_code VARCHAR(20) NOT NULL,
+      line_name VARCHAR(120) NOT NULL,
+      service_tier VARCHAR(40) NOT NULL,
+      route_km DOUBLE NOT NULL,
+      depot_id INTEGER NOT NULL
+    )
+    Table railcar
+    (
+      railcar_id INTEGER PRIMARY KEY,
+      fleet_number VARCHAR(20) NOT NULL,
+      propulsion VARCHAR(40) NOT NULL,
+      seated_capacity INTEGER NOT NULL,
+      tare_mass_tonnes DECIMAL(9, 3) NOT NULL,
+      line_id INTEGER NOT NULL
+    )
+    Table inspection_log
+    (
+      log_id INTEGER PRIMARY KEY,
+      inspected_on DATE NOT NULL,
+      inspector_name VARCHAR(120) NOT NULL,
+      outcome VARCHAR(40) NOT NULL,
+      odometer_km DECIMAL(12, 2) NOT NULL,
+      railcar_id INTEGER NOT NULL
+    )
+  )
+
+  Join Line_Depot(transit.line.depot_id = transit.depot.depot_id)
+  Join Railcar_Line(transit.railcar.line_id = transit.line.line_id)
+  Join Inspection_Railcar(transit.inspection_log.railcar_id = transit.railcar.railcar_id)
+)

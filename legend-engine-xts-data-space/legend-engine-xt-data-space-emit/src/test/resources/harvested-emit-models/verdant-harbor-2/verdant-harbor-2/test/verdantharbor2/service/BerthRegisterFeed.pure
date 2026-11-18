@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantharbor2::service::BerthRegisterFeed
+{
+  pattern: '/verdantharbor/v1/berthRegister';
+  title: 'Verdant Harbour - Berth Register Feed';
+  owners:
+  [
+    'harbour-register-desk'
+  ];
+  documentation: 'Projects every mooring berth of the register as a tabular data set whose arity equals the projected property list, with no predicate, grouping or sort, so the optional columns of a fully unpopulated berth row flow through as nulls.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::verdantharbor2::domain::BerthSlot.all()->project(
+      [
+        b|$b.berthId,
+        b|$b.berthCode,
+        b|$b.berthName,
+        b|$b.draftLimitM,
+        b|$b.openedOn,
+        b|$b.surveyedAt,
+        b|$b.litFlag
+      ],
+      [
+        'BerthId',
+        'BerthCode',
+        'BerthName',
+        'DraftLimitM',
+        'OpenedOn',
+        'SurveyedAt',
+        'LitFlag'
+      ]
+    );
+    mapping: test::verdantharbor2::mapping::HarborRegisterMapping;
+    runtime: test::verdantharbor2::runtime::HarborRegisterRuntime;
+  }
+  testSuites:
+  [
+    berthRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harborRegisterConnection:
+            Relational
+            #{
+              harbor.berth_slot:
+                'berth_id,berth_code,berth_name,draft_limit_m,opened_on,surveyed_at,lit_flag\n'+
+                '101,BR-01,North Quay Head,9.5,2019-04-01,2026-01-05 07:30:00,true\n'+
+                '102,BR-02,Tidal Basin Face,7.25,2021-06-15,2026-01-06 08:00:00,false\n'+
+                '103,,,,,,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyBerthRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeBerthRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BerthId":101,"BerthCode":"BR-01","BerthName":"North Quay Head","DraftLimitM":9.5,"OpenedOn":"2019-04-01","SurveyedAt":"2026-01-05T07:30:00.000000000+0000","LitFlag":true},{"BerthId":102,"BerthCode":"BR-02","BerthName":"Tidal Basin Face","DraftLimitM":7.25,"OpenedOn":"2021-06-15","SurveyedAt":"2026-01-06T08:00:00.000000000+0000","LitFlag":false},{"BerthId":103,"BerthCode":null,"BerthName":null,"DraftLimitM":null,"OpenedOn":null,"SurveyedAt":null,"LitFlag":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

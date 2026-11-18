@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::mapleglacier::mapping::GlacierMapping
+(
+  *test::mapleglacier::domain::IceObservation[obs]: Relational
+  {
+    ~primaryKey
+    (
+      [test::mapleglacier::store::GlacierDB]cryo.ice_observation.obs_id
+    )
+    ~mainTable [test::mapleglacier::store::GlacierDB]cryo.ice_observation
+    stationName: [test::mapleglacier::store::GlacierDB]cryo.ice_observation.station_name,
+    massBalanceMm: [test::mapleglacier::store::GlacierDB]cryo.ice_observation.mass_balance_mm,
+    baselineMm: [test::mapleglacier::store::GlacierDB]cryo.ice_observation.baseline_mm,
+    surveyDate: [test::mapleglacier::store::GlacierDB]cryo.ice_observation.survey_date
+  }
+
+  testSuites:
+  [
+    observationProjectionSuite:
+    {
+      function: |test::mapleglacier::domain::IceObservation.all()->project(
+  [
+    x|$x.stationName,
+    x|$x.netChange,
+    x|$x.severity
+  ],
+  [
+    'Station',
+    'NetChange',
+    'Severity'
+  ]
+)->sort(
+  [
+    asc('Station')
+  ]
+);
+      tests:
+      [
+        allObservations:
+        {
+          doc: 'Projects station name with the derived net change and severity classification over the ice_observation table, exercising the arithmetic and conditional derived properties.';
+          data:
+          [
+            test::mapleglacier::store::GlacierDB:
+              Relational
+              #{
+                cryo.ice_observation:
+                  'obs_id,station_name,mass_balance_mm,baseline_mm,survey_date\n'+
+                  '1,Blue Glacier,-120,0,2024-05-01\n'+
+                  '2,Rhone Field,40,10,2024-06-15\n'+
+                  '3,Vatna Cap,-30,-10,2024-01-10\n';
+              }#
+          ];
+          asserts:
+          [
+            threeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"Blue Glacier","NetChange":-120,"Severity":"SEVERE"},{"Station":"Rhone Field","NetChange":30,"Severity":"STABLE"},{"Station":"Vatna Cap","NetChange":-20,"Severity":"MODERATE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

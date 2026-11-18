@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelprairie::service::BloomRoster
+{
+  pattern: '/prairie/v1/bloom-roster/{season}/{day}';
+  title: 'Hazel Prairie - Bloom Roster';
+  documentation: 'Lists the distinct meadow and normalised species pairs flowering in a requested colour on a requested survey day, restricted to meadows whose region is in a caller-supplied set.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: 'prairie-survey-guild' };
+  execution: Multi
+  {
+    query: {day: StrictDate[1], regions: String[*], colour: String[1]|test::hazelprairie::domain::BloomCount.all()->filter(
+      x|$x.plot.meadow.region->in($regions) && (($x.colour->trim()->toLower() == $colour) && ($x.surveyDay == $day))
+    )->project(
+      [
+        x|$x.plot.meadow.name,
+        x|$x.species->trim()->toUpper()
+      ],
+      [
+        'Meadow',
+        'Species'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Meadow'),
+        asc('Species')
+      ]
+    )};
+    key: 'season';
+    executions['spring']:
+    {
+      mapping: test::hazelprairie::mapping::PrairieMapping;
+      runtime: test::hazelprairie::runtime::PrairieSpringRuntime;
+    }
+    executions['autumn']:
+    {
+      mapping: test::hazelprairie::mapping::PrairieMapping;
+      runtime: test::hazelprairie::runtime::PrairieAutumnRuntime;
+    }
+  }
+  testSuites:
+  [
+    bloomRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          springConnection: Reference
+            #{
+              test::hazelprairie::data::PrairieTestData
+            }#,
+          autumnConnection: Reference
+            #{
+              test::hazelprairie::data::PrairieTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        twoRegionsCollapseDuplicatePairs:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['spring', 'autumn'];
+          parameters:
+          [
+            day = %2026-05-04,
+            regions = ['north', 'south'],
+            colour = 'blue'
+          ]
+          asserts:
+          [
+            twoRegionsCollapseDuplicatePairsRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Meadow":"Foxglove Rise","Species":"BLUEBELL"},{"Meadow":"Foxglove Rise","Species":"BORAGE"},{"Meadow":"Sedge Hollow","Species":"BUGLE"},{"Meadow":"Sedge Hollow","Species":"BUGLOSS"}]';
+                  }#;
+              }#
+          ]
+        },
+        laterDayOneRegion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['spring', 'autumn'];
+          parameters:
+          [
+            day = %2026-05-11,
+            regions = ['north'],
+            colour = 'blue'
+          ]
+          asserts:
+          [
+            laterDayOneRegionRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Meadow":"Foxglove Rise","Species":"BLUEBELL"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

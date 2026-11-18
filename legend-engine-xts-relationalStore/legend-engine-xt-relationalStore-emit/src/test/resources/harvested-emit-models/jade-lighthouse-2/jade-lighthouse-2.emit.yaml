@@ -1,0 +1,83 @@
+name: jade-lighthouse-2
+title: "Jade Lighthouse 2 — A Composed Relational Binding Over A Cross-Schema Coastal Light Station Register"
+description: |
+  A heritage register of coastal light stations bound relationally over three
+  composed stores: a reference schema carrying optic grades, coast sectors,
+  shore districts, district keepers and keeper posts, a survey schema carrying
+  the stations themselves, a watch schema carrying keeper watch logs, and a
+  federation store that includes the whole graph. The station binding unit
+  composes a second binding unit by inclusion, so a grouped watch-hours view
+  reached only through that inclusion supplies a view-backed summary. Station
+  properties exercise a full derivation spread: keyed literals concatenated
+  from an identifier, string-function transforms over the station name, a
+  quotient of focal height by lamp count, an eight-armed banding chain whose
+  fallback past the last recognised band code yields null, a literal-defaulted
+  note, two enumerated values resolved from expressions rather than plain
+  columns, an embedded optic detail whose sector name is reached across schemas
+  by a two-hop path, an inline embedded tally, an association implementation
+  onto the filtered dusk watch, and a keeper post reached by a four-hop path
+  that crosses from the survey schema into the reference schema. Watch logs are
+  bound twice under filters and unioned by an operation binding unit, with a
+  further filtered binding for the relief subtype. Eleven register rows assert
+  each of the eight banding arms, the null fallback, a station whose multi-hop
+  path resolves to the southern shore, and a station whose enumerated source
+  value falls outside the mapped set.
+
+modelSources:
+  model:
+    root: jade-lighthouse-2
+    files:
+      - test/jadelighthouse2/data/HarbourTestData.pure
+      - test/jadelighthouse2/domain/HarbourDomain.pure
+      - test/jadelighthouse2/mapping/HarbourBaseMapping.pure
+      - test/jadelighthouse2/mapping/HarbourStationMapping.pure
+      - test/jadelighthouse2/store/HarbourFederationStore.pure
+      - test/jadelighthouse2/store/HarbourReferenceStore.pure
+      - test/jadelighthouse2/store/StationSurveyStore.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-enum-of-expression
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - mapping:relational-view-backed-property
+  - mapping:store-union
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+
+stores:
+  - relational
+
+complexity: intermediate
+
+tags:
+  - embedded-mapping
+  - enumeration-mapping
+  - inline-view
+  - lighthouse-estate
+  - mapping-include
+  - mapping-test
+  - multi-hop-join
+  - operation-mapping
+  - relational
+  - store-union
+  - view-backed-property

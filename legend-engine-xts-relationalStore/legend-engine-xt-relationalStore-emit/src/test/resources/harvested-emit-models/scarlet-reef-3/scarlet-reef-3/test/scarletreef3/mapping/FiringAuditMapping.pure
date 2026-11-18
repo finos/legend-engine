@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletreef3::mapping::FiringAuditMapping
+(
+  *test::scarletreef3::domain::KilnUnit[kiln]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletreef3::store::StudioDb]studio.kiln_unit.kiln_code
+    )
+    ~mainTable [test::scarletreef3::store::StudioDb]studio.kiln_unit
+    kilnCode: [test::scarletreef3::store::StudioDb]studio.kiln_unit.kiln_code,
+    kilnLabel: [test::scarletreef3::store::StudioDb]studio.kiln_unit.kiln_label,
+    chamberLitres: [test::scarletreef3::store::StudioDb]studio.kiln_unit.chamber_litres,
+    installedOn: [test::scarletreef3::store::StudioDb]studio.kiln_unit.installed_on
+  }
+
+  *test::scarletreef3::domain::FiringRun[run]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletreef3::store::StudioDb]studio.firing_run.run_code
+    )
+    ~mainTable [test::scarletreef3::store::StudioDb]studio.firing_run
+    runCode: [test::scarletreef3::store::StudioDb]studio.firing_run.run_code,
+    startedAt: [test::scarletreef3::store::StudioDb]studio.firing_run.started_at,
+    peakCelsius: [test::scarletreef3::store::StudioDb]studio.firing_run.peak_celsius,
+    runNote: [test::scarletreef3::store::StudioDb]studio.firing_run.run_note,
+    kilnLabel: [test::scarletreef3::store::StudioDb]@Run_Kiln | studio.kiln_unit.kiln_label
+  }
+)

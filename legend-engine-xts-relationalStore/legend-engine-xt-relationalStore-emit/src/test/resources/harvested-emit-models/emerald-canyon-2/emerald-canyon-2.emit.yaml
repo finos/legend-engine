@@ -1,0 +1,59 @@
+name: emerald-canyon-2
+title: "Emerald Canyon 2 — Service Layer Over an Included Orchard Register With Multi-Hop Query Navigation"
+description: |
+  A growers-cooperative harvest register split across two relational databases:
+  a core register of cooperatives and business-temporal orchards, and a harvest
+  database that includes it and adds picking blocks, crate consignments and a
+  processing-temporal packhouse check. One curated mapping and one engine
+  runtime serve three single-execution services whose bodies differ only in
+  shape: a deep filtered projection whose district key and one projected column
+  are navigated off the root extent and whose crate test sits two navigations
+  deep behind a nested existence test, an aggregate roll-up whose grouping key
+  is likewise navigated and whose ordered result is capped, and a
+  processing-temporal projection combining a set-membership test with a negated
+  string test. The runtime carries an in-memory feed connection next to the
+  relational binding, so the model connection is scaffolding rather than a data
+  path. Service tests execute every body against embedded fixtures that include
+  a row outside the queried milestoning window.
+modelSources:
+  model:
+    root: emerald-canyon-2
+    files:
+      - test/emeraldcanyon2/connection/GroveFeedConnection.pure
+      - test/emeraldcanyon2/domain/GroveDomain.pure
+      - test/emeraldcanyon2/mapping/GroveMapping.pure
+      - test/emeraldcanyon2/runtime/GroveRuntime.pure
+      - test/emeraldcanyon2/service/DistrictCrateTallyService.pure
+      - test/emeraldcanyon2/service/OrchardHarvestService.pure
+      - test/emeraldcanyon2/service/PackhouseCheckService.pure
+      - test/emeraldcanyon2/store/GroveCoreDb.pure
+      - test/emeraldcanyon2/store/GroveHarvestDb.pure
+features:
+  - execution:service
+  - milestoning:business-temporal
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:model-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-store-include
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - h2
+  - harvest-register
+  - horticulture
+  - multi-hop-navigation
+  - nested-existence-test
+  - processing-temporal
+  - service-test
+  - store-include
+  - tabular-data-set

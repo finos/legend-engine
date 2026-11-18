@@ -1,0 +1,351 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sabledelta2::mapping::StopDigestMapping
+(
+  *test::sabledelta2::domain::StopSummary[stopSet]: Pure
+  {
+    ~src test::sabledelta2::domain::StopPayload
+    stopRef: $src.stopRef->toOne(),
+    driverLabel: 'D' + $src.revision->toOne()->toString() + '-' + $src.visit.driverCode->toOne()->toUpper()->trim(),
+    dwellBand: if($src.visit.dwellMinutes->isEmpty(),
+                  | 'BAND-NONE',
+                  | if($src.visit.dwellMinutes->toOne() >= 30,
+                       | 'BAND-LONG',
+                       | 'BAND-SHORT')),
+    routeView[routeSet]: $src,
+    patronView[patronSet]: $src
+  }
+
+  *test::sabledelta2::domain::RouteSummary[routeSet]: Pure
+  {
+    ~src test::sabledelta2::domain::StopPayload
+    routeName: $src.visit.route.routeName->toOne(),
+    depotView[depotSet]: $src,
+    vehicleView[vehicleSet]: $src
+  }
+
+  *test::sabledelta2::domain::DepotSummary[depotSet]: Pure
+  {
+    ~src test::sabledelta2::domain::StopPayload
+    stopRef: $src.stopRef->toOne(),
+    depotCode: $src.visit.route.depot.depotCode->toOne()->toUpper()->trim(),
+    depotName: $src.visit.route.depot.depotName
+  }
+
+  *test::sabledelta2::domain::VehicleSummary[vehicleSet]: Pure
+  {
+    ~src test::sabledelta2::domain::StopPayload
+    stopRef: $src.stopRef->toOne(),
+    plateCode: $src.visit.route.vehicle.plateCode->toOne()->toUpper()->trim(),
+    seatBand: if($src.visit.route.vehicle.seatCount->isEmpty(),
+                 | 'SEATS-NONE',
+                 | if($src.visit.route.vehicle.seatCount->toOne() >= 12,
+                      | 'SEATS-LARGE',
+                      | 'SEATS-SMALL'))
+  }
+
+  *test::sabledelta2::domain::DriverSummary[driverSet]: Pure
+  {
+    ~src test::sabledelta2::domain::StopPayload
+    stopRef: $src.stopRef->toOne(),
+    driverCode: $src.visit.driverCode->toOne()->toUpper()->trim()
+  }
+
+  *test::sabledelta2::domain::PatronSummary[patronSet]: Pure
+  {
+    ~src test::sabledelta2::domain::StopPayload
+    patronCode: $src.visit.patron.patronCode,
+    patronName: $src.visit.patron.patronName
+  }
+
+  *test::sabledelta2::domain::HoldingSummary[holdingSet]: Pure
+  {
+    ~src test::sabledelta2::domain::StopPayload
+    stopRef: $src.stopRef->toOne(),
+    loadTag: if($src.visit.holdingCount->isEmpty(),
+                | 'LOAD-NONE',
+                | 'LOAD-' + $src.visit.holdingCount->toOne()->toString())
+  }
+
+  *test::sabledelta2::domain::DwellSummary[dwellSet]: Pure
+  {
+    ~src test::sabledelta2::domain::StopPayload
+    stopRef: $src.stopRef->toOne(),
+    dwellLabel: if($src.visit.dwellMinutes->isEmpty(),
+                   | 'UNRECORDED',
+                   | 'MIN-' + $src.visit.dwellMinutes->toOne()->toString())
+  }
+
+  testSuites:
+  [
+    flattenedStopTreeSuite:
+    {
+      function: |test::sabledelta2::domain::StopSummary.all()->graphFetch(
+        #{
+          test::sabledelta2::domain::StopSummary
+          {
+            stopRef,
+            driverLabel,
+            dwellBand,
+            routeView
+            {
+              routeName,
+              depotView
+              {
+                stopRef,
+                depotCode,
+                depotName
+              },
+              vehicleView
+              {
+                stopRef,
+                plateCode,
+                seatBand
+              }
+            },
+            patronView
+            {
+              patronCode,
+              patronName
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::sabledelta2::domain::StopSummary
+          {
+            stopRef,
+            driverLabel,
+            dwellBand,
+            routeView
+            {
+              routeName,
+              depotView
+              {
+                stopRef,
+                depotCode,
+                depotName
+              },
+              vehicleView
+              {
+                stopRef,
+                plateCode,
+                seatBand
+              }
+            },
+            patronView
+            {
+              patronCode,
+              patronName
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        chainedSetsResolveBothDwellArms:
+        {
+          doc: 'Walks the three-level chained set graph for a document whose dwell and seat counts are recorded and for one where the dwell minutes and the patron node are absent, proving both dwell arms and the sentinel-free optional pass-through.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::sabledelta2::domain::StopPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stopRef":"ST-01","revision":3,"visit":{"driverCode":"dv-1","holdingCount":42,"dwellMinutes":35,"patron":{"patronCode":"pt-1","patronName":"Ada Rennick"},"route":{"routeName":"North Loop","vehicle":{"plateCode":"bm-11","seatCount":14},"depot":{"depotCode":"dp-1","depotName":"Riverside Depot"}}}},{"stopRef":"ST-02","revision":1,"visit":{"driverCode":"dv-2","holdingCount":8,"route":{"routeName":"South Loop","vehicle":{"plateCode":"bm-22","seatCount":9},"depot":{"depotCode":"dp-2","depotName":"Hillcrest Depot"}}}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            bothStopsFlatten:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stopRef":"ST-01","driverLabel":"D3-DV-1","dwellBand":"BAND-LONG","routeView":{"routeName":"North Loop","depotView":{"stopRef":"ST-01","depotCode":"DP-1","depotName":"Riverside Depot"},"vehicleView":{"stopRef":"ST-01","plateCode":"BM-11","seatBand":"SEATS-LARGE"}},"patronView":{"patronCode":"pt-1","patronName":"Ada Rennick"}},{"stopRef":"ST-02","driverLabel":"D1-DV-2","dwellBand":"BAND-NONE","routeView":{"routeName":"South Loop","depotView":{"stopRef":"ST-02","depotCode":"DP-2","depotName":"Hillcrest Depot"},"vehicleView":{"stopRef":"ST-02","plateCode":"BM-22","seatBand":"SEATS-SMALL"}},"patronView":{"patronCode":null,"patronName":null}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    dwellDigestSuite:
+    {
+      function: |test::sabledelta2::domain::DwellSummary.all()->graphFetch(
+        #{
+          test::sabledelta2::domain::DwellSummary
+          {
+            stopRef,
+            dwellLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::sabledelta2::domain::DwellSummary
+          {
+            stopRef,
+            dwellLabel
+          }
+        }#
+      );
+      tests:
+      [
+        recordedAndUnrecordedDwell:
+        {
+          doc: 'Serialises the dwell view for a document whose dwell minutes are recorded and for one where they are absent, so both arms of the dwell label transform surface.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::sabledelta2::domain::StopPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stopRef":"ST-01","revision":3,"visit":{"driverCode":"dv-1","holdingCount":42,"dwellMinutes":35,"route":{"routeName":"North Loop","vehicle":{"plateCode":"bm-11","seatCount":14},"depot":{"depotCode":"dp-1","depotName":"Riverside Depot"}}}},{"stopRef":"ST-02","revision":1,"visit":{"driverCode":"dv-2","holdingCount":8,"route":{"routeName":"South Loop","vehicle":{"plateCode":"bm-22","seatCount":9},"depot":{"depotCode":"dp-2","depotName":"Hillcrest Depot"}}}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            bothDwellArms:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stopRef":"ST-01","dwellLabel":"MIN-35"},{"stopRef":"ST-02","dwellLabel":"UNRECORDED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    holdingDigestSuite:
+    {
+      function: |test::sabledelta2::domain::HoldingSummary.all()->graphFetch(
+        #{
+          test::sabledelta2::domain::HoldingSummary
+          {
+            stopRef,
+            loadTag
+          }
+        }#
+      )->serialize(
+        #{
+          test::sabledelta2::domain::HoldingSummary
+          {
+            stopRef,
+            loadTag
+          }
+        }#
+      );
+      tests:
+      [
+        holdingCountsBecomeLoadTags:
+        {
+          doc: 'Serialises the holding view so the carried-item count of each stop is rendered as a load tag.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::sabledelta2::domain::StopPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stopRef":"ST-01","revision":3,"visit":{"driverCode":"dv-1","holdingCount":42,"dwellMinutes":35,"route":{"routeName":"North Loop","vehicle":{"plateCode":"bm-11","seatCount":14},"depot":{"depotCode":"dp-1","depotName":"Riverside Depot"}}}},{"stopRef":"ST-02","revision":1,"visit":{"driverCode":"dv-2","route":{"routeName":"South Loop","vehicle":{"plateCode":"bm-22","seatCount":9},"depot":{"depotCode":"dp-2","depotName":"Hillcrest Depot"}}}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            bothLoadArms:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stopRef":"ST-01","loadTag":"LOAD-42"},{"stopRef":"ST-02","loadTag":"LOAD-NONE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    driverDigestSuite:
+    {
+      function: |test::sabledelta2::domain::DriverSummary.all()->graphFetch(
+        #{
+          test::sabledelta2::domain::DriverSummary
+          {
+            stopRef,
+            driverCode
+          }
+        }#
+      )->serialize(
+        #{
+          test::sabledelta2::domain::DriverSummary
+          {
+            stopRef,
+            driverCode
+          }
+        }#
+      );
+      tests:
+      [
+        driverCodesAreNormalised:
+        {
+          doc: 'Serialises the driver view, which is the model-store half of a cross-store relationship, and proves the driver code is upper-cased and stripped of leading and trailing padding on the way through.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::sabledelta2::domain::StopPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stopRef":"ST-01","revision":3,"visit":{"driverCode":" dv-1 ","holdingCount":42,"dwellMinutes":35,"route":{"routeName":"North Loop","vehicle":{"plateCode":"bm-11","seatCount":14},"depot":{"depotCode":"dp-1","depotName":"Riverside Depot"}}}},{"stopRef":"ST-02","revision":1,"visit":{"driverCode":"dv-2  ","holdingCount":8,"route":{"routeName":"South Loop","vehicle":{"plateCode":"bm-22","seatCount":9},"depot":{"depotCode":"dp-2","depotName":"Hillcrest Depot"}}}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            normalisedDriver:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stopRef":"ST-01","driverCode":"DV-1"},{"stopRef":"ST-02","driverCode":"DV-2"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

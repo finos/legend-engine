@@ -1,0 +1,195 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantestuary4::mapping::ReedMapping
+(
+  test::verdantestuary4::domain::SalinityBand: EnumerationMapping SalinityBandMapping
+  {
+    FRESH: ['FR'],
+    BRACKISH: ['BR'],
+    SALINE: ['SA'],
+    HYPERSALINE: ['HY']
+  }
+
+  *test::verdantestuary4::domain::ReedPlot[allPlots]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(earlyWavePlots, lateWavePlots)
+  }
+
+  test::verdantestuary4::domain::ReedPlot[earlyWavePlots]: Relational
+  {
+    ~filter [test::verdantestuary4::store::ReedDb]EarlyWaveFilter
+    ~primaryKey
+    (
+      [test::verdantestuary4::store::ReedDb]marsh.reed_plot.plot_code
+    )
+    ~mainTable [test::verdantestuary4::store::ReedDb]marsh.reed_plot
+    plotCode: [test::verdantestuary4::store::ReedDb]marsh.reed_plot.plot_code,
+    transectCode: [test::verdantestuary4::store::ReedDb]marsh.reed_plot.transect_code,
+    waveLabel: 'EARLY',
+    salinity: EnumerationMapping SalinityBandMapping: [test::verdantestuary4::store::ReedDb]marsh.reed_plot.salinity_code,
+    heightBand: case(
+      equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 1),
+      'reed-tall-dense',
+      case(
+        equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 2),
+        'reed-tall-open',
+        case(
+          equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 3),
+          'reed-mid-dense',
+          case(
+            equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 4),
+            'reed-mid-open',
+            case(
+              equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 5),
+              'reed-low-dense',
+              case(
+                equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 6),
+                'reed-low-open',
+                case(
+                  equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 7),
+                  'reed-stubble',
+                  case(
+                    equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 8),
+                    'reed-cleared',
+                    sqlNull()
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    stemCount: [test::verdantestuary4::store::ReedDb]marsh.reed_plot.stem_count,
+    plotNote: coalesce([test::verdantestuary4::store::ReedDb]marsh.reed_plot.plot_note, 'unnoted'),
+    surveyedOn: [test::verdantestuary4::store::ReedDb]marsh.reed_plot.surveyed_on
+  }
+
+  test::verdantestuary4::domain::ReedPlot[lateWavePlots]: Relational
+  {
+    ~filter [test::verdantestuary4::store::ReedDb]LateWaveFilter
+    ~primaryKey
+    (
+      [test::verdantestuary4::store::ReedDb]marsh.reed_plot.plot_code
+    )
+    ~mainTable [test::verdantestuary4::store::ReedDb]marsh.reed_plot
+    plotCode: [test::verdantestuary4::store::ReedDb]marsh.reed_plot.plot_code,
+    transectCode: [test::verdantestuary4::store::ReedDb]marsh.reed_plot.transect_code,
+    waveLabel: 'LATE',
+    salinity: EnumerationMapping SalinityBandMapping: [test::verdantestuary4::store::ReedDb]marsh.reed_plot.salinity_code,
+    heightBand: case(
+      equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 1),
+      'reed-tall-dense',
+      case(
+        equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 2),
+        'reed-tall-open',
+        case(
+          equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 3),
+          'reed-mid-dense',
+          case(
+            equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 4),
+            'reed-mid-open',
+            case(
+              equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 5),
+              'reed-low-dense',
+              case(
+                equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 6),
+                'reed-low-open',
+                case(
+                  equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 7),
+                  'reed-stubble',
+                  case(
+                    equal([test::verdantestuary4::store::ReedDb]marsh.reed_plot.state_code, 8),
+                    'reed-cleared',
+                    sqlNull()
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    stemCount: [test::verdantestuary4::store::ReedDb]marsh.reed_plot.stem_count,
+    plotNote: coalesce([test::verdantestuary4::store::ReedDb]marsh.reed_plot.plot_note, 'unnoted'),
+    surveyedOn: [test::verdantestuary4::store::ReedDb]marsh.reed_plot.surveyed_on
+  }
+
+  testSuites:
+  [
+    reedPlotBandSuite:
+    {
+      function: |test::verdantestuary4::domain::ReedPlot.all()->project(
+        [
+          p|$p.plotCode,
+          p|$p.transectCode,
+          p|$p.waveLabel,
+          p|$p.salinity,
+          p|$p.heightBand,
+          p|$p.stemCount,
+          p|$p.plotNote
+        ],
+        [
+          'Plot',
+          'Transect',
+          'Wave',
+          'Salinity',
+          'Band',
+          'Stems',
+          'Note'
+        ]
+      )->sort([asc('Plot')]);
+      tests:
+      [
+        everyStateArmAndTheUnclassedPlot:
+        {
+          doc: 'Assembles the plot extent algebraically from both survey waves of the same register, each wave read under its own alias and filter and stamped with its own literal wave label. The rows walk all eight declared state codes in order, and the last plot carries a state code outside the declared set together with a salinity code outside the mapped set, so its band falls to the null sentinel and its salinity band arrives empty while the rest of the row survives. Plots whose note column is empty take the literal default instead of an empty string.';
+          data:
+          [
+            test::verdantestuary4::store::ReedDb:
+              Relational
+              #{
+                marsh.reed_plot:
+                  'plot_code,transect_code,survey_wave,salinity_code,state_code,stem_count,reed_height_cm,litter_depth_mm,plot_note,surveyed_on\n'+
+                  'RP-01,TR-01,EARLY,FR,1,240,210,40,dense stand at creek edge,2026-04-02\n'+
+                  'RP-02,TR-01,EARLY,BR,2,180,205,35,,2026-04-02\n'+
+                  'RP-03,TR-02,EARLY,SA,3,150,160,30,mid stand,2026-04-03\n'+
+                  'RP-04,TR-02,EARLY,HY,4,120,150,25,,2026-04-03\n'+
+                  'RP-05,TR-03,EARLY,FR,5,90,110,20,low stand,2026-04-04\n'+
+                  'RP-06,TR-03,LATE,BR,6,70,100,18,,2026-09-01\n'+
+                  'RP-07,TR-04,LATE,SA,7,40,60,12,stubble after cut,2026-09-01\n'+
+                  'RP-08,TR-04,LATE,HY,8,10,20,8,,2026-09-02\n'+
+                  'RP-09,TR-05,LATE,ZZ,9,5,15,5,unclassed plot,2026-09-02\n';
+              }#
+          ];
+          asserts:
+          [
+            nineBandedPlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"RP-01","Transect":"TR-01","Wave":"EARLY","Salinity":"FRESH","Band":"reed-tall-dense","Stems":240,"Note":"dense stand at creek edge"},{"Plot":"RP-02","Transect":"TR-01","Wave":"EARLY","Salinity":"BRACKISH","Band":"reed-tall-open","Stems":180,"Note":"unnoted"},{"Plot":"RP-03","Transect":"TR-02","Wave":"EARLY","Salinity":"SALINE","Band":"reed-mid-dense","Stems":150,"Note":"mid stand"},{"Plot":"RP-04","Transect":"TR-02","Wave":"EARLY","Salinity":"HYPERSALINE","Band":"reed-mid-open","Stems":120,"Note":"unnoted"},{"Plot":"RP-05","Transect":"TR-03","Wave":"EARLY","Salinity":"FRESH","Band":"reed-low-dense","Stems":90,"Note":"low stand"},{"Plot":"RP-06","Transect":"TR-03","Wave":"LATE","Salinity":"BRACKISH","Band":"reed-low-open","Stems":70,"Note":"unnoted"},{"Plot":"RP-07","Transect":"TR-04","Wave":"LATE","Salinity":"SALINE","Band":"reed-stubble","Stems":40,"Note":"stubble after cut"},{"Plot":"RP-08","Transect":"TR-04","Wave":"LATE","Salinity":"HYPERSALINE","Band":"reed-cleared","Stems":10,"Note":"unnoted"},{"Plot":"RP-09","Transect":"TR-05","Wave":"LATE","Salinity":null,"Band":null,"Stems":5,"Note":"unclassed plot"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

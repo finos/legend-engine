@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::fabledarboretum6::mapping::CoatingMapping
+(
+  test::fabledarboretum6::domain::CoatingKind: EnumerationMapping CoatingCodeMapping
+  {
+    ALUMINIUM: ['AL'],
+    DIELECTRIC: ['DE'],
+    FLUORIDE: ['FL']
+  }
+
+  *test::fabledarboretum6::domain::OpticGrade[opticGrade]: Relational
+  {
+    ~primaryKey
+    (
+      [test::fabledarboretum6::store::CoatingDb]optics.optic_grade.optic_code
+    )
+    ~mainTable [test::fabledarboretum6::store::CoatingDb]optics.optic_grade
+    opticCode: [test::fabledarboretum6::store::CoatingDb]optics.optic_grade.optic_code,
+    coatingKind: EnumerationMapping CoatingCodeMapping: [test::fabledarboretum6::store::CoatingDb]optics.optic_grade.coating_code,
+    gradeNote: [test::fabledarboretum6::store::CoatingDb]optics.optic_grade.grade_note,
+    strehlPct: [test::fabledarboretum6::store::CoatingDb]optics.optic_grade.strehl_pct
+  }
+
+  testSuites:
+  [
+    coatingDecodeSuite:
+    {
+      function: |test::fabledarboretum6::domain::OpticGrade.all()->project(
+  [
+    g|$g.opticCode,
+    g|$g.coatingKind,
+    g|$g.strehlPct
+  ],
+  [
+    'OpticCode',
+    'CoatingKind',
+    'StrehlPct'
+  ]
+)->sort(
+  [
+    asc('OpticCode')
+  ]
+);
+      tests:
+      [
+        everyPublishedCoatingAndTheUnrecordedOne:
+        {
+          doc: 'Every published coating code is decoded to its spoken coating kind and the optic whose coating was never recorded at the bench carries a code the enumeration mapping does not publish, so that grade carries no coating kind at all.';
+          data:
+          [
+            test::fabledarboretum6::store::CoatingDb: Reference
+              #{
+                test::fabledarboretum6::data::CoatingTestData
+              }#
+          ];
+          asserts:
+          [
+            coatingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"OpticCode":"CT","CoatingKind":"DIELECTRIC","StrehlPct":94},{"OpticCode":"RF","CoatingKind":"FLUORIDE","StrehlPct":96},{"OpticCode":"RL","CoatingKind":"ALUMINIUM","StrehlPct":88},{"OpticCode":"XX","CoatingKind":null,"StrehlPct":70}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

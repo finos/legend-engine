@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralisle::mapping::EquipmentMapping
+(
+  *test::coralisle::domain::EquipmentLog[equipmentLog]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralisle::store::FieldTeamDb]survey.equipment_log.gear_tag
+    )
+    ~mainTable [test::coralisle::store::FieldTeamDb]survey.equipment_log
+    gearTag: [test::coralisle::store::FieldTeamDb]survey.equipment_log.gear_tag,
+    gearName: [test::coralisle::store::FieldTeamDb]survey.equipment_log.gear_name,
+    servicedOn: [test::coralisle::store::FieldTeamDb]survey.equipment_log.serviced_on
+  }
+
+  testSuites:
+  [
+    equipmentRosterSuite:
+    {
+      function: |test::coralisle::domain::EquipmentLog.all()->project(
+  [
+    e|$e.gearTag,
+    e|$e.gearName
+  ],
+  [
+    'Gear',
+    'Gear Name'
+  ]
+)->sort(
+  [
+    asc('Gear')
+  ]
+);
+      tests:
+      [
+        equipmentRosterRows:
+        {
+          doc: 'A third store contributes its own aliased main table, showing that each mapping resolves its columns through its own table alias.';
+          data:
+          [
+            test::coralisle::store::FieldTeamDb:
+              Relational
+              #{
+                survey.equipment_log:
+                  'gear_tag,gear_name,serviced_on,gear_kind,shore_base,service_note,retired\n'+
+                  'EQ-1,Plankton net frame,2026-01-14 09:00:00,net,Lantern Cove,Mesh replaced,false\n'+
+                  'EQ-2,Handheld salinity probe,2026-01-21 09:30:00,probe,Lantern Cove,Recalibrated,false\n';
+              }#
+          ];
+          asserts:
+          [
+            bothGearsListed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Gear":"EQ-1","Gear Name":"Plankton net frame"},{"Gear":"EQ-2","Gear Name":"Handheld salinity probe"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

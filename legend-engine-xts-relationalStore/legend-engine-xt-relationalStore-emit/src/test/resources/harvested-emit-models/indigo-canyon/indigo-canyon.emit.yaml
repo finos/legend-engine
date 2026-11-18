@@ -1,0 +1,53 @@
+name: indigo-canyon
+title: "Indigo Canyon — Sliding Sky-Watch Windows With Post-Projection Predicates"
+description: |
+  An astronomy model in which two single-execution services publish a sliding
+  recent-activity window over curated canyon sky-watch entries. Both compute their
+  half-open range bounds from the current instant with date adjustment instead of taking
+  request parameters, project the windowed extent to a named column list, and then apply a
+  second predicate to the projected columns — an equality in one service and a two-armed
+  disjunction in the other. The bound class reads a literal programme code and a
+  null-guarded quality note out of one primary keyed observatory log table.
+
+modelSources:
+  model:
+    root: indigo-canyon
+    files:
+      - test/indigocanyon/connection/SkyWatchConnections.pure
+      - test/indigocanyon/domain/SkyWatchDomain.pure
+      - test/indigocanyon/mapping/SkyWatchMapping.pure
+      - test/indigocanyon/runtime/SkyWatchRuntime.pure
+      - test/indigocanyon/service/BrightRecentSightings.pure
+      - test/indigocanyon/service/RecentSightings.pure
+      - test/indigocanyon/store/SkyWatchDB.pure
+
+features:
+  - execution:service
+  - execution:service-test
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - astronomy
+  - date-arithmetic
+  - h2
+  - null-sentinel
+  - post-projection-filter
+  - projection
+  - service
+  - service-test
+  - sliding-window

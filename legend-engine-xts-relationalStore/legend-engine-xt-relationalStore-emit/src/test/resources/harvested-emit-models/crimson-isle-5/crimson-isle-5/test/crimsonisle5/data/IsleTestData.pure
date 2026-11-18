@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::crimsonisle5::data::IsleTestData
+{
+  Relational
+  #{
+    isle.isle_plot:
+      'plot_code,habitat_code,plot_name\n'+
+      'PL-1,dune,North Dune Plot\n'+
+      'PL-2,cliff,South Cliff Plot\n'+
+      'PL-3,spit,West Spit Plot\n';
+
+    isle.plot_census:
+      'census_id,census_ref,fledged_count,nest_count,plot_code,surveyed_on\n'+
+      '1,PC-001,9,12,PL-1,2026-04-02\n'+
+      '2,PC-002,5,8,PL-1,2026-04-03\n'+
+      '3,PC-003,14,20,PL-2,2026-04-04\n'+
+      '4,PC-004,1,6,PL-2,2026-04-05\n';
+  }#
+}

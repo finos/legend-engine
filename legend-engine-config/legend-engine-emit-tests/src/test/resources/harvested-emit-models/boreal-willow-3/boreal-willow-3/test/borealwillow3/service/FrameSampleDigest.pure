@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealwillow3::service::FrameSampleDigest
+{
+  pattern: '/borealwillow3/frameSamples';
+  title: 'Frame Sample Digest From The Grouped View';
+  documentation: 'Projects the per-hive frame-sample rollup straight off the derived view that the register publishes, alongside the graded frame rows the sample filter admits.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'apiary-register-desk'
+  ];
+  execution: Single
+  {
+    query: |test::borealwillow3::domain::HiveSampleTally.all()->project(
+      [
+        s|$s.hiveCode,
+        s|$s.sampleCount,
+        s|$s.maxCellCount
+      ],
+      [
+        'Hive',
+        'Samples',
+        'MaxCells'
+      ]
+    )->sort([asc('Hive')]);
+    mapping: test::borealwillow3::mapping::ApiaryMapping;
+    runtime: test::borealwillow3::runtime::ApiaryH2Runtime;
+  }
+  testSuites:
+  [
+    frameSampleSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryH2Connection:
+            Relational
+            #{
+              apiary.frame_sample:
+                'sample_id,hive_code,cell_count,grade_code\n'+
+                '1,H-01,3000,A\n'+
+                '2,H-01,4200,A\n'+
+                '3,H-02,2500,B\n'+
+                '4,H-03,100,X\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        digestFromView:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            groupedPerHive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hive":"H-01","Samples":2,"MaxCells":4200},{"Hive":"H-02","Samples":1,"MaxCells":2500},{"Hive":"H-03","Samples":1,"MaxCells":100}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

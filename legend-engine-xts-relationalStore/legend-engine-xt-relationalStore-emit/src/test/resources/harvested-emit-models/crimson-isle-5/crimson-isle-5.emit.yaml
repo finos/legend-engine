@@ -1,0 +1,63 @@
+name: crimson-isle-5
+title: Crimson Isle 5 seabird census - a two-table aliased extent graph-fetched with its join-reached plot and refined again through a model-to-model digest
+description: >
+  A seabird nesting census over two tables of one isle schema. Every census sweep is
+  keyed on its own reference against an aliased main table and reaches the nesting plot
+  it was taken on over a declared equality join, so the plot that carries no sweep never
+  surfaces and the plot label is assembled from the join-reached plot name and habitat
+  code rather than stored on the sweep. Derived columns carry the unfledged remainder and
+  a doubled effort index. A mapping suite graph-fetches the sweeps together with the
+  nested plot so the join-reached structure is asserted as serialized shape. A second
+  model-to-model mapping refines a loosely typed inbound payload into a published digest,
+  banding the fledged count through a four-armed ladder with an absent-count fallback and
+  upper-casing the habitat behind an unclassed sentinel, and its own suite drives every
+  arm from one payload set. A single-execution service publishes the register filtered on
+  a caller-supplied plot collection and a nest-count floor, and its suite reads shared
+  relational test data.
+modelSources:
+  model:
+    root: crimson-isle-5
+    files:
+      - test/crimsonisle5/connection/IsleConnections.pure
+      - test/crimsonisle5/data/IsleTestData.pure
+      - test/crimsonisle5/domain/IsleDomain.pure
+      - test/crimsonisle5/mapping/CensusDigestM2M.pure
+      - test/crimsonisle5/mapping/IsleMapping.pure
+      - test/crimsonisle5/runtime/IsleRuntimes.pure
+      - test/crimsonisle5/service/CensusRegisterService.pure
+      - test/crimsonisle5/store/IsleDb.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:m2m-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - execution:graph-fetch
+  - query:project
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - graph-fetch
+  - h2
+  - inner-join
+  - m2m-mapping
+  - main-table-alias
+  - mapping-test
+  - multi-table
+  - nested-conditional
+  - primary-key
+  - project
+  - seabird-census
+  - service-test
+  - test-data

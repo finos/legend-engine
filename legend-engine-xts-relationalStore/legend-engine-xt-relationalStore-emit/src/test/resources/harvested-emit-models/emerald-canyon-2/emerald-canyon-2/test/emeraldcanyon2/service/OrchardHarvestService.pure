@@ -1,0 +1,123 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldcanyon2::service::OrchardHarvestService
+{
+  pattern: '/emeraldcanyon/v1/orchards/{businessDate}';
+  title: 'Orchards With Qualifying Export Consignments';
+  owners:
+  [
+    'grove-register',
+    'harvest-planning'
+  ];
+  documentation: 'Returns the orchards of the requested growing districts that are below an elevation bound and hold at least one adequately planted picking block with a graded consignment above a crate floor, as of the requested business date. Both the district filter key and a projected column are navigated off the root extent, and the crate test sits two navigations deep behind a nested existence test.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], districts: String[*], grades: String[*], minCrates: Integer[1], maxElevation: Integer[1]|test::emeraldcanyon2::domain::Orchard.all($businessDate)->filter(
+      o|(($o.cooperative.districtName->in($districts)) && ($o.elevationM <= $maxElevation)) && ($o.blocks->exists(b|($b.treeCount >= 40) && ($b.consignments->exists(c|($c.gradeLabel->in($grades)) && ($c.crateCount >= $minCrates)))))
+    )->project(
+      [
+        o|$o.orchardCode,
+        o|$o.cooperative.districtName,
+        o|$o.elevationM
+      ],
+      [
+        'OrchardCode',
+        'District',
+        'ElevationM'
+      ]
+    )->distinct()->sort(
+      [
+        asc('OrchardCode')
+      ]
+    )};
+    mapping: test::emeraldcanyon2::mapping::GroveMapping;
+    runtime: test::emeraldcanyon2::runtime::GroveRuntime;
+  }
+  testSuites:
+  [
+    orchardHarvestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          groveConnection:
+            Relational
+            #{
+              grove.cooperative:
+                'coop_code,coop_name,district_name,climate_zone\n'+
+                'CO-01,Ridgeline Growers,Highland District,cool-temperate\n'+
+                'CO-02,Meadowbrook Growers,Lowland District,mild-temperate\n'+
+                'CO-03,Stonefield Growers,Highland District,cool-temperate\n';
+              grove.orchard:
+                'orchard_code,coop_code,orchard_name,elevation_m,from_z,thru_z\n'+
+                'OR-01,CO-01,North Terrace Orchard,420,2026-01-01,9999-12-31\n'+
+                'OR-02,CO-02,Brookside Orchard,180,2026-01-01,9999-12-31\n'+
+                'OR-03,CO-01,Summit Slope Orchard,910,2026-01-01,9999-12-31\n'+
+                'OR-04,CO-03,Old Kiln Orchard,300,2025-01-01,2025-12-31\n'+
+                'OR-05,CO-01,Fern Hollow Orchard,260,2026-01-01,9999-12-31\n';
+              harvest.picking_block:
+                'block_code,orchard_code,block_name,tree_count\n'+
+                'BK-01,OR-01,North Terrace Block A,120\n'+
+                'BK-02,OR-01,North Terrace Block B,35\n'+
+                'BK-03,OR-02,Brookside Block A,90\n'+
+                'BK-04,OR-03,Summit Slope Block A,150\n'+
+                'BK-05,OR-04,Old Kiln Block A,140\n'+
+                'BK-06,OR-05,Fern Hollow Block A,60\n';
+              harvest.consignment:
+                'consignment_code,block_code,grade_label,crate_count,picked_on\n'+
+                'CG-01,BK-01,EXPORT,48,2026-03-04\n'+
+                'CG-02,BK-01,LOCAL,12,2026-03-05\n'+
+                'CG-03,BK-02,EXPORT,60,2026-03-06\n'+
+                'CG-04,BK-03,EXPORT,20,2026-03-07\n'+
+                'CG-05,BK-04,PROCESS,80,2026-03-08\n'+
+                'CG-06,BK-05,EXPORT,55,2026-03-09\n'+
+                'CG-07,BK-06,EXPORT,10,2026-03-10\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        highlandExportOrchards:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-06-01,
+            districts = ['Highland District'],
+            grades = ['EXPORT'],
+            minCrates = 30,
+            maxElevation = 500
+          ]
+          asserts:
+          [
+            oneOrchard:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"OrchardCode":"OR-01","District":"Highland District","ElevationM":420}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

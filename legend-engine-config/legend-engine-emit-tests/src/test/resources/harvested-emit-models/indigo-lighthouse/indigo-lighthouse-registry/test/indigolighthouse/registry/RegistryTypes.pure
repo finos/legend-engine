@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::indigolighthouse::registry::*;
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'An institution or individual credited as a curating party for a circle member.'} test::indigolighthouse::registry::CuratorParty
+{
+  {meta::pure::profiles::doc.doc = 'Public name of the curating party.'} partyName: String[1];
+  {meta::pure::profiles::doc.doc = 'Country in which the curating party is registered.'} homeCountry: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'An accession identifier minted by the registry for an exhibit circle.'} test::indigolighthouse::registry::AccessionIdentifier
+{
+  {meta::pure::profiles::doc.doc = 'The accession string itself.'} accessionCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Registry scheme the accession code was minted under.'} scheme: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A physical gallery space in which exhibits are shown.'} test::indigolighthouse::registry::GalleryVenue
+{
+  {meta::pure::profiles::doc.doc = 'Name of the gallery space.'} venueName: String[1];
+  {meta::pure::profiles::doc.doc = 'Floor the gallery space sits on.'} floorLevel: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A conservation observation recorded against an exhibited object.'} test::indigolighthouse::registry::ConservationNote
+{
+  {meta::pure::profiles::doc.doc = 'Free-text conservation observation.'} noteText: String[1];
+  {meta::pure::profiles::doc.doc = 'Name of the conservator who wrote the note.'} recordedBy: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One step in the ownership history of an exhibited object.'} test::indigolighthouse::registry::ProvenanceStep
+{
+  {meta::pure::profiles::doc.doc = 'Position of this step in the ownership history.'} stepOrder: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Short description of the ownership step.'} summary: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A material category used to group exhibited objects.'} test::indigolighthouse::registry::MediumCategory
+{
+  {meta::pure::profiles::doc.doc = 'Name of the material category.'} categoryName: String[1];
+}

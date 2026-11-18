@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::emeraldlantern::store::LanternDb
+(
+  Schema beacon
+  (
+    Table lantern_station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(20) NOT NULL,
+      station_name VARCHAR(60) NOT NULL,
+      district_code VARCHAR(20) NOT NULL,
+      keeper_name VARCHAR(60),
+      lamp_kind VARCHAR(20) NOT NULL,
+      optic_kind VARCHAR(20) NOT NULL,
+      rotation_label VARCHAR(30),
+      lens_state_code VARCHAR(10) NOT NULL,
+      service_tier_code VARCHAR(10) NOT NULL,
+      focal_metres FLOAT NOT NULL,
+      candela_rating FLOAT NOT NULL,
+      lens_diameter_metres FLOAT NOT NULL,
+      rotation_period_seconds FLOAT,
+      commissioned_on DATE NOT NULL
+    )
+    Table keeper_visit
+    (
+      station_id INTEGER PRIMARY KEY,
+      visit_seq INTEGER PRIMARY KEY,
+      visit_kind VARCHAR(10) NOT NULL,
+      outcome_code VARCHAR(10),
+      hours_on_site INTEGER NOT NULL,
+      visited_on DATE NOT NULL
+    )
+  )
+
+  Schema harbour
+  (
+    Table district_office
+    (
+      district_code VARCHAR(20) PRIMARY KEY,
+      office_name VARCHAR(60) NOT NULL,
+      coast_code VARCHAR(10) NOT NULL
+    )
+    Table coast_sector
+    (
+      coast_code VARCHAR(10) PRIMARY KEY,
+      sector_name VARCHAR(60) NOT NULL
+    )
+  )
+
+  Filter RotatingStation(beacon.lantern_station.optic_kind = 'ROTATING')
+
+  Join Visit_Station(beacon.keeper_visit.station_id = beacon.lantern_station.station_id)
+  Join Station_Office(beacon.lantern_station.district_code = harbour.district_office.district_code)
+  Join Office_Sector(harbour.district_office.coast_code = harbour.coast_sector.coast_code)
+)

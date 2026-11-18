@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easternlantern6::service::TitleSubjectRegister
+{
+  pattern: '/eastern-lantern-6/v1/titles/{processingDate}';
+  title: 'Eastern Lantern 6 - Title Subject Register';
+  documentation: 'Resolves the title extent at an explicit processing instant and admits only the catalogued subjects, striking the untranslated language, so the admitted set is a literal membership test and the exclusion a negated comparison.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|test::easternlantern6::domain::TitleRecord.all($processingDate)->filter(
+      t|($t.subjectCode->in(['SB-HIST', 'SB-SCI', 'SB-ART'])) && !($t.languageCode == 'LG-XX')
+    )->project(
+      [
+        t|$t.titleCode,
+        t|$t.titleName,
+        t|$t.subjectCode,
+        t|$t.languageCode
+      ],
+      [
+        'TitleCode',
+        'TitleName',
+        'SubjectCode',
+        'LanguageCode'
+      ]
+    )->distinct()->sort(
+      [
+        asc('TitleCode')
+      ]
+    )};
+    mapping: test::easternlantern6::mapping::CatalogueMapping;
+    runtime: test::easternlantern6::runtime::CatalogueRuntime;
+  }
+  testSuites:
+  [
+    titleSubjectRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          catalogueConnection:
+            Relational
+            #{
+              library.title_record:
+                'title_code,title_name,subject_code,language_code,in_z,out_z\n'+
+                'T-1,Coastal Atlas,SB-HIST,LG-EN,2026-04-01,9999-12-31\n'+
+                'T-2,Tidal Physics,SB-SCI,LG-EN,2026-04-01,9999-12-31\n'+
+                'T-3,Letterpress Fonts,SB-ART,LG-XX,2026-04-01,9999-12-31\n'+
+                'T-4,Stone Roads,SB-GEO,LG-EN,2026-04-01,9999-12-31\n'+
+                'T-5,Withdrawn Gazetteer,SB-HIST,LG-EN,2026-01-01,2026-03-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        catalogueSubjectsAtTheProcessingInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01
+          ]
+          asserts:
+          [
+            theUnlistedSubjectUntranslatedLanguageAndClosedRecordAreStruck:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TitleCode":"T-1","TitleName":"Coastal Atlas","SubjectCode":"SB-HIST","LanguageCode":"LG-EN"},{"TitleCode":"T-2","TitleName":"Tidal Physics","SubjectCode":"SB-SCI","LanguageCode":"LG-EN"}]';
+                  }#;
+              }#
+          ]
+        },
+        registerAtAnEarlierProcessingInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-02-15
+          ]
+          asserts:
+          [
+            onlyTheRecordWhoseProcessingWindowCoversTheInstantSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TitleCode":"T-5","TitleName":"Withdrawn Gazetteer","SubjectCode":"SB-HIST","LanguageCode":"LG-EN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

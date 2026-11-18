@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'One tide gauge standing in one lagoon district, carrying the district it reports into and the kind of water body it watches.'} test::lunarlagoon3::domain::GaugeStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  districtCode: String[1];
+  stationKind: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One water reading taken at one gauge on one day, with the gauge name and the district reached over the declared join so a board can narrow on either without holding them on the reading row.'} test::lunarlagoon3::domain::GaugeReading
+{
+  readingCode: String[1];
+  readingState: String[1];
+  sensorCode: String[1];
+  waterLevelCm: Integer[1];
+  salinityPpt: Integer[1];
+  takenOn: StrictDate[1];
+  stationName: String[0..1];
+  districtCode: String[0..1];
+}
+
+Association test::lunarlagoon3::domain::Station_Readings
+{
+  readingStation: test::lunarlagoon3::domain::GaugeStation[1];
+  readings: test::lunarlagoon3::domain::GaugeReading[*];
+}

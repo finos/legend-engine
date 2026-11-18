@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietthicket::service::ReadingsOnDay
+{
+  pattern: '/thicket/v1/readings/on/{day}';
+  title: 'Turbine Telemetry - Readings On A Day';
+  documentation: 'Reduces the capture timestamp to its date portion before testing day equality against the supplied date, so samples taken at any hour of that day survive. The wide projection reads the raw measures from the driving relation and the fleet, site and region labels through one, two and three hop join paths.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'turbine-telemetry',
+    'wind-fleet-ops'
+  ];
+  execution: Single
+  {
+    query: {day: StrictDate[1]|test::quietthicket::domain::SensorReading.all()->filter(
+      r|$r.capturedAt->datePart() == $day
+    )->project(
+      [
+        r|$r.readingCode,
+        r|$r.capturedAt->datePart(),
+        r|$r.windSpeedMs,
+        r|$r.powerOutputKw,
+        r|$r.bladePitchDeg,
+        r|$r.faultRaised,
+        r|$r.turbineName,
+        r|$r.mastLabel,
+        r|$r.siteName,
+        r|$r.regionName
+      ],
+      [
+        'Reading/Code',
+        'Reading/Day',
+        'Reading/WindSpeed',
+        'Reading/PowerOutput',
+        'Reading/BladePitch',
+        'Reading/FaultRaised',
+        'Fleet/TurbineName',
+        'Fleet/MastLabel',
+        'Site/Name',
+        'Site/Region'
+      ]
+    )->sort(
+      [
+        asc('Reading/Code')
+      ]
+    )};
+    mapping: test::quietthicket::mapping::TurbineMapping;
+    runtime: test::quietthicket::runtime::ThicketProdRuntime;
+  }
+  testSuites:
+  [
+    readingsOnDaySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketConnection:
+            Relational
+            #{
+              signal.reading:
+                'reading_code,sensor_code,turbine_code,captured_at,wind_speed_ms,power_output_kw,blade_pitch_deg,fault_flag\n'+
+                'RD-01,SN-01,TB-01,2026-04-11 06:15:00,8.5,1450.0,4.5,false\n'+
+                'RD-02,SN-02,TB-02,2026-04-11 23:50:00,11.25,2100.0,2.0,true\n'+
+                'RD-03,SN-03,TB-01,2026-04-12 00:05:00,6.75,900.0,,false\n'+
+                'RD-04,SN-01,,2026-04-12 21:30:00,9.0,1600.0,3.25,false\n';
+
+              signal.sensor:
+                'sensor_code,sensor_model,sensor_state,mast_code,installed_at,calibrated_on\n'+
+                'SN-01,VaneTrack 200,ACTIVE,MS-01,2025-01-09 09:00:00,2026-02-01\n'+
+                'SN-02,VaneTrack 400,ACTIVE,MS-02,2025-03-17 11:30:00,2026-01-15\n'+
+                'SN-03,VaneTrack 200,RETIRED,MS-01,2024-06-02 08:45:00,\n';
+
+              fleet.turbine:
+                'turbine_code,turbine_name,site_code,rated_kw,commissioned_on\n'+
+                'TB-01,Ridge Head 1,ST-01,1800,2024-05-06\n'+
+                'TB-02,Ridge Head 2,ST-02,2400,2024-09-30\n';
+
+              fleet.mast:
+                'mast_code,mast_label,height_metres\n'+
+                'MS-01,North Mast,90\n'+
+                'MS-02,South Mast,120\n';
+
+              siteref.site:
+                'site_code,site_name,region_code,grid_zone\n'+
+                'ST-01,Heather Ridge,RG-01,ZONE-A\n'+
+                'ST-02,Bracken Ridge,,ZONE-B\n';
+
+              siteref.region:
+                'region_code,region_name\n'+
+                'RG-01,Upland North\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothEndsOfTheDaySurvive:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            day = %2026-04-11
+          ]
+          asserts:
+          [
+            earlyMorningAndLateEveningSamplesBothMatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading/Code":"RD-01","Reading/Day":"2026-04-11","Reading/WindSpeed":8.5,"Reading/PowerOutput":1450.0,"Reading/BladePitch":4.5,"Reading/FaultRaised":false,"Fleet/TurbineName":"Ridge Head 1","Fleet/MastLabel":"North Mast","Site/Name":"Heather Ridge","Site/Region":"Upland North"},{"Reading/Code":"RD-02","Reading/Day":"2026-04-11","Reading/WindSpeed":11.25,"Reading/PowerOutput":2100.0,"Reading/BladePitch":2.0,"Reading/FaultRaised":true,"Fleet/TurbineName":"Ridge Head 2","Fleet/MastLabel":"South Mast","Site/Name":"Bracken Ridge","Site/Region":null}]';
+                  }#;
+              }#
+          ]
+        },
+        nextDayPicksUpTheMissRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            day = %2026-04-12
+          ]
+          asserts:
+          [
+            retiredSensorAndAbsentTurbineNullOnlyTheirOwnColumns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading/Code":"RD-03","Reading/Day":"2026-04-12","Reading/WindSpeed":6.75,"Reading/PowerOutput":900.0,"Reading/BladePitch":null,"Reading/FaultRaised":false,"Fleet/TurbineName":"Ridge Head 1","Fleet/MastLabel":null,"Site/Name":"Heather Ridge","Site/Region":"Upland North"},{"Reading/Code":"RD-04","Reading/Day":"2026-04-12","Reading/WindSpeed":9.0,"Reading/PowerOutput":1600.0,"Reading/BladePitch":3.25,"Reading/FaultRaised":false,"Fleet/TurbineName":null,"Fleet/MastLabel":"North Mast","Site/Name":null,"Site/Region":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

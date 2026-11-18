@@ -1,0 +1,39 @@
+name: kindly-marsh
+title: "Kindly Marsh - Business-Temporal Wetland Bird Register"
+description: |
+  A business-temporal wetland observation register backed by a relational
+  table with both business validity and lake batch windows. The mapping test
+  resolves the bird-count extent at an explicit business date and projects
+  the surviving observations, proving that an out-of-window batch row does
+  not surface alongside the in-window row.
+modelSources:
+  model:
+    root: kindly-marsh
+    files:
+      - test/kindlymarsh/connection/MarshConnection.pure
+      - test/kindlymarsh/data/MarshData.pure
+      - test/kindlymarsh/domain/MarshDomain.pure
+      - test/kindlymarsh/mapping/MarshMapping.pure
+      - test/kindlymarsh/runtime/MarshRuntime.pure
+      - test/kindlymarsh/store/MarshDb.pure
+features:
+  - execution:data-element
+  - execution:mapping-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - birds
+  - marsh
+  - temporal

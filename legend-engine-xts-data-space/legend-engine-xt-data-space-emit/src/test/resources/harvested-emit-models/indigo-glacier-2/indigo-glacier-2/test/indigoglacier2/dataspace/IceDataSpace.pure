@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace {meta::pure::profiles::doc.doc = 'Glacier mass-balance survey catalogue covering stake, pit, core and archive registers.'} test::indigoglacier2::dataspace::IceSurveySpace
+{
+  executionContexts:
+  [
+    {
+      name: 'registry';
+      description: 'Open sites, active crews and standing stakes from the registry store.';
+      mapping: test::indigoglacier2::mapping::IceRegistryMapping;
+      defaultRuntime: test::indigoglacier2::runtime::IceRegistryRuntime;
+    },
+    {
+      name: 'survey';
+      description: 'Accepted readings, deep pits, wide ponds, intact cores and depleted samples.';
+      mapping: test::indigoglacier2::mapping::IceSurveyMapping;
+      defaultRuntime: test::indigoglacier2::runtime::IceSurveyRuntime;
+    },
+    {
+      name: 'archive';
+      description: 'Current reading history and shelved core history.';
+      mapping: test::indigoglacier2::mapping::IceArchiveMapping;
+      defaultRuntime: test::indigoglacier2::runtime::IceArchiveRuntime;
+    },
+    {
+      name: 'catalogSurvey';
+      description: 'The combined catalogue resolved over the survey store.';
+      mapping: test::indigoglacier2::mapping::IceCatalogMapping;
+      defaultRuntime: test::indigoglacier2::runtime::IceCatalogSurveyRuntime;
+    },
+    {
+      name: 'catalogArchive';
+      description: 'The combined catalogue resolved over the archive store.';
+      mapping: test::indigoglacier2::mapping::IceCatalogMapping;
+      defaultRuntime: test::indigoglacier2::runtime::IceCatalogArchiveRuntime;
+    }
+  ];
+  defaultExecutionContext: 'survey';
+  title: 'Indigo Glacier Survey';
+  description: 'Mass-balance observations from stakes, snow pits, melt ponds and ice cores, each row type gated by its own named store filter.';
+  supportInfo: Combined
+  {
+    emails: ['glacier-survey-support-group'];
+  };
+}

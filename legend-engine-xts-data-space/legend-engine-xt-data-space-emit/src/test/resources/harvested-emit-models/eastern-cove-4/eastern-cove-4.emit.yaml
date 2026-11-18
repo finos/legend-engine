@@ -1,0 +1,74 @@
+name: eastern-cove-4
+title: "Eastern Cove 4 — A Versioned Tide Watch Register Read At A Pinned Instant Across Two Schemas"
+description: |
+  A coastal tide-watch register whose gauge readings and buoy inspections are both
+  processing-temporal, so a re-derived reading or a re-inspection is kept as a new
+  version and every read has to pin an instant. The store spans a tide schema and a
+  crew schema over five tables wired by four inner joins, so the station name is
+  resolved one hop out while the warden keeping watch is resolved three hops out
+  across the schema boundary. Two associations relate each versioned class to its
+  station and each station back to its versioned children, and the station and
+  warden class mappings are contributed by an included mapping rather than declared
+  inline. Mapping tests pin an instant directly and show the superseded and the
+  not-yet-versioned rows falling out of range; three services expose the same model
+  as endpoints - one projecting the live readings beside their resolved station and
+  warden, one narrowing them with a membership test over the swell codes being
+  watched, and one projecting the live inspections beside the sensor carried by their
+  station reached through the association. A data space wires the curated mapping to
+  the watch tier and features all three endpoints.
+modelSources:
+  model:
+    root: eastern-cove-4
+    files:
+      - test/easterncove4/connection/CoveConnection.pure
+      - test/easterncove4/dataspace/CoveDataSpace.pure
+      - test/easterncove4/domain/CoveDomain.pure
+      - test/easterncove4/mapping/CoveBaseMapping.pure
+      - test/easterncove4/mapping/CoveMapping.pure
+      - test/easterncove4/runtime/CoveRuntime.pure
+      - test/easterncove4/service/MooringBoard.pure
+      - test/easterncove4/service/StationDigest.pure
+      - test/easterncove4/store/CoveDatabase.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:join
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - cross-schema
+  - data-space
+  - h2
+  - mapping-include
+  - milestoning
+  - multi-hop-join
+  - point-in-time
+  - processing-temporal
+  - service-test
+  - snowflake
+  - tide-watch

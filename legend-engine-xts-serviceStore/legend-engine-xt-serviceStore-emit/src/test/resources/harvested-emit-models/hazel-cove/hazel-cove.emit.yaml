@@ -1,0 +1,53 @@
+name: hazel-cove
+title: "Hazel Cove - Remote Colony Census (service store, external-format bindings, keyed multi-execution)"
+description: |
+  A seabird-colony census sourced from two remote endpoints of one service store, one
+  publishing JSON records and one a delimited roster sheet typed by a flat-data schema
+  set and binding. Model-to-model set implementations republish the wire payloads as
+  governed profiles through an eight-arm density conditional that falls through to no
+  value at all when a tally is absent, and a rounding transform at the published
+  precision. Both published classes are served by keyed multi-execution services whose
+  environments differ only in the service-store connection, with the roster endpoint's
+  request constants supplied by the mapping itself.
+
+modelSources:
+  model:
+    root: hazel-cove
+    files:
+      - test/hazelcove/api/CensusWireModel.pure
+      - test/hazelcove/connection/CensusConnections.pure
+      - test/hazelcove/domain/CensusPublishedModel.pure
+      - test/hazelcove/external/CensusBindings.pure
+      - test/hazelcove/external/CensusSchemas.pure
+      - test/hazelcove/mapping/CensusApiMapping.pure
+      - test/hazelcove/mapping/CensusRosterMapping.pure
+      - test/hazelcove/runtime/CensusRuntimes.pure
+      - test/hazelcove/service/ColonyProfileFeed.pure
+      - test/hazelcove/service/ColonyRosterFeed.pure
+      - test/hazelcove/store/CensusApi.pure
+
+features:
+  - execution:external-format-binding
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:profile
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:service-store-mapping
+  - scaffolding:class
+  - scaffolding:runtime
+  - scaffolding:service-store-connection
+  - store:service-store
+stores:
+  - service-store
+complexity: intermediate
+tags:
+  - conditional-transform
+  - external-format-binding
+  - flat-data-schema
+  - graph-fetch
+  - model-to-model
+  - multi-execution
+  - seabird-census
+  - service-store

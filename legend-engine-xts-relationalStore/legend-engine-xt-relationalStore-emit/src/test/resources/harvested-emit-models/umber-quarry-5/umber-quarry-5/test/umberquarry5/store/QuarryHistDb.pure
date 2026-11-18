@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::umberquarry5::store::QuarryHistDb
+(
+  include test::umberquarry5::store::QuarryDb
+
+  Schema hist
+  (
+    Table block_version
+    (
+      milestoning
+      (
+        business(BUS_FROM = valid_from, BUS_THRU = valid_thru, INFINITY_DATE = %9999-12-31T00:00:00.000000+0000)
+      )
+      version_id INTEGER PRIMARY KEY,
+      block_ref VARCHAR(24) NOT NULL,
+      pit_code VARCHAR(8),
+      bench_no INTEGER,
+      grade_code VARCHAR(8),
+      dressing_note VARCHAR(40),
+      valid_from TIMESTAMP NOT NULL,
+      valid_thru TIMESTAMP NOT NULL
+    )
+  )
+
+  Join Version_Bench(hist.block_version.pit_code = pit.bench.pit_code and hist.block_version.bench_no = pit.bench.bench_no)
+)

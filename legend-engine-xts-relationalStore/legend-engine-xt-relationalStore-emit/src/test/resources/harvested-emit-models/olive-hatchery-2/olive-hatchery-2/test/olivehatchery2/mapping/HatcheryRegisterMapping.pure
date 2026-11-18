@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::olivehatchery2::mapping::HatcheryRegisterMapping
+(
+  include mapping test::olivehatchery2::mapping::HatcheryReadingMapping
+
+  *test::olivehatchery2::domain::GradingEvent[grading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::olivehatchery2::store::HatcheryDb]hatchery.grading_event.event_id
+    )
+    ~mainTable [test::olivehatchery2::store::HatcheryDb]hatchery.grading_event
+    eventId: [test::olivehatchery2::store::HatcheryDb]hatchery.grading_event.event_id,
+    gradedOn: [test::olivehatchery2::store::HatcheryDb]hatchery.grading_event.graded_on,
+    retainedCount: [test::olivehatchery2::store::HatcheryDb]hatchery.grading_event.retained_count,
+    meshMicron: [test::olivehatchery2::store::HatcheryDb]hatchery.grading_event.mesh_micron
+  }
+
+  test::olivehatchery2::domain::Batch_Grading: Relational
+  {
+    AssociationMapping
+    (
+      gradings[batch, grading]: [test::olivehatchery2::store::HatcheryDb]@Grading_Batch,
+      gradedBatch[grading, batch]: [test::olivehatchery2::store::HatcheryDb]@Grading_Batch
+    )
+  }
+
+  testSuites:
+  [
+    gradingRegisterSuite:
+    {
+      function: |test::olivehatchery2::domain::GradingEvent.all()->project(
+        [
+          g|$g.eventId,
+          g|$g.gradedBatch.batchCode,
+          g|$g.gradedBatch.siteLabel->toOne(),
+          g|$g.retainedCount,
+          g|$g.meshMicron
+        ],
+        [
+          'Event',
+          'Batch',
+          'Site',
+          'Retained',
+          'Mesh'
+        ]
+      )->sort([asc('Event')]);
+      tests:
+      [
+        gradingRegister:
+        {
+          doc: 'Resolves each grading pass onto its rearing batch and on through the three-hop facility path to the hatchery site, so the register row carries both the retained count and the site the batch was reared at.';
+          data:
+          [
+            test::olivehatchery2::store::HatcheryDb:
+              Relational
+              #{
+                hatchery.grading_event:
+                  'event_id,batch_id,graded_on,retained_count,mesh_micron\n'+
+                  '1,1,2026-02-20,62000,300\n'+
+                  '2,3,2026-02-24,41000,180\n';
+
+                hatchery.larval_batch:
+                  'batch_id,run_id,batch_code,tank_code,stocked_count,stocked_on,vigour_code,record_code,batch_note\n'+
+                  '1,1,LB-101,TK-1,120000,2026-02-03,V1,OH-101,seeded from first run\n'+
+                  '3,1,LB-103,TK-3,95000,2026-02-05,V3,OH-103,split from tank one\n';
+
+                facility.rearing_tank:
+                  'tank_code,hall_code,volume_litres\n'+
+                  'TK-1,HL-1,4000\n'+
+                  'TK-3,HL-2,8000\n';
+
+                facility.hatchery_hall:
+                  'hall_code,site_code,hall_name\n'+
+                  'HL-1,ST-1,North Rearing Hall\n'+
+                  'HL-2,ST-2,South Rearing Hall\n';
+
+                facility.hatchery_site:
+                  'site_code,site_name,shoreline\n'+
+                  'ST-1,Cold Inlet Hatchery,North Shore\n'+
+                  'ST-2,Warm Inlet Hatchery,South Shore\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Event":1,"Batch":"LB-101","Site":"Cold Inlet Hatchery","Retained":62000,"Mesh":300},{"Event":2,"Batch":"LB-103","Site":"Warm Inlet Hatchery","Retained":41000,"Mesh":180}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

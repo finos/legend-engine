@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::meadowfjord9::mapping::MeadowMapping
+(
+  *test::meadowfjord9::domain::SurveyZone[surveyZone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowfjord9::store::MeadowDb]field.survey_zone.zone_id
+    )
+    ~mainTable [test::meadowfjord9::store::MeadowDb]field.survey_zone
+    zoneCode: [test::meadowfjord9::store::MeadowDb]field.survey_zone.zone_code,
+    zoneName: [test::meadowfjord9::store::MeadowDb]field.survey_zone.zone_name
+  }
+
+  *test::meadowfjord9::domain::MeadowPlot[meadowPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowfjord9::store::MeadowDb]field.meadow_plot.plot_id
+    )
+    ~mainTable [test::meadowfjord9::store::MeadowDb]field.meadow_plot
+    plotCode: [test::meadowfjord9::store::MeadowDb]field.meadow_plot.plot_code,
+    zoneCode: [test::meadowfjord9::store::MeadowDb]field.meadow_plot.zone_code,
+    statusCode: [test::meadowfjord9::store::MeadowDb]field.meadow_plot.status_code,
+    surveyorCode: [test::meadowfjord9::store::MeadowDb]field.meadow_plot.surveyor_code,
+    reviewerCode: [test::meadowfjord9::store::MeadowDb]field.meadow_plot.reviewer_code,
+    speciesCount: [test::meadowfjord9::store::MeadowDb]field.meadow_plot.species_count
+  }
+)

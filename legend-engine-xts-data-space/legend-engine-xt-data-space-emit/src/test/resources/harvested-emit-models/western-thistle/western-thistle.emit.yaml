@@ -1,0 +1,61 @@
+name: western-thistle
+title: "Western Thistle — Curated Cycle Network Entry Points Over Two Relational Stores"
+description: |
+  A non-financial city cycle-network model that publishes parameterized single-execution
+  services over two multi-table relational stores whose class bindings each name a primary
+  key and a main-table alias. Two curated data spaces bind the compiled mappings, their
+  local and warehouse runtimes and their featured service executables into consumable
+  units carrying email support metadata, and every mapping and service is covered by
+  projection test suites over text, numeric, boolean and date columns.
+
+modelSources:
+  model:
+    root: western-thistle
+    files:
+      - test/westernthistle/connection/CorridorConnections.pure
+      - test/westernthistle/connection/RegistryConnections.pure
+      - test/westernthistle/dataspace/CorridorDataSpace.pure
+      - test/westernthistle/dataspace/RegistryDataSpace.pure
+      - test/westernthistle/domain/NetworkDomain.pure
+      - test/westernthistle/mapping/CorridorMapping.pure
+      - test/westernthistle/mapping/RegistryMapping.pure
+      - test/westernthistle/runtime/NetworkRuntimes.pure
+      - test/westernthistle/service/CorridorInventory.pure
+      - test/westernthistle/service/CountStationTally.pure
+      - test/westernthistle/service/CrewRoster.pure
+      - test/westernthistle/service/ShelterAudit.pure
+      - test/westernthistle/store/CorridorDB.pure
+      - test/westernthistle/store/RegistryDB.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:qualified-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - h2
+  - main-table-alias
+  - mapping-test
+  - multi-table
+  - primary-key
+  - projection
+  - service
+  - service-test
+  - snowflake
+  - urban-planning

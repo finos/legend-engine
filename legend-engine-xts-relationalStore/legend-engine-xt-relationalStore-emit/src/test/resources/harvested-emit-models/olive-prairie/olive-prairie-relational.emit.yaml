@@ -1,0 +1,44 @@
+name: olive-prairie-relational
+title: "Prairie — Relational Filter/Inner-Join Association with Multi-Execution Services and a Graph-Fetch Test"
+description: |
+  An intermediate relational EMIT model in a prairie/grassland domain. A field table and a
+  plot table are linked by an inner join with a row filter, and a Field and a Plot are
+  related through an association. Two multi-execution Services graph-fetch fields and plots
+  across region-keyed environment bindings (present for parse/compile/plan; the EMIT harness
+  does not support assertion suites on multi-execution services). A single-execution
+  graph-fetch Service returns fields with their large plots and carries an assertion-backed
+  test suite, exercising the association inner join and the plot filter end to end.
+modelSources:
+  model:
+    root: olive-prairie-relational
+    files:
+      - test/oliveprairie/connection/PrairieConnection.pure
+      - test/oliveprairie/domain/Prairie.pure
+      - test/oliveprairie/mapping/PrairieMapping.pure
+      - test/oliveprairie/runtime/PrairieRuntime.pure
+      - test/oliveprairie/service/FieldByRegion.pure
+      - test/oliveprairie/service/FieldsMulti.pure
+      - test/oliveprairie/service/PlotsMulti.pure
+      - test/oliveprairie/store/PrairieDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - grammar:association
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association
+  - graph-fetch
+  - h2
+  - inner-join
+  - multi-execution
+  - prairie
+  - relational
+  - relational-filter
+  - service-test

@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::goldenridge::store::RidgeDB
+(
+  Schema intake
+  (
+    Table permit_case
+    (
+      case_id INTEGER PRIMARY KEY,
+      case_code VARCHAR(40) NOT NULL,
+      site_label VARCHAR(200) NOT NULL,
+      storeys INTEGER,
+      floor_area DOUBLE,
+      filed_on DATE,
+      intake_officer_id INTEGER,
+      inspector_id INTEGER,
+      approver_id INTEGER,
+      parcel_id INTEGER
+    )
+
+    Table reviewer
+    (
+      reviewer_id INTEGER PRIMARY KEY,
+      reviewer_name VARCHAR(200) NOT NULL,
+      unit_label VARCHAR(100)
+    )
+  )
+
+  Schema reference
+  (
+    Table parcel
+    (
+      parcel_id INTEGER PRIMARY KEY,
+      parcel_code VARCHAR(40) NOT NULL
+    )
+
+    Table ward_link
+    (
+      link_id INTEGER PRIMARY KEY,
+      parcel_id INTEGER NOT NULL,
+      ward_id INTEGER NOT NULL,
+      link_kind VARCHAR(40) NOT NULL
+    )
+
+    Table ward
+    (
+      ward_id INTEGER PRIMARY KEY,
+      ward_name VARCHAR(120) NOT NULL,
+      district_label VARCHAR(120) NOT NULL
+    )
+
+    View permit_case_vw
+    (
+      case_id: intake.permit_case.case_id PRIMARY KEY,
+      case_code: intake.permit_case.case_code,
+      site_label: intake.permit_case.site_label,
+      storeys: intake.permit_case.storeys,
+      floor_area: intake.permit_case.floor_area,
+      filed_on: intake.permit_case.filed_on,
+      intake_officer: [test::goldenridge::store::RidgeDB]@Case_IntakeOfficer | intake.reviewer.reviewer_name,
+      inspector: [test::goldenridge::store::RidgeDB]@Case_Inspector | intake.reviewer.reviewer_name,
+      approver: [test::goldenridge::store::RidgeDB]@Case_Approver | intake.reviewer.reviewer_name,
+      ward_name: [test::goldenridge::store::RidgeDB]@Case_Parcel > @Parcel_WardLink > @WardLink_Ward | reference.ward.ward_name,
+      district_label: [test::goldenridge::store::RidgeDB]@Case_Parcel > @Parcel_WardLink > @WardLink_Ward | reference.ward.district_label
+    )
+  )
+
+  Join Case_Approver(intake.permit_case.approver_id = intake.reviewer.reviewer_id)
+  Join Case_Inspector(intake.permit_case.inspector_id = intake.reviewer.reviewer_id)
+  Join Case_IntakeOfficer(intake.permit_case.intake_officer_id = intake.reviewer.reviewer_id)
+  Join Case_Parcel(intake.permit_case.parcel_id = reference.parcel.parcel_id)
+  Join Parcel_WardLink(reference.parcel.parcel_id = reference.ward_link.parcel_id
+    and reference.ward_link.link_kind = 'PRIMARY_WARD')
+  Join WardLink_Ward(reference.ward_link.ward_id = reference.ward.ward_id)
+)

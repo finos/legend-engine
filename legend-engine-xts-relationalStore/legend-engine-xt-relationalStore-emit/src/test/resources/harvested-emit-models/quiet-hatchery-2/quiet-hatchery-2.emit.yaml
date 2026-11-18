@@ -1,0 +1,43 @@
+name: quiet-hatchery-2
+title: "Hatchery Tray Revisions - Bitemporal Wide Projection, Shared Enumeration Mappings and Mapping Includes"
+modelSources:
+  model:
+    root: quiet-hatchery-2
+    files:
+      - test/quiethatchery2/connection/HatcheryH2Connection.pure
+      - test/quiethatchery2/domain/HatcheryDomain.pure
+      - test/quiethatchery2/mapping/HatcheryBaseMapping.pure
+      - test/quiethatchery2/mapping/TrayEnumMappings.pure
+      - test/quiethatchery2/mapping/TrayMapping.pure
+      - test/quiethatchery2/runtime/HatcheryRuntime.pure
+      - test/quiethatchery2/service/PondRosterDigest.pure
+      - test/quiethatchery2/service/TrayRevisionFeed.pure
+      - test/quiethatchery2/store/HatcheryDatabase.pure
+
+features:
+  - execution:service
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:date-arithmetic
+  - query:project
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bitemporal
+  - business-temporal
+  - enumeration-mapping
+  - h2
+  - hatchery-records
+  - mapping-include
+  - point-in-time
+  - service-test
+  - wide-projection

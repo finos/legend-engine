@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data demo::borealwarren2::data::CaveTestData
+{
+  Relational
+  #{
+    cave.ripening_cave:
+      'cave_code,cave_name,humidity_pct\n'+
+      'C1,Lower Cellar,92.0\n'+
+      'C2,Upper Cellar,88.0\n';
+
+    cave.wheel_batch:
+      'batch_code,batch_name,cave_code,milk_kind,band_code,note_text,rind_days,weight_kg,turned_on\n'+
+      'WB-01,Alpine Round,C1,cow,A,washed rind,30,9.0,2026-01-05\n'+
+      'WB-02,Meadow Wheel,C1,goat,B,brushed rind,25,5.0,2026-01-06\n'+
+      'WB-03,Hillside Tomme,C1,sheep,C,natural rind,20,5.0,2026-01-07\n'+
+      'WB-04,Valley Crottin,C1,goat,D,bloomy rind,15,6.0,2026-01-08\n'+
+      'WB-05,Ridge Truckle,C1,cow,E,smoked rind,12,1.5,2026-01-09\n'+
+      'WB-06,Orchard Brick,C1,cow,F,cloth rind,10,5.0,2026-01-10\n'+
+      'WB-07,Cellar Drum,C1,sheep,G,waxed rind,8,4.5,2026-01-11\n'+
+      'WB-08,Pasture Loaf,C1,goat,H,ashed rind,5,3.5,2026-01-12\n'+
+      'WB-09,Quiet Corner,C1,cow,,,4,3.25,2026-01-13\n'+
+      'WB-10,Stone Ledge,C1,cow,Z,dry rind,2,1.75,2026-01-14\n'+
+      'WB-11,Draught Nook,C1,buffalo,A,odd rind,6,6.0,2026-01-15\n'+
+      'WB-12,Upper Shelf,C2,cow,B,upper rind,18,5.25,2026-01-16\n'+
+      'WB-13,Back Wall,C2,goat,C,back rind,9,4.5,2026-01-17\n';
+
+    cellarlog.turn_event:
+      'event_id,batch_code,turn_kind,brush_count\n'+
+      '1,WB-01,brush,3\n'+
+      '2,WB-01,wash,2\n'+
+      '3,WB-02,brush,4\n'+
+      '4,WB-03,brush,1\n'+
+      '5,WB-04,wash,0\n'+
+      '6,WB-05,brush,5\n'+
+      '7,WB-12,brush,2\n';
+
+    cellarlog.batch_grade:
+      'batch_code,grade_label\n'+
+      'WB-01,gold\n'+
+      'WB-03,silver\n'+
+      'WB-12,bronze\n';
+  }#
+}

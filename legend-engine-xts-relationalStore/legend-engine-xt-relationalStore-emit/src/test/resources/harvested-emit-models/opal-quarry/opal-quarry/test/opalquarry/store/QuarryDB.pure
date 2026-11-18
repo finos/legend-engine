@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::opalquarry::store::QuarryDB
+(
+  Schema stoneyard
+  (
+    Table block
+    (
+      block_code VARCHAR(16) PRIMARY KEY,
+      block_label VARCHAR(128),
+      bench_code VARCHAR(16),
+      cutter_id VARCHAR(16),
+      grade_code VARCHAR(4),
+      finish_code VARCHAR(4),
+      length_mm INTEGER,
+      width_mm INTEGER,
+      height_mm INTEGER,
+      mass_kg FLOAT,
+      quarried_date DATE,
+      logged_stamp TIMESTAMP,
+      tool_code VARCHAR(16)
+    )
+    Table bench
+    (
+      bench_code VARCHAR(16) PRIMARY KEY,
+      bench_label VARCHAR(128),
+      seam_code VARCHAR(16),
+      depth_m FLOAT,
+      opened_date DATE
+    )
+    Table cutter
+    (
+      cutter_id VARCHAR(16) PRIMARY KEY,
+      cutter_label VARCHAR(128),
+      active_flag VARCHAR(1),
+      primary_tool VARCHAR(16),
+      shift_label VARCHAR(32)
+    )
+    Table cut_log
+    (
+      cut_id VARCHAR(16) PRIMARY KEY,
+      block_code VARCHAR(16),
+      tool_code VARCHAR(16),
+      pass_count INTEGER,
+      cut_date DATE,
+      cut_stamp TIMESTAMP
+    )
+    Table polish_log
+    (
+      polish_id VARCHAR(16) PRIMARY KEY,
+      block_code VARCHAR(16),
+      grit_value INTEGER,
+      polish_stamp TIMESTAMP,
+      polisher_label VARCHAR(128)
+    )
+    Table tool_ref
+    (
+      tool_code VARCHAR(16) PRIMARY KEY,
+      tool_label VARCHAR(128),
+      blade_kind VARCHAR(32),
+      blade_width_mm INTEGER
+    )
+
+    View bench_pass_load
+    (
+      ~groupBy (stoneyard.cut_log.block_code)
+      block_code: stoneyard.cut_log.block_code,
+      peak_pass_count: max(stoneyard.cut_log.pass_count)
+    )
+  )
+
+  Join Block_Bench(stoneyard.block.bench_code = stoneyard.bench.bench_code)
+  Join Block_Cutter(stoneyard.block.cutter_id = stoneyard.cutter.cutter_id and stoneyard.cutter.active_flag = 'Y')
+  Join Block_CutLog(stoneyard.block.block_code = stoneyard.cut_log.block_code)
+  Join CutLog_Tool(stoneyard.cut_log.tool_code = stoneyard.tool_ref.tool_code)
+  Join Block_PolishLog(stoneyard.block.block_code = stoneyard.polish_log.block_code)
+  Join Block_Tool(stoneyard.block.tool_code = stoneyard.tool_ref.tool_code)
+  Join Block_PassLoad(stoneyard.block.block_code = stoneyard.bench_pass_load.block_code)
+  Join CutLog_PassLoad(stoneyard.cut_log.block_code = stoneyard.bench_pass_load.block_code)
+)

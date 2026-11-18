@@ -1,0 +1,36 @@
+name: hazel-ridge
+title: "Hazel Ridge — a store-less trail-stewardship governance model documented by one diagram and generated as a JSON schema"
+description: |
+  A community trail-network stewardship model that carries no store, mapping or
+  runtime at all: fifteen plain classes describe the stewardship charter, the
+  network and its segments, trailheads, waypoints, surface conditions, access
+  rules and their seasonal closures, maintenance tasks, work parties,
+  volunteers, equipment, inspection reports, hazard notes and signage
+  placements. A single stored diagram fixes the geometry and the reading order
+  of the whole governance graph, so the diagram is the model's only
+  documentation artifact. One JSON-schema file generation rooted on the charter
+  pulls in every related type, and a generation specification composes it, so
+  the group is proven through the parse, compile and generation phases without
+  any executable element.
+modelSources:
+  model:
+    root: hazel-ridge
+    files:
+      - test/hazelridge/diagram/StewardshipDiagram.pure
+      - test/hazelridge/domain/TrailDomain.pure
+      - test/hazelridge/generation/StewardshipGeneration.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:diagram
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - diagram
+  - file-generation
+  - generation-specification
+  - governance
+  - json-schema
+  - store-less
+  - trail-stewardship

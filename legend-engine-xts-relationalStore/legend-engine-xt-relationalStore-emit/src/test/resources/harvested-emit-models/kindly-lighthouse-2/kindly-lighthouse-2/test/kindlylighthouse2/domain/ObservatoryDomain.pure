@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::kindlylighthouse2::domain::*;
+
+Class <<test::kindlylighthouse2::profile::ObservatoryProfile.scheduled>> {test::kindlylighthouse2::profile::ObservatoryProfile.curator = 'night-team'} test::kindlylighthouse2::domain::ScheduleEntry
+{
+  slotCode: String[1];
+  telescopeCode: String[1];
+  observatoryCode: String[1];
+  targetName: String[1];
+}
+
+Class <<temporal.businesstemporal>> test::kindlylighthouse2::domain::TelescopeSlot extends ScheduleEntry
+{
+  slotCode: String[1];
+  telescopeCode: String[1];
+  observatoryCode: String[1];
+  targetName: String[1];
+  statusCode: String[1];
+  regionName: String[0..1];
+  observatoryLabel: String[0..1];
+}
+
+Class test::kindlylighthouse2::domain::Telescope
+{
+  telescopeCode: String[1];
+  telescopeName: String[1];
+  observatoryCode: String[1];
+}
+
+Class test::kindlylighthouse2::domain::Observatory
+{
+  observatoryCode: String[1];
+  observatoryName: String[1];
+  campusCode: String[1];
+}
+
+Class test::kindlylighthouse2::domain::Campus
+{
+  campusCode: String[1];
+  campusName: String[1];
+  regionCode: String[1];
+}
+
+Class test::kindlylighthouse2::domain::Region
+{
+  regionCode: String[1];
+  regionName: String[1];
+}
+
+Association test::kindlylighthouse2::domain::Slot_Telescope
+{
+  slots: TelescopeSlot[*];
+  telescope: Telescope[1];
+}
+
+Association test::kindlylighthouse2::domain::Telescope_Observatory
+{
+  telescopes: Telescope[*];
+  observatory: Observatory[1];
+}
+
+Association test::kindlylighthouse2::domain::Observatory_Campus
+{
+  observatories: Observatory[*];
+  campus: Campus[1];
+}
+
+Association test::kindlylighthouse2::domain::Campus_Region
+{
+  campuses: Campus[*];
+  region: Region[1];
+}

@@ -1,0 +1,43 @@
+name: scarlet-delta
+title: "Scarlet Delta — Herbarium Sheet Document Collection with Schema Validation and a JSON Binding"
+description: |
+  A herbarium curation model anchored on a document store rather than tables.
+  A mounted specimen sheet class carries five required scalar and instant-typed
+  properties plus a required collection of at least two filed fragments, and the
+  single document collection declares that shape itself through an inline
+  document schema with a closed property set, strict validation and an error
+  validation action. A JSON binding supplies the wire format for the nested
+  document, the class mapping anchors the sheet on the collection and names the
+  binding instead of column transforms, and an engine runtime pairs that mapping
+  with a credentialed document-store connection to complete the read path.
+
+modelSources:
+  model:
+    root: scarlet-delta
+    files:
+      - test/scarletdelta/connection/SheetConnection.pure
+      - test/scarletdelta/domain/HerbariumDomain.pure
+      - test/scarletdelta/external/SheetBinding.pure
+      - test/scarletdelta/mapping/SheetMapping.pure
+      - test/scarletdelta/runtime/SheetRuntime.pure
+      - test/scarletdelta/store/SheetCollections.pure
+
+features:
+  - execution:external-format-binding
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:runtime
+  - store:mongodb-collection-schema-validation
+  - store:mongodb-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - document-collection
+  - document-store
+  - herbarium-curation
+  - json-binding
+  - nested-collection
+  - schema-validation
+  - strict-validation

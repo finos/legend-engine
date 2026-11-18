@@ -1,0 +1,203 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::indigoaviary::domain::TurbineKind
+{
+  LAND,
+  SEA,
+  PROTOTYPE
+}
+
+Enum test::indigoaviary::domain::ConditionBand
+{
+  CLEAR,
+  WATCH,
+  ALERT,
+  CRITICAL
+}
+
+Enum test::indigoaviary::domain::SensorKind
+{
+  VIBRATION,
+  TEMPERATURE,
+  OIL_PRESSURE,
+  ROTOR_SPEED
+}
+
+Enum test::indigoaviary::domain::WorkState
+{
+  QUEUED,
+  ACTIVE,
+  COMPLETE,
+  DEFERRED
+}
+
+Enum test::indigoaviary::domain::DowntimeKind
+{
+  WEATHER,
+  INSPECTION,
+  GRID,
+  EQUIPMENT
+}
+
+Enum test::indigoaviary::domain::VisitKind
+{
+  ROUTINE,
+  TARGETED,
+  EMERGENCY
+}
+
+Class test::indigoaviary::domain::WindUnit
+{
+  unitCode: String[1];
+  unitName: String[1];
+  sectorCode: String[1];
+  turbineKind: test::indigoaviary::domain::TurbineKind[1];
+  healthLabel: String[0..1];
+  nacelleModels: String[*];
+  readingSensors: String[*];
+  inspectionNotes: String[*];
+  workStates: String[*];
+  downtimeKinds: String[*];
+  sectorNames: String[*];
+  weatherSpeeds: Float[*];
+}
+
+Class test::indigoaviary::domain::LandTurbine extends test::indigoaviary::domain::WindUnit
+{
+  foundationType: String[1];
+  bladeSpanMetres: Float[1];
+}
+
+Class test::indigoaviary::domain::SeaTurbine extends test::indigoaviary::domain::WindUnit
+{
+  platformCode: String[1];
+  waterDepthMetres: Float[1];
+}
+
+Class <<temporal.businesstemporal>> test::indigoaviary::domain::Nacelle
+{
+  nacelleCode: String[1];
+  unitCode: String[1];
+  modelName: String[1];
+  conditionBand: test::indigoaviary::domain::ConditionBand[1];
+}
+
+Class <<temporal.processingtemporal>> test::indigoaviary::domain::SensorReading
+{
+  readingCode: String[1];
+  unitCode: String[1];
+  sensorKind: test::indigoaviary::domain::SensorKind[1];
+  readingValue: Float[1];
+  capturedOn: StrictDate[1];
+  conditionBand: test::indigoaviary::domain::ConditionBand[0..1];
+}
+
+Class test::indigoaviary::domain::InspectionVisit
+{
+  visitCode: String[1];
+  unitCode: String[1];
+  visitKind: test::indigoaviary::domain::VisitKind[1];
+  visitedOn: StrictDate[1];
+  visitNote: String[0..1];
+}
+
+Class test::indigoaviary::domain::SiteSector
+{
+  sectorCode: String[1];
+  sectorName: String[1];
+  regionName: String[1];
+  summaryCount: Integer[0..1];
+}
+
+Class test::indigoaviary::domain::MaintenanceWorkItem
+{
+  workCode: String[1];
+  unitCode: String[1];
+  workState: test::indigoaviary::domain::WorkState[1];
+  openedOn: StrictDate[1];
+  workNote: String[0..1];
+}
+
+Class test::indigoaviary::domain::DowntimeEvent
+{
+  eventCode: String[1];
+  unitCode: String[1];
+  downtimeKind: test::indigoaviary::domain::DowntimeKind[1];
+  startedOn: StrictDate[1];
+  durationHours: Float[1];
+}
+
+Class test::indigoaviary::domain::SensorChannel
+{
+  channelCode: String[1];
+  unitCode: String[1];
+  sensorKind: test::indigoaviary::domain::SensorKind[1];
+  channelLabel: String[1];
+}
+
+Class test::indigoaviary::domain::WeatherSnapshot
+{
+  snapshotCode: String[1];
+  sectorCode: String[1];
+  observedOn: StrictDate[1];
+  windSpeedMetres: Float[1];
+}
+
+Class test::indigoaviary::domain::TurbineStatus
+{
+  statusCode: String[1];
+  unitCode: String[1];
+  statusBand: test::indigoaviary::domain::ConditionBand[1];
+  statusNote: String[0..1];
+}
+
+Class test::indigoaviary::domain::RotorAssembly
+{
+  assemblyCode: String[1];
+  unitCode: String[1];
+  bladeCount: Integer[1];
+  assemblyNote: String[0..1];
+}
+
+Association test::indigoaviary::domain::Sector_Units
+{
+  sector: test::indigoaviary::domain::SiteSector[1];
+  units: test::indigoaviary::domain::WindUnit[*];
+}
+
+Association test::indigoaviary::domain::Unit_Nacelle
+{
+  unit: test::indigoaviary::domain::WindUnit[1];
+  nacelle: test::indigoaviary::domain::Nacelle[0..1];
+}
+
+Association test::indigoaviary::domain::Unit_Work
+{
+  unit: test::indigoaviary::domain::WindUnit[1];
+  workItems: test::indigoaviary::domain::MaintenanceWorkItem[*];
+}
+
+Association test::indigoaviary::domain::Unit_Downtime
+{
+  unit: test::indigoaviary::domain::WindUnit[1];
+  downtimeEvents: test::indigoaviary::domain::DowntimeEvent[*];
+}
+
+Association test::indigoaviary::domain::Sector_Weather
+{
+  sector: test::indigoaviary::domain::SiteSector[1];
+  weather: test::indigoaviary::domain::WeatherSnapshot[*];
+}

@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarwarren5::mapping::WarrenSurveyMapping
+(
+  *test::cedarwarren5::domain::BurrowSurvey[burrowSurveySet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.survey_id
+    )
+    ~mainTable [test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey
+    burrowCode: [test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.burrow_code,
+    warrenName: [test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.warren_name,
+    entranceCount: [test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.entrance_count,
+    surveyRegister: 'CEDAR WARREN REGISTER',
+    conditionGrade: case(
+                      equal([test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.collapsed_flag, 1),
+                      'COLLAPSED',
+                      case(
+                        equal([test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.flooded_flag, 1),
+                        'FLOODED',
+                        case(
+                          equal([test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.browsed_flag, 1),
+                          'BROWSED',
+                          case(
+                            equal([test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.vegetated_flag, 1),
+                            'OVERGROWN',
+                            case(
+                              equal([test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.gated_flag, 1),
+                              'GATED',
+                              case(
+                                equal([test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.ringed_flag, 1),
+                                'RINGED',
+                                case(
+                                  equal([test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.lined_flag, 1),
+                                  'LINED',
+                                  case(
+                                    equal([test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.occupied_flag, 1),
+                                    'OCCUPIED',
+                                    sqlNull()
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    ),
+    accessNote: case(
+                  equal([test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.gated_flag, 1),
+                  'GATE KEY REQUIRED',
+                  case(
+                    equal([test::cedarwarren5::store::WarrenDatabase]warren.burrow_survey.collapsed_flag, 1),
+                    'DO NOT ENTER',
+                    sqlNull()
+                  )
+                )
+  }
+
+  testSuites:
+  [
+    conditionGradeSuite:
+    {
+      function: test::cedarwarren5::domain::BurrowSurvey.all()->project(~[burrowCode: b|$b.burrowCode, warrenName: b|$b.warrenName, entranceCount: b|$b.entranceCount, conditionGrade: b|$b.conditionGrade, accessNote: b|$b.accessNote, surveyRegister: b|$b.surveyRegister]);
+      tests:
+      [
+        everyConditionArmAndTheNullSentinel:
+        {
+          doc: 'One surveyed burrow per arm of the condition chain, each row ticking exactly the flag its arm tests so the earlier arms are proven not to swallow it, plus a final burrow with no flag ticked at all whose grade falls through to the explicit SQL null sentinel. The access note is a second, shallower chain over two of the same flags, so the collapsed burrow and the gated burrow each resolve a different note while every other row resolves a typed null, and the register scope is selected as a row-independent constant beside the derived columns.';
+          data:
+          [
+            test::cedarwarren5::store::WarrenDatabase:
+              Relational
+              #{
+                warren.burrow_survey:
+                  'survey_id,burrow_code,warren_name,entrance_count,occupied_flag,flooded_flag,lined_flag,collapsed_flag,vegetated_flag,browsed_flag,gated_flag,ringed_flag\n'+
+                  '1,BW-0001,Cedar Hollow Warren,3,0,0,0,1,0,0,0,0\n'+
+                  '2,BW-0002,Cedar Hollow Warren,5,0,1,0,0,0,0,0,0\n'+
+                  '3,BW-0003,Cedar Hollow Warren,2,0,0,0,0,0,1,0,0\n'+
+                  '4,BW-0004,Fern Hollow Warren,7,0,0,0,0,1,0,0,0\n'+
+                  '5,BW-0005,Fern Hollow Warren,1,0,0,0,0,0,0,1,0\n'+
+                  '6,BW-0006,Fern Hollow Warren,4,0,0,0,0,0,0,0,1\n'+
+                  '7,BW-0007,Stone Ride Warren,6,0,0,1,0,0,0,0,0\n'+
+                  '8,BW-0008,Stone Ride Warren,9,1,0,0,0,0,0,0,0\n'+
+                  '9,BW-0009,Stone Ride Warren,2,0,0,0,0,0,0,0,0\n';
+              }#
+          ];
+          asserts:
+          [
+            nineGradedBurrows:
+              Relation
+              #{
+                burrowCode,warrenName,entranceCount,conditionGrade,accessNote,surveyRegister
+                BW-0001,Cedar Hollow Warren,3,COLLAPSED,DO NOT ENTER,CEDAR WARREN REGISTER
+                BW-0002,Cedar Hollow Warren,5,FLOODED,null,CEDAR WARREN REGISTER
+                BW-0003,Cedar Hollow Warren,2,BROWSED,null,CEDAR WARREN REGISTER
+                BW-0004,Fern Hollow Warren,7,OVERGROWN,null,CEDAR WARREN REGISTER
+                BW-0005,Fern Hollow Warren,1,GATED,GATE KEY REQUIRED,CEDAR WARREN REGISTER
+                BW-0006,Fern Hollow Warren,4,RINGED,null,CEDAR WARREN REGISTER
+                BW-0007,Stone Ride Warren,6,LINED,null,CEDAR WARREN REGISTER
+                BW-0008,Stone Ride Warren,9,OCCUPIED,null,CEDAR WARREN REGISTER
+                BW-0009,Stone Ride Warren,2,null,null,CEDAR WARREN REGISTER;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

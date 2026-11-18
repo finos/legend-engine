@@ -1,0 +1,54 @@
+name: boreal-cove-access
+title: "Boreal Cove — Six Keyed Multi-Execution Survey Services (Membership Predicates, De-duplication, Ordering)"
+description: |
+  Six services form the entire executable surface: the class, store and mapping
+  they run against are declared in a separate module, so all behaviour sits in
+  the query bodies. Each body narrows the tagged-animal extent by an equality on
+  a parameter, a strict lower mass bound, an inclusive upper wing-span bound and
+  an optional region whose re-sighting floor is resolved through a standalone
+  helper function, then layers membership tests against literal sets and
+  caller-supplied collections, a boolean release-state conjunct in two of them,
+  and finally projects an ordered column list — de-duplicating first in two
+  cases. Every service is declared with a keyed multi-execution bound to six
+  targets, one runtime and one connection per key, so the plan is selected by
+  key at run time. The keyed executions are proven through compilation and plan
+  generation for every key; the branch-distinguishing assertions over the same
+  query logic live on the mapping test suite in the module they depend on.
+
+modelSources:
+  model:
+    root: boreal-cove-access
+    files:
+      - test/borealcove/connection/SurveyConnections.pure
+      - test/borealcove/runtime/SurveyRuntimes.pure
+      - test/borealcove/service/MarshTags.pure
+      - test/borealcove/service/RecoveredTags.pure
+      - test/borealcove/service/ReleaseStateSummary.pure
+      - test/borealcove/service/SurveyorCoverage.pure
+      - test/borealcove/service/TagMassProfile.pure
+      - test/borealcove/service/WellObservedTags.pure
+  dependencies:
+    - source: boreal-cove-shared.emit.yaml
+
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:relational-connection
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - collection-op
+  - distinct
+  - field-survey
+  - h2
+  - keyed-execution
+  - membership-predicate
+  - multi-execution
+  - sort-limit
+  - wildlife-tracking

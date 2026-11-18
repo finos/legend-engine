@@ -1,0 +1,68 @@
+name: golden-arboretum-3
+title: "Golden Arboretum 3 — Eight-Armed Conditionals, Null Sentinels And A Catalogued Two-Tier Execution Surface"
+description: |
+  A tree-nursery propagation register raised over two relational stores: a
+  register store holding lots, beds, stock plants and treatment entries, and a
+  reference store holding species, growing-medium and zone entries that the
+  register store textually includes so its joins can reach them. Six named
+  equality joins carry property mappings onto columns outside each class's main
+  table, including two cross-store hops. The register mapping spells a
+  single-letter vigour grade out through an eight-armed conditional that falls
+  back to an explicit SQL null sentinel, reads a numeric health flag through a
+  second conditional with the same fallback, binds a constant register name as
+  a literal, and folds free-text stage values onto a closed stage enumeration.
+  The reference mapping curates the same three reference tables on its own
+  mapping and rewrites one drainage class through a two-armed conditional.
+  Two Snowflake connections with OAuth authentication strategies are pointed at
+  by two runtimes, one binding both stores for the cross-store register tier and
+  one binding the reference store alone. Three single-execution services publish
+  the register, the distinct bed occupancy combinations of one shelter class and
+  the curated species catalogue, and a data space groups the two tiers into
+  named execution contexts with two featured executables.
+modelSources:
+  model:
+    root: golden-arboretum-3
+    files:
+      - test/goldenarboretum3/connection/NurseryConnections.pure
+      - test/goldenarboretum3/dataspace/NurseryDataSpace.pure
+      - test/goldenarboretum3/domain/NurseryDomain.pure
+      - test/goldenarboretum3/mapping/NurseryCoreMapping.pure
+      - test/goldenarboretum3/mapping/NurseryReferenceMapping.pure
+      - test/goldenarboretum3/runtime/NurseryRuntimes.pure
+      - test/goldenarboretum3/service/BedOccupancy.pure
+      - test/goldenarboretum3/service/LotRegister.pure
+      - test/goldenarboretum3/service/SpeciesCatalogue.pure
+      - test/goldenarboretum3/store/NurseryDb.pure
+      - test/goldenarboretum3/store/NurseryReferenceDb.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - grammar:enumeration
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:collection-op
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-transform
+  - cross-store-join
+  - data-space
+  - distinct
+  - h2
+  - null-sentinel
+  - snowflake
+  - tree-nursery

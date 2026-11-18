@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::goldenglacier5::connection::StationH2Connection
+{
+  store: test::goldenglacier5::store::MoraineDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists moraine;',
+      'create schema moraine;',
+      'create table moraine.moraine_station (station_code varchar(24) primary key, ridge_name varchar(120) not null, stage_code varchar(8) not null, instrument_code varchar(8) not null, elevation_m double not null, observed_on date not null, logged_at timestamp not null, basin_code varchar(16) not null);',
+      'create table moraine.drainage_basin (basin_code varchar(16) primary key, basin_name varchar(120) not null, catchment_area_km2 double not null);',
+      'insert into moraine.drainage_basin values (\'DB-1\', \'Upper Tarn Basin\', 42.75);',
+      'insert into moraine.moraine_station values (\'MS-01\', \'Crescent Ridge\', \'ACT\', \'STK\', 1840.5, \'2026-05-04\', \'2026-05-04 06:15:00\', \'DB-1\');'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+###Connection
+RelationalDatabaseConnection test::goldenglacier5::connection::BasinH2Connection
+{
+  store: test::goldenglacier5::store::MoraineDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists moraine;',
+      'create schema moraine;',
+      'create table moraine.drainage_basin (basin_code varchar(16) primary key, basin_name varchar(120) not null, catchment_area_km2 double not null);',
+      'insert into moraine.drainage_basin values (\'DB-2\', \'Lower Scree Basin\', 18.5);'
+      ];
+  };
+  auth: DefaultH2;
+}

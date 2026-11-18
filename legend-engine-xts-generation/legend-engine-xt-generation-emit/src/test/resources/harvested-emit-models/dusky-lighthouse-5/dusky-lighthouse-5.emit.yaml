@@ -1,0 +1,28 @@
+name: dusky-lighthouse-5
+title: "Seed Vault Accessions — JSON Schema Artefacts Over a Storage Inheritance Hierarchy"
+description: |
+  A botanical seed-vault corpus exercising EMIT artefact generation over an
+  inheritance hierarchy. SeedAccession and TissueAccession both specialise
+  VaultAccession, a JsonSchema file generation walks the related types of the
+  hierarchy with includeAllRelatedTypes, and a GenerationSpecification collects
+  the generation. Store-less: parse, compile and file-generation only.
+modelSources:
+  model:
+    root: dusky-lighthouse-5
+    files:
+      - test/duskylighthouse5/domain/VaultDomain.pure
+      - test/duskylighthouse5/generation/VaultGeneration.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:class-inheritance
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - file-generation
+  - generation-specification
+  - json-schema
+  - seed-vault
+  - store-less

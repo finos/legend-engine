@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedvineyard6::service::PatrolLog
+{
+  pattern: '/gildedvineyard6/v1/patrols';
+  title: 'Shelter Patrol Log';
+  owners:
+  [
+    'ridge-survey',
+    'trail-maintenance'
+  ];
+  documentation: 'Returns the shelter patrol log, projecting the visit date beside the year extracted from it, the shelter name reached through the visit-to-shelter join and a derived label that concatenates the visit code with the stringified visit date, so post-processed and pushed-down columns appear in one result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::gildedvineyard6::domain::PatrolVisit.all()->project(
+      [
+        v|$v.code,
+        v|$v.visitedOn,
+        v|$v.visitedOn->year(),
+        v|$v.conditionCode,
+        v|$v.shelterName
+      ],
+      [
+        'Visit',
+        'VisitedOn',
+        'VisitYear',
+        'Condition',
+        'Shelter'
+      ]
+    )->sort([asc('Visit')]);
+    mapping: test::gildedvineyard6::mapping::TrailMapping;
+    runtime: test::gildedvineyard6::runtime::TrailRuntime;
+  }
+  testSuites:
+  [
+    patrolSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailWarehouseConnection:
+            Relational
+            #{
+              trails.shelter:
+                'shelter_id,shelter_code,shelter_name,segment_id,bunk_count\n'+
+                '1,SH-01,Larch Hut,1,6\n'+
+                '2,SH-02,Fern Hut,3,4\n';
+
+              trails.patrol_visit:
+                'visit_id,visit_code,shelter_id,visited_on,condition_code\n'+
+                '1,PV-01,1,2026-04-02,GOOD\n'+
+                '2,PV-02,2,2026-05-11,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        patrolVisitsProjected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            visitYearAndShelterResolved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"PV-01","VisitedOn":"2026-04-02","VisitYear":2026,"Condition":"GOOD","Shelter":"Larch Hut"},{"Visit":"PV-02","VisitedOn":"2026-05-11","VisitYear":2026,"Condition":null,"Shelter":"Fern Hut"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

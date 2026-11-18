@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::crimsonprairie2::domain::*;
+
+Enum demo::crimsonprairie2::domain::CoverBand
+{
+  TALLGRASS,
+  MIXEDGRASS,
+  SHORTGRASS
+}
+
+Class <<temporal.bitemporal>> demo::crimsonprairie2::domain::BurnUnit
+{
+  unitCode: String[1];
+  unitName: String[1];
+  coverBand: CoverBand[1];
+  moistureIndex: Integer[1];
+  moistureNote: String[1];
+  breakFlag: String[1];
+  gradeFlag: String[1];
+  tierFlag: String[1];
+  seedFlag: String[1];
+  grazeFlag: String[1];
+  markerLabel: String[0..1];
+  regionName: String[0..1];
+  parentName: String[0..1];
+  ancestorName: String[0..1];
+  ancestorSteward: String[0..1];
+  ancestorOffice: String[0..1];
+}

@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::zephyrlagoon2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'One water sample drawn from a tidal lagoon monitoring site in a named season.'} test::zephyrlagoon2::domain::WaterSample
+{
+  sampleCode: String[1];
+  catchmentCode: String[1];
+  seasonYear: Integer[1];
+  seasonMonth: Integer[1];
+  litresDrawn: Float[1];
+  methodCode: String[1];
+  gradeCode: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A monitoring site version corrected over processing time; its lagoon zone is reached through a further processing-temporal hop.'} test::zephyrlagoon2::domain::MonitoringSite
+{
+  siteCode: String[1];
+  siteLabel: String[1];
+  stewardTeam: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A lagoon zone version whose ancestry is flattened into named tier levels, so a caller selects a depth by naming the level rather than by walking parents.'} test::zephyrlagoon2::domain::LagoonZone
+{
+  zoneCode: String[1];
+  zoneLabel: String[1];
+  tierOneCode: String[1];
+  tierTwoCode: String[1];
+  tierThreeCode: String[1];
+  tierFourCode: String[0..1];
+}
+
+Association test::zephyrlagoon2::domain::Sample_Site
+{
+  drawnSamples: WaterSample[*];
+  site: MonitoringSite[0..1];
+}
+
+Association test::zephyrlagoon2::domain::Site_Zone
+{
+  zonedSites: MonitoringSite[*];
+  zone: LagoonZone[0..1];
+}

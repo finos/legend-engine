@@ -1,0 +1,62 @@
+name: scarlet-willow
+title: "Scarlet Willow - Municipal Tree Inventory (multi-execution services, cross-schema nested joins)"
+description: |
+  An advanced relational model over a municipal tree inventory. A cross-schema
+  store spreads driver, site, reference and hierarchy tables across three
+  schemas linked by a dozen joins, including literal-discriminated ones and an
+  inline view whose soft-delete indicator is a null-defaulting conditional.
+  Bidirectional associations chain trees through sites, districts and regions,
+  and the relational mapping binds navigation properties to nested join paths
+  four hops deep. Environment-keyed multi-execution services and a data space
+  expose parameterized queries that combine deeply nested membership and
+  date-derived filters with grouped aggregation and column projection.
+modelSources:
+  model:
+    root: scarlet-willow
+    files:
+      - test/scarletwillow/connection/PlanningConnections.pure
+      - test/scarletwillow/dataspace/PlanningDataSpace.pure
+      - test/scarletwillow/domain/Domain.pure
+      - test/scarletwillow/mapping/PlanningMapping.pure
+      - test/scarletwillow/runtime/PlanningRuntimes.pure
+      - test/scarletwillow/service/TreeCanopyRollup.pure
+      - test/scarletwillow/service/TreeListing.pure
+      - test/scarletwillow/store/PlanningDatabase.pure
+features:
+  - execution:data-space
+  - execution:multi-execution-service
+  - execution:service
+  - grammar:association
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - cross-schema
+  - dataspace
+  - group-by
+  - h2
+  - inline-view
+  - multi-execution
+  - municipal
+  - nested-join
+  - relational
+  - sqlserver
+  - tree-inventory

@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::nobledelta2::store::CyclewayDB
+(
+  Schema network
+  (
+    Table count_session
+    (
+      session_ref VARCHAR(20) PRIMARY KEY,
+      counter_ref VARCHAR(20) NOT NULL,
+      weather_code VARCHAR(8),
+      surface_code VARCHAR(8),
+      rider_total INTEGER,
+      note_text VARCHAR(240),
+      retired_flag CHAR(1) NOT NULL
+    )
+    Table counter_unit
+    (
+      counter_ref VARCHAR(20) PRIMARY KEY,
+      segment_ref VARCHAR(20) NOT NULL,
+      unit_label VARCHAR(120) NOT NULL,
+      mount_code VARCHAR(8) NOT NULL,
+      active_flag CHAR(1) NOT NULL
+    )
+    Table path_segment
+    (
+      segment_ref VARCHAR(20) PRIMARY KEY,
+      segment_label VARCHAR(120) NOT NULL,
+      district_ref VARCHAR(20) NOT NULL
+    )
+    Table planning_district
+    (
+      district_ref VARCHAR(20) PRIMARY KEY,
+      district_label VARCHAR(120) NOT NULL
+    )
+  )
+
+  Filter LiveSessions(network.count_session.retired_flag = 'N')
+  Filter ActiveCounters(network.counter_unit.active_flag = 'Y')
+
+  Join Session_Counter(network.count_session.counter_ref = network.counter_unit.counter_ref)
+  Join Counter_Segment(network.counter_unit.segment_ref = network.path_segment.segment_ref)
+  Join Segment_District(network.path_segment.district_ref = network.planning_district.district_ref)
+)

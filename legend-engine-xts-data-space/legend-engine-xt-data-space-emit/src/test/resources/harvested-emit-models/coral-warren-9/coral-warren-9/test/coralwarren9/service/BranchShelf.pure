@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralwarren9::service::BranchShelf
+{
+  pattern: '/coralwarren9/v1/branches/{branchCode}/shelf';
+  title: 'Seed Library - Branch Shelf';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists the deduplicated shelf of one branch, matching the branch code parameter across the packet to branch join and upper-casing the variety label.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {branchCode: String[1]|test::coralwarren9::domain::SeedPacket.all()->filter(
+      p|$p.branch.branchCode == $branchCode
+    )->project(
+      [
+        p|$p.packetCode,
+        p|$p.variety.varietyLabel->toUpper(),
+        p|$p.branch.branchTag,
+        p|$p.gramWeight
+      ],
+      [
+        'Packet',
+        'Variety',
+        'Branch',
+        'Grams'
+      ]
+    )->distinct()->sort([asc('Packet')])};
+    mapping: test::coralwarren9::mapping::SeedLibraryMapping;
+    runtime: test::coralwarren9::runtime::SeedLibraryRuntime;
+  }
+  testSuites:
+  [
+    branchShelfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedLibraryWarehouse:
+            Reference
+            #{
+              test::coralwarren9::data::SeedLibraryFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        millbrookShelf:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            branchCode = 'BR-1'
+          ]
+          asserts:
+          [
+            threeMillbrookPackets:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Packet":"PK-01","Variety":"RED BARON ONION","Branch":"LIB-BR-1","Grams":12},{"Packet":"PK-02","Variety":"CAVOLO NERO","Branch":"LIB-BR-1","Grams":8},{"Packet":"PK-06","Variety":"PAINTED LADY BEAN","Branch":"LIB-BR-1","Grams":18}]';
+                  }#;
+              }#
+          ]
+        },
+        quaysideShelf:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            branchCode = 'BR-3'
+          ]
+          asserts:
+          [
+            twoQuaysidePackets:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Packet":"PK-04","Variety":"GARDENERS DELIGHT TOMATO","Branch":"LIB-BR-3","Grams":5},{"Packet":"PK-05","Variety":"PURPLE SPROUTING BROCCOLI","Branch":"LIB-BR-3","Grams":10}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

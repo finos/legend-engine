@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solargecko3::mapping::RegisterAsOfM2M
+(
+  test::solargecko3::domain::SubstrateKind: EnumerationMapping SubstrateCodeMapping
+  {
+    DUNE_SAND: ['DUNE'],
+    GRAVEL_PAVEMENT: ['GRAVEL'],
+    ROCK_SCREE: ['SCREE'],
+    CLAY_PAN: ['PAN']
+  }
+
+  *test::solargecko3::view::RegisterAsOfView[registerAsOfViewSet]: Pure
+  {
+    ~src test::solargecko3::view::RegisterLinePayload
+    featureCode: $src.featureCode->toOne(),
+    transectName: $src.transectName->toOne()->trim()->toUpper(),
+    asOfStanding: if($src.asOfDay->toOne() < $src.effectiveFrom->toOne(),
+                     | 'BEFORE-WINDOW',
+                     | if($src.effectiveThru->isEmpty(),
+                          | 'IN-WINDOW-OPEN',
+                          | if($src.asOfDay->toOne() > $src.effectiveThru->toOne(),
+                               | 'AFTER-WINDOW',
+                               | 'IN-WINDOW-CLOSED'))),
+    publishedBurrowCount: if($src.asOfDay->toOne() < $src.effectiveFrom->toOne(),
+                             | 0,
+                             | if($src.effectiveThru->isNotEmpty() && ($src.asOfDay->toOne() > $src.effectiveThru->toOne()),
+                                  | 0,
+                                  | if($src.heldBurrowCount->isEmpty(), | 0, | $src.heldBurrowCount->toOne()))),
+    substrate: EnumerationMapping SubstrateCodeMapping: [if($src.substrateCode->isEmpty(), | 'PAN', | $src.substrateCode->toOne()->toUpper()->trim())]->toOne()
+  }
+
+  testSuites:
+  [
+    asOfStandingSuite:
+    {
+      function: |test::solargecko3::view::RegisterAsOfView.all()->graphFetch(
+        #{
+          test::solargecko3::view::RegisterAsOfView
+          {
+            featureCode,
+            transectName,
+            asOfStanding,
+            publishedBurrowCount,
+            substrate
+          }
+        }#
+      )->serialize(
+        #{
+          test::solargecko3::view::RegisterAsOfView
+          {
+            featureCode,
+            transectName,
+            asOfStanding,
+            publishedBurrowCount,
+            substrate
+          }
+        }#
+      );
+      tests:
+      [
+        everyAsOfStanding:
+        {
+          doc: 'Resolves four register lines against the day they were requested for: one line whose window is still open, one whose closed window covers the day, one whose window closed before the day so the reading falls out of range and publishes nothing, and one whose window had not yet opened, with the last line also leaning on the substrate sentinel substituted before the vocabulary lookup and on the absent held count.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::solargecko3::view::RegisterLinePayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"featureCode":"TR-01","transectName":" north dune walk ","substrateCode":"dune","effectiveFrom":20260101,"asOfDay":20260615,"heldBurrowCount":7},{"featureCode":"TR-02","transectName":"gravel spur","substrateCode":"GRAVEL","effectiveFrom":20260101,"effectiveThru":20261231,"asOfDay":20260615,"heldBurrowCount":4},{"featureCode":"TR-03","transectName":"scree traverse","substrateCode":"scree","effectiveFrom":20240101,"effectiveThru":20241231,"asOfDay":20260615,"heldBurrowCount":9},{"featureCode":"TR-04","transectName":"pan crossing","effectiveFrom":20270101,"effectiveThru":20271231,"asOfDay":20260615}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fourResolvedLines:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"featureCode":"TR-01","transectName":"NORTH DUNE WALK","asOfStanding":"IN-WINDOW-OPEN","publishedBurrowCount":7,"substrate":"DUNE_SAND"},{"featureCode":"TR-02","transectName":"GRAVEL SPUR","asOfStanding":"IN-WINDOW-CLOSED","publishedBurrowCount":4,"substrate":"GRAVEL_PAVEMENT"},{"featureCode":"TR-03","transectName":"SCREE TRAVERSE","asOfStanding":"AFTER-WINDOW","publishedBurrowCount":0,"substrate":"ROCK_SCREE"},{"featureCode":"TR-04","transectName":"PAN CROSSING","asOfStanding":"BEFORE-WINDOW","publishedBurrowCount":0,"substrate":"CLAY_PAN"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,120 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowreef::service::SynonymRegister
+{
+  pattern: '/meadowreef/v1/synonym-register';
+  title: 'Meadow Reef - Species Synonym Register';
+  owners:
+  [
+    'reef-trail-office'
+  ];
+  documentation: 'Graph-fetches the recorded synonyms of the stored trail register, filtered on the standing route parameter so the join-reached register label and the folded standing are both observable, and an unmatched standing yields nothing.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: registerLabel: String[1]|test::meadowreef::domain::SpeciesSynonym.all()->filter(s|$s.registerLabel == $registerLabel)->graphFetch(
+      #{
+        test::meadowreef::domain::SpeciesSynonym
+        {
+          synonymText,
+          status,
+          registerLabel
+        }
+      }#
+    )->serialize(
+      #{
+        test::meadowreef::domain::SpeciesSynonym
+        {
+          synonymText,
+          status,
+          registerLabel
+        }
+      }#
+    );
+    mapping: test::meadowreef::mapping::SpeciesMapping;
+    runtime: test::meadowreef::runtime::SpeciesRuntime;
+  }
+  testSuites:
+  [
+    registerSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefConnection:
+            Relational
+            #{
+              reef.reef_species:
+                'species_code,family_name,zone_code\n'+
+                'SP-014,parrotfish,reef-flat\n';
+              reef.species_synonym:
+                'synonym_id,species_code,synonym_text,usage_id\n'+
+                '1,SP-014,Banded rainbowfish,10\n'+
+                '2,SP-014,Ribbon parrot,20\n';
+              reef.usage_ref:
+                'usage_id,usage_code,register_label\n'+
+                '10,accepted,Trail Register\n'+
+                '20,Deprecated,Retired Names\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        acceptedStandingSurfaces:
+        {
+          parameters:
+          [
+            registerLabel = 'Trail Register'
+          ]
+          asserts:
+          [
+            oneAcceptedSynonym:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"synonymText":"Banded rainbowfish","status":"ACCEPTED","registerLabel":"Trail Register"}}';
+                  }#;
+              }#
+          ]
+        },
+        unknownRegisterReturnsNothing:
+        {
+          parameters:
+          [
+            registerLabel = 'Unlisted Register'
+          ]
+          asserts:
+          [
+            emptyRegister:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

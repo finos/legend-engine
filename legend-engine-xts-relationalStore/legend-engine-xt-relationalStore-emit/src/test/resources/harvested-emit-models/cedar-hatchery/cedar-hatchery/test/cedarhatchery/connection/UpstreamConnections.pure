@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+JsonModelConnection test::cedarhatchery::connection::TankFactConnection
+{
+  class: test::cedarhatchery::domain::TankFact;
+  url: 'data:application/json,%7B%7D';
+}
+
+###Connection
+JsonModelConnection test::cedarhatchery::connection::CreekFactConnection
+{
+  class: test::cedarhatchery::domain::CreekFact;
+  url: 'data:application/json,%7B%7D';
+}
+
+###Connection
+JsonModelConnection test::cedarhatchery::connection::PondFactConnection
+{
+  class: test::cedarhatchery::domain::PondFact;
+  url: 'data:application/json,%7B%7D';
+}
+
+###Connection
+JsonModelConnection test::cedarhatchery::connection::MarshFactConnection
+{
+  class: test::cedarhatchery::domain::MarshFact;
+  url: 'data:application/json,%7B%7D';
+}
+
+###Connection
+RelationalDatabaseConnection test::cedarhatchery::connection::RegisterH2Connection
+{
+  store: test::cedarhatchery::store::HatcheryRegisterDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists register;',
+      'create schema register;',
+      'create table register.register_row (register_code varchar(24) primary key, period_month varchar(12) not null, unit_code varchar(24) not null, keeper_name varchar(120), stock_count integer not null, release_count integer not null, loss_count integer);'
+      ];
+  };
+  auth: DefaultH2;
+}

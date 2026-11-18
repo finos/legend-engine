@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::wistfulcove::dataspace::CoveSurveyDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'survey';
+      description: 'In-process survey environment - the assembled mapping set resolved through the three local connections.';
+      mapping: test::wistfulcove::mapping::CoveSurveyMapping;
+      defaultRuntime: test::wistfulcove::runtime::CoveSurveyRuntime;
+    },
+    {
+      name: 'warehouse';
+      description: 'Cloud-warehouse environment - the same assembled mapping set resolved through the key-pair authenticated warehouse connection.';
+      mapping: test::wistfulcove::mapping::CoveSurveyMapping;
+      defaultRuntime: test::wistfulcove::runtime::CoveWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'survey';
+  title: 'Wistful Cove Mooring Survey';
+  description: 'Discovery surface over the cove mooring survey - the milestoned mooring records with their derived berth zone and deck area, the cove sites and shore zones they sit on, and the notes and tender runs recorded against them.';
+  elements:
+  [
+    test::wistfulcove::domain::MooringRecord,
+    test::wistfulcove::domain::CoveSite,
+    test::wistfulcove::domain::ShoreZone,
+    test::wistfulcove::domain::SurveyNote,
+    test::wistfulcove::domain::TenderRun
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Mooring Survey As Of';
+      description: 'The derived mooring surface read at a requested instant.';
+      executable: test::wistfulcove::service::MooringSurveyAsOf;
+    },
+    {
+      id: 2;
+      title: 'Moorings With A Busy Tender As Of';
+      description: 'The existential tender-run filter over the association.';
+      executable: test::wistfulcove::service::MooringsWithTenderAsOf;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'cove-mooring-survey@covesurvey.invalid';
+  };
+}
+
+###DataSpace
+DataSpace test::wistfulcove::dataspace::CoveReferenceDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'reference';
+      description: 'Reference environment - the berth-class catalogue and the shore patrol log served through the local connections of the two companion stores.';
+      mapping: test::wistfulcove::mapping::CoveSurveyMapping;
+      defaultRuntime: test::wistfulcove::runtime::CoveSurveyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'reference';
+  title: 'Wistful Cove Reference Surfaces';
+  description: 'Discovery surface over the two companion stores behind the survey - the milestoned berth-class catalogue and the shore patrol log - published for consumers that need neither the mooring records nor their derived columns.';
+  elements:
+  [
+    test::wistfulcove::domain::GradeBand,
+    test::wistfulcove::domain::PatrolLog
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Grade Band Catalogue As Of';
+      description: 'The berth-class catalogue read at a requested instant.';
+      executable: test::wistfulcove::service::GradeBandCatalogueAsOf;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'shore-patrol-office@covesurvey.invalid';
+  };
+}

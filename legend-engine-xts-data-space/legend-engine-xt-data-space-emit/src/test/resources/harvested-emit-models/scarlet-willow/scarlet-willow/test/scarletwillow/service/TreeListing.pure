@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletwillow::service::TreeListing
+{
+  pattern: '/planning/v1/tree-listing';
+  title: 'Planning - Tree Listing';
+  owners:
+  [
+    'example-planning-team'
+  ];
+  documentation: 'Single-execution service projecting an ordered column list of trees no taller than a supplied height, reaching site and species descriptors through to-one navigation joins.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {maxHeight: Float[1]|test::scarletwillow::domain::Tree.all()->filter(
+      t|$t.heightMeters <= $maxHeight
+    )->project(
+      [
+        col(t|$t.treeTag, 'TreeTag'),
+        col(t|$t.site.siteCode, 'SiteCode'),
+        col(t|$t.species.commonName, 'Species'),
+        col(t|$t.heightMeters, 'Height')
+      ]
+    )->sort([asc('TreeTag')])};
+    mapping: test::scarletwillow::mapping::PlanningMapping;
+    runtime: test::scarletwillow::runtime::PlanningPrimaryRuntime;
+  }
+  testSuites:
+  [
+    treeListingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          primaryConnection:
+            Relational
+            #{
+              reference.SPECIES_GROUP:
+                'group_id,group_code,group_name\n'+
+                '1,BROAD,Broadleaf\n';
+              reference.SPECIES:
+                'species_id,common_name,group_id\n'+
+                '1,Silver Willow,1\n'+
+                '2,Red Maple,1\n';
+              reference.ZONE:
+                'zone_id,zone_name\n'+
+                '1,Northern Uplands\n';
+              reference.REGION:
+                'region_id,region_code,region_name,zone_id\n'+
+                '1,RGN-N,North Region,1\n';
+              reference.DISTRICT:
+                'district_id,district_code,district_name,region_id\n'+
+                '1,DST-1,Riverside,1\n';
+              sites.SITE:
+                'site_id,site_code,site_name,site_status,district_id\n'+
+                '1,STE-1,Elm Commons,ACTIVE,1\n';
+              inventory.TREE:
+                'tree_id,tree_tag,planted_on,height_meters,retired_code,site_id,species_id\n'+
+                '1,TR-100,2024-05-01,12.5,,1,1\n'+
+                '2,TR-101,2024-06-01,9.0,,1,2\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        shortTrees:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            maxHeight = 10.0
+          ]
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "TreeTag" : "TR-101",\n  "SiteCode" : "STE-1",\n  "Species" : "Red Maple",\n  "Height" : 9.0\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

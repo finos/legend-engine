@@ -1,0 +1,41 @@
+name: umber-apiary-3
+title: "Umber Apiary 3 — Hive Inspection Graph with Graded Enumerations, an Inspection Association and an Empty Diagram"
+description: |
+  A beekeeping vocabulary in which the reachability between hive and inspection
+  is carried by an association rather than by a declared property. Four classes
+  describe the apiary site the hives stand on, the hive itself with its box
+  arrangement and queen marking, the inspection that grades what the frames
+  showed and the honey harvest drawn off separately, mixing mandatory single
+  values, optional values and an unbounded collection of observed forage sources.
+  Two enumerations are used as property types on three different classes: a
+  three-value temperament grade documented value by value and an undocumented
+  five-value forage source, the latter appearing both as an optional single value
+  on the site and as an unbounded collection on the inspection. The association
+  binds hive to inspection with explicit end names, mandatory and single-valued
+  on the hive side and unbounded on the inspection side. A diagram element is
+  declared with a completely empty body, so the model must emit a valid element
+  that carries no children.
+modelSources:
+  model:
+    root: umber-apiary-3
+    files:
+      - test/umberapiary3/diagram/ApiaryDiagram.pure
+      - test/umberapiary3/domain/ApiaryAssociations.pure
+      - test/umberapiary3/domain/ApiaryDomain.pure
+      - test/umberapiary3/domain/ApiaryEnumerations.pure
+features:
+  - grammar:association
+  - grammar:diagram
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - apiary
+  - association
+  - beekeeping
+  - empty-diagram
+  - enumeration
+  - hive-inspection
+  - model-only
+  - store-less

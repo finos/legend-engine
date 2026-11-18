@@ -1,0 +1,210 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlycanyon::service::PatrolConditionBoard
+{
+  pattern: '/kindlycanyon/v1/patrol-condition-board';
+  title: 'Kindly Canyon - Long Walk Against Wet Trail Patrol Board';
+  documentation: 'Publishes one board over two structurally identical branches of the same patrol extent - the long walks and the wet-trail reports - each stamped with the stream it came from, so a patrol answering both predicates is published once per stream. Every branch walks the post hop, the cross-schema warden hop and the two-hop segment hop, keeps only patrols walked inside the window computed from the supplied instant, then ranks the concatenated board by walked duration inside each segment before trimming it.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'canyon-trail-desk'
+  ];
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], segmentCodes: String[*]|test::kindlycanyon::domain::PatrolLog.all()->filter(
+      l|(($segmentCodes->isEmpty()) || ($l.post.segment.segmentCode->in($segmentCodes))) && (($l.loggedOn > adjust($asOf, -14, DurationUnit.DAYS)) && ($l.walkMinutes >= 90))
+    )->project(
+      [
+        col(
+          l|$l.logId,
+          'Log'
+        ),
+        col(
+          l|$l.post.segment.segmentName,
+          'Segment'
+        ),
+        col(
+          l|$l.post.postName,
+          'Post'
+        ),
+        col(
+          l|$l.post.wardenName,
+          'Warden'
+        ),
+        col(
+          l|$l.walkMinutes,
+          'Walk Minutes'
+        ),
+        col(
+          l|dateDiff($l.loggedOn, $asOf, DurationUnit.DAYS),
+          'Days Since'
+        ),
+        col(
+          l|if($l.closedOn->isEmpty(),
+            | 'STILL OPEN',
+            | 'SIGNED OFF'),
+          'State'
+        ),
+        col(
+          l|'LONG WALK',
+          'Stream'
+        )
+      ]
+    )->concatenate(
+      test::kindlycanyon::domain::PatrolLog.all()->filter(
+        l|(($segmentCodes->isEmpty()) || ($l.post.segment.segmentCode->in($segmentCodes))) && (($l.loggedOn > adjust($asOf, -14, DurationUnit.DAYS)) && ($l.conditionCode == 'WET'))
+      )->project(
+        [
+          col(
+            l|$l.logId,
+            'Log'
+          ),
+          col(
+            l|$l.post.segment.segmentName,
+            'Segment'
+          ),
+          col(
+            l|$l.post.postName,
+            'Post'
+          ),
+          col(
+            l|$l.post.wardenName,
+            'Warden'
+          ),
+          col(
+            l|$l.walkMinutes,
+            'Walk Minutes'
+          ),
+          col(
+            l|dateDiff($l.loggedOn, $asOf, DurationUnit.DAYS),
+            'Days Since'
+          ),
+          col(
+            l|if($l.closedOn->isEmpty(),
+              | 'STILL OPEN',
+              | 'SIGNED OFF'),
+            'State'
+          ),
+          col(
+            l|'WET TRAIL',
+            'Stream'
+          )
+        ]
+      )
+    )->olapGroupBy(
+      ['Segment'],
+      desc('Walk Minutes'),
+      w|$w->rank(),
+      'Walk Rank'
+    )->sort(
+      [
+        asc('Segment'),
+        asc('Walk Rank'),
+        asc('Stream'),
+        asc('Log')
+      ]
+    )->limit(20)};
+    mapping: test::kindlycanyon::mapping::PatrolMapping;
+    runtime: test::kindlycanyon::runtime::CanyonTrailRuntime;
+  }
+  testSuites:
+  [
+    patrolConditionBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          canyonTrail:
+            Reference
+            #{
+              test::kindlycanyon::data::PatrolFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothStreamsRankedWithOnePatrolPublishedTwice:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-12,
+            segmentCodes = ['SEG-A', 'SEG-B', 'SEG-C']
+          ]
+          asserts:
+          [
+            rankedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Log":"PL-07","Segment":"Cottonwood Bench","Post":"Rove Truck","Warden":"Dessa Trill","Walk Minutes":120,"Days Since":4,"State":"SIGNED OFF","Stream":"LONG WALK","Walk Rank":1},{"Log":"PL-07","Segment":"Cottonwood Bench","Post":"Rove Truck","Warden":"Dessa Trill","Walk Minutes":120,"Days Since":4,"State":"SIGNED OFF","Stream":"WET TRAIL","Walk Rank":1},{"Log":"PL-05","Segment":"Cottonwood Bench","Post":"Bench Shelter","Warden":"Corin Blay","Walk Minutes":60,"Days Since":6,"State":"SIGNED OFF","Stream":"WET TRAIL","Walk Rank":3},{"Log":"PL-01","Segment":"Rim Traverse","Post":"Rim Overlook","Warden":"Marla Ovett","Walk Minutes":95,"Days Since":11,"State":"SIGNED OFF","Stream":"LONG WALK","Walk Rank":1},{"Log":"PL-03","Segment":"Rim Traverse","Post":"Rim Cairn","Warden":"Dessa Trill","Walk Minutes":95,"Days Since":8,"State":"SIGNED OFF","Stream":"LONG WALK","Walk Rank":1},{"Log":"PL-03","Segment":"Rim Traverse","Post":"Rim Cairn","Warden":"Dessa Trill","Walk Minutes":95,"Days Since":8,"State":"SIGNED OFF","Stream":"WET TRAIL","Walk Rank":1},{"Log":"PL-02","Segment":"Rim Traverse","Post":"Rim Overlook","Warden":"Marla Ovett","Walk Minutes":50,"Days Since":9,"State":"STILL OPEN","Stream":"WET TRAIL","Walk Rank":4}]';
+                  }#;
+              }#
+          ]
+        },
+        emptySegmentCollectionKeepsEverySegment:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-12,
+            segmentCodes = []
+          ]
+          asserts:
+          [
+            everySegmentRanked:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Log":"PL-07","Segment":"Cottonwood Bench","Post":"Rove Truck","Warden":"Dessa Trill","Walk Minutes":120,"Days Since":4,"State":"SIGNED OFF","Stream":"LONG WALK","Walk Rank":1},{"Log":"PL-07","Segment":"Cottonwood Bench","Post":"Rove Truck","Warden":"Dessa Trill","Walk Minutes":120,"Days Since":4,"State":"SIGNED OFF","Stream":"WET TRAIL","Walk Rank":1},{"Log":"PL-05","Segment":"Cottonwood Bench","Post":"Bench Shelter","Warden":"Corin Blay","Walk Minutes":60,"Days Since":6,"State":"SIGNED OFF","Stream":"WET TRAIL","Walk Rank":3},{"Log":"PL-01","Segment":"Rim Traverse","Post":"Rim Overlook","Warden":"Marla Ovett","Walk Minutes":95,"Days Since":11,"State":"SIGNED OFF","Stream":"LONG WALK","Walk Rank":1},{"Log":"PL-03","Segment":"Rim Traverse","Post":"Rim Cairn","Warden":"Dessa Trill","Walk Minutes":95,"Days Since":8,"State":"SIGNED OFF","Stream":"LONG WALK","Walk Rank":1},{"Log":"PL-03","Segment":"Rim Traverse","Post":"Rim Cairn","Warden":"Dessa Trill","Walk Minutes":95,"Days Since":8,"State":"SIGNED OFF","Stream":"WET TRAIL","Walk Rank":1},{"Log":"PL-02","Segment":"Rim Traverse","Post":"Rim Overlook","Warden":"Marla Ovett","Walk Minutes":50,"Days Since":9,"State":"STILL OPEN","Stream":"WET TRAIL","Walk Rank":4}]';
+                  }#;
+              }#
+          ]
+        },
+        theWindowBoundaryDropsTheEarlierPatrols:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-20,
+            segmentCodes = []
+          ]
+          asserts:
+          [
+            windowedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Log":"PL-07","Segment":"Cottonwood Bench","Post":"Rove Truck","Warden":"Dessa Trill","Walk Minutes":120,"Days Since":12,"State":"SIGNED OFF","Stream":"LONG WALK","Walk Rank":1},{"Log":"PL-07","Segment":"Cottonwood Bench","Post":"Rove Truck","Warden":"Dessa Trill","Walk Minutes":120,"Days Since":12,"State":"SIGNED OFF","Stream":"WET TRAIL","Walk Rank":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

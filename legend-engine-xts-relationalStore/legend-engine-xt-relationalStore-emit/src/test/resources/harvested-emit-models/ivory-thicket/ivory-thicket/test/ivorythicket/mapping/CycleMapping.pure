@@ -1,0 +1,105 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivorythicket::mapping::CycleMapping
+(
+  test::ivorythicket::domain::CycleRecord[cycleRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivorythicket::store::CycleDB]fleet.cycle_record.cycle_ref
+    )
+    ~mainTable [test::ivorythicket::store::CycleDB]fleet.cycle_record
+    cycleRef: [test::ivorythicket::store::CycleDB]fleet.cycle_record.cycle_ref,
+    stationRef: [test::ivorythicket::store::CycleDB]fleet.cycle_record.station_ref,
+    serviceState: [test::ivorythicket::store::CycleDB]fleet.cycle_record.service_state,
+    gearCount: [test::ivorythicket::store::CycleDB]fleet.cycle_record.gear_count,
+    wearIndex: [test::ivorythicket::store::CycleDB]fleet.cycle_record.wear_index,
+    lastSeenOn: [test::ivorythicket::store::CycleDB]fleet.cycle_record.last_seen_on,
+    wearBand: case(isEmpty([test::ivorythicket::store::CycleDB]fleet.cycle_record.wear_index), sqlNull(),
+      case(equal([test::ivorythicket::store::CycleDB]fleet.cycle_record.wear_index, 0), 'showroom',
+        case(equal([test::ivorythicket::store::CycleDB]fleet.cycle_record.wear_index, 1), toLower(trim('  Settled  ')),
+          case(equal([test::ivorythicket::store::CycleDB]fleet.cycle_record.wear_index, 2), concat('street-', toLower(substring(trim('  Seasoned  '), 1, 4))),
+            case(equal([test::ivorythicket::store::CycleDB]fleet.cycle_record.wear_index, 3), concat('scuffed-', toString(length(trim([test::ivorythicket::store::CycleDB]fleet.cycle_record.station_ref)))),
+              case(equal([test::ivorythicket::store::CycleDB]fleet.cycle_record.wear_index, 4), toUpper('rattling'),
+                case(equal([test::ivorythicket::store::CycleDB]fleet.cycle_record.wear_index, 5), coalesce(toLower([test::ivorythicket::store::CycleDB]fleet.cycle_record.station_ref), 'unstationed'),
+                  case(equal([test::ivorythicket::store::CycleDB]fleet.cycle_record.wear_index, 6), 'workshop-bound',
+                    'beyond-scale'))))))))
+  }
+
+  testSuites:
+  [
+    wearBandSuite:
+    {
+      function: |test::ivorythicket::domain::CycleRecord.all(%2026-04-01)->project(
+  [
+    x|$x.cycleRef,
+    x|$x.wearBand,
+    x|$x.gearCount,
+    x|$x.serviceState
+  ],
+  [
+    'Cycle',
+    'Band',
+    'Gears',
+    'State'
+  ]
+)->sort(
+  [
+    asc('Cycle')
+  ]
+);
+      tests:
+      [
+        everyWearBandArm:
+        {
+          doc: 'Point-in-time projection as of 2026-04-01 covering each arm of the wear-band conditional, its beyond-scale default and its absent-index fallback, while a frame whose business window closed earlier drops out of the extent.';
+          data:
+          [
+            test::ivorythicket::store::CycleDB:
+              Relational
+              #{
+                fleet.cycle_record:
+                  'cycle_ref,station_ref,service_state,gear_count,wear_index,last_seen_on,from_z,thru_z\n'+
+                  'CY01,DS1,ONSTREET,7,0,2026-03-01,2026-01-01,9999-12-31\n'+
+                  'CY02,DS1,ONSTREET,8,1,2026-03-02,2026-01-01,9999-12-31\n'+
+                  'CY03,DS2,ONSTREET,3,2,2026-03-03,2026-01-01,9999-12-31\n'+
+                  'CY04,DS2,WORKSHOP,5,3,2026-03-04,2026-01-01,9999-12-31\n'+
+                  'CY05,DS1,ONSTREET,21,4,2026-03-05,2026-01-01,9999-12-31\n'+
+                  'CY06,DS2,ONSTREET,1,5,2026-03-06,2026-01-01,9999-12-31\n'+
+                  'CY07,DS1,WORKSHOP,11,6,2026-03-07,2026-01-01,9999-12-31\n'+
+                  'CY08,DS2,RETIRED,27,9,2026-03-08,2026-01-01,9999-12-31\n'+
+                  'CY09,DS1,ONSTREET,14,,2026-03-09,2026-01-01,9999-12-31\n'+
+                  'CY10,DS2,ONSTREET,6,2,2026-02-01,2026-01-01,2026-02-15\n';
+              }#
+          ];
+          asserts:
+          [
+            nineLiveFrames:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cycle":"CY01","Band":"showroom","Gears":7,"State":"ONSTREET"},{"Cycle":"CY02","Band":"settled","Gears":8,"State":"ONSTREET"},{"Cycle":"CY03","Band":"street-seas","Gears":3,"State":"ONSTREET"},{"Cycle":"CY04","Band":"scuffed-3","Gears":5,"State":"WORKSHOP"},{"Cycle":"CY05","Band":"RATTLING","Gears":21,"State":"ONSTREET"},{"Cycle":"CY06","Band":"ds2","Gears":1,"State":"ONSTREET"},{"Cycle":"CY07","Band":"workshop-bound","Gears":11,"State":"WORKSHOP"},{"Cycle":"CY08","Band":"beyond-scale","Gears":27,"State":"RETIRED"},{"Cycle":"CY09","Band":null,"Gears":14,"State":"ONSTREET"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

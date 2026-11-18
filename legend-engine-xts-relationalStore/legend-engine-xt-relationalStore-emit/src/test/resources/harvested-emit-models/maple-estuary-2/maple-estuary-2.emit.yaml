@@ -1,0 +1,43 @@
+name: maple-estuary-2
+title: "Maple Estuary - store-union operation mappings over a tidal marsh transect and gauge register"
+description: |
+  A tidal-marsh bird and tide survey model. Two domain classes are each assembled from a pair of
+  physical registers: relational class mappings bind the northern and southern transect tables and
+  the tidal and field gauge tables, and two operation class mappings union those constituents so a
+  single class resolves to several sources at once. The store owns no tables of its own - it includes
+  a base store and contributes three derived views, a multi-condition filter and the join graph,
+  including a join onto a grouped view. Property transforms cover conditional bands, null defaulting,
+  join-reached columns and a four- and five-hop join path, and both mappings carry test suites whose
+  embedded fixtures hit every conditional arm.
+
+modelSources:
+  model:
+    root: maple-estuary-2
+    files:
+      - test/mapleestuary2/connection/MarshConnections.pure
+      - test/mapleestuary2/domain/MarshDomain.pure
+      - test/mapleestuary2/mapping/MarshSurveyMapping.pure
+      - test/mapleestuary2/runtime/MarshRuntimes.pure
+      - test/mapleestuary2/store/MarshBaseDb.pure
+      - test/mapleestuary2/store/MarshSurveyDb.pure
+
+features:
+  - mapping:operation-mapping
+  - mapping:store-union
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - conditional-transform
+  - h2
+  - join-path
+  - mapping-test
+  - operation-union
+  - relational
+  - store-union
+  - view

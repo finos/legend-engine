@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::goldenisle2::data::TrailFixture
+{
+  Relational
+  #{
+    trail.path_segment:
+      'segment_code,route_code,surface_code,gradient_pct,width_cm,drainage_code\n'+
+      'S-01,R-01,STONE_PITCH,18,150,CULVERT\n'+
+      'S-02,R-01,BOARDWALK,8,140,GRIP\n'+
+      'S-03,R-01,AGGREGATE,4,110,GRIP\n'+
+      'S-04,R-01,GRASS_SWARD,14,90,NONE\n'+
+      'S-05,R-02,PEAT_CUT,7,130,DRAIN\n'+
+      'S-06,R-02,SAND_TRACK,3,160,NONE\n'+
+      'S-07,R-02,ROCK_SCRAMBLE,22,80,NONE\n'+
+      'S-08,R-02,DUNE_MAT,5,100,GRIP\n'+
+      'S-09,R-01,COBBLE_SET,10,120,CULVERT\n'+
+      'S-10,R-02,BOARDWALK,13,145,DRAIN\n';
+    trail.path_route:
+      'route_code,route_name,district_code\n'+
+      'R-01,Gannet Cliff Path,D-01\n'+
+      'R-02,Tern Dune Path,D-02\n';
+    trail.segment_inspection:
+      'inspection_code,segment_code,inspected_on,erosion_score,surface_code,gradient_pct,width_cm,note\n'+
+      'IN-01,S-01,2024-03-04,9,STONE_PITCH,18,150,washout at the head\n'+
+      'IN-02,S-02,2024-03-05,6,BOARDWALK,8,140,slats lifting\n'+
+      'IN-03,S-03,2024-03-06,3,AGGREGATE,4,110,minor scour\n'+
+      'IN-04,S-04,2024-03-07,1,GRASS_SWARD,14,90,sward thinning\n'+
+      'IN-05,S-05,2024-03-08,8,PEAT_CUT,7,130,peat hags spreading\n'+
+      'IN-06,S-06,2024-03-09,5,SAND_TRACK,3,160,sand drifting\n'+
+      'IN-07,S-07,2024-03-10,2,ROCK_SCRAMBLE,22,80,loose blocks\n'+
+      'IN-08,S-08,2024-03-11,4,DUNE_MAT,5,100,mat edges frayed\n'+
+      'IN-09,S-09,2024-03-12,0,COBBLE_SET,10,120,settled cobbles\n'+
+      'IN-10,S-10,2024-03-13,7,BOARDWALK,13,145,handrail loose\n';
+    isleref.district:
+      'district_code,district_name,isle_code\n'+
+      'D-01,North Warden District,I-01\n'+
+      'D-02,South Warden District,I-02\n';
+    isleref.isle:
+      'isle_code,isle_name,landing_code\n'+
+      'I-01,Gannet Isle,L-01\n'+
+      'I-02,Tern Isle,L-02\n';
+    isleref.landing:
+      'landing_code,landing_name,crossing_minutes\n'+
+      'L-01,Cobble Slip,25\n'+
+      'L-02,Shingle Slip,40\n';
+  }#
+}

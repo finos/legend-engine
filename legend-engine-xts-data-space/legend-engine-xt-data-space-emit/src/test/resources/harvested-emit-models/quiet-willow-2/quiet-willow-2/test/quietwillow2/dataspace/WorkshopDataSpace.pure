@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::quietwillow2::dataspace::WorkshopDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'workshop';
+      description: 'Workshop tier - the business-temporal carriage and overhaul register, the depot and works reference schemas and the billable-hours tally view behind one mapping.';
+      mapping: test::quietwillow2::mapping::WorkshopMapping;
+      defaultRuntime: test::quietwillow2::runtime::WorkshopRuntime;
+    }
+  ];
+  defaultExecutionContext: 'workshop';
+  title: 'Heritage Carriage Workshop Register';
+  description: 'A governed entry point over the carriage workshop domain of a narrow-gauge heritage railway - business-temporal carriage sheets, the overhauls booked against them, the depots, works sites and regions they resolve through, and the billable-hours tally sheet the workshop keeps alongside - naming the mapping, runtime and endpoints a consumer should start from.';
+  elements:
+  [
+    test::quietwillow2::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Carriage register as of a day';
+      description: 'The as-of register narrowed by the region reached through the two-hop depot chain, a seating floor and the classes kept in traffic.';
+      executable: test::quietwillow2::service::CarriageRegisterAsOf;
+    },
+    {
+      id: 2;
+      title: 'Carriage workload as of a day';
+      description: 'Overhaul counts and booked hours per carriage beside the independently kept billable tally sheet.';
+      executable: test::quietwillow2::service::CarriageWorkloadAsOf;
+    },
+    {
+      id: 3;
+      title: 'Fitter roster of a works site';
+      description: 'The fitters attached to a named works site, resolved across the staff and works schemas.';
+      executable: test::quietwillow2::service::FitterRoster;
+    }
+  ];
+}

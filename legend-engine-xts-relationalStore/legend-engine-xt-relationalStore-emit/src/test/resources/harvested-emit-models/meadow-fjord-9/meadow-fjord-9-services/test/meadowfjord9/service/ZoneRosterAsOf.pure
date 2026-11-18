@@ -1,0 +1,101 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowfjord9::service::ZoneRosterAsOf
+{
+  pattern: '/meadow/v1/zone-roster/{asOfDate}';
+  title: 'Meadow Fjord - Surveyed Zone Roster As Of';
+  owners:
+  [
+    'meadow-survey-network'
+  ];
+  documentation: 'Opens the business-temporal meadow plot extent at a supplied instant, keeps the reviewed plots of the surveyed zones whatever their recording status, and projects a de-duplicated roster of the register columns with the derived richness band.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1]|test::meadowfjord9::domain::MeadowPlot.all($asOfDate)->filter(
+      p|($p.surveyorCode != $p.reviewerCode) && $p.zoneCode->in(['ZN-MEADOW', 'ZN-RIDGE'])
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.zoneCode,
+        p|$p.statusCode,
+        p|$p.richnessBand,
+        p|$p.speciesCount
+      ],
+      [
+        'Plot',
+        'Zone',
+        'Status',
+        'Richness',
+        'Species'
+      ]
+    )->distinct()};
+    mapping: test::meadowfjord9::mapping::MeadowMapping;
+    runtime: test::meadowfjord9::runtime::MeadowRuntime;
+  }
+  testSuites:
+  [
+    zoneRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowConnection:
+            Relational
+            #{
+              field.survey_zone:
+                'zone_id,zone_code,zone_name\n'+
+                '1,ZN-MEADOW,Meadow Flats\n'+
+                '2,ZN-RIDGE,Ridge Slope\n';
+
+              field.meadow_plot:
+                'plot_id,plot_code,zone_code,status_code,surveyor_code,reviewer_code,species_count,from_z,thru_z\n'+
+                '1,PL-101,ZN-MEADOW,OPEN,SV-01,RV-09,42,2026-01-01,9999-12-31\n'+
+                '2,PL-102,ZN-RIDGE,OPEN,SV-02,RV-08,18,2026-01-01,9999-12-31\n'+
+                '3,PL-103,ZN-MEADOW,CLOSED,SV-03,RV-07,9,2026-01-01,9999-12-31\n'+
+                '4,PL-104,ZN-MEADOW,OPEN,SV-04,SV-04,50,2026-01-01,9999-12-31\n'+
+                '5,PL-105,ZN-MEADOW,OPEN,SV-05,RV-05,31,2025-01-01,2025-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentInstantRoster:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01
+          ]
+          asserts:
+          [
+            reviewedInRangePlotsOfBothZones:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"PL-101","Zone":"ZN-MEADOW","Status":"OPEN","Richness":"RICH","Species":42},{"Plot":"PL-102","Zone":"ZN-RIDGE","Status":"OPEN","Richness":"MIXED","Species":18},{"Plot":"PL-103","Zone":"ZN-MEADOW","Status":"CLOSED","Richness":"SPARSE","Species":9}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

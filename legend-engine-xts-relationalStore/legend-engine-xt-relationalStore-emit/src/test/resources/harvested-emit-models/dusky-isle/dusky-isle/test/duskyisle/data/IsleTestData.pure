@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::duskyisle::data::IsleTestData
+{
+  Relational
+  #{
+    ref.isle:
+      'isle_code,isle_name\n'+
+      'IS-1,Dusky isle\n';
+
+    ref.harbour:
+      'harbour_code,harbour_name,isle_code\n'+
+      'HB-1,Cobble harbour,IS-1\n'+
+      'HB-9,Shingle harbour,IS-404\n';
+
+    ref.landing_stage:
+      'stage_code,stage_name,harbour_code\n'+
+      'ST-1,Slate stage,HB-1\n'+
+      'ST-4,Cinder stage,HB-9\n'+
+      'ST-9,Pebble stage,HB-404\n';
+
+    ref.route:
+      'route_code,route_name,stage_code\n'+
+      'RT-1,North route,ST-1\n'+
+      'RT-2,South route,ST-404\n'+
+      'RT-3,East route,ST-9\n'+
+      'RT-4,West route,ST-4\n';
+
+    depot.boat_round:
+      'round_id,round_code,round_name,sack_count,drop_count,weather_code,swell_code,hull_code,sail_code,route_code,span_metres,remark_text\n'+
+      '1,R1,puffin run,50,4,W1,CALM,OPEN,DAWN,RT-1,120.0,gull remark\n'+
+      '2,R2,shearwater run,26,2,W2,CHOPPY,DECKED,MIDDAY,RT-1,80.0,pier remark\n'+
+      '3,R3,tern run,18,3,W3,HEAVY,OPEN,DUSK,RT-1,60.0,\n'+
+      '4,R4,eider run,32,4,W4,CALM,DECKED,DAWN,RT-1,140.0,slip remark\n'+
+      '5,R5,fulmar run,22,2,W5,CHOPPY,OPEN,MIDDAY,RT-1,90.0,jetty remark\n'+
+      '6,R6,gannet run,14,2,W6,HEAVY,DECKED,DUSK,RT-1,45.0,\n'+
+      '7,R7,skua run,36,4,W7,CALM,OPEN,DAWN,RT-1,150.0,ridge remark\n'+
+      '8,R8,petrel run,12,3,W8,CHOPPY,DECKED,MIDDAY,RT-1,50.0,cove remark\n'+
+      '9,R9,quiet run,20,2,,HEAVY,OPEN,DUSK,RT-1,70.0,\n'+
+      '10,RA,razorbill run,44,4,WA,CALM,,DAWN,RT-1,160.0,stack remark\n'+
+      '11,RB,brisk run,28,4,WB,BRISK,DECKED,MIDDAY,RT-1,100.0,brisk remark\n'+
+      '12,RC,adrift run,16,2,W1,CALM,OPEN,DUSK,RT-99,55.0,adrift remark\n'+
+      '13,RD,stageless run,24,3,W2,CHOPPY,DECKED,DAWN,RT-2,85.0,stageless remark\n'+
+      '14,RE,harbourless run,30,3,W3,HEAVY,OPEN,MIDDAY,RT-3,110.0,\n'+
+      '15,RF,isleless run,38,2,W4,CALM,DECKED,DUSK,RT-4,130.0,isleless remark\n';
+  }#
+}

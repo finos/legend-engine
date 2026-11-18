@@ -1,0 +1,43 @@
+name: verdant-isle
+title: "Reading Room Cards — Self-Contained Model-To-Model Service Over A Nested Document"
+description: |
+  A store-less library corpus that bridges a decorated inbound reservation-card document
+  onto a clean two-class target tree inside a single model-to-model mapping, splitting one
+  text property into two target properties by explicit string surgery and handing the
+  optional nested element to a second class mapping identified by name. The service carries
+  no packageable runtime or connection at all: its execution embeds the runtime inline with
+  a document-parsing model-store connection, and its checked graph fetch pins parsing,
+  renaming and splitting in one assertion.
+modelSources:
+  model:
+    root: verdant-isle
+    files:
+      - test/verdantisle/domain/ReadingCardDomain.pure
+      - test/verdantisle/mapping/CardMapping.pure
+      - test/verdantisle/service/ReadingCards.pure
+      - test/verdantisle/source/CardDocument.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:embedded-runtime
+  - execution:service-test
+  - execution:test-data
+  - mapping:m2m-nested-class-mapping-reference
+  - mapping:m2m-transform
+  - execution:checked-graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - checked-graph-fetch
+  - embedded-runtime
+  - library-catalogue
+  - m2m
+  - mapping-test
+  - model-store
+  - nested-class-mapping
+  - plan-generation
+  - service-test
+  - store-less
+  - string-transform

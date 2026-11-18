@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::sablethicket2::store::CarillonDB
+(
+  Schema foundry
+  (
+    Table bell_casting
+    (
+      casting_id INTEGER PRIMARY KEY,
+      casting_code VARCHAR(40) NOT NULL,
+      profile_path VARCHAR(200) NOT NULL,
+      workshop_code VARCHAR(40) NOT NULL,
+      nominal_hz DOUBLE NOT NULL,
+      crown_mass_kg DOUBLE NOT NULL,
+      rim_diameter_cm DOUBLE NOT NULL,
+      strike_count INTEGER NOT NULL,
+      temper_code VARCHAR(20) NOT NULL,
+      crown_state_code VARCHAR(20) NOT NULL,
+      storage_code VARCHAR(20) NOT NULL,
+      script_code VARCHAR(20) NOT NULL,
+      poured_on TIMESTAMP,
+      is_listed BIT
+    )
+    Table workshop
+    (
+      workshop_id INTEGER PRIMARY KEY,
+      workshop_code VARCHAR(40) NOT NULL,
+      workshop_name VARCHAR(160) NOT NULL,
+      founder_name VARCHAR(160) NOT NULL,
+      district_code VARCHAR(40) NOT NULL
+    )
+    Table founder_district
+    (
+      district_id INTEGER PRIMARY KEY,
+      district_code VARCHAR(40) NOT NULL,
+      district_name VARCHAR(160) NOT NULL,
+      district_climate VARCHAR(80) NOT NULL
+    )
+    Table tuning_pass
+    (
+      pass_id INTEGER PRIMARY KEY,
+      casting_code VARCHAR(40) NOT NULL,
+      tuner_name VARCHAR(160) NOT NULL,
+      pass_label VARCHAR(80) NOT NULL
+    )
+  )
+
+  Join Casting_Workshop(trim(foundry.bell_casting.workshop_code) = trim(foundry.workshop.workshop_code))
+  Join Workshop_District(toUpper(trim(foundry.workshop.district_code)) = toUpper(foundry.founder_district.district_code))
+  Join Casting_Pass(foundry.bell_casting.casting_code = trim(foundry.tuning_pass.casting_code))
+)

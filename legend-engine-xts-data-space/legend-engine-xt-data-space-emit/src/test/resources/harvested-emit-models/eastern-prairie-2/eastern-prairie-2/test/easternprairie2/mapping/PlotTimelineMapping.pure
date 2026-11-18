@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easternprairie2::mapping::PlotTimelineMapping
+(
+  *test::easternprairie2::domain::PlotEvent[plotEvent]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternprairie2::store::PrairieSurveyDb]survey.plot_timeline.event_id
+    )
+    ~mainTable [test::easternprairie2::store::PrairieSurveyDb]survey.plot_timeline
+    eventId: [test::easternprairie2::store::PrairieSurveyDb]survey.plot_timeline.event_id,
+    plotCode: [test::easternprairie2::store::PrairieSurveyDb]survey.plot_timeline.plot_code,
+    observer: [test::easternprairie2::store::PrairieSurveyDb]survey.plot_timeline.observer,
+    loggedAt: [test::easternprairie2::store::PrairieSurveyDb]survey.plot_timeline.logged_at,
+    stemsCounted: [test::easternprairie2::store::PrairieSurveyDb]survey.plot_timeline.stems_counted,
+    seedlings: [test::easternprairie2::store::PrairieSurveyDb]survey.plot_timeline.seedlings
+  }
+
+  testSuites:
+  [
+    plotEventSuite:
+    {
+      function: |test::easternprairie2::domain::PlotEvent.all()->project(
+        [
+          e|$e.eventId,
+          e|$e.plotCode,
+          e|$e.stemsCounted,
+          e|$e.seedlings
+        ],
+        [
+          'Event',
+          'Plot',
+          'Stems',
+          'Seedlings'
+        ]
+      )->sort([asc('Event')]);
+      tests:
+      [
+        plotEventsBindOneToOne:
+        {
+          doc: 'Stem counts bind their columns one to one.';
+          data:
+          [
+            test::easternprairie2::store::PrairieSurveyDb:
+              Relational
+              #{
+                survey.plot_timeline:
+                  'event_id,plot_code,observer,logged_at,stems_counted,seedlings\n'+
+                  '1,PL-01,ana,2026-04-01 00:00:00,120,33\n'+
+                  '2,PL-02,ben,2026-04-20 11:00:00,45,12\n';
+              }#
+          ];
+          asserts:
+          [
+            plotEventRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Event":1,"Plot":"PL-01","Stems":120,"Seedlings":33},{"Event":2,"Plot":"PL-02","Stems":45,"Seedlings":12}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

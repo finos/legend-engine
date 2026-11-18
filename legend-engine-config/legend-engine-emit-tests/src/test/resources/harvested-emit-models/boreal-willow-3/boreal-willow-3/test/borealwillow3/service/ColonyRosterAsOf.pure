@@ -1,0 +1,123 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealwillow3::service::ColonyRosterAsOf
+{
+  pattern: '/borealwillow3/colonies/{businessDate}';
+  title: 'Colony Roster As Of A Season Date';
+  documentation: 'Resolves the colony extent effective at one season date, restricts it to a single yard and projects the decoded strain and temper, the mite-pressure conditional with its null sentinel, the yard and forage names reached over one and two join hops and the frame-sample rollup read from the grouped view.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'apiary-register-desk'
+  ];
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|test::borealwillow3::domain::Hive.all($businessDate)->filter(
+      h|$h.yardCode == 'Y-01'
+    )->project(
+      [
+        h|$h.hiveCode,
+        h|$h.strain,
+        h|$h.temper,
+        h|$h.frameCount,
+        h|$h.mitePressure,
+        h|$h.yardName,
+        h|$h.forageName,
+        h|$h.sampleCount,
+        h|$h.maxCellCount,
+        h|$h.registerLabel
+      ],
+      [
+        'Hive',
+        'Strain',
+        'Temper',
+        'Frames',
+        'Mites',
+        'Yard',
+        'Forage',
+        'Samples',
+        'MaxCells',
+        'Register'
+      ]
+    )->sort([asc('Hive')])};
+    mapping: test::borealwillow3::mapping::ApiaryMapping;
+    runtime: test::borealwillow3::runtime::ApiaryH2Runtime;
+  }
+  testSuites:
+  [
+    colonyRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryH2Connection:
+            Relational
+            #{
+              apiary.hive:
+                'hive_code,yard_code,strain_code,temper_code,frame_count,mite_note,from_z,thru_z\n'+
+                'H-01,Y-01,CAR,C,10,heavy drop,2026-01-01,9999-12-31\n'+
+                'H-02,Y-01,IT,S,8,light drop,2026-01-01,9999-12-31\n'+
+                'H-03,Y-01,BF,H,6,,2026-01-01,9999-12-31\n'+
+                'H-04,Y-01,LM,C,4,clean floor,2024-01-01,2025-01-01\n'+
+                'H-05,Y-02,CN,S,12,heavy drop,2026-01-01,9999-12-31\n';
+
+              apiary.frame_sample:
+                'sample_id,hive_code,cell_count,grade_code\n'+
+                '1,H-01,3000,A\n'+
+                '2,H-01,4200,A\n'+
+                '3,H-02,2500,A\n'+
+                '4,H-03,100,X\n';
+
+              registry.yard:
+                'yard_code,yard_name,district_code,forage_code\n'+
+                'Y-01,North Ridge Yard,D-1,OR\n'+
+                'Y-02,Willow Berm Yard,D-2,HE\n';
+
+              registry.forage_ref:
+                'forage_code,forage_name,bloom_note\n'+
+                'OR,Orchard Blossom,april\n'+
+                'HE,Moor Heather,august\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rosterAtSeasonDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-06-01
+          ]
+          asserts:
+          [
+            effectiveColoniesOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hive":"H-01","Strain":"CARNIOLAN","Temper":"CALM","Frames":10,"Mites":"TREAT NOW","Yard":"North Ridge Yard","Forage":"Orchard Blossom","Samples":2,"MaxCells":4200,"Register":"COLONY REGISTER"},{"Hive":"H-02","Strain":"ITALIAN","Temper":"STEADY","Frames":8,"Mites":"WATCH","Yard":"North Ridge Yard","Forage":"Orchard Blossom","Samples":1,"MaxCells":2500,"Register":"COLONY REGISTER"},{"Hive":"H-03","Strain":"BUCKFAST","Temper":"DEFENSIVE","Frames":6,"Mites":null,"Yard":"North Ridge Yard","Forage":"Orchard Blossom","Samples":1,"MaxCells":100,"Register":"COLONY REGISTER"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

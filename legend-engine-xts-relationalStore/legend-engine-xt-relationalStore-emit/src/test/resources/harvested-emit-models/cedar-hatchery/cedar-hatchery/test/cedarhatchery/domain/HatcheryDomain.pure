@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A monthly operational measure grain for one rearing unit of the hatchery, populated entirely by transforms so every required property always carries a value.'} test::cedarhatchery::domain::HatcheryMeasure
+{
+  measureCode: String[1];
+  periodMonth: String[1];
+  unitCode: String[1];
+  speciesLabel: String[1];
+  keeperName: String[1];
+  stockCount: Integer[1];
+  releaseCount: Integer[1];
+  lossBand: String[1];
+  gradeLabel: String[1];
+  recordedOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Specialises the measure grain for the river rearing unit without adding properties.'} test::cedarhatchery::domain::RiverUnitMeasure extends test::cedarhatchery::domain::HatcheryMeasure
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'Specialises the measure grain for the lake rearing unit without adding properties.'} test::cedarhatchery::domain::LakeUnitMeasure extends test::cedarhatchery::domain::HatcheryMeasure
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'Specialises the measure grain for the creek rearing unit without adding properties.'} test::cedarhatchery::domain::CreekUnitMeasure extends test::cedarhatchery::domain::HatcheryMeasure
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'Specialises the measure grain for the marsh rearing unit without adding properties.'} test::cedarhatchery::domain::MarshUnitMeasure extends test::cedarhatchery::domain::HatcheryMeasure
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'A row of the legacy rearing register, kept relationally so the raw counts behind the mapped grain can be aggregated directly.'} test::cedarhatchery::domain::RegisterRow
+{
+  registerCode: String[1];
+  periodMonth: String[1];
+  unitCode: String[1];
+  keeperName: String[0..1];
+  stockCount: Integer[1];
+  releaseCount: Integer[1];
+  lossCount: Integer[0..1];
+}

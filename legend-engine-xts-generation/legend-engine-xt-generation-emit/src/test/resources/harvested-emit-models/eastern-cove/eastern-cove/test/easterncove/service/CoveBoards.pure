@@ -1,0 +1,274 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easterncove::service::SailingBoard
+{
+  pattern: '/cove/v1/sailings/{minPassengers}';
+  title: 'Sailing Board';
+  owners:
+  [
+    'cove-harbour-office'
+  ];
+  documentation: 'Sailings above a passenger floor with the quay label of the berth they leave from, ordered and capped so only the busiest crossings are published.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minPassengers: Integer[1], routeNames: String[*]|test::easterncove::domain::Sailing.all()->filter(
+      s|(($routeNames->isEmpty()) || ($s.routeName->in($routeNames))) && (($s.passengers >= $minPassengers) && ($s.berth.quayName->isNotEmpty()))
+    )->project(
+      [
+        s|$s.sailingCode,
+        s|$s.routeName,
+        s|$s.passengers,
+        s|$s.berth.quayLabel()
+      ],
+      [
+        'Sailing',
+        'Route',
+        'Passengers',
+        'Quay'
+      ]
+    )->sort([desc('Passengers')])->limit(2)};
+    mapping: test::easterncove::mapping::CoveMapping;
+    runtime: test::easterncove::runtime::CoveRuntime;
+  }
+  testSuites:
+  [
+    sailingBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+              coveConnection:
+                Relational
+                #{
+                  harbour.sailing:
+                    'sailing_code,berth_code,route_name,passengers,sailed_on\n'+
+                    'SL-01,BT-01,Harbour Loop,180,2026-05-01\n'+
+                    'SL-02,BT-01,Outer Isles,60,2026-05-02\n'+
+                    'SL-03,BT-02,Harbour Loop,240,2026-05-03\n'+
+                    'SL-04,BT-03,Night Crossing,15,2026-05-04\n';
+                  harbour.berth:
+                    'berth_code,berth_name,quay_name,max_length_m\n'+
+                    'BT-01,North Finger,Lantern Quay,90\n'+
+                    'BT-02,South Finger,Lantern Quay,120\n'+
+                    'BT-03,Slipway Nose,Tern Quay,45\n';
+                }#
+        ]
+      ]
+      tests:
+      [
+        busiestCrossings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minPassengers = 50,
+            routeNames = ['Harbour Loop', 'Outer Isles']
+          ]
+          asserts:
+          [
+            boardRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sailing":"SL-03","Route":"Harbour Loop","Passengers":240,"Quay":"Lantern Quay / South Finger"},{"Sailing":"SL-01","Route":"Harbour Loop","Passengers":180,"Quay":"Lantern Quay / North Finger"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::easterncove::service::RouteTally
+{
+  pattern: '/cove/v1/routes/{fromDate}';
+  title: 'Route Tally';
+  owners:
+  [
+    'cove-harbour-office'
+  ];
+  documentation: 'Total passengers carried per route from a cut-off date, grouped over the sailing extent so each route contributes one aggregated row.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1]|test::easterncove::domain::Sailing.all()->filter(
+      s|$s.sailedOn >= $fromDate
+    )->groupBy(
+      [
+        s|$s.routeName
+      ],
+      [
+        agg(s|$s.passengers, y|$y->sum())
+      ],
+      [
+        'Route',
+        'Passengers'
+      ]
+    )->sort([asc('Route')])};
+    mapping: test::easterncove::mapping::CoveMapping;
+    runtime: test::easterncove::runtime::CoveRuntime;
+  }
+  testSuites:
+  [
+    routeTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+              coveConnection:
+                Relational
+                #{
+                  harbour.sailing:
+                    'sailing_code,berth_code,route_name,passengers,sailed_on\n'+
+                    'SL-01,BT-01,Harbour Loop,180,2026-05-01\n'+
+                    'SL-02,BT-01,Outer Isles,60,2026-05-02\n'+
+                    'SL-03,BT-02,Harbour Loop,240,2026-05-03\n'+
+                    'SL-04,BT-03,Night Crossing,15,2026-05-04\n';
+                  harbour.berth:
+                    'berth_code,berth_name,quay_name,max_length_m\n'+
+                    'BT-01,North Finger,Lantern Quay,90\n'+
+                    'BT-02,South Finger,Lantern Quay,120\n'+
+                    'BT-03,Slipway Nose,Tern Quay,45\n';
+                }#
+        ]
+      ]
+      tests:
+      [
+        tallyFromCutoff:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-05-02
+          ]
+          asserts:
+          [
+            tallyRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Route":"Harbour Loop","Passengers":240},{"Route":"Night Crossing","Passengers":15},{"Route":"Outer Isles","Passengers":60}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::easterncove::service::MooringAsOf
+{
+  pattern: '/cove/v1/moorings/{processingDate}/{businessDate}';
+  title: 'Mooring As Of';
+  owners:
+  [
+    'cove-harbour-office'
+  ];
+  documentation: 'Mooring allocations resolved at one processing instant and one business instant, so a corrected row, a superseded row and a not-yet-effective row are separated by the two axes alone.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|test::easterncove::domain::Mooring.all($processingDate, $businessDate)->filter(
+      m|$m.crewCount >= 5
+    )->project(
+      [
+        m|$m.mooringCode,
+        m|$m.vesselName,
+        m|$m.tariffBand,
+        m|$m.crewCount
+      ],
+      [
+        'Mooring',
+        'Vessel',
+        'Band',
+        'Crew'
+      ]
+    )->sort([asc('Mooring')])};
+    mapping: test::easterncove::mapping::CoveMapping;
+    runtime: test::easterncove::runtime::CoveRuntime;
+  }
+  testSuites:
+  [
+    mooringAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveConnection:
+            Relational
+            #{
+              harbour.mooring:
+                'mooring_code,berth_code,vessel_name,tariff_band,crew_count,from_z,thru_z,in_z,out_z\n'+
+                'MR-01,BT-01,Cove Lantern,STANDARD,7,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'MR-02,BT-02,Tern Runner,PRIORITY,9,2025-01-01,2026-01-01,2025-01-01,9999-12-31\n'+
+                'MR-03,BT-03,Gannet Post,STANDARD,5,2026-09-01,9999-12-31,2026-09-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            businessDate = %2026-06-01
+          ]
+          asserts:
+          [
+            currentRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Mooring":"MR-01","Vessel":"Cove Lantern","Band":"STANDARD","Crew":7}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierBusinessWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            businessDate = %2025-06-01
+          ]
+          asserts:
+          [
+            earlierRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Mooring":"MR-02","Vessel":"Tern Runner","Band":"PRIORITY","Crew":9}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

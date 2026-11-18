@@ -1,0 +1,151 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emberestuary3::mapping::EstuaryMapping
+(
+  *test::emberestuary3::domain::GaugeReading[reading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberestuary3::store::EstuaryDb]estuary.gauge_reading.reading_id
+    )
+    ~mainTable [test::emberestuary3::store::EstuaryDb]estuary.gauge_reading
+    readingCode: [test::emberestuary3::store::EstuaryDb]estuary.gauge_reading.reading_code,
+    gaugeCode: [test::emberestuary3::store::EstuaryDb]estuary.gauge_reading.gauge_code,
+    readOn: [test::emberestuary3::store::EstuaryDb]estuary.gauge_reading.read_on,
+    waterLevelMetres: [test::emberestuary3::store::EstuaryDb]estuary.gauge_reading.water_level_metres,
+    surgeMetres: [test::emberestuary3::store::EstuaryDb]estuary.gauge_reading.surge_metres,
+    readingNote: [test::emberestuary3::store::EstuaryDb]estuary.gauge_reading.reading_note
+  }
+
+  *test::emberestuary3::domain::TideGauge[gauge]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberestuary3::store::EstuaryDb]estuary.tide_gauge.gauge_id
+    )
+    ~mainTable [test::emberestuary3::store::EstuaryDb]estuary.tide_gauge
+    gaugeCode: [test::emberestuary3::store::EstuaryDb]estuary.tide_gauge.gauge_code,
+    gaugeName: [test::emberestuary3::store::EstuaryDb]estuary.tide_gauge.gauge_name,
+    reachName: [test::emberestuary3::store::EstuaryDb]estuary.tide_gauge.reach_name,
+    datumMetres: [test::emberestuary3::store::EstuaryDb]estuary.tide_gauge.datum_metres
+  }
+
+  testSuites:
+  [
+    readingSuite:
+    {
+      function: |test::emberestuary3::domain::GaugeReading.all()->project(
+  [
+    r|$r.readingCode,
+    r|$r.gaugeCode,
+    r|$r.readOn,
+    r|$r.waterLevelMetres,
+    r|$r.surgeMetres,
+    r|$r.readingNote
+  ],
+  [
+    'Reading',
+    'Gauge',
+    'ReadOn',
+    'WaterLevel',
+    'Surge',
+    'Note'
+  ]
+)->sort(
+  [
+    asc('Reading')
+  ]
+);
+      tests:
+      [
+        allReadingsIncludingOneWithoutASurgeOrNote:
+        {
+          doc: 'Every reading of the register projects out of the reading relation, one reading carries neither a surge nor a note, and one carries a surge but no note.';
+          data:
+          [
+            test::emberestuary3::store::EstuaryDb:
+              Reference
+              #{
+                test::emberestuary3::data::GaugeReadingData
+              }#
+          ];
+          asserts:
+          [
+            fourReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"GR-0001","Gauge":"TG-01","ReadOn":"2026-04-01","WaterLevel":4.250,"Surge":0.400,"Note":"Spring tide crest"},{"Reading":"GR-0002","Gauge":"TG-01","ReadOn":"2026-04-02","WaterLevel":3.900},{"Reading":"GR-0003","Gauge":"TG-02","ReadOn":"2026-04-01","WaterLevel":2.750,"Surge":0.150,"Note":"Wind against the ebb"},{"Reading":"GR-0004","Gauge":"TG-02","ReadOn":"2026-04-03","WaterLevel":2.100,"Surge":0.050}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    gaugeSuite:
+    {
+      function: |test::emberestuary3::domain::TideGauge.all()->project(
+  [
+    g|$g.gaugeCode,
+    g|$g.gaugeName,
+    g|$g.reachName,
+    g|$g.datumMetres
+  ],
+  [
+    'Gauge',
+    'Name',
+    'Reach',
+    'Datum'
+  ]
+)->sort(
+  [
+    asc('Gauge')
+  ]
+);
+      tests:
+      [
+        bothGaugesOneWithoutADatum:
+        {
+          doc: 'The second class of the register is mapped onto the other relation of the same database, and one gauge has never had its datum surveyed.';
+          data:
+          [
+            test::emberestuary3::store::EstuaryDb:
+              Reference
+              #{
+                test::emberestuary3::data::GaugeReadingData
+              }#
+          ];
+          asserts:
+          [
+            twoGauges:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Gauge":"TG-01","Name":"Outer Sill Gauge","Reach":"North Reach","Datum":2.500},{"Gauge":"TG-02","Name":"Inner Basin Gauge","Reach":"South Reach"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

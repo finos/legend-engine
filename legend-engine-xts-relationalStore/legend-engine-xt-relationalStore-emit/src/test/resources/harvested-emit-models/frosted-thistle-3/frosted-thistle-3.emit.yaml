@@ -1,0 +1,60 @@
+name: frosted-thistle-3
+title: "Footpath Network Segments - Expression-Sourced Enumeration, Single-Table Subtype and Windowed Service Predicate"
+description: |
+  A public-footpath maintenance model whose single register table carries both
+  the whole segment extent and an exposed-ridge subtype, and whose service
+  narrows that extent with a four-part predicate before projecting it.
+
+    * `test::frostedthistle3::domain::TrailSurface` is mapped from an expression
+      rather than a raw column: the surface code is case-folded, trimmed, given a
+      default when absent and suffixed, and the enumeration mapping matches those
+      composed source values, so a code with no counterpart leaves the property
+      without a member instead of failing.
+    * `test::frostedthistle3::domain::RidgeSegment` is mapped over the same main
+      table as its supertype and adds only its exposure rating, with a store
+      filter selecting the ridge-flagged rows.
+    * One property is mapped to a bare literal and another to a nested
+      conditional that composes a waymark label or falls back to null.
+    * The service predicate pairs a prefix test, a parameter equality, a literal
+      set membership and a comparison against a date window opened by a
+      standalone function, then collapses duplicates and orders the result.
+
+  The mapping `testSuites` read the register twice - once over the whole extent,
+  once through the ridge subtype - and the service `testSuite` invokes the
+  pattern with a window that admits three segments and again with one that
+  admits none.
+
+modelSources:
+  model:
+    root: frosted-thistle-3
+    files:
+      - test/frostedthistle3/connection/TrailH2Connection.pure
+      - test/frostedthistle3/domain/TrailDomain.pure
+      - test/frostedthistle3/function/InspectionHorizon.pure
+      - test/frostedthistle3/mapping/TrailNetworkMapping.pure
+      - test/frostedthistle3/runtime/TrailNetworkRuntime.pure
+      - test/frostedthistle3/service/SegmentInspectionService.pure
+      - test/frostedthistle3/store/TrailNetworkDb.pure
+
+features:
+  - execution:plan-generation
+  - execution:service
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-enum-of-expression
+  - mapping:relational-literal
+  - mapping:relational-single-table-inheritance
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - enum-of-expression
+  - footpath-maintenance
+  - h2
+  - relational-literal
+  - single-table-inheritance
+  - unmapped-enum-source

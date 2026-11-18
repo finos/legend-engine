@@ -1,0 +1,641 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealorchard3::mapping::TrailNetworkMapping
+(
+  include mapping test::borealorchard3::mapping::TrailReferenceMapping
+
+  test::borealorchard3::domain::JobPriority: EnumerationMapping JobPriorityMapping
+  {
+    ROUTINE: ['ROUTINE'],
+    ELEVATED: ['ELEVATED'],
+    URGENT: ['URGENT']
+  }
+
+  test::borealorchard3::domain::ShiftKind: EnumerationMapping ShiftKindMapping
+  {
+    DAY: ['DAY'],
+    NIGHT: ['NIGHT'],
+    RELIEF: ['RELIEF']
+  }
+
+  *test::borealorchard3::domain::Hut[hut]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealorchard3::store::TrailNetworkDb]trail.hut.hut_code
+    )
+    ~mainTable [test::borealorchard3::store::TrailNetworkDb]trail.hut
+    hutCode: [test::borealorchard3::store::TrailNetworkDb]trail.hut.hut_code,
+    hutName: [test::borealorchard3::store::TrailNetworkDb]trail.hut.hut_name,
+    hutClass: EnumerationMapping HutClassMapping: [test::borealorchard3::store::TrailNetworkDb]trail.hut.hut_class_code,
+    regionCode: [test::borealorchard3::store::TrailNetworkDb]trail.hut.region_code,
+    bunkCount: [test::borealorchard3::store::TrailNetworkDb]trail.hut.bunk_count,
+    wardenName: [test::borealorchard3::store::TrailNetworkDb]@Hut_Warden | [test::borealorchard3::store::TrailNetworkDb]roster.warden.warden_name
+  }
+
+  *test::borealorchard3::domain::TrailSegment[trailSegment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealorchard3::store::TrailNetworkDb]trail.trail_segment.segment_code
+    )
+    ~mainTable [test::borealorchard3::store::TrailNetworkDb]trail.trail_segment
+    segmentCode: [test::borealorchard3::store::TrailNetworkDb]trail.trail_segment.segment_code,
+    segmentName: [test::borealorchard3::store::TrailNetworkDb]trail.trail_segment.segment_name,
+    hutCode: [test::borealorchard3::store::TrailNetworkDb]trail.trail_segment.hut_code,
+    surfaceGrade: EnumerationMapping SurfaceGradeMapping: [test::borealorchard3::store::TrailNetworkDb]trail.trail_segment.surface_grade_code,
+    lengthMetres: [test::borealorchard3::store::TrailNetworkDb]trail.trail_segment.length_metres,
+    ascentMetres: [test::borealorchard3::store::TrailNetworkDb]trail.trail_segment.ascent_metres,
+    hutName: [test::borealorchard3::store::TrailNetworkDb]@Segment_Hut | [test::borealorchard3::store::TrailNetworkDb]trail.hut.hut_name
+  }
+
+  *test::borealorchard3::domain::MaintenanceJob[maintenanceJob]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealorchard3::store::TrailNetworkDb]trail.maintenance_job.job_code
+    )
+    ~mainTable [test::borealorchard3::store::TrailNetworkDb]trail.maintenance_job
+    jobCode: [test::borealorchard3::store::TrailNetworkDb]trail.maintenance_job.job_code,
+    segmentCode: [test::borealorchard3::store::TrailNetworkDb]trail.maintenance_job.segment_code,
+    priority: EnumerationMapping JobPriorityMapping: [test::borealorchard3::store::TrailNetworkDb]trail.maintenance_job.priority_code,
+    raisedOn: [test::borealorchard3::store::TrailNetworkDb]trail.maintenance_job.raised_on,
+    crewSize: [test::borealorchard3::store::TrailNetworkDb]trail.maintenance_job.crew_size,
+    hutName: [test::borealorchard3::store::TrailNetworkDb]@Job_Segment > @Segment_Hut | [test::borealorchard3::store::TrailNetworkDb]trail.hut.hut_name,
+    wardenName: [test::borealorchard3::store::TrailNetworkDb]@Job_Segment > @Segment_Hut > @Hut_Warden | [test::borealorchard3::store::TrailNetworkDb]roster.warden.warden_name,
+    bridgeSpanMetres: [test::borealorchard3::store::TrailNetworkDb]@Job_Bridge | [test::borealorchard3::store::TrailNetworkDb]trail.bridge_job.span_metres,
+    culvertBlocked: [test::borealorchard3::store::TrailNetworkDb]@Job_Culvert | [test::borealorchard3::store::TrailNetworkDb]trail.culvert_job.blocked_flag
+  }
+
+  test::borealorchard3::domain::BridgeJob[bridgeJob] extends [maintenanceJob]: Relational
+  {
+    ~filter [test::borealorchard3::store::TrailNetworkDb]BridgeJobFilter
+    ~primaryKey
+    (
+      [test::borealorchard3::store::TrailNetworkDb]trail.maintenance_job.job_code
+    )
+    ~mainTable [test::borealorchard3::store::TrailNetworkDb]trail.maintenance_job
+    spanMetres: [test::borealorchard3::store::TrailNetworkDb]@Job_Bridge | [test::borealorchard3::store::TrailNetworkDb]trail.bridge_job.span_metres,
+    deckMaterial: [test::borealorchard3::store::TrailNetworkDb]@Job_Bridge | [test::borealorchard3::store::TrailNetworkDb]trail.bridge_job.deck_material
+  }
+
+  test::borealorchard3::domain::CulvertJob[culvertJob] extends [maintenanceJob]: Relational
+  {
+    ~filter [test::borealorchard3::store::TrailNetworkDb]CulvertJobFilter
+    ~primaryKey
+    (
+      [test::borealorchard3::store::TrailNetworkDb]trail.maintenance_job.job_code
+    )
+    ~mainTable [test::borealorchard3::store::TrailNetworkDb]trail.maintenance_job
+    pipeDiameterCm: [test::borealorchard3::store::TrailNetworkDb]@Job_Culvert | [test::borealorchard3::store::TrailNetworkDb]trail.culvert_job.pipe_diameter_cm,
+    blocked: [test::borealorchard3::store::TrailNetworkDb]@Job_Culvert | [test::borealorchard3::store::TrailNetworkDb]trail.culvert_job.blocked_flag
+  }
+
+  *test::borealorchard3::domain::SegmentClosure[segmentClosure]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealorchard3::store::TrailNetworkDb]trail.segment_closure.closure_code
+    )
+    ~mainTable [test::borealorchard3::store::TrailNetworkDb]trail.segment_closure
+    closureCode: [test::borealorchard3::store::TrailNetworkDb]trail.segment_closure.closure_code,
+    segmentCode: [test::borealorchard3::store::TrailNetworkDb]trail.segment_closure.segment_code,
+    closedFrom: [test::borealorchard3::store::TrailNetworkDb]trail.segment_closure.closed_from,
+    closedThrough: [test::borealorchard3::store::TrailNetworkDb]trail.segment_closure.closed_through,
+    segmentName: [test::borealorchard3::store::TrailNetworkDb]@Closure_Segment | [test::borealorchard3::store::TrailNetworkDb]trail.trail_segment.segment_name
+  }
+
+  *test::borealorchard3::domain::Warden[warden]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealorchard3::store::TrailNetworkDb]roster.warden.warden_code
+    )
+    ~mainTable [test::borealorchard3::store::TrailNetworkDb]roster.warden
+    wardenCode: [test::borealorchard3::store::TrailNetworkDb]roster.warden.warden_code,
+    wardenName: [test::borealorchard3::store::TrailNetworkDb]roster.warden.warden_name,
+    baseRegionCode: [test::borealorchard3::store::TrailNetworkDb]roster.warden.base_region_code
+  }
+
+  *test::borealorchard3::domain::WardenShift[wardenShift]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealorchard3::store::TrailNetworkDb]roster.warden_shift.shift_code
+    )
+    ~mainTable [test::borealorchard3::store::TrailNetworkDb]roster.warden_shift
+    shiftCode: [test::borealorchard3::store::TrailNetworkDb]roster.warden_shift.shift_code,
+    wardenCode: [test::borealorchard3::store::TrailNetworkDb]roster.warden_shift.warden_code,
+    shiftKind: EnumerationMapping ShiftKindMapping: [test::borealorchard3::store::TrailNetworkDb]roster.warden_shift.shift_kind_code,
+    shiftDate: [test::borealorchard3::store::TrailNetworkDb]roster.warden_shift.shift_date,
+    hours: [test::borealorchard3::store::TrailNetworkDb]roster.warden_shift.hours,
+    wardenName: [test::borealorchard3::store::TrailNetworkDb]@Shift_Warden | [test::borealorchard3::store::TrailNetworkDb]roster.warden.warden_name
+  }
+
+  *test::borealorchard3::domain::WardenCertificate[wardenCertificate]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealorchard3::store::TrailNetworkDb]roster.warden_certificate.certificate_code
+    )
+    ~mainTable [test::borealorchard3::store::TrailNetworkDb]roster.warden_certificate
+    certificateCode: [test::borealorchard3::store::TrailNetworkDb]roster.warden_certificate.certificate_code,
+    wardenCode: [test::borealorchard3::store::TrailNetworkDb]roster.warden_certificate.warden_code,
+    skillCode: [test::borealorchard3::store::TrailNetworkDb]roster.warden_certificate.skill_code,
+    awardedOn: [test::borealorchard3::store::TrailNetworkDb]roster.warden_certificate.awarded_on,
+    wardenName: [test::borealorchard3::store::TrailNetworkDb]@Certificate_Warden | [test::borealorchard3::store::TrailNetworkDb]roster.warden.warden_name
+  }
+
+  testSuites:
+  [
+    jobRegisterSuite:
+    {
+      function: |test::borealorchard3::domain::MaintenanceJob.all()->project(
+        [
+          j|$j.jobCode,
+          j|$j.priority,
+          j|$j.hutName,
+          j|$j.wardenName,
+          j|$j.bridgeSpanMetres,
+          j|$j.culvertBlocked
+        ],
+        [
+          'JobCode',
+          'Priority',
+          'Hut',
+          'Warden',
+          'BridgeSpanMetres',
+          'CulvertBlocked'
+        ]
+      )->sort(
+        [
+          asc('JobCode')
+        ]
+      );
+      tests:
+      [
+        jobsReachTheirHutAndWarden:
+        {
+          doc: 'Reads the job register through the two-hop path onto the hut and the three-hop cross-schema path onto the warden who keeps it, and publishes the bridge span and the culvert blockage each job reaches through its own subtype table.';
+          data:
+          [
+            test::borealorchard3::store::TrailNetworkDb:
+              Relational
+              #{
+                trail.maintenance_job:
+                  'job_code,segment_code,priority_code,job_kind_code,raised_on,crew_size\n'+
+                  'JOB-01,SEG-01,URGENT,BRIDGE,2026-05-04,4\n'+
+                  'JOB-02,SEG-02,ROUTINE,CULVERT,2026-05-06,2\n';
+                trail.bridge_job:
+                  'job_code,span_metres,deck_material\n'+
+                  'JOB-01,12.5,LARCH\n';
+                trail.culvert_job:
+                  'job_code,pipe_diameter_cm,blocked_flag\n'+
+                  'JOB-02,45,true\n';
+                trail.trail_segment:
+                  'segment_code,segment_name,hut_code,surface_grade_code,length_metres,ascent_metres\n'+
+                  'SEG-01,Corrie Approach,HUT-01,SCREE,1800,420\n'+
+                  'SEG-02,Peat Traverse,HUT-02,PEAT,2400,160\n';
+                trail.hut:
+                  'hut_code,hut_name,hut_class_code,region_code,bunk_count,warden_code\n'+
+                  'HUT-01,Corrie Bothy,BOTHY,REG-01,8,WRD-01\n'+
+                  'HUT-02,Moss Staging Hut,STAGED,REG-02,14,WRD-02\n';
+                roster.warden:
+                  'warden_code,warden_name,base_region_code\n'+
+                  'WRD-01,Alder Rooke,REG-01\n'+
+                  'WRD-02,Bracken Idris,REG-02\n';
+              }#
+          ];
+          asserts:
+          [
+            joinReachedRegister:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"JobCode":"JOB-01","Priority":"URGENT","Hut":"Corrie Bothy","Warden":"Alder Rooke","BridgeSpanMetres":12.5,"CulvertBlocked":null},{"JobCode":"JOB-02","Priority":"ROUTINE","Hut":"Moss Staging Hut","Warden":"Bracken Idris","BridgeSpanMetres":null,"CulvertBlocked":true}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    bridgeJobSuite:
+    {
+      function: |test::borealorchard3::domain::MaintenanceJob.all()->subType(@test::borealorchard3::domain::BridgeJob)->filter(
+        b|$b.deckMaterial->isNotEmpty()
+      )->project(
+        [
+          b|$b.jobCode,
+          b|$b.spanMetres,
+          b|$b.deckMaterial,
+          b|$b.hutName
+        ],
+        [
+          'JobCode',
+          'SpanMetres',
+          'DeckMaterial',
+          'Hut'
+        ]
+      )->sort(
+        [
+          asc('JobCode')
+        ]
+      );
+      tests:
+      [
+        registerNarrowedToBridgeJobs:
+        {
+          doc: 'Narrows the polymorphic job register to the bridge subtype and keeps the jobs whose deck is recorded in the joined subtype table, so the deck columns are reached while the culvert job drops out of the result.';
+          data:
+          [
+            test::borealorchard3::store::TrailNetworkDb:
+              Relational
+              #{
+                trail.maintenance_job:
+                  'job_code,segment_code,priority_code,job_kind_code,raised_on,crew_size\n'+
+                  'JOB-01,SEG-01,URGENT,BRIDGE,2026-05-04,4\n'+
+                  'JOB-02,SEG-02,ROUTINE,CULVERT,2026-05-06,2\n'+
+                  'JOB-03,SEG-01,ELEVATED,BRIDGE,2026-05-09,3\n';
+                trail.bridge_job:
+                  'job_code,span_metres,deck_material\n'+
+                  'JOB-01,12.5,LARCH\n'+
+                  'JOB-03,4.0,STONE\n';
+                trail.culvert_job:
+                  'job_code,pipe_diameter_cm,blocked_flag\n'+
+                  'JOB-02,45,true\n';
+                trail.trail_segment:
+                  'segment_code,segment_name,hut_code,surface_grade_code,length_metres,ascent_metres\n'+
+                  'SEG-01,Corrie Approach,HUT-01,SCREE,1800,420\n'+
+                  'SEG-02,Peat Traverse,HUT-02,PEAT,2400,160\n';
+                trail.hut:
+                  'hut_code,hut_name,hut_class_code,region_code,bunk_count,warden_code\n'+
+                  'HUT-01,Corrie Bothy,BOTHY,REG-01,8,WRD-01\n'+
+                  'HUT-02,Moss Staging Hut,STAGED,REG-02,14,WRD-02\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyBridgeJobs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"JobCode":"JOB-01","SpanMetres":12.5,"DeckMaterial":"LARCH","Hut":"Corrie Bothy"},{"JobCode":"JOB-03","SpanMetres":4.0,"DeckMaterial":"STONE","Hut":"Corrie Bothy"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    culvertJobSuite:
+    {
+      function: |test::borealorchard3::domain::CulvertJob.all()->project(
+        [
+          c|$c.jobCode,
+          c|$c.pipeDiameterCm,
+          c|$c.blocked,
+          c|$c.crewSize
+        ],
+        [
+          'JobCode',
+          'PipeDiameterCm',
+          'Blocked',
+          'CrewSize'
+        ]
+      )->sort(
+        [
+          asc('JobCode')
+        ]
+      );
+      tests:
+      [
+        culvertSubtypeKeepsItsOwnRows:
+        {
+          doc: 'Reads the culvert subtype directly, so the subtype store filter keeps only the culvert rows of the shared base table while the pipe columns are reached through the joined subtype table.';
+          data:
+          [
+            test::borealorchard3::store::TrailNetworkDb:
+              Relational
+              #{
+                trail.maintenance_job:
+                  'job_code,segment_code,priority_code,job_kind_code,raised_on,crew_size\n'+
+                  'JOB-01,SEG-01,URGENT,BRIDGE,2026-05-04,4\n'+
+                  'JOB-02,SEG-02,ROUTINE,CULVERT,2026-05-06,2\n'+
+                  'JOB-04,SEG-02,ELEVATED,CULVERT,2026-05-11,3\n';
+                trail.culvert_job:
+                  'job_code,pipe_diameter_cm,blocked_flag\n'+
+                  'JOB-02,45,true\n'+
+                  'JOB-04,60,false\n';
+                trail.bridge_job:
+                  'job_code,span_metres,deck_material\n'+
+                  'JOB-01,12.5,LARCH\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyCulvertJobs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"JobCode":"JOB-02","PipeDiameterCm":45,"Blocked":true,"CrewSize":2},{"JobCode":"JOB-04","PipeDiameterCm":60,"Blocked":false,"CrewSize":3}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    hutRosterSuite:
+    {
+      function: |test::borealorchard3::domain::Hut.all()->project(
+        [
+          h|$h.hutCode,
+          h|$h.hutClass,
+          h|$h.bunkCount,
+          h|$h.wardenName
+        ],
+        [
+          'HutCode',
+          'HutClass',
+          'BunkCount',
+          'Warden'
+        ]
+      )->sort(
+        [
+          asc('HutCode')
+        ]
+      );
+      tests:
+      [
+        hutClassesResolveThroughTheIncludedMapping:
+        {
+          doc: 'Reads the hut register with the hut class translated by the enumeration mapping declared in the included reference mapping, and the keeper reached across the schema boundary.';
+          data:
+          [
+            test::borealorchard3::store::TrailNetworkDb:
+              Relational
+              #{
+                trail.hut:
+                  'hut_code,hut_name,hut_class_code,region_code,bunk_count,warden_code\n'+
+                  'HUT-01,Corrie Bothy,BOTHY,REG-01,8,WRD-01\n'+
+                  'HUT-03,Larch Serviced Hut,SERVICED,REG-01,26,WRD-01\n';
+                roster.warden:
+                  'warden_code,warden_name,base_region_code\n'+
+                  'WRD-01,Alder Rooke,REG-01\n';
+              }#
+          ];
+          asserts:
+          [
+            enumeratedHutClasses:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HutCode":"HUT-01","HutClass":"BOTHY","BunkCount":8,"Warden":"Alder Rooke"},{"HutCode":"HUT-03","HutClass":"SERVICED","BunkCount":26,"Warden":"Alder Rooke"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    segmentAndClosureSuite:
+    {
+      function: |test::borealorchard3::domain::SegmentClosure.all()->project(
+        [
+          c|$c.closureCode,
+          c|$c.segmentName,
+          c|$c.closedFrom
+        ],
+        [
+          'ClosureCode',
+          'Segment',
+          'ClosedFrom'
+        ]
+      )->sort(
+        [
+          asc('ClosureCode')
+        ]
+      );
+      tests:
+      [
+        closuresNameTheirSegment:
+        {
+          doc: 'Reads the closure log through the single hop onto the segment it closes, so the closure rows carry the walked name rather than only its code.';
+          data:
+          [
+            test::borealorchard3::store::TrailNetworkDb:
+              Relational
+              #{
+                trail.segment_closure:
+                  'closure_code,segment_code,closed_from,closed_through\n'+
+                  'CLO-01,SEG-01,2026-05-10,2026-05-24\n';
+                trail.trail_segment:
+                  'segment_code,segment_name,hut_code,surface_grade_code,length_metres,ascent_metres\n'+
+                  'SEG-01,Corrie Approach,HUT-01,SCREE,1800,420\n';
+              }#
+          ];
+          asserts:
+          [
+            closureReachesSegmentName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ClosureCode":"CLO-01","Segment":"Corrie Approach","ClosedFrom":"2026-05-10"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    rosterShiftSuite:
+    {
+      function: |test::borealorchard3::domain::WardenShift.all()->project(
+        [
+          s|$s.shiftCode,
+          s|$s.shiftKind,
+          s|$s.hours,
+          s|$s.wardenName
+        ],
+        [
+          'ShiftCode',
+          'ShiftKind',
+          'Hours',
+          'Warden'
+        ]
+      )->sort(
+        [
+          asc('ShiftCode')
+        ]
+      );
+      tests:
+      [
+        shiftKindsResolveToEnumeratedValues:
+        {
+          doc: 'Reads the shift roster with the shift kind translated by the enumeration mapping declared beside the class mappings, and the keeper reached through the roster-side join.';
+          data:
+          [
+            test::borealorchard3::store::TrailNetworkDb:
+              Relational
+              #{
+                roster.warden_shift:
+                  'shift_code,warden_code,shift_kind_code,shift_date,hours\n'+
+                  'SHF-01,WRD-01,DAY,2026-05-04,9\n'+
+                  'SHF-02,WRD-01,NIGHT,2026-05-05,11\n'+
+                  'SHF-03,WRD-02,RELIEF,2026-05-06,6\n';
+                roster.warden:
+                  'warden_code,warden_name,base_region_code\n'+
+                  'WRD-01,Alder Rooke,REG-01\n'+
+                  'WRD-02,Bracken Idris,REG-02\n';
+              }#
+          ];
+          asserts:
+          [
+            enumeratedShiftKinds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ShiftCode":"SHF-01","ShiftKind":"DAY","Hours":9,"Warden":"Alder Rooke"},{"ShiftCode":"SHF-02","ShiftKind":"NIGHT","Hours":11,"Warden":"Alder Rooke"},{"ShiftCode":"SHF-03","ShiftKind":"RELIEF","Hours":6,"Warden":"Bracken Idris"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    certificateSuite:
+    {
+      function: |test::borealorchard3::domain::WardenCertificate.all()->project(
+        [
+          c|$c.certificateCode,
+          c|$c.skillCode,
+          c|$c.wardenName
+        ],
+        [
+          'CertificateCode',
+          'SkillCode',
+          'Warden'
+        ]
+      )->sort(
+        [
+          asc('CertificateCode')
+        ]
+      );
+      tests:
+      [
+        certificatesNameTheirHolder:
+        {
+          doc: 'Reads the certificate register through the roster join so each awarded skill is published against the name of the keeper who holds it.';
+          data:
+          [
+            test::borealorchard3::store::TrailNetworkDb:
+              Relational
+              #{
+                roster.warden_certificate:
+                  'certificate_code,warden_code,skill_code,awarded_on\n'+
+                  'CRT-01,WRD-01,BRIDGE-REPAIR,2026-03-02\n';
+                roster.warden:
+                  'warden_code,warden_name,base_region_code\n'+
+                  'WRD-01,Alder Rooke,REG-01\n';
+              }#
+          ];
+          asserts:
+          [
+            certificateReachesHolder:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CertificateCode":"CRT-01","SkillCode":"BRIDGE-REPAIR","Warden":"Alder Rooke"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    trailSegmentSuite:
+    {
+      function: |test::borealorchard3::domain::TrailSegment.all()->project(
+        [
+          s|$s.segmentCode,
+          s|$s.surfaceGrade,
+          s|$s.lengthMetres,
+          s|$s.hutName
+        ],
+        [
+          'SegmentCode',
+          'SurfaceGrade',
+          'LengthMetres',
+          'Hut'
+        ]
+      )->sort(
+        [
+          asc('SegmentCode')
+        ]
+      );
+      tests:
+      [
+        segmentsCarryGradeAndHut:
+        {
+          doc: 'Reads the walked segments with the surface grade translated by the included reference enumeration mapping and the hut reached through the single declared hop.';
+          data:
+          [
+            test::borealorchard3::store::TrailNetworkDb:
+              Relational
+              #{
+                trail.trail_segment:
+                  'segment_code,segment_name,hut_code,surface_grade_code,length_metres,ascent_metres\n'+
+                  'SEG-01,Corrie Approach,HUT-01,SCREE,1800,420\n'+
+                  'SEG-02,Peat Traverse,HUT-02,PEAT,2400,160\n';
+                trail.hut:
+                  'hut_code,hut_name,hut_class_code,region_code,bunk_count,warden_code\n'+
+                  'HUT-01,Corrie Bothy,BOTHY,REG-01,8,WRD-01\n'+
+                  'HUT-02,Moss Staging Hut,STAGED,REG-02,14,WRD-02\n';
+              }#
+          ];
+          asserts:
+          [
+            gradedSegments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SegmentCode":"SEG-01","SurfaceGrade":"SCREE","LengthMetres":1800,"Hut":"Corrie Bothy"},{"SegmentCode":"SEG-02","SurfaceGrade":"PEAT","LengthMetres":2400,"Hut":"Moss Staging Hut"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

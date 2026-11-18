@@ -1,0 +1,204 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietlighthouse::mapping::EstateMapping
+(
+  *test::quietlighthouse::domain::Station[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietlighthouse::store::EstateDB]harbour.station.station_id
+    )
+    ~mainTable [test::quietlighthouse::store::EstateDB]harbour.station
+    stationCode: [test::quietlighthouse::store::EstateDB]harbour.station.station_code,
+    stationName: [test::quietlighthouse::store::EstateDB]harbour.station.station_name,
+    firstLit: [test::quietlighthouse::store::EstateDB]harbour.station.first_lit
+  }
+
+  *test::quietlighthouse::domain::Lamp[lamp]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietlighthouse::store::EstateDB]harbour.lamp.lamp_id
+    )
+    ~mainTable [test::quietlighthouse::store::EstateDB]harbour.lamp
+    lampCode: [test::quietlighthouse::store::EstateDB]harbour.lamp.lamp_code,
+    lampType: [test::quietlighthouse::store::EstateDB]harbour.lamp.lamp_type,
+    wattage: [test::quietlighthouse::store::EstateDB]harbour.lamp.wattage
+  }
+
+  *test::quietlighthouse::domain::Lens[lens]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietlighthouse::store::EstateDB]harbour.lens.lens_id
+    )
+    ~mainTable [test::quietlighthouse::store::EstateDB]harbour.lens
+    lensCode: [test::quietlighthouse::store::EstateDB]harbour.lens.lens_code,
+    lensOrder: [test::quietlighthouse::store::EstateDB]harbour.lens.lens_order,
+    focalLengthMm: [test::quietlighthouse::store::EstateDB]harbour.lens.focal_length_mm
+  }
+
+  *test::quietlighthouse::domain::Foghorn[foghorn]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietlighthouse::store::EstateDB]harbour.foghorn.foghorn_id
+    )
+    ~mainTable [test::quietlighthouse::store::EstateDB]harbour.foghorn
+    hornCode: [test::quietlighthouse::store::EstateDB]harbour.foghorn.horn_code,
+    blastSeconds: [test::quietlighthouse::store::EstateDB]harbour.foghorn.blast_seconds
+  }
+
+  *test::quietlighthouse::domain::Cottage[cottage]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietlighthouse::store::EstateDB]harbour.cottage.cottage_id
+    )
+    ~mainTable [test::quietlighthouse::store::EstateDB]harbour.cottage
+    cottageCode: [test::quietlighthouse::store::EstateDB]harbour.cottage.cottage_code,
+    cottageName: [test::quietlighthouse::store::EstateDB]harbour.cottage.cottage_name,
+    bedrooms: [test::quietlighthouse::store::EstateDB]harbour.cottage.bedrooms
+  }
+
+  *test::quietlighthouse::domain::Jetty[jetty]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietlighthouse::store::EstateDB]harbour.jetty.jetty_id
+    )
+    ~mainTable [test::quietlighthouse::store::EstateDB]harbour.jetty
+    jettyCode: [test::quietlighthouse::store::EstateDB]harbour.jetty.jetty_code,
+    jettyName: [test::quietlighthouse::store::EstateDB]harbour.jetty.jetty_name,
+    lengthM: [test::quietlighthouse::store::EstateDB]harbour.jetty.length_m
+  }
+
+  *test::quietlighthouse::domain::PaintCycle[paintCycle]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietlighthouse::store::EstateDB]harbour.paint_cycle.cycle_id
+    )
+    ~mainTable [test::quietlighthouse::store::EstateDB]harbour.paint_cycle
+    cycleCode: [test::quietlighthouse::store::EstateDB]harbour.paint_cycle.cycle_code,
+    cycleYear: [test::quietlighthouse::store::EstateDB]harbour.paint_cycle.cycle_year,
+    coats: [test::quietlighthouse::store::EstateDB]harbour.paint_cycle.coats
+  }
+
+  testSuites:
+  [
+    estateReadSuite:
+    {
+      function: |test::quietlighthouse::domain::Station.all()->project(
+  [
+    s|$s.stationCode,
+    s|$s.stationName,
+    s|$s.firstLit
+  ],
+  [
+    'Station',
+    'Name',
+    'FirstLit'
+  ]
+)->sort(
+  [
+    asc('Station')
+  ]
+);
+      tests:
+      [
+        stationsAreReadOffTheirOwnMainTable:
+        {
+          doc: 'Reads the station extent off its declared main table through the alias-qualified column bindings of the estate mapping.';
+          data:
+          [
+            test::quietlighthouse::store::EstateDB:
+              Relational
+              #{
+                harbour.station:
+                  'station_id,station_code,station_name,first_lit\n'+
+                  '1,ST-01,Grey Skerry,1878-09-01\n'+
+                  '2,ST-02,Sand Point,1902-04-15\n';
+              }#
+          ];
+          asserts:
+          [
+            bothStationsAreRead:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"ST-01","Name":"Grey Skerry","FirstLit":"1878-09-01"},{"Station":"ST-02","Name":"Sand Point","FirstLit":"1902-04-15"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    towerFittingSuite:
+    {
+      function: |test::quietlighthouse::domain::Lamp.all()->project(
+  [
+    l|$l.lampCode,
+    l|$l.lampType,
+    l|$l.wattage
+  ],
+  [
+    'Lamp',
+    'Type',
+    'Watts'
+  ]
+)->sort(
+  [
+    asc('Lamp')
+  ]
+);
+      tests:
+      [
+        lampsAreReadOffTheirOwnMainTable:
+        {
+          doc: 'Reads the lamp extent through a second class mapping in the same mapping, so more than one main-table alias in the estate mapping is reached by execution.';
+          data:
+          [
+            test::quietlighthouse::store::EstateDB:
+              Relational
+              #{
+                harbour.lamp:
+                  'lamp_id,lamp_code,lamp_type,wattage\n'+
+                  '1,LP-01,metal halide,250\n'+
+                  '2,LP-02,LED array,90\n';
+              }#
+          ];
+          asserts:
+          [
+            bothLampsAreRead:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lamp":"LP-01","Type":"metal halide","Watts":250},{"Lamp":"LP-02","Type":"LED array","Watts":90}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

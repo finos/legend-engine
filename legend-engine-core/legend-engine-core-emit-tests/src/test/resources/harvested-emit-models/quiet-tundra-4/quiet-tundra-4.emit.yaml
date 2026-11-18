@@ -1,0 +1,31 @@
+name: quiet-tundra-4
+title: "Night-Sky Observation Catalogue — Inherited Log Records, Closed Vocabularies and Deep Collection Constraints"
+description: |
+  A store-less observatory catalogue in which a shared log-record supertype
+  carries the log identity, the review outcome and every validation constraint,
+  an intermediate sky-watch type adds the seeing conditions, and two leaf types
+  extend it with the meteor-count and the variable-star detail. Four closed
+  enumerations supply the sky condition, the instrument kind, the review outcome
+  and the cadence that the constraints and derived properties branch on. The
+  constraints fold optional instrument, filter and observer references into a
+  single collection, deduplicate it and bound its cardinality, so validation
+  crosses the inheritance edge and several optional property paths at once.
+modelSources:
+  model:
+    root: quiet-tundra-4
+    files:
+      - test/quiettundra4/domain/ObservationDomain.pure
+features:
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - collection-constraint
+  - constraint
+  - enumeration
+  - night-sky-observation
+  - store-less

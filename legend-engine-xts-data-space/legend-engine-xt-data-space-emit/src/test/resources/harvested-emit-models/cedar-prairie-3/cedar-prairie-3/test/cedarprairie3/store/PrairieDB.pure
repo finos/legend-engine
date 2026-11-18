@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::cedarprairie3::store::PrairieDB
+(
+  Schema planting
+  (
+    Table prairie_plot
+    (
+      plot_id INTEGER PRIMARY KEY,
+      plot_code VARCHAR(16),
+      plot_name VARCHAR(64),
+      sector_code VARCHAR(16),
+      seeded_on DATE,
+      area_ha INTEGER,
+      native_pct INTEGER,
+      invasive_pct INTEGER,
+      canopy_code VARCHAR(16),
+      moisture_code VARCHAR(16),
+      lot_id INTEGER,
+      crew_id INTEGER
+    )
+
+    Table seed_lot
+    (
+      lot_id INTEGER PRIMARY KEY,
+      lot_code VARCHAR(16),
+      mix_name VARCHAR(64),
+      germination_pct INTEGER,
+      purity_pct INTEGER,
+      harvest_year INTEGER
+    )
+  )
+
+  Schema steward
+  (
+    Table steward_crew
+    (
+      crew_id INTEGER PRIMARY KEY,
+      crew_code VARCHAR(16),
+      crew_name VARCHAR(64),
+      depot_code VARCHAR(16),
+      staffed_count INTEGER
+    )
+  )
+
+  Join Plot_Lot(planting.prairie_plot.lot_id = planting.seed_lot.lot_id)
+  Join Plot_Crew(planting.prairie_plot.crew_id = steward.steward_crew.crew_id)
+)

@@ -1,0 +1,55 @@
+name: maple-glacier
+title: "Glacier Mass-Balance Service — Date-Arithmetic Filter with a Relational Mapper Post-Processor Connection"
+description: |
+  A glacier-monitoring corpus over a single relational observation table.
+  IceObservation carries a mass-balance reading, a baseline and a survey date,
+  with derived net-change, severity and horizon-date properties. A
+  single-execution service filters observations to a date-arithmetic window
+  before a fixed reference date and projects the derived columns, asserted over
+  an in-process H2 runtime; a mapping testSuite covers the derivations. A
+  relational connection carries a mapper post-processor that rewrites schema and
+  table names for lake execution.
+modelSources:
+  model:
+    root: maple-glacier
+    files:
+      - test/mapleglacier/connection/GlacierH2Connection.pure
+      - test/mapleglacier/connection/GlacierMapperConnection.pure
+      - test/mapleglacier/domain/GlacierDomain.pure
+      - test/mapleglacier/mapping/GlacierMapping.pure
+      - test/mapleglacier/runtime/GlacierH2Runtime.pure
+      - test/mapleglacier/runtime/GlacierRuntime.pure
+      - test/mapleglacier/service/RecentMassBalance.pure
+      - test/mapleglacier/store/GlacierDB.pure
+features:
+  - connection:mapper-postprocessor
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:derived-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: advanced
+tags:
+  - date-arithmetic
+  - derived-property
+  - filter
+  - glacier
+  - h2
+  - mapper-postprocessor
+  - mass-balance
+  - plan-generation
+  - relational
+  - service-test

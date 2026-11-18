@@ -1,0 +1,60 @@
+name: coral-cove
+title: "Coastal Dune Restoration Register — Processing-Temporal Plots, Plantings And Fence Runs Read At A Requested Instant Through A Data Space"
+description: |
+  A coastal dune restoration programme whose plot register, marram planting batches and
+  drift fence runs are each processing-temporal: every class carries the temporal
+  stereotype and every backing table declares a matching processing window with an
+  infinity sentinel on the open row. One mapping binds each class to its own main-table
+  alias with an explicit key over the identity column and the window-in column, reading a
+  mixed type surface of strings, fixed-precision numerics, floats, dates and timestamps as
+  direct columns. Three single-execution services enter through the milestoned accessors
+  with one point-in-time date parameter, compose set-membership and threshold predicates
+  with the window predicate the temporal rewrite adds, and project wide tabular contracts;
+  a data space groups the mapping and runtime into a named context and publishes all three
+  endpoints. The mapping and service suites each supply a version closed before the
+  instant and a window opened after it, so the out-of-range rows are proven to be dropped.
+modelSources:
+  model:
+    root: coral-cove
+    files:
+      - test/coralcove/connection/DuneConnection.pure
+      - test/coralcove/dataspace/DuneDataSpace.pure
+      - test/coralcove/domain/DuneDomain.pure
+      - test/coralcove/mapping/DuneMapping.pure
+      - test/coralcove/runtime/DuneRuntime.pure
+      - test/coralcove/service/FenceRunAsOf.pure
+      - test/coralcove/service/PlantingBatchAsOf.pure
+      - test/coralcove/service/PlotRegisterAsOf.pure
+      - test/coralcove/store/DuneDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - dune-restoration
+  - h2
+  - main-table-alias
+  - multi-table
+  - point-in-time
+  - processing-temporal
+  - relational
+  - service-test
+  - snowflake

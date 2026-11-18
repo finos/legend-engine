@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::azurehatchery5::domain::*;
+
+Class {doc.doc = 'A rearing raceway of the hatchery, holding the fry batches swum up into it. Three class-level constraints keep the channel physically stocked: the raceway code carries a minimum trimmed width, the usable volume is strictly positive, and the fry actually held may never exceed the licensed head. The deepest derived property reads the held fry off the batches, filters them to the batches still on feed, and reduces those to one loading figure against the volume.'} test::azurehatchery5::domain::Raceway
+[
+  racewayCodeMinWidth: $this.racewayCode->trim()->length() >= 4,
+  volumeIsPositive: $this.usableVolumeM3 > 0.0,
+  heldWithinLicensedHead: $this.batches->map(b | $b.heldCount)->sum() <= $this.licensedHead
+]
+{
+  {doc.doc = 'Required raceway code the width floor is asserted against.'} racewayCode: String[1];
+  {doc.doc = 'Local name of the channel.'} racewayName: String[1];
+  {doc.doc = 'Usable water volume of the channel in cubic metres.'} usableVolumeM3: Float[1];
+  {doc.doc = 'Head of fry the channel is licensed to hold.'} licensedHead: Integer[1];
+  {doc.doc = 'Water the channel is fed from.'} waterSource: WaterSource[1];
+  {doc.doc = 'Fry batches swum up into the channel.'} batches: FryBatch[*];
+  {doc.doc = 'Fry held in the channel that are still on feed, per cubic metre of usable water.'}
+  feedingLoadingPerM3()
+  {
+    $this.batches->filter(b | $b.onFeed)->map(b | $b.heldCount)->sum() / $this.usableVolumeM3
+  }: Float[1];
+  {doc.doc = 'Batches in the channel carrying at least one graded sample, so an ungraded batch is not counted as graded.'}
+  gradedBatchCount()
+  {
+    $this.batches->filter(b | $b.gradeSamples->size() > 0)->size()
+  }: Integer[1];
+}
+
+Class {doc.doc = 'A batch of fry swum up out of one incubation tray and held in a raceway. Two constraints keep the batch readable: the batch code carries a minimum trimmed width and the fry held may never exceed the fry swum up.'} test::azurehatchery5::domain::FryBatch
+[
+  batchCodeMinWidth: $this.batchCode->trim()->length() >= 5,
+  heldNeverExceedsSwumUp: $this.heldCount <= $this.swumUpCount
+]
+{
+  {doc.doc = 'Required batch code the width floor is asserted against.'} batchCode: String[1];
+  {doc.doc = 'Fry that swam up out of the tray.'} swumUpCount: Integer[1];
+  {doc.doc = 'Fry still held in the channel.'} heldCount: Integer[1];
+  {doc.doc = 'Whether the batch is still taking feed.'} onFeed: Boolean[1];
+  {doc.doc = 'Tray the batch swam up out of, absent on a batch bought in as eyed ova.'} sourceTray: EggTray[0..1];
+  {doc.doc = 'Length samples graded off the batch.'} gradeSamples: GradeSample[*];
+  {doc.doc = 'Mean sampled length over the graded samples, absent on an ungraded batch rather than reported as zero.'}
+  meanSampledLengthMm()
+  {
+    if(
+      $this.gradeSamples->isEmpty(),
+      | [],
+      | $this.gradeSamples->map(s | $s.lengthMm)->sum() / $this.gradeSamples->size()
+    )
+  }: Float[0..1];
+}
+
+Class {doc.doc = 'One graded length sample taken off a fry batch. One constraint keeps a sample readable: a sampled length is strictly positive.'} test::azurehatchery5::domain::GradeSample
+[
+  lengthIsPositive: $this.lengthMm > 0.0
+]
+{
+  {doc.doc = 'Sampled fork length in millimetres.'} lengthMm: Float[1];
+  {doc.doc = 'Grader who took the sample, absent on an unattributed historic sample.'} graderCode: String[0..1];
+}

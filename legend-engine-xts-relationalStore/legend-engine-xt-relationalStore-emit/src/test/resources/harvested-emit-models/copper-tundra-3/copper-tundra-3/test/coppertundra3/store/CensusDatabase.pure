@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::coppertundra3::store::CensusDatabase
+(
+  Schema reserve
+  (
+    Table enclosure_census
+    (
+      milestoning
+      (
+        business(BUS_FROM = bus_from, BUS_THRU = bus_thru, INFINITY_DATE = %9999-12-31T00:00:00.000000+0000)
+      )
+      census_id INTEGER PRIMARY KEY,
+      enclosure_code VARCHAR(48) NOT NULL,
+      census_status VARCHAR(48) NOT NULL,
+      habitat_tier VARCHAR(48) NOT NULL,
+      zone_name VARCHAR(48) NOT NULL,
+      zone_description VARCHAR(48) NOT NULL,
+      sector_name VARCHAR(48) NOT NULL,
+      sector_description VARCHAR(48) NOT NULL,
+      reserve_name VARCHAR(48) NOT NULL,
+      reserve_description VARCHAR(48) NOT NULL,
+      keeper_team VARCHAR(48) NOT NULL,
+      steward_name VARCHAR(48) NOT NULL,
+      survey_method VARCHAR(48) NOT NULL,
+      access_level VARCHAR(48) NOT NULL,
+      substrate_class VARCHAR(48) NOT NULL,
+      region_code VARCHAR(48) NOT NULL,
+      observed_on TIMESTAMP NOT NULL,
+      certified_through DATE NOT NULL,
+      patrol_days INTEGER NOT NULL,
+      day_count INTEGER NOT NULL,
+      fenced_flag VARCHAR(1) NOT NULL,
+      shaded_flag VARCHAR(1) NOT NULL,
+      watered_flag VARCHAR(1) NOT NULL,
+      signed_flag VARCHAR(1) NOT NULL,
+      gated_flag VARCHAR(1) NOT NULL,
+      paved_flag VARCHAR(1) NOT NULL,
+      locked_flag VARCHAR(1) NOT NULL,
+      mapped_flag VARCHAR(1) NOT NULL,
+      headcount INTEGER NOT NULL,
+      forage_kg DOUBLE NOT NULL,
+      bus_from TIMESTAMP NOT NULL,
+      bus_thru TIMESTAMP NOT NULL
+    )
+  )
+)

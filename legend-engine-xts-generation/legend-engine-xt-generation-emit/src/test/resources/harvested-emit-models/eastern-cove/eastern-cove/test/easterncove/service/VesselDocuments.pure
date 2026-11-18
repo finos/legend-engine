@@ -1,0 +1,170 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easterncove::service::VesselDocument
+{
+  pattern: '/cove/v1/vessels/document';
+  title: 'Vessel Document';
+  owners:
+  [
+    'cove-harbour-office'
+  ];
+  documentation: 'Catalogues an inbound harbour document into a vessel record and returns it as a nested document rather than a table, the result shape being declared by the fetch tree it serialises.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::easterncove::domain::CatalogueVessel.all()->graphFetch(
+      #{
+        test::easterncove::domain::CatalogueVessel{
+          hullCode,
+          vesselName,
+          operatorName,
+          berthCode
+        }
+      }#
+    )->serialize(
+      #{
+        test::easterncove::domain::CatalogueVessel{
+          hullCode,
+          vesselName,
+          operatorName,
+          berthCode
+        }
+      }#
+    );
+    mapping: test::easterncove::mapping::InboundVesselM2M;
+    runtime: test::easterncove::runtime::InboundVesselRuntime;
+  }
+  testSuites:
+  [
+    vesselDocumentSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inboundConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"hull":"HL-118","label":"Cove Lantern","berth":"BT-01","operator":{"operatorName":"Lantern Coastal Lines","contactName":"Rowan Vale"}}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        declaredOperator:
+        {
+          asserts:
+          [
+            documentShape: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"hullCode":"HL-118","vesselName":"Cove Lantern","operatorName":"Lantern Coastal Lines","berthCode":"BT-01"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::easterncove::service::CrossStoreBerths
+{
+  pattern: '/cove/v1/vessels/berths';
+  title: 'Cross Store Berths';
+  owners:
+  [
+    'cove-harbour-office'
+  ];
+  documentation: 'Pairs the document-sourced vessel with the stored berth it is assigned to, resolving the correspondence through a declared cross-store association rather than any physical join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::easterncove::domain::CatalogueVessel.all()->graphFetch(
+      #{
+        test::easterncove::domain::CatalogueVessel{
+          hullCode,
+          vesselName,
+          assignedBerth{
+            berthCode,
+            berthName,
+            quayName
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::easterncove::domain::CatalogueVessel{
+          hullCode,
+          vesselName,
+          assignedBerth{
+            berthCode,
+            berthName,
+            quayName
+          }
+        }
+      }#
+    );
+    mapping: test::easterncove::mapping::CoveCrossMapping;
+    runtime: test::easterncove::runtime::CoveCrossRuntime;
+  }
+  testSuites:
+  [
+    crossStoreSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inboundConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"hull":"HL-118","label":"Cove Lantern","berth":"BT-01","operator":{"operatorName":"Lantern Coastal Lines"}}';
+            }#,
+          coveConnection:
+            Relational
+            #{
+              harbour.berth:
+                'berth_code,berth_name,quay_name,max_length_m\n'+
+                'BT-01,North Finger,Lantern Quay,90\n'+
+                'BT-02,South Finger,Lantern Quay,120\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        matchedBerth:
+        {
+          asserts:
+          [
+            crossRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"hullCode":"HL-118","vesselName":"Cove Lantern","assignedBerth":{"berthCode":"BT-01","berthName":"North Finger","quayName":"Lantern Quay"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

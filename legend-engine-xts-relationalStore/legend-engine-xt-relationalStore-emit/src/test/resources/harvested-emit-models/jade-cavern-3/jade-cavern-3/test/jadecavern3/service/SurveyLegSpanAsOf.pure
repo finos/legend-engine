@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::jadecavern3::service::SurveyLegSpanAsOf
+{
+  pattern: '/karst/v1/survey-leg-span/{surveyDate}';
+  title: 'Survey Leg Span As Of';
+  owners:
+  [
+    'cavern-survey-desk',
+    'karst-registry-stewards'
+  ];
+  documentation: 'Point-in-time karst survey span sheet: the survey date opens the business-temporal survey-leg extent, is compared against the declared validity and logging dates inside the pre-projection predicate, and is threaded again into the milestoned passage property and into the parameterised span derivation used by the column list; the projected rows are then narrowed a second time on the tabular result so only a graded leg whose net span falls outside the tolerated band survives.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {surveyDate: StrictDate[1]|test::jadecavern3::domain::SurveyLeg.all($surveyDate)->filter(
+      l|($l.periodStart < $surveyDate) &&
+        (($l.periodEnd > $surveyDate) &&
+          (($l.loggedOn < $surveyDate) &&
+            (($l.loggedMetres > 0.0) &&
+              (($l.spoilMetres < 100.0) &&
+                (($l.netSpanOn($surveyDate) > -50.0) &&
+                  (($l.caveCode == $l.passage($surveyDate)->toOne().caveCode) &&
+                    ($l.gradeCode == $l.gradeCode->toUpper())))))))
+    )->project(
+      [
+        x|$x.legRef,
+        x|$x.caveCode,
+        x|$x.gradeCode,
+        x|$x.crewCode,
+        x|$x.passage($surveyDate)->toOne().passageRef,
+        x|$x.passage($surveyDate)->toOne().roofHeightMetres,
+        x|$x.passage($surveyDate)->toOne().spec->toOne().specRef,
+        x|$x.passage($surveyDate)->toOne().spec->toOne()->subType(@test::jadecavern3::domain::SumpSpec).waterDepthMetres,
+        x|$x.passage($surveyDate)->toOne().altSpec->toOne()->subType(@test::jadecavern3::domain::ChamberSpec).floorAreaSquareMetres,
+        x|$x.netSpanOn($surveyDate),
+        x|($x.loggedMetres + $x.passage($surveyDate)->toOne().roofHeightMetres) - $x.spoilMetres
+      ],
+      [
+        'Leg Ref',
+        'Cave Code',
+        'Grade Code',
+        'Crew Code',
+        'Passage Ref',
+        'Roof Height Metres',
+        'Spec Ref',
+        'Water Depth Metres',
+        'Floor Area Square Metres',
+        'Net Span Metres',
+        'Total Span Metres'
+      ]
+    )->filter(
+      r|(($r.getFloat('Net Span Metres') < -12.5) || ($r.getFloat('Net Span Metres') > 4.0)) &&
+        ($r.getString('Grade Code') == 'B')
+    )->sort(
+      [
+        asc('Leg Ref')
+      ]
+    )};
+    mapping: test::jadecavern3::mapping::CavernMapping;
+    runtime: test::jadecavern3::runtime::CavernRuntime;
+  }
+  testSuites:
+  [
+    surveyLegSpanAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cavernConnection:
+            Relational
+            #{
+              KARST.SURVEY_LEG:
+                'LEG_REF,CAVE_CODE,GRADE_CODE,CREW_CODE,LOGGED_METRES,SPOIL_METRES,PERIOD_START,PERIOD_END,LOGGED_ON,PASSAGE_REF,FROM_Z,THRU_Z\n'+
+                'L-1,CV-11,B,CREW-NORTH,120.25,6.25,2026-01-05,2026-12-31,2026-02-10,PR-1,2026-01-01,9999-12-31\n'+
+                'L-2,CV-11,A,CREW-NORTH,80.5,4.5,2026-01-05,2026-12-31,2026-03-01,PR-2,2026-01-01,9999-12-31\n'+
+                'L-3,CV-12,B,CREW-SOUTH,64.75,3.25,2025-01-05,2025-12-31,2025-02-10,PR-3,2025-01-01,2026-01-01\n'+
+                'L-4,CV-12,B,CREW-SOUTH,58.5,6.0,2026-01-05,2026-12-31,2026-04-02,PR-4,2026-01-01,9999-12-31\n';
+              KARST.PASSAGE_RECORD:
+                'PASSAGE_REF,CAVE_CODE,ROOF_HEIGHT_METRES,WIDTH_METRES,SPEC_REF,FROM_Z,THRU_Z\n'+
+                'PR-1,CV-11,12.75,3.5,SP-1,2026-01-01,9999-12-31\n'+
+                'PR-2,CV-11,11.0,2.75,SP-2,2026-01-01,9999-12-31\n'+
+                'PR-3,CV-12,9.5,2.5,SP-3,2025-01-01,2026-01-01\n'+
+                'PR-4,CV-12,8.0,2.25,SP-4,2026-01-01,9999-12-31\n';
+              KARST.PASSAGE_SPEC:
+                'SPEC_REF,SPEC_KIND,WATER_DEPTH_METRES,FLOOR_AREA_SQM\n'+
+                'SP-1,SUMP,2.5,41.5\n'+
+                'SP-2,CHAMBER,,58.25\n'+
+                'SP-3,SUMP,1.75,\n'+
+                'SP-4,CHAMBER,,33.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        midSeasonAsOf:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyDate = %2026-06-01
+          ]
+          asserts:
+          [
+            onlyTheGradedOutOfBandLeg:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Leg Ref":"L-1","Cave Code":"CV-11","Grade Code":"B","Crew Code":"CREW-NORTH","Passage Ref":"PR-1","Roof Height Metres":12.75,"Spec Ref":"SP-1","Water Depth Metres":2.5,"Floor Area Square Metres":41.5,"Net Span Metres":6.5,"Total Span Metres":126.75}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

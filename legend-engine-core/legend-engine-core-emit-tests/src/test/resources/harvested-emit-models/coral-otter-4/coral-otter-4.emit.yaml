@@ -1,0 +1,30 @@
+name: coral-otter-4
+title: "Coral Nursery Records — A Store-Less Corpus Governed By Class Constraints And One Profile"
+description: |
+  A store-less corpus of coral nursery records: the nursery on the reef flat, the
+  frames pegged on its floor, the fragments grown in the frame slots, the reef
+  patches those fragments are planted out onto and the dive health checks written
+  up against them. Every class carries a profile stereotype and stewardship tags
+  drawn from one nursery profile, and each is governed by several constraints
+  rather than left as a bare property bag: code prefixes and lengths, a frame
+  count that must agree with the frames actually held, slot counts that fragments
+  cannot overfill, diving depth limits, and disjunctive rules that only bite on a
+  worked nursery, a planted patch or a check with severe findings.
+modelSources:
+  model:
+    root: coral-otter-4
+    files:
+      - test/coralotter4/domain/NurseryDomain.pure
+      - test/coralotter4/profile/NurseryProfile.pure
+features:
+  - grammar:constraint
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-constraint
+  - coral-nursery
+  - profile
+  - stewardship-tags
+  - store-less

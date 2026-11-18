@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::azurequarry::domain::*;
+import demo::azurequarry::profile::*;
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'The walking surface a stretch of the trail network is laid with.'} demo::azurequarry::domain::SurfaceKind
+{
+  {doc.doc = 'Loose stone laid over a graded bed.'} GRAVEL,
+  {doc.doc = 'Bare rock scrambled over without a laid bed.'} ROCK,
+  {doc.doc = 'Timber boardwalk carried over soft ground.'} BOARDWALK,
+  {doc.doc = 'Trodden earth kept clear by use alone.'} EARTH
+}
+
+Enum {doc.doc = 'How much shelter a mountain hut offers the parties staying in it.'} demo::azurequarry::domain::HutTier
+{
+  {doc.doc = 'Staffed through the walking season with cooked meals.'} STAFFED,
+  {doc.doc = 'Unstaffed but stocked with fuel and bunks.'} STOCKED,
+  {doc.doc = 'Bare shelter with no stores at all.'} BOTHY
+}
+
+Enum {doc.doc = 'The standing a warden holds on the hut roster.'} demo::azurequarry::domain::WardenRole
+{
+  {doc.doc = 'Holds the hut keys through the whole season.'} KEEPER,
+  {doc.doc = 'Stands in for the keeper on rest days.'} RELIEF,
+  {doc.doc = 'Walks the segments and reports their state.'} INSPECTOR
+}
+
+Enum {doc.doc = 'Whether a stretch of the network may be walked at present.'} demo::azurequarry::domain::AccessState
+{
+  {doc.doc = 'Open to walkers without restriction.'} OPEN,
+  {doc.doc = 'Open only to parties with an inspection escort.'} ESCORTED,
+  {doc.doc = 'Closed while repairs are carried out.'} CLOSED
+}
+
+Enum {doc.doc = 'The verdict an inspection walk records against a segment.'} demo::azurequarry::domain::SurveyVerdict
+{
+  {doc.doc = 'Surface and markers are sound.'} SOUND,
+  {doc.doc = 'Passable, with work scheduled.'} WORN,
+  {doc.doc = 'Unsafe until the recorded works are done.'} FAILED
+}
+
+Class <<typemodifiers.abstract, temporal.businesstemporal, Upkeep.primaryFeature>> {doc.doc = 'Anything the trail office holds on its feature register over a stretch of calendar time. Abstract and business-temporal, so every feature kind inherits the one timeline the register is published against.', Upkeep.custodian = 'trail-office'} demo::azurequarry::domain::NetworkFeature
+{
+  {doc.doc = 'Register identifier of the feature.'} featureCode: String[1];
+  {doc.doc = 'Name the feature is signed with on the ground.'} featureName: String[1];
+  {doc.doc = 'Height above sea level in metres.'} elevationM: Integer[1];
+}
+
+Class <<temporal.businesstemporal, Upkeep.primaryFeature>> {doc.doc = 'A walkable stretch of the network between two waypoints, the wide feature kind carrying the surface, the access state and the latest inspection verdict.', Upkeep.inspectionCadence = 'seasonal'} demo::azurequarry::domain::TrailSegment extends NetworkFeature
+{
+  {doc.doc = 'Length of the stretch in metres.'} lengthM: Integer[1];
+  {doc.doc = 'Surface the stretch is laid with.'} surface: SurfaceKind[1];
+  {doc.doc = 'Whether the stretch may be walked at present.'} access: AccessState[1];
+  {doc.doc = 'Verdict the last inspection walk recorded.'} lastVerdict: SurveyVerdict[0..1];
+  <<Publication.hidden>> {doc.doc = 'Working note kept by the inspection crews and never signed on the ground.', Publication.caption = 'crew note'} crewNote: String[0..1];
+}
+
+Class <<temporal.businesstemporal, Upkeep.primaryFeature>> {doc.doc = 'A shelter on the network, versioned on the same register timeline as the segments it stands on.'} demo::azurequarry::domain::MountainHut extends NetworkFeature
+{
+  {doc.doc = 'Shelter the hut offers the parties staying in it.'} tier: HutTier[1];
+  {doc.doc = 'Bunks the hut carries.'} bunkCount: Integer[1];
+}
+
+Class <<temporal.businesstemporal, Upkeep.ancillaryFeature>> {doc.doc = 'A marked point the segments are measured between: a cairn, a stile or a junction post.'} demo::azurequarry::domain::Waypoint extends NetworkFeature
+{
+  {doc.doc = 'Grid reference the point is recorded at.'} gridReference: String[1];
+}
+
+Class <<typemodifiers.abstract, temporal.businesstemporal>> {doc.doc = 'Anyone the trail office can hold answerable for a hut over a stretch of calendar time.'} demo::azurequarry::domain::WardenParty
+{
+  {doc.doc = 'Roster identifier of the party.'} partyCode: String[1];
+  {doc.doc = 'Name the party is published under.'} displayName: String[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A warden on the hut roster, versioned on the calendar the roster is published against.'} demo::azurequarry::domain::HutWarden extends WardenParty
+{
+  {doc.doc = 'Standing the warden holds on the roster.'} role: WardenRole[1];
+}
+
+Class <<temporal.businesstemporal, Upkeep.ancillaryFeature>> {doc.doc = 'A warden engaged for one walking season only, two levels down the party hierarchy and inheriting its timeline from the abstract party rather than declaring one.'} demo::azurequarry::domain::SeasonalWarden extends HutWarden
+{
+  {doc.doc = 'Season the warden was engaged for.'} seasonLabel: String[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A single-attribute marker: the presence of the association carrying it is the information, not the value on it.'} demo::azurequarry::domain::HeritageMark
+{
+  {doc.doc = 'Code of the heritage designation the hut sits under.'} designationCode: String[1];
+}
+
+Association <<Publication.headline>> {doc.doc = 'The stretches reached from a hut, milestoned on the business timeline both ends share.'} demo::azurequarry::domain::Hut_Segment
+{
+  {doc.doc = 'The hut the stretch is reached from.'} hut: MountainHut[0..1];
+  {doc.doc = 'The stretches walked out of the hut.'} segments: TrailSegment[*];
+}
+
+Association {doc.doc = 'The marked points a stretch is measured between, milestoned on the shared business timeline.'} demo::azurequarry::domain::Segment_Waypoint
+{
+  {doc.doc = 'The stretches measured between the point and its neighbours.'} segments: TrailSegment[*];
+  {doc.doc = 'The points the stretch runs between.'} waypoints: Waypoint[*];
+}
+
+Association {doc.doc = 'The wardens answerable for a hut, reached across the party hierarchy so the association end is typed on the abstract party.'} demo::azurequarry::domain::Hut_Warden
+{
+  {doc.doc = 'The huts the party is answerable for.'} wardedHuts: MountainHut[*];
+  {doc.doc = 'The parties answerable for the hut.'} wardens: WardenParty[*];
+}
+
+Association {doc.doc = 'The heritage designation a hut sits under, with an optional end so an undesignated hut simply carries no marker.'} demo::azurequarry::domain::Hut_Heritage
+{
+  {doc.doc = 'The hut the designation applies to.'} designatedHut: MountainHut[0..1];
+  {doc.doc = 'The designation the hut sits under.'} heritageMark: HeritageMark[0..1];
+}

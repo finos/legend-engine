@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::coralharbor3::domain::*;
+
+Enum test::coralharbor3::domain::GrowthStage
+{
+  SEEDLING,
+  VEGETATIVE,
+  FLOWERING,
+  DORMANT
+}
+
+Enum test::coralharbor3::domain::IrrigationMode
+{
+  DRIP,
+  MIST,
+  FLOOD,
+  MANUAL
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A propagation batch raised in a nursery house, whose bench, stage and watering regime are restated as the batch is moved and re-graded.'} test::coralharbor3::domain::PlantBatch
+{
+  batchCode: String[1];
+  cultivar: String[1];
+  sownOn: StrictDate[1];
+  stage: GrowthStage[1];
+  irrigation: IrrigationMode[1];
+  benchCode: String[1];
+  propagator: String[1];
+  pottedOn: StrictDate[1];
+  trayCount: Integer[1];
+  heightCm: Float[1];
+  mediumCode: String[1];
+  houseCode: String[1];
+  seedLot: String[1];
+  germinationRate: Float[1];
+  hardenedOn: StrictDate[1];
+  labelNote: String[1];
+  labelTag() {if($this.labelNote->length() >= 1, |$this.labelNote->toUpper(), |'UNLABELLED')}: String[1];
+  daysToPot() {dateDiff($this.sownOn, $this.pottedOn, DurationUnit.DAYS)}: Integer[1];
+}

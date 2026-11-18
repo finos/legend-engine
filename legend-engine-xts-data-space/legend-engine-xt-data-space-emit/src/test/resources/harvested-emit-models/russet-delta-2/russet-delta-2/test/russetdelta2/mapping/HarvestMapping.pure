@@ -1,0 +1,172 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::russetdelta2::mapping::HarvestMapping
+(
+  *test::russetdelta2::domain::HoneyLot[lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetdelta2::store::HarvestDb]harvest.honey_lot.lot_code
+    )
+    ~mainTable [test::russetdelta2::store::HarvestDb]harvest.honey_lot
+    lotCode: [test::russetdelta2::store::HarvestDb]harvest.honey_lot.lot_code,
+    lotKind: [test::russetdelta2::store::HarvestDb]harvest.honey_lot.lot_kind,
+    kilograms: [test::russetdelta2::store::HarvestDb]harvest.honey_lot.kilograms,
+    moisturePct: [test::russetdelta2::store::HarvestDb]harvest.honey_lot.moisture_pct,
+    jarCount: [test::russetdelta2::store::HarvestDb]harvest.honey_lot.jar_count,
+    jarLabel: concat(
+                toUpper(trim([test::russetdelta2::store::HarvestDb]harvest.honey_lot.lot_kind)),
+                concat('#', [test::russetdelta2::store::HarvestDb]harvest.honey_lot.lot_code)
+              ),
+    dryKilograms: minus(
+                    [test::russetdelta2::store::HarvestDb]harvest.honey_lot.kilograms,
+                    divide(
+                      times(
+                        [test::russetdelta2::store::HarvestDb]harvest.honey_lot.kilograms,
+                        [test::russetdelta2::store::HarvestDb]harvest.honey_lot.moisture_pct
+                      ),
+                      100
+                    )
+                  )
+  }
+
+  *test::russetdelta2::domain::ExtractionRun[run]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetdelta2::store::HarvestDb]harvest.extraction_run.run_code
+    )
+    ~mainTable [test::russetdelta2::store::HarvestDb]harvest.extraction_run
+    runCode: [test::russetdelta2::store::HarvestDb]harvest.extraction_run.run_code,
+    runOn: [test::russetdelta2::store::HarvestDb]harvest.extraction_run.run_on,
+    spunFrames: [test::russetdelta2::store::HarvestDb]harvest.extraction_run.spun_frames,
+    operatorCode: [test::russetdelta2::store::HarvestDb]harvest.extraction_run.operator_code,
+    runTag: concat('RUN/', coalesce([test::russetdelta2::store::HarvestDb]harvest.extraction_run.operator_code, 'NA'))
+  }
+
+  test::russetdelta2::domain::Lot_Runs: Relational
+  {
+    AssociationMapping
+    (
+      runLot[run, lot]: [test::russetdelta2::store::HarvestDb]@Run_Lot,
+      runs[lot, run]: [test::russetdelta2::store::HarvestDb]@Run_Lot
+    )
+  }
+
+  testSuites:
+  [
+    lotYieldSuite:
+    {
+      function: |test::russetdelta2::domain::HoneyLot.all()->project(
+  [
+    x|$x.lotCode,
+    x|$x.jarLabel,
+    x|$x.dryKilograms
+  ],
+  [
+    'LotCode',
+    'JarLabel',
+    'DryKilograms'
+  ]
+)->sort(
+  [
+    asc('LotCode')
+  ]
+);
+      tests:
+      [
+        moistureAdjustedYield:
+        {
+          doc: 'Projects the composed jar label and the moisture-adjusted weight of each lot over the second store surface.';
+          data:
+          [
+            test::russetdelta2::store::HarvestDb:
+              Relational
+              #{
+                harvest.honey_lot:
+                  'lot_code,yard_code,lot_kind,kilograms,moisture_pct,jar_count\n'+
+                  'HL-01,YD-1,capped,1000,18,40\n'+
+                  'HL-02,YD-2,uncapped,500,20,20\n';
+              }#
+          ];
+          asserts:
+          [
+            adjustedWeights:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LotCode":"HL-01","JarLabel":"CAPPED#HL-01","DryKilograms":820},{"LotCode":"HL-02","JarLabel":"UNCAPPED#HL-02","DryKilograms":400}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    runTagSuite:
+    {
+      function: |test::russetdelta2::domain::ExtractionRun.all()->project(
+  [
+    x|$x.runCode,
+    x|$x.runTag,
+    x|$x.spunFrames
+  ],
+  [
+    'RunCode',
+    'RunTag',
+    'SpunFrames'
+  ]
+)->sort(
+  [
+    asc('RunCode')
+  ]
+);
+      tests:
+      [
+        taggedRuns:
+        {
+          doc: 'Projects the extraction runs with the defaulted operator tag, covering both the present and the absent operator arm.';
+          data:
+          [
+            test::russetdelta2::store::HarvestDb:
+              Relational
+              #{
+                harvest.extraction_run:
+                  'run_code,lot_code,run_on,spun_frames,operator_code\n'+
+                  'RN-01,HL-01,2026-06-01,40,OP-7\n'+
+                  'RN-02,HL-02,2026-06-02,20,\n';
+              }#
+          ];
+          asserts:
+          [
+            taggedRunRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RunCode":"RN-01","RunTag":"RUN/OP-7","SpunFrames":40},{"RunCode":"RN-02","RunTag":"RUN/NA","SpunFrames":20}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

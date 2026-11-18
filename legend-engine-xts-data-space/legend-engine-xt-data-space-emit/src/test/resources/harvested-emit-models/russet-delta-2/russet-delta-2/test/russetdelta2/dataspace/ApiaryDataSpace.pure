@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::russetdelta2::dataspace::ApiaryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'yardPrimary';
+      description: 'Primary tier - yards, hives with their decoded strength band and the dated inspections over the in-process store.';
+      mapping: test::russetdelta2::mapping::ApiaryMapping;
+      defaultRuntime: test::russetdelta2::runtime::ApiaryH2Runtime;
+    },
+    {
+      name: 'yardWarehouse';
+      description: 'Warehouse tier - the same curated yard mapping bound to the shared analytical warehouse.';
+      mapping: test::russetdelta2::mapping::ApiaryMapping;
+      defaultRuntime: test::russetdelta2::runtime::ApiaryWarehouseRuntime;
+    },
+    {
+      name: 'harvestPrimary';
+      description: 'Harvest tier - honey lots and their extraction runs over the second store surface.';
+      mapping: test::russetdelta2::mapping::HarvestMapping;
+      defaultRuntime: test::russetdelta2::runtime::HarvestH2Runtime;
+    }
+  ];
+  defaultExecutionContext: 'yardPrimary';
+  title: 'Russet Delta Apiary Record';
+  description: 'A governed entry point over the apiary record - hive yards, the hives sited in them with their decoded colony strength, the dated inspections behind them, the forage patches worked from each yard and the honey lots extracted downstream - wiring both mappings, the runtime tiers, the curated diagram and the featured endpoints consumers should start from.';
+  diagrams:
+  [
+    {
+      title: 'Yards, Hives And Inspections';
+      diagram: test::russetdelta2::diagram::ApiaryDiagram;
+    }
+  ];
+  elements:
+  [
+    test::russetdelta2::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Hive Register';
+      description: 'The keyed hive register with its district selector and frame-count floor.';
+      executable: test::russetdelta2::service::HiveRegister;
+    },
+    {
+      id: 2;
+      title: 'Honey Lot Summary';
+      description: 'The lot summary with its composed jar label and moisture-adjusted weight.';
+      executable: test::russetdelta2::service::LotSummary;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'apiary-yard-desk@apiaryrecord.invalid';
+  };
+}

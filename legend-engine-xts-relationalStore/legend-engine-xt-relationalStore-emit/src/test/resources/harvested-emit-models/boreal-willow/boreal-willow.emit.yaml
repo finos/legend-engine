@@ -1,0 +1,45 @@
+name: boreal-willow
+title: "Willow Cutting Dispatch — environment-keyed multi-execution service with a tabular self-rollup join"
+description: |
+  A willow nursery dispatch board published through one environment-keyed
+  multi-execution service that binds the same stored query to a field runtime and
+  an archive runtime over the same batch register. The query guards an optional
+  grade collection with an empty-collection test, projects the surviving batches
+  into a tabular result, joins that result to a per-stand rollup of the same
+  register, restricts the joined columns and returns the leading rows in batch
+  order.
+modelSources:
+  model:
+    root: boreal-willow
+    files:
+      - test/borealwillow/connection/WillowConnections.pure
+      - test/borealwillow/domain/WillowDomain.pure
+      - test/borealwillow/mapping/WillowMapping.pure
+      - test/borealwillow/runtime/WillowRuntimes.pure
+      - test/borealwillow/service/CuttingDispatchBoard.pure
+      - test/borealwillow/store/WillowNurseryDatabase.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - multi-execution
+  - nursery-logistics
+  - service
+  - tabular-join
+  - tabular-rollup

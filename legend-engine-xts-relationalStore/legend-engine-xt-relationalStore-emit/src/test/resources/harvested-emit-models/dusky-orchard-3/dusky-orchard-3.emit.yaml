@@ -1,0 +1,49 @@
+name: dusky-orchard-3
+title: "Dusky Orchard — Join-Reached Picking Round Registers And Yield Folds Under Keyed Estates"
+description: |
+  An orchard picking-yard estate whose rounds sit in one relational schema beside the
+  orchards that own them and the crews that work them, with a join declared onto each so
+  every published read reaches its descriptive columns through a traversal rather than a
+  plain column read. One keyed register keeps the rounds whose variety is a member of an
+  accepted literal set and whose crate count and gross mass clear the reporting floors,
+  then flattens each survivor with a mapping-computed average crate mass and a banded
+  crate-load label; the other folds the reportable grades into one row per region and
+  variety, summing mass and crates and counting the contributing rounds so the grouping
+  key itself is join-reached. Both services publish under a day and a night key that share
+  the query and the mapping and differ only in runtime and connection.
+modelSources:
+  model:
+    root: dusky-orchard-3
+    files:
+      - test/duskyorchard3/connection/OrchardConnections.pure
+      - test/duskyorchard3/domain/OrchardDomain.pure
+      - test/duskyorchard3/mapping/OrchardMapping.pure
+      - test/duskyorchard3/runtime/OrchardRuntimes.pure
+      - test/duskyorchard3/service/OrchardYieldTally.pure
+      - test/duskyorchard3/service/PickingRoundRegister.pure
+      - test/duskyorchard3/store/OrchardYardDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - banded-projection
+  - h2
+  - join-reached-column
+  - keyed-environments
+  - literal-set-membership
+  - multi-execution-service
+  - orchard-yard
+  - region-variety-fold

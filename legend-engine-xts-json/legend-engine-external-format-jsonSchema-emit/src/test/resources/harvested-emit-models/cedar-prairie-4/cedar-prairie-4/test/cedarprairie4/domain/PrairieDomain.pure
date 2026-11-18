@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Enum {meta::pure::profiles::doc.doc = 'The standing of a restoration plot in the prairie programme.'} test::cedarprairie4::domain::PlotStanding
+{
+  SEEDED,
+  ESTABLISHING,
+  ESTABLISHED,
+  RETIRED
+}
+
+Class {meta::pure::profiles::doc.doc = 'A prairie restoration plot, optionally nested inside a wider parent plot.'} test::cedarprairie4::domain::RestorationPlot
+{
+  plotCode: String[1];
+  plotName: String[1];
+  regionName: String[1];
+  hectares: Float[1];
+  standing: test::cedarprairie4::domain::PlotStanding[1];
+  parentPlotName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A vegetation survey walked over a restoration plot, carrying its crew paperwork as a nested document.'} test::cedarprairie4::domain::PlotSurvey
+{
+  surveyCode: String[1];
+  plotCode: String[1];
+  coverPct: Float[1];
+  surveyedOn: StrictDate[1];
+  crewReport: test::cedarprairie4::report::CrewReport[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The crew paperwork of a survey, read out of the nested document column.'} test::cedarprairie4::report::CrewReport
+{
+  reportRef: String[0..1];
+  crew: test::cedarprairie4::report::CrewBlock[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The crew block of a survey report.'} test::cedarprairie4::report::CrewBlock
+{
+  crewName: String[0..1];
+  lead: test::cedarprairie4::report::LeadBlock[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The crew lead named inside the crew block.'} test::cedarprairie4::report::LeadBlock
+{
+  leadName: String[0..1];
+  wardenRef: String[0..1];
+}

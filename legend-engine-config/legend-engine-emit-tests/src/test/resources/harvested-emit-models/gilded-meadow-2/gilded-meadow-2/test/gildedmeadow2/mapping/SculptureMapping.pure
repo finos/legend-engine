@@ -1,0 +1,34 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedmeadow2::mapping::SculptureSurveyMapping
+(
+  *test::gildedmeadow2::domain::SculptureSurvey[survey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedmeadow2::store::SculptureSurveyDb]SURVEY.SCULPTURE_SURVEY.SURVEY_CODE
+    )
+    ~mainTable [test::gildedmeadow2::store::SculptureSurveyDb]SURVEY.SCULPTURE_SURVEY
+    surveyCode: [test::gildedmeadow2::store::SculptureSurveyDb]SURVEY.SCULPTURE_SURVEY.SURVEY_CODE,
+    sculptureCode: [test::gildedmeadow2::store::SculptureSurveyDb]SURVEY.SCULPTURE_SURVEY.SCULPTURE_CODE,
+    wardCode: [test::gildedmeadow2::store::SculptureSurveyDb]SURVEY.SCULPTURE_SURVEY.WARD_CODE,
+    surveyedOn: [test::gildedmeadow2::store::SculptureSurveyDb]SURVEY.SCULPTURE_SURVEY.SURVEYED_ON,
+    conditionGrade: [test::gildedmeadow2::store::SculptureSurveyDb]SURVEY.SCULPTURE_SURVEY.CONDITION_GRADE,
+    corrosionPct: [test::gildedmeadow2::store::SculptureSurveyDb]SURVEY.SCULPTURE_SURVEY.CORROSION_PCT,
+    notedAt: [test::gildedmeadow2::store::SculptureSurveyDb]SURVEY.SCULPTURE_SURVEY.NOTED_AT,
+    requiresCleaning: [test::gildedmeadow2::store::SculptureSurveyDb]SURVEY.SCULPTURE_SURVEY.REQUIRES_CLEANING
+  }
+)

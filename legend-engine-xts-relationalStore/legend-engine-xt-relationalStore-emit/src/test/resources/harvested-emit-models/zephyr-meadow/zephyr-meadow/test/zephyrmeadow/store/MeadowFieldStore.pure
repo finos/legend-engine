@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::zephyrmeadow::store::MeadowFieldStore
+(
+  Schema fieldlab
+  (
+    Table restoration_site
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      site_code VARCHAR(20) PRIMARY KEY,
+      site_name VARCHAR(120),
+      region_code VARCHAR(20),
+      regime_code VARCHAR(20),
+      in_z DATE,
+      out_z DATE
+    )
+    Table survey_visit
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      visit_code VARCHAR(20) PRIMARY KEY,
+      site_code VARCHAR(20),
+      stage_code VARCHAR(20),
+      visited_on DATE,
+      in_z DATE,
+      out_z DATE
+    )
+    Table habitat_finding
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      finding_code VARCHAR(20) PRIMARY KEY,
+      visit_code VARCHAR(20),
+      review_visit_code VARCHAR(20),
+      severity_code VARCHAR(20),
+      status_code VARCHAR(20),
+      appetite_code VARCHAR(20),
+      finding_summary VARCHAR(200),
+      escalation_note VARCHAR(200),
+      in_z DATE,
+      out_z DATE
+    )
+    Table meadow_region
+    (
+      region_code VARCHAR(20) PRIMARY KEY,
+      region_name VARCHAR(120),
+      steward_code VARCHAR(20)
+    )
+    Table steward_team
+    (
+      steward_code VARCHAR(20) PRIMARY KEY,
+      team_name VARCHAR(120)
+    )
+  )
+
+  Filter LiveFinding(fieldlab.habitat_finding.status_code != 'CLOSED OUT' and fieldlab.habitat_finding.status_code != 'WITHDRAWN')
+  Filter EscalatedLiveFinding((trim(fieldlab.habitat_finding.severity_code) = 'SEV' or trim(fieldlab.habitat_finding.severity_code) = 'VSV') and fieldlab.habitat_finding.status_code != 'CLOSED OUT')
+  Filter ManagedSite(fieldlab.restoration_site.regime_code != 'UNMANAGED')
+
+  Join SiteToVisit(fieldlab.restoration_site.site_code = fieldlab.survey_visit.site_code)
+  Join VisitToSite(fieldlab.survey_visit.site_code = fieldlab.restoration_site.site_code)
+  Join VisitToFinding(fieldlab.survey_visit.visit_code = fieldlab.habitat_finding.visit_code)
+  Join FindingToVisit(fieldlab.habitat_finding.visit_code = fieldlab.survey_visit.visit_code)
+  Join VisitToReviewFinding(fieldlab.survey_visit.visit_code = fieldlab.habitat_finding.review_visit_code)
+  Join FindingToReviewVisit(fieldlab.habitat_finding.review_visit_code = fieldlab.survey_visit.visit_code)
+  Join SiteToRegion(fieldlab.restoration_site.region_code = fieldlab.meadow_region.region_code)
+  Join RegionToSite(fieldlab.meadow_region.region_code = fieldlab.restoration_site.region_code)
+  Join RegionToSteward(fieldlab.meadow_region.steward_code = fieldlab.steward_team.steward_code)
+  Join StewardToRegion(fieldlab.steward_team.steward_code = fieldlab.meadow_region.steward_code)
+)

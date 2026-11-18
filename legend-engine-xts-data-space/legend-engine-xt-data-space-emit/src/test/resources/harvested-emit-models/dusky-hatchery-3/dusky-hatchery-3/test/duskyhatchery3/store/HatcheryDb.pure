@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskyhatchery3::store::HatcheryDb
+(
+  Schema rearing
+  (
+    Table brood_batch
+    (
+      batch_id INTEGER PRIMARY KEY,
+      batch_code VARCHAR(24) NOT NULL,
+      species_code VARCHAR(24) NOT NULL,
+      health_code VARCHAR(8) NOT NULL,
+      fry_count INTEGER NOT NULL,
+      tank_id INTEGER NOT NULL
+    )
+    Table rearing_tank
+    (
+      tank_id INTEGER PRIMARY KEY,
+      tank_code VARCHAR(24) NOT NULL,
+      tank_label VARCHAR(120) NOT NULL,
+      volume_litres INTEGER NOT NULL,
+      site_id INTEGER NOT NULL
+    )
+  )
+
+  Schema facility
+  (
+    Table hatchery_site
+    (
+      site_id INTEGER PRIMARY KEY,
+      site_code VARCHAR(24) NOT NULL,
+      site_name VARCHAR(120) NOT NULL,
+      region_label VARCHAR(120) NOT NULL
+    )
+  )
+
+  Join Batch_Tank
+  (
+    rearing.brood_batch.tank_id = rearing.rearing_tank.tank_id
+  )
+
+  Join Tank_Site
+  (
+    rearing.rearing_tank.site_id = facility.hatchery_site.site_id
+  )
+)

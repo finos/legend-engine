@@ -1,0 +1,139 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::ivoryfossil3::connection::VaultCuratedConnection
+{
+  store: test::ivoryfossil3::store::VaultDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'FOSSIL_REGISTER';
+    account: 'fossil_curated_account';
+    warehouse: 'FOSSIL_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    role: 'FOSSIL_CURATOR';
+  };
+  auth: OAuth
+  {
+    scopeName: 'session:role-fossil-curator';
+    oauthKey: 'fossilcuratedaccountKey';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'vault'; to: 'vault_curated';},
+        schema {from: 'field'; to: 'field_curated';},
+        table {from: 'specimen_archive'; to: 'specimen_shelf'; schemaFrom: 'vault_curated'; schemaTo: 'vault_curated';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection test::ivoryfossil3::connection::VaultStagingConnection
+{
+  store: test::ivoryfossil3::store::VaultDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'FOSSIL_REGISTER';
+    account: 'fossil_staging_account';
+    warehouse: 'FOSSIL_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    role: 'FOSSIL_STAGER';
+  };
+  auth: OAuth
+  {
+    scopeName: 'session:role-fossil-stager';
+    oauthKey: 'fossilstagingaccountKey';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'vault'; to: 'vault_staging';},
+        table {from: 'dig_site'; to: 'dig_site_current'; schemaFrom: 'field'; schemaTo: 'field';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection test::ivoryfossil3::connection::VaultReaderConnection
+{
+  store: test::ivoryfossil3::store::VaultDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'FOSSIL_REGISTER';
+    account: 'fossil_reader_account';
+    warehouse: 'FOSSIL_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    role: 'FOSSIL_READER';
+  };
+  auth: OAuth
+  {
+    scopeName: 'session:role-fossil-reader';
+    oauthKey: 'fossilreaderaccountKey';
+  };
+}
+
+RelationalDatabaseConnection test::ivoryfossil3::connection::FieldPrimaryConnection
+{
+  store: test::ivoryfossil3::store::VaultDb;
+  type: Sybase;
+  specification: Static
+  {
+    name: 'FOSSIL_FIELD_PRIMARY';
+    host: 'fossil-field-primary.example.invalid';
+    port: 5000;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'sybase/fossil-field-primary.example.invalid';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'field'; to: 'field_archive';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection test::ivoryfossil3::connection::FieldReplicaConnection
+{
+  store: test::ivoryfossil3::store::VaultDb;
+  type: Sybase;
+  specification: Static
+  {
+    name: 'FOSSIL_FIELD_REPLICA';
+    host: 'fossil-field-replica.example.invalid';
+    port: 5000;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'sybase/fossil-field-replica.example.invalid';
+  };
+}

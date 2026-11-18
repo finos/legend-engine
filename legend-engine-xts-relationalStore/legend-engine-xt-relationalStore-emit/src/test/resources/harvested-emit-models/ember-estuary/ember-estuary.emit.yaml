@@ -1,0 +1,42 @@
+name: ember-estuary
+title: "Ember Estuary - Business-Temporal Conservation Reviews Behind Point-In-Time Tally Services"
+description: |
+  A museum conservation model whose review records carry a class-level business-temporal
+  stereotype, so every endpoint resolves the effective rows from a requested review date
+  rather than filtering a date column. One service narrows the extent with a calendar
+  month-and-year comparison derived from that same date, aggregates checked items per
+  gallery and material and then filters the aggregate on a material collection membership,
+  while a second service publishes the plain per-gallery rollup of the same extent.
+modelSources:
+  model:
+    root: ember-estuary
+    files:
+      - test/emberestuary/connection/CuratorialH2Connection.pure
+      - test/emberestuary/domain/CuratorialDomain.pure
+      - test/emberestuary/mapping/CuratorialMapping.pure
+      - test/emberestuary/runtime/CuratorialRuntime.pure
+      - test/emberestuary/service/GalleryTallyService.pure
+      - test/emberestuary/service/MaterialTallyService.pure
+      - test/emberestuary/store/CuratorialDatabase.pure
+features:
+  - execution:service
+  - milestoning:business-temporal
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - collection-membership
+  - conservation-review
+  - date-arithmetic
+  - group-by
+  - h2
+  - museum-curation
+  - point-in-time
+  - relational
+  - service-test
+  - tabular-data-set

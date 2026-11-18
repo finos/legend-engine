@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::opalquarry::domain::*;
+
+Class test::opalquarry::domain::StoneBlock
+{
+  blockCode: String[1];
+  blockLabel: String[0..1];
+  gradeLabel: String[0..1];
+  finishLabel: String[0..1];
+  massBand: String[0..1];
+  quarriedDate: StrictDate[0..1];
+  benchLabel: String[0..1];
+  seamCode: String[0..1];
+  cutterLabel: String[0..1];
+  toolLabel: String[0..1];
+  peakPassCount: Integer[0..1];
+  dimensions: BlockDimensions[0..1];
+}
+
+Class test::opalquarry::domain::BlockDimensions
+{
+  lengthMm: Integer[0..1];
+  widthMm: Integer[0..1];
+  heightMm: Integer[0..1];
+  caliperSource: String[0..1];
+  gaugedWith: String[0..1];
+}
+
+Class test::opalquarry::domain::Bench
+{
+  benchCode: String[1];
+  benchLabel: String[0..1];
+  seamCode: String[0..1];
+  depthMeters: Float[0..1];
+  openedDate: StrictDate[0..1];
+}
+
+Class test::opalquarry::domain::Cutter
+{
+  cutterId: String[1];
+  cutterLabel: String[0..1];
+  shiftLabel: String[0..1];
+  activeFlag: String[0..1];
+}
+
+Class test::opalquarry::domain::CutRecord
+{
+  cutId: String[1];
+  blockCode: String[0..1];
+  passCount: Integer[0..1];
+  cutDate: StrictDate[0..1];
+  toolLabel: String[0..1];
+  blockPeakPassCount: Integer[0..1];
+}
+
+Class test::opalquarry::domain::PolishRecord
+{
+  polishId: String[1];
+  blockCode: String[0..1];
+  gritValue: Integer[0..1];
+  gritLabel: String[0..1];
+  polisherLabel: String[0..1];
+}

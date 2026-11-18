@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberestuary3::service::GaugeReadingService
+{
+  pattern: '/emberestuary3/gaugeReadings/{gaugeCode}';
+  title: 'Tide Gauge Reading Register';
+  ownership: DID { identifier: 'estuary-tide-monitoring' };
+  documentation: 'Publishes the readings of one requested tide gauge as a projected tabular data set, so the single execution plan of the service covers the same relational mapping the mapping tests cover.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {gaugeCode: String[1]|test::emberestuary3::domain::GaugeReading.all()->filter(
+      r|$r.gaugeCode == $gaugeCode
+    )->project(
+      [
+        r|$r.readingCode,
+        r|$r.readOn,
+        r|$r.waterLevelMetres,
+        r|$r.surgeMetres
+      ],
+      [
+        'Reading',
+        'ReadOn',
+        'WaterLevel',
+        'Surge'
+      ]
+    )->sort(
+      [
+        asc('Reading')
+      ]
+    )};
+    mapping: test::emberestuary3::mapping::EstuaryMapping;
+    runtime: test::emberestuary3::runtime::EstuaryRuntime;
+  }
+  testSuites:
+  [
+    gaugeReadingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estuaryConnection:
+            Reference
+            #{
+              test::emberestuary3::data::GaugeReadingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        outerSillReadings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            gaugeCode = 'TG-01'
+          ]
+          asserts:
+          [
+            twoOuterSillReadingsOneWithoutASurge:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"GR-0001","ReadOn":"2026-04-01","WaterLevel":4.250,"Surge":0.400},{"Reading":"GR-0002","ReadOn":"2026-04-02","WaterLevel":3.900}]';
+                  }#;
+              }#
+          ]
+        },
+        innerBasinReadings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            gaugeCode = 'TG-02'
+          ]
+          asserts:
+          [
+            twoInnerBasinReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"GR-0003","ReadOn":"2026-04-01","WaterLevel":2.750,"Surge":0.150},{"Reading":"GR-0004","ReadOn":"2026-04-03","WaterLevel":2.100,"Surge":0.050}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

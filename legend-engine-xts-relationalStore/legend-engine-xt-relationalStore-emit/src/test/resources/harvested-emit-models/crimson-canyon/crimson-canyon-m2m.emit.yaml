@@ -1,0 +1,55 @@
+name: crimson-canyon-m2m
+title: "Crimson Canyon — Strata Layer Transform Service (M2M, Operation, Enumeration, Function, Relational Scaffolding)"
+description: |
+  A non-financial canyon-geology model exercising a broad grammar surface
+  around a single-execution transform service. A `RockUnit` supertype is
+  extended by a `StrataLayer` subclass that carries a `LayerStatus`
+  enumeration property and a derived thickness band computed by a standalone
+  `thicknessBand` function. The service is backed by the `LayerM2M`
+  model-to-model mapping over a `JsonModelConnection` and carries an embedded
+  test suite asserting the serialized transform result; the mapping carries its
+  own test suite too. Alongside, a `LayerRelational` mapping binds the layer
+  classes to a `CanyonDB` `Database` over a DB2 static/Kerberos
+  `RelationalDatabaseConnection`, decoding `status_code` through an
+  `EnumerationMapping` and composing north/south set implementations with a
+  `union` `Operation` mapping. A single `EngineRuntime` wires the transform.
+
+modelSources:
+  model:
+    root: crimson-canyon-m2m
+    files:
+      - test/crimsoncanyon/connection/CanyonConnection.pure
+      - test/crimsoncanyon/domain/LayerStatus.pure
+      - test/crimsoncanyon/domain/RockUnit.pure
+      - test/crimsoncanyon/domain/StrataLayer.pure
+      - test/crimsoncanyon/function/ThicknessBand.pure
+      - test/crimsoncanyon/mapping/LayerM2M.pure
+      - test/crimsoncanyon/mapping/LayerRelational.pure
+      - test/crimsoncanyon/runtime/CanyonRuntime.pure
+      - test/crimsoncanyon/service/LayersTransform.pure
+      - test/crimsoncanyon/source/IncomingLayer.pure
+      - test/crimsoncanyon/store/CanyonDB.pure
+
+features:
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:function
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - mapping:operation-mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - canyon
+  - enumeration
+  - m2m
+  - operation
+  - service-test

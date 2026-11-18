@@ -1,0 +1,147 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigoprairie4::mapping::PrairieMapping
+(
+  include mapping test::indigoprairie4::mapping::PrairieBaseMapping
+
+  test::indigoprairie4::domain::GerminationGrade: EnumerationMapping GradeCodeMapping
+  {
+    Exceptional: ['A'],
+    Vigorous: ['B'],
+    Robust: ['C'],
+    Promising: ['D'],
+    Steady: ['E'],
+    Sparse: ['F'],
+    Dormant: ['G'],
+    Unsuitable: ['H'],
+    Uncertifiable: ['X']
+  }
+
+  *test::indigoprairie4::domain::CertifiedSeedLot[seedLotSet]: Pure
+  {
+    ~src test::indigoprairie4::source::RawSeedLotRecord
+    lotCode: $src.lotRef->trim()->toUpper(),
+    grade: EnumerationMapping GradeCodeMapping: [if(
+      $src.gradeCode->trim()->toUpper() == 'A',
+      | 'A',
+      | if(
+        $src.gradeCode->trim()->toUpper() == 'B',
+        | 'B',
+        | if(
+          $src.gradeCode->trim()->toUpper() == 'C',
+          | 'C',
+          | if(
+            $src.gradeCode->trim()->toUpper() == 'D',
+            | 'D',
+            | if(
+              $src.gradeCode->trim()->toUpper() == 'E',
+              | 'E',
+              | if(
+                $src.gradeCode->trim()->toUpper() == 'F',
+                | 'F',
+                | if(
+                  $src.gradeCode->trim()->toUpper() == 'G',
+                  | 'G',
+                  | if(
+                    $src.gradeCode->trim()->toUpper() == 'H',
+                    | 'H',
+                    | 'X'
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )]->toOne(),
+    seedCount: $src.countText->trim()->parseInteger(),
+    displayLabel: if($src.labelText->isNotEmpty(),
+                     | $src.labelText->toOne()->trim() + ' / ' + $src.lotRef->trim()->toUpper(),
+                     | 'UNLABELLED / ' + $src.lotRef->trim()->toUpper()),
+    aliasEcho: $src.aliases->first()->toOne()->trim(),
+    provenance[provenanceSet]: $src.collection
+  }
+
+  testSuites:
+  [
+    certificationSuite:
+    {
+      function: |test::indigoprairie4::domain::CertifiedSeedLot.all()->graphFetch(
+        #{
+          test::indigoprairie4::domain::CertifiedSeedLot{
+            lotCode,
+            grade,
+            seedCount,
+            displayLabel,
+            aliasEcho,
+            provenance{
+              collectionCode,
+              regionName,
+              primaryAlias
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::indigoprairie4::domain::CertifiedSeedLot{
+            lotCode,
+            grade,
+            seedCount,
+            displayLabel,
+            aliasEcho,
+            provenance{
+              collectionCode,
+              regionName,
+              primaryAlias
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        everyGradeBand:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::indigoprairie4::source::RawSeedLotRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"lotRef":"LOT-01","gradeCode":"A","countText":"1200","labelText":"sun-facing ridge","aliases":["ridge seed"],"collection":{"collectionCode":"COL-01","regionName":"North Prairie","aliases":["ridge seed","north seed"]}},{"lotRef":"LOT-02","gradeCode":"B","countText":"1100","labelText":"warm swale","aliases":["swale seed"],"collection":{"collectionCode":"COL-02","regionName":"East Prairie","aliases":["swale seed"]}},{"lotRef":"LOT-03","gradeCode":"C","countText":"980","labelText":"shortgrass bench","aliases":["bench seed"],"collection":{"collectionCode":"COL-03","regionName":"South Prairie","aliases":["bench seed"]}},{"lotRef":"LOT-04","gradeCode":"D","countText":"870","labelText":"blue stem hollow","aliases":["hollow seed"],"collection":{"collectionCode":"COL-04","regionName":"West Prairie","aliases":["hollow seed"]}},{"lotRef":"LOT-05","gradeCode":"E","countText":"760","labelText":"open loam","aliases":["loam seed"],"collection":{"collectionCode":"COL-05","regionName":"Central Prairie","aliases":["loam seed"]}},{"lotRef":"LOT-06","gradeCode":"F","countText":"650","labelText":"windward patch","aliases":["windward seed"],"collection":{"collectionCode":"COL-06","regionName":"Northwest Prairie","aliases":["windward seed"]}},{"lotRef":"LOT-07","gradeCode":"G","countText":"540","labelText":"dry swale","aliases":["dry seed"],"collection":{"collectionCode":"COL-07","regionName":"Northeast Prairie","aliases":["dry seed"]}},{"lotRef":"LOT-08","gradeCode":"H","countText":"430","labelText":"shaded margin","aliases":["margin seed"],"collection":{"collectionCode":"COL-08","regionName":"Southwest Prairie","aliases":["margin seed"]}},{"lotRef":"LOT-09","gradeCode":"X","countText":"0","aliases":["reserve seed"],"collection":{"collectionCode":"COL-09","regionName":"Reserve Prairie","aliases":["reserve seed"]}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            nineCertifiedLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"lotCode":"LOT-01","grade":"Exceptional","seedCount":1200,"displayLabel":"sun-facing ridge / LOT-01","aliasEcho":"ridge seed","provenance":{"collectionCode":"COL-01","regionName":"North Prairie","primaryAlias":"ridge seed"}},{"lotCode":"LOT-02","grade":"Vigorous","seedCount":1100,"displayLabel":"warm swale / LOT-02","aliasEcho":"swale seed","provenance":{"collectionCode":"COL-02","regionName":"East Prairie","primaryAlias":"swale seed"}},{"lotCode":"LOT-03","grade":"Robust","seedCount":980,"displayLabel":"shortgrass bench / LOT-03","aliasEcho":"bench seed","provenance":{"collectionCode":"COL-03","regionName":"South Prairie","primaryAlias":"bench seed"}},{"lotCode":"LOT-04","grade":"Promising","seedCount":870,"displayLabel":"blue stem hollow / LOT-04","aliasEcho":"hollow seed","provenance":{"collectionCode":"COL-04","regionName":"West Prairie","primaryAlias":"hollow seed"}},{"lotCode":"LOT-05","grade":"Steady","seedCount":760,"displayLabel":"open loam / LOT-05","aliasEcho":"loam seed","provenance":{"collectionCode":"COL-05","regionName":"Central Prairie","primaryAlias":"loam seed"}},{"lotCode":"LOT-06","grade":"Sparse","seedCount":650,"displayLabel":"windward patch / LOT-06","aliasEcho":"windward seed","provenance":{"collectionCode":"COL-06","regionName":"Northwest Prairie","primaryAlias":"windward seed"}},{"lotCode":"LOT-07","grade":"Dormant","seedCount":540,"displayLabel":"dry swale / LOT-07","aliasEcho":"dry seed","provenance":{"collectionCode":"COL-07","regionName":"Northeast Prairie","primaryAlias":"dry seed"}},{"lotCode":"LOT-08","grade":"Unsuitable","seedCount":430,"displayLabel":"shaded margin / LOT-08","aliasEcho":"margin seed","provenance":{"collectionCode":"COL-08","regionName":"Southwest Prairie","primaryAlias":"margin seed"}},{"lotCode":"LOT-09","grade":"Uncertifiable","seedCount":0,"displayLabel":"UNLABELLED / LOT-09","aliasEcho":"reserve seed","provenance":{"collectionCode":"COL-09","regionName":"Reserve Prairie","primaryAlias":"reserve seed"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

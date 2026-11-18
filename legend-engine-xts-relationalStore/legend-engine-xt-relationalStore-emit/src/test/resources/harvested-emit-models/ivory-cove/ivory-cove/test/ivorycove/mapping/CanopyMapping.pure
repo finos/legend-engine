@@ -1,0 +1,230 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivorycove::mapping::CanopyMapping
+(
+  *test::ivorycove::domain::TreePlot[treePlot]: Relational
+  {
+    ~filter [test::ivorycove::store::CanopyDatabase]LivePlots
+    ~primaryKey
+    (
+      [test::ivorycove::store::CanopyDatabase]inventory.tree_plot.plot_code
+    )
+    ~mainTable [test::ivorycove::store::CanopyDatabase]inventory.tree_plot
+    plotCode: [test::ivorycove::store::CanopyDatabase]inventory.tree_plot.plot_code,
+    plotName: [test::ivorycove::store::CanopyDatabase]inventory.tree_plot.plot_name,
+    plantedOn: [test::ivorycove::store::CanopyDatabase]inventory.tree_plot.planted_on,
+    trunkCount: [test::ivorycove::store::CanopyDatabase]inventory.tree_plot.trunk_count,
+    sheltered: [test::ivorycove::store::CanopyDatabase]inventory.tree_plot.sheltered,
+    grade: EnumerationMapping CanopyGradeMapping: [test::ivorycove::store::CanopyDatabase]inventory.tree_plot.grade_code,
+    catalogTag: 'CANOPY-CATALOG',
+    sourceLabel: 'INVENTORY',
+    heightCm: [test::ivorycove::store::CanopyDatabase]@PlotMeasureJoin | [test::ivorycove::store::CanopyDatabase]inventory.plot_measure.height_cm,
+    districtName: [test::ivorycove::store::CanopyDatabase]@PlotDistrictJoin | [test::ivorycove::store::CanopyDatabase]reference.district.district_name,
+    boroughName: [test::ivorycove::store::CanopyDatabase]@PlotDistrictJoin > (INNER) @DistrictBoroughJoin | [test::ivorycove::store::CanopyDatabase]reference.borough.borough_name,
+    district: [test::ivorycove::store::CanopyDatabase]@PlotDistrictJoin
+  }
+
+  *test::ivorycove::domain::District[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivorycove::store::CanopyDatabase]reference.district.district_code
+    )
+    ~mainTable [test::ivorycove::store::CanopyDatabase]reference.district
+    districtCode: [test::ivorycove::store::CanopyDatabase]reference.district.district_code,
+    districtName: [test::ivorycove::store::CanopyDatabase]reference.district.district_name,
+    boroughName: [test::ivorycove::store::CanopyDatabase]@DistrictBoroughJoin | [test::ivorycove::store::CanopyDatabase]reference.borough.borough_name,
+    plots: [test::ivorycove::store::CanopyDatabase]@PlotDistrictJoin
+  }
+
+  test::ivorycove::domain::CanopyGrade: EnumerationMapping CanopyGradeMapping
+  {
+    BROAD: ['BROAD'],
+    NARROW: ['NARROW'],
+    MIXED: ['MIXED']
+  }
+
+  testSuites:
+  [
+    treePlotSuite:
+    {
+      function: |test::ivorycove::domain::TreePlot.all()->filter(p|$p.plotCode == 'P1')->graphFetch(
+        #{
+          test::ivorycove::domain::TreePlot
+          {
+            plotCode,
+            plotName,
+            plantedOn,
+            trunkCount,
+            sheltered,
+            grade,
+            catalogTag,
+            sourceLabel,
+            heightCm,
+            districtName,
+            boroughName
+          }
+        }#
+      )->serialize(
+        #{
+          test::ivorycove::domain::TreePlot
+          {
+            plotCode,
+            plotName,
+            plantedOn,
+            trunkCount,
+            sheltered,
+            grade,
+            catalogTag,
+            sourceLabel,
+            heightCm,
+            districtName,
+            boroughName
+          }
+        }#
+      );
+      tests:
+      [
+        fullyPopulatedPlot:
+        {
+          doc: 'A live plot with every optional value present resolves its direct columns, its literal defaults, its one-hop and its two-hop join-reached columns.';
+          data:
+          [
+            test::ivorycove::store::CanopyDatabase: Reference
+              #{
+                test::ivorycove::data::CanopyData
+              }#
+          ];
+          asserts:
+          [
+            plot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"plotCode":"P1","plotName":"Reed Walk Plot","plantedOn":"2019-04-01","trunkCount":18,"sheltered":true,"grade":"BROAD","catalogTag":"CANOPY-CATALOG","sourceLabel":"INVENTORY","heightCm":420,"districtName":"Harbourside District","boroughName":"Lower Borough"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    treePlotEdgeSuite:
+    {
+      function: |test::ivorycove::domain::TreePlot.all()->filter(p|$p.plotCode == 'P2')->graphFetch(
+        #{
+          test::ivorycove::domain::TreePlot
+          {
+            plotCode,
+            plantedOn,
+            heightCm,
+            districtName,
+            boroughName
+          }
+        }#
+      )->serialize(
+        #{
+          test::ivorycove::domain::TreePlot
+          {
+            plotCode,
+            plantedOn,
+            heightCm,
+            districtName,
+            boroughName
+          }
+        }#
+      );
+      tests:
+      [
+        emptyOptionalAndJoinMiss:
+        {
+          doc: 'A live plot with an empty planted date, no measurement row and an unknown district code yields nulls for the optional column and for both join-reached columns.';
+          data:
+          [
+            test::ivorycove::store::CanopyDatabase: Reference
+              #{
+                test::ivorycove::data::CanopyData
+              }#
+          ];
+          asserts:
+          [
+            plot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"plotCode":"P2","plantedOn":null,"heightCm":null,"districtName":null,"boroughName":null}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    districtSuite:
+    {
+      function: |test::ivorycove::domain::District.all()->filter(d|$d.districtCode == 'D1')->graphFetch(
+        #{
+          test::ivorycove::domain::District
+          {
+            districtCode,
+            districtName,
+            boroughName
+          }
+        }#
+      )->serialize(
+        #{
+          test::ivorycove::domain::District
+          {
+            districtCode,
+            districtName,
+            boroughName
+          }
+        }#
+      );
+      tests:
+      [
+        districtWithPlots:
+        {
+          doc: 'A district resolves its borough name through one join hop across schemas.';
+          data:
+          [
+            test::ivorycove::store::CanopyDatabase: Reference
+              #{
+                test::ivorycove::data::CanopyData
+              }#
+          ];
+          asserts:
+          [
+            district:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"districtCode":"D1","districtName":"Harbourside District","boroughName":"Lower Borough"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

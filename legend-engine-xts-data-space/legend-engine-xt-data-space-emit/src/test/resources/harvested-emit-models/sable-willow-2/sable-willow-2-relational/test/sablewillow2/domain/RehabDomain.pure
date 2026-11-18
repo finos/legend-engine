@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::sablewillow2::domain::*;
+import test::sablewillow2::profile::*;
+
+Class {meta::pure::profiles::doc.doc = 'A wild species held on the rehabilitation reference register, with the habitat band its enclosures must provide.'} test::sablewillow2::domain::Species
+{
+  commonName: String[1];
+  familyName: String[1];
+  habitatSuitability: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A rota of volunteer keepers responsible for a family of intake cases.'} test::sablewillow2::domain::CareTeam
+{
+  teamName: String[1];
+  rotaCode: String[1];
+}
+
+Class <<temporal.processingtemporal, RehabProfile.careRegister>> {RehabProfile.stewardTeam = 'Wildlife Rehabilitation', meta::pure::profiles::doc.doc = 'A pen or pool inside the rehabilitation site, nested under a parent complex and corrected over processing time.'} test::sablewillow2::domain::Enclosure
+{
+  enclosureName: String[1];
+  habitatCode: String[1];
+}
+
+Class <<temporal.processingtemporal, RehabProfile.careRegister>> {RehabProfile.stewardTeam = 'Wildlife Rehabilitation', meta::pure::profiles::doc.doc = 'One admission of an injured animal, corrected over processing time as the record is revised.'} test::sablewillow2::domain::IntakeCase
+{
+  caseRef: String[1];
+  admittedAt: DateTime[1];
+  releaseWeightKg: Float[1];
+}
+
+Association test::sablewillow2::domain::Case_Species
+{
+  intakeCases: IntakeCase[*];
+  species: Species[0..1];
+}
+
+Association test::sablewillow2::domain::Case_Enclosure
+{
+  intakeCases: IntakeCase[*];
+  enclosure: Enclosure[0..1];
+}
+
+Association test::sablewillow2::domain::Case_Team
+{
+  intakeCases: IntakeCase[*];
+  careTeam: CareTeam[0..1];
+}
+
+Association test::sablewillow2::domain::Enclosure_Parent
+{
+  childEnclosures: Enclosure[*];
+  parentEnclosure: Enclosure[0..1];
+}
+
+Association test::sablewillow2::domain::Enclosure_Suitability
+{
+  suitableEnclosures: Enclosure[*];
+  suitableSpecies: Species[0..1];
+}
+
+Association test::sablewillow2::domain::Case_AncestorSpecies
+{
+  ancestorCases: IntakeCase[*];
+  ancestorSpecies: Species[0..1];
+}

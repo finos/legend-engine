@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltreef3::service::ReefSiteSurveyDigest
+{
+  pattern: '/cobaltreef/v1/sites/{asOf}';
+  title: 'Cobalt Reef - Surveyed Sites As Of A Processing Date';
+  documentation: 'Opens the live reef register at the requested processing date, keeps sites that are not closed and whose anchored probe is not retired, and projects each site with its probe, the probe region two hops away and every survey dive and crew. Duplicate dive rows produced by the to-many navigation collapse under distinct before the site and dive sort.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::cobaltreef3::domain::ReefSite.all($asOf)->filter(
+      s|and(!($s.zoneStatus == test::cobaltreef3::domain::ZoneStatus.CLOSED), !($s.probe($asOf).health == test::cobaltreef3::domain::ProbeHealth.RETIRED))
+    )->project(
+      [
+        s|$s.siteCode,
+        s|$s.siteName,
+        s|$s.depthMetres,
+        s|$s.probe($asOf).probeCode,
+        s|$s.probe($asOf).region($asOf).regionName,
+        s|$s.dives($asOf).diveLabel,
+        s|$s.dives($asOf).crew($asOf).crewName
+      ],
+      [
+        'Site',
+        'Site Name',
+        'Depth',
+        'Probe',
+        'Region',
+        'Dive',
+        'Crew'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Site'),
+        asc('Dive')
+      ]
+    )};
+    mapping: test::cobaltreef3::mapping::ReefLiveMapping;
+    runtime: test::cobaltreef3::runtime::ReefLiveRuntime;
+  }
+  testSuites:
+  [
+    reefSiteSurveyDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          liveConnection:
+            Relational
+            #{
+              reef_live.reef_site:
+                'site_code,in_z,out_z,site_name,status_code,depth_m,probe_code\n'+
+                'S1,2024-01-01,2025-06-30,Coral Garden,CLS,9,P1\n'+
+                'S1,2025-06-30,9999-12-31,Coral Garden,OPN,12,P1\n'+
+                'S2,2025-01-01,9999-12-31,Kelp Shelf,CLS,18,P1\n'+
+                'S3,2025-01-01,9999-12-31,Blue Hole,OPN,40,P3\n'+
+                'S4,2025-01-01,9999-12-31,Sand Channel,RST,7,P2\n';
+              reef_live.monitor_probe:
+                'probe_code,in_z,out_z,health_code,region_code\n'+
+                'P1,2025-01-01,9999-12-31,ACT,R1\n'+
+                'P2,2025-01-01,2025-12-31,RET,R2\n'+
+                'P2,2025-12-31,9999-12-31,ACT,R2\n'+
+                'P3,2025-01-01,9999-12-31,RET,R1\n';
+              reef_live.reef_region:
+                'region_code,in_z,out_z,region_name\n'+
+                'R1,2025-01-01,9999-12-31,Northern Atoll\n'+
+                'R2,2024-01-01,2025-03-01,Old Lagoon\n'+
+                'R2,2025-03-01,9999-12-31,Southern Lagoon\n';
+              reef_live.survey_dive:
+                'dive_code,in_z,out_z,site_code,dive_label,crew_code\n'+
+                'D1,2025-01-01,9999-12-31,S1,Dawn transect,C1\n'+
+                'D2,2025-01-01,9999-12-31,S1,Dawn transect,C1\n'+
+                'D3,2025-01-01,9999-12-31,S1,Night count,C2\n'+
+                'D4,2025-01-01,9999-12-31,S4,Seagrass sweep,C2\n'+
+                'D5,2024-01-01,2025-01-01,S4,Storm check,C1\n'+
+                'D6,2025-01-01,9999-12-31,S2,Kelp count,C1\n';
+              reef_live.dive_crew:
+                'crew_code,in_z,out_z,crew_name\n'+
+                'C1,2025-01-01,9999-12-31,Parrotfish Team\n'+
+                'C2,2025-01-01,9999-12-31,Grouper Team\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        openSitesWithLiveProbes:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-01
+          ]
+          asserts:
+          [
+            liveSurveyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"S1","Site Name":"Coral Garden","Depth":12,"Probe":"P1","Region":"Northern Atoll","Dive":"Dawn transect","Crew":"Parrotfish Team"},{"Site":"S1","Site Name":"Coral Garden","Depth":12,"Probe":"P1","Region":"Northern Atoll","Dive":"Night count","Crew":"Grouper Team"},{"Site":"S4","Site Name":"Sand Channel","Depth":7,"Probe":"P2","Region":"Southern Lagoon","Dive":"Seagrass sweep","Crew":"Grouper Team"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

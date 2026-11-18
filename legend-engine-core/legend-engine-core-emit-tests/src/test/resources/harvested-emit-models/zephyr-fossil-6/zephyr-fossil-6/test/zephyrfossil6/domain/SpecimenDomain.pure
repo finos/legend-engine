@@ -1,0 +1,73 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::zephyrfossil6::domain::*;
+
+Enum {doc.doc = 'How much of a dig-site specimen survived into the block a preparator opened.'} test::zephyrfossil6::domain::SpecimenGrade
+{
+  Articulated,
+  Associated,
+  Shattered,
+  NearComplete,
+  PartlyComplete,
+  Fragmentary,
+  MatrixBound,
+  Indeterminate,
+  Unassessed
+}
+
+Enum {doc.doc = 'How far preparation of a specimen block had been taken when it was catalogued.'} test::zephyrfossil6::domain::PreparationState
+{
+  AcidPrepped,
+  AirScribed,
+  Consolidated,
+  Unprepared
+}
+
+Enum {doc.doc = 'The rock a specimen block was lifted in.'} test::zephyrfossil6::domain::MatrixKind
+{
+  Shale,
+  Mudstone,
+  Limestone,
+  Sandstone,
+  UnknownMatrix
+}
+
+Class {doc.doc = 'The block sheet a field team writes at the dig face, holding every reading as the free text and raw counts the sheet allows.'} test::zephyrfossil6::domain::SpecimenSheet
+{
+  ref: String[1];
+  site: String[1];
+  bed: String[1];
+  gradeText: String[1];
+  matrixText: String[1];
+  prepText: String[1];
+  partsFound: Integer[0..1];
+  partsExpected: Integer[1];
+  crackCount: Integer[0..1];
+  loggedOn: StrictDate[1];
+}
+
+Class {doc.doc = 'A catalogued dig-site specimen, holding the graded, arithmetic and enumerated readings the block sheet is resolved into.'} test::zephyrfossil6::domain::CatalogedSpecimen
+{
+  specimenRef: String[1];
+  siteLabel: String[1];
+  completenessPct: Float[1];
+  crackTally: Integer[1];
+  grade: SpecimenGrade[1];
+  prepState: PreparationState[1];
+  matrix: MatrixKind[1];
+  loggedOn: StrictDate[1];
+}

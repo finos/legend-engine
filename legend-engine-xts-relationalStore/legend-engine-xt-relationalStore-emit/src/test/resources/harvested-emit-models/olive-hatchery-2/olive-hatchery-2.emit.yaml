@@ -1,0 +1,81 @@
+name: olive-hatchery-2
+title: "Olive Hatchery - Shellfish Larval Rearing Register (cross-schema store, mapping composition, branch-bearing endpoints)"
+description: |
+  A relational model of a shellfish hatchery that rears larval batches from
+  conditioned broodstock. The store keeps the rearing facts and the facility
+  reference relations in two schemas, so every property that describes where a
+  batch was reared is resolved across the schema boundary: the tank volume one
+  hop out, the hall name two hops out through a forced inner hop, and the site
+  name three hops out. Four mappings compose by inclusion — the facility
+  mapping supplies the implementations the fact mappings join back into, and
+  each later mapping adds one family of implementations plus the association
+  bindings that make the fact reachable from its satellite. The vigour label is
+  the branch under test: eight case arms resolve a recorded vigour code and a
+  ninth row falls through to the unrecorded fallback, and the batch note folds
+  onto a fixed sentinel when the column is empty. Five endpoints carry the
+  branch logic into the query layer instead of the mapping: a caller-supplied
+  mode selects, through nested two-arm branches inside the predicate, which
+  vigour band the membership test runs against; an aggregation sums a branch
+  that contributes the density only above a caller-supplied survival floor;
+  calendar year and month parts are grouping keys rather than stored columns; a
+  stocking day shifted forward by one day is compared by week of year; and two
+  endpoints reshape the tabular result after aggregation by extending it with a
+  re-exposed column and restricting to the published column list.
+modelSources:
+  model:
+    root: olive-hatchery-2
+    files:
+      - test/olivehatchery2/connection/HatcheryConnections.pure
+      - test/olivehatchery2/domain/HatcheryDomain.pure
+      - test/olivehatchery2/mapping/HatcheryCoreMapping.pure
+      - test/olivehatchery2/mapping/HatcheryFacilityMapping.pure
+      - test/olivehatchery2/mapping/HatcheryReadingMapping.pure
+      - test/olivehatchery2/mapping/HatcheryRegisterMapping.pure
+      - test/olivehatchery2/runtime/HatcheryRuntimes.pure
+      - test/olivehatchery2/service/HatcheryDigestServices.pure
+      - test/olivehatchery2/service/HatcheryRegisterServices.pure
+      - test/olivehatchery2/store/HatcheryDb.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:derived-property
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - conditional-transform
+  - cross-schema
+  - date-arithmetic
+  - h2
+  - larval-rearing
+  - mapping-include
+  - multi-hop-join
+  - service-test
+  - shellfish-hatchery
+  - tabular-result-shaping

@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarhatchery2::service::HealthBoardAsOf
+{
+  pattern: '/cedarhatchery/v1/health-board/{processingDate}';
+  title: 'Cedar Hatchery - Health Board As Of';
+  documentation: 'Projects the health inspection board of the second store as it was believed at one processing instant, resolving the veterinary alias through a join-reached column binding and the grade label through an association implementation.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|test::cedarhatchery2::domain::HealthCheck.all($processingDate)->project(
+      [
+        c|$c.checkId,
+        c|$c.lotCode,
+        c|$c.vetAlias,
+        c|$c.grade.gradeLabel,
+        c|$c.waterTempC,
+        c|$c.sampledCount
+      ],
+      [
+        'Check',
+        'Lot',
+        'Vet',
+        'Grade',
+        'Water Temp',
+        'Sampled'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Check')
+      ]
+    )->limit(10)};
+    mapping: test::cedarhatchery2::mapping::HatcheryHealthMapping;
+    runtime: test::cedarhatchery2::runtime::HatcheryHealthRuntime;
+  }
+  testSuites:
+  [
+    healthBoardAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              health.health_check:
+                'check_id,lot_code,vet_code,grade_code,water_temp_c,sampled_count,in_z,out_z\n'+
+                'HC-01,LOT-ALPHA,VT-01,GR-A,11.25,60,2026-01-01,9999-12-31\n'+
+                'HC-02,LOT-BRAVO,VT-02,GR-B,12.75,45,2026-01-01,9999-12-31\n'+
+                'HC-03,LOT-CHARLIE,VT-01,GR-C,9.55,30,2026-01-01,2026-03-15\n';
+              health.vet_roster:
+                'vet_code,vet_alias,clinic_name\n'+
+                'VT-01,North Shore Vet,North Clinic\n'+
+                'VT-02,South Shore Vet,South Clinic\n';
+              health.grade_scale:
+                'grade_code,grade_label,severity_rank\n'+
+                'GR-A,Prime,1\n'+
+                'GR-B,Sound,2\n'+
+                'GR-C,Watch,3\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        boardAfterTheCorrectionExcludesTheSupersededCheck:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01
+          ]
+          asserts:
+          [
+            twoChecksBelieved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Check":"HC-01","Lot":"LOT-ALPHA","Vet":"North Shore Vet","Grade":"Prime","Water Temp":11.25,"Sampled":60},{"Check":"HC-02","Lot":"LOT-BRAVO","Vet":"South Shore Vet","Grade":"Sound","Water Temp":12.75,"Sampled":45}]';
+                  }#;
+              }#
+          ]
+        },
+        boardBeforeTheCorrectionStillCarriesTheSupersededCheck:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-02-01
+          ]
+          asserts:
+          [
+            threeChecksBelieved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Check":"HC-01","Lot":"LOT-ALPHA","Vet":"North Shore Vet","Grade":"Prime","Water Temp":11.25,"Sampled":60},{"Check":"HC-02","Lot":"LOT-BRAVO","Vet":"South Shore Vet","Grade":"Sound","Water Temp":12.75,"Sampled":45},{"Check":"HC-03","Lot":"LOT-CHARLIE","Vet":"North Shore Vet","Grade":"Watch","Water Temp":9.55,"Sampled":30}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

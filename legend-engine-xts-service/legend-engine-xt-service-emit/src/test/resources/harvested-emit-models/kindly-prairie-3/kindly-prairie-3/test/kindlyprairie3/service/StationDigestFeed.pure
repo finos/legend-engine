@@ -1,0 +1,131 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlyprairie3::service::StationDigestFeed
+{
+  pattern: '/kindlyprairie3/stationDigestFeed';
+  title: 'Kindly Prairie 3 - Station Digest Feed';
+  documentation: 'Publishes the folded visit summary of each refined station record through a single execution over the station digest transformation. The runtime is declared inline on the service and binds the inbound station sheet row through a model store JSON connection.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::kindlyprairie3::domain::StationDigest.all()->graphFetch(
+      #{
+        test::kindlyprairie3::domain::StationDigest{
+          visitSummary
+        }
+      }#
+    )->serialize(
+      #{
+        test::kindlyprairie3::domain::StationDigest{
+          visitSummary
+        }
+      }#
+    );
+    mapping: test::kindlyprairie3::mapping::StationDigestM2M;
+    runtime:
+    #{
+      mappings:
+      [
+        test::kindlyprairie3::mapping::StationDigestM2M
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          inboundStationSheetRows:
+          #{
+            JsonModelConnection
+            {
+              class: test::kindlyprairie3::domain::StationSheetRow;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    nettedStationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inboundStationSheetRows:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"stationRef":" st-41 ","registryCode":"prairie-stations","rawTransectCount":"3","rawMistNetMetres":" 48 ","rawGrassHeightCm":" 61 ","rawWarden":" kvd ","visits":[{"visitCode":" v-41 ","netHours":5},{"visitCode":"v-42"},{"visitCode":"v-43","netHours":2}]}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyVisitsCarryingNetHoursReachTheSummary:
+        {
+          asserts:
+          [
+            oneNettedStationDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"visitSummary":"V-41=5, V-43=2"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    unvisitedStationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inboundStationSheetRows:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"stationRef":"st-42","registryCode":"prairie-stations","visits":[]}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        anUnvisitedStationSummarisesToNothing:
+        {
+          asserts:
+          [
+            oneUnvisitedStationDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"visitSummary":null}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

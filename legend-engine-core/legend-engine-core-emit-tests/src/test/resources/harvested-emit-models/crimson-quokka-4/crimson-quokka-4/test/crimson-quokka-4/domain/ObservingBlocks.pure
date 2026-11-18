@@ -1,0 +1,105 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::crimsonquokka4::domain::*;
+import test::crimsonquokka4::profile::*;
+
+Class <<typemodifiers.abstract>> {PlanDoc.purpose = 'Anything the dome can be asked to observe as one uninterrupted stretch of the night. Abstract: only the concrete block kinds are ever instantiated, and the kind is carried by the discriminator rather than by any added structure.'} test::crimsonquokka4::domain::ObservingBlock
+[
+  blockKindPermitted: $this.blockKind->in(['IMAGING', 'SPECTRAL', 'TIMING']),
+  dwellWithinNightLength: $this.dwellSeconds->toOne() <= 43200
+]
+{
+  {PlanDoc.note = 'Programme-wide identifier of the observing block.'} blockCode: String[1];
+  <<SubtypeMarker.discriminatorProperty>> blockKind: String[1];
+  tracking: TrackingMode[1];
+  moonWindow: MoonWindow[1];
+  <<ColumnShape.wideInteger>> dwellSeconds: Integer[0..1];
+}
+
+Class {SubtypeMarker.discriminatorName = 'IMAGING'} test::crimsonquokka4::domain::ImagingBlock extends ObservingBlock
+{
+  {PlanDoc.note = 'How steady the air has to be before the imaging block may start.'} seeingFloor: SeeingBand[1];
+  <<ColumnShape.wideInteger>> frameCount: Integer[1];
+}
+
+Class {SubtypeMarker.discriminatorName = 'SPECTRAL'} test::crimsonquokka4::domain::SpectralBlock extends ObservingBlock
+{
+  resolution: SpectralResolution[1];
+  slitWidthArcsec: Float[1];
+}
+
+Class {SubtypeMarker.discriminatorName = 'TIMING'} test::crimsonquokka4::domain::TimingBlock extends ObservingBlock
+{
+  cadenceUnit: CadenceUnit[1];
+  <<ColumnShape.wideInteger>> cadenceCount: Integer[1];
+}
+
+Class <<typemodifiers.abstract>> {PlanDoc.purpose = 'How a block is told where to look. Abstract, with three concrete forms that a proposal may name one and only one of.'} test::crimsonquokka4::domain::PointingSpecification
+[
+  pointingKindPermitted: $this.pointingKind->in(['EQUATORIAL', 'CATALOGUE', 'EPHEMERIS'])
+]
+{
+  pointingCode: String[1];
+  <<SubtypeMarker.discriminatorProperty>> pointingKind: String[1];
+}
+
+Class {SubtypeMarker.discriminatorName = 'EQUATORIAL'} test::crimsonquokka4::domain::EquatorialPointing extends PointingSpecification
+{
+  rightAscensionHours: Float[1];
+  declinationDegrees: Float[1];
+}
+
+Class {SubtypeMarker.discriminatorName = 'CATALOGUE'} test::crimsonquokka4::domain::CataloguePointing extends PointingSpecification
+{
+  catalogueLabel: String[1];
+  entryNumber: Integer[1];
+}
+
+Class {SubtypeMarker.discriminatorName = 'EPHEMERIS'} test::crimsonquokka4::domain::EphemerisPointing extends PointingSpecification
+{
+  bodyLabel: String[1];
+  ephemerisEpoch: StrictDate[1];
+}
+
+Class <<typemodifiers.abstract>> {PlanDoc.purpose = 'A dome routine run around the science blocks so the frames can be reduced afterwards.'} test::crimsonquokka4::domain::CalibrationRoutine
+[
+  routineKindPermitted: $this.routineKind->in(['FLAT_FIELD'])
+]
+{
+  routineCode: String[1];
+  <<SubtypeMarker.discriminatorProperty>> routineKind: String[1];
+}
+
+Class {SubtypeMarker.discriminatorName = 'FLAT_FIELD'} test::crimsonquokka4::domain::FlatFieldRoutine extends CalibrationRoutine
+{
+  lampLumens: Integer[1];
+}
+
+Class <<typemodifiers.abstract>> {PlanDoc.purpose = 'How the reduced frames are laid out when they leave the dome. Reached as a polymorphic collection two hops from a night plan.'} test::crimsonquokka4::domain::ArchiveLayout
+[
+  layoutKindPermitted: $this.layoutKind->in(['CUBE'])
+]
+{
+  layoutCode: String[1];
+  <<SubtypeMarker.discriminatorProperty>> layoutKind: String[1];
+}
+
+Class {SubtypeMarker.discriminatorName = 'CUBE'} test::crimsonquokka4::domain::CubeLayout extends ArchiveLayout
+{
+  compression: ArchiveCompression[1];
+  <<ColumnShape.readOnly>> planeCount: Integer[1];
+}

@@ -1,0 +1,48 @@
+name: verdant-tundra
+title: Verdant Tundra - Chained Patrol Transform Pipeline
+description: >
+  A store-less model-to-model pipeline in which a raw ranger patrol intake record is
+  transformed through an event stage, a digest stage and a bulletin stage, each stage
+  reading the previous stage output through a model chain connection. The logic layer
+  combines an eight-arm banding function with an empty fallback, enumeration mappings
+  driven by computed source values, a mapping-level local property, a router union over
+  two filtered transforms, and mapping include reuse.
+modelSources:
+  model:
+    root: verdant-tundra
+    files:
+      - test/verdanttundra/connection/PatrolConnections.pure
+      - test/verdanttundra/domain/PatrolDomain.pure
+      - test/verdanttundra/function/PatrolFunctions.pure
+      - test/verdanttundra/mapping/PatrolBaseMapping.pure
+      - test/verdanttundra/mapping/PatrolDigestMapping.pure
+      - test/verdanttundra/runtime/PatrolRuntimes.pure
+      - test/verdanttundra/service/PatrolServices.pure
+features:
+  - scaffolding:model-chain-connection
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data-branch-coverage
+  - grammar:enumeration
+  - grammar:function
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-local-property
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:router-union
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - conditional-banding
+  - enumeration-mapping
+  - model-chain
+  - model-to-model
+  - operation-union
+  - patrol-logistics
+  - store-less

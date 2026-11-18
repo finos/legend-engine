@@ -1,0 +1,39 @@
+name: hazel-willow-2
+title: "Hazel Willow 2 — Store-Less Pottery Kiln Firing Domain Reached Only Through Chained Associations And Parameterised Properties"
+description: |
+  A community pottery studio's kiln-firing record kept as a store-less domain: no
+  store, mapping, runtime or executable element exists anywhere in the group, so
+  the whole model is proven by parsing and compiling the type graph alone. Twelve
+  plain classes describe the studio sites, their chambers and shelf positions, the
+  firing runs and the ordered segments each run is held in, the clay bodies and
+  glaze recipes, the coats applied to a test tile, the defects noted on a fired
+  tile and the potters and studio sessions that attend the firings. Four closed
+  enumerations type the segment atmosphere, the soak cone, the studio role and the
+  defect category, and every one of them is read back through a parameterised
+  property rather than only declared.
+  The association network is deliberately chained rather than star-shaped: a site
+  reaches a segment only through chamber and run, a potter reaches a run only
+  through a session, and a tile reaches a recipe only through a layer, so no
+  endpoint short-circuits an intermediate class. Six parameterised properties walk
+  those chains, three of them nesting a collection test inside a filter over a
+  second association hop so the resolved property depends on two association
+  traversals rather than one.
+modelSources:
+  model:
+    root: hazel-willow-2
+    files:
+      - test/hazelwillow2/domain/KilnDomain.pure
+features:
+  - grammar:enumeration
+  - grammar:nested-association
+  - grammar:qualified-property
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association-chain
+  - enumeration
+  - kiln-firing
+  - pottery-studio
+  - qualified-property
+  - store-less

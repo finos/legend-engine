@@ -1,0 +1,42 @@
+name: solar-isle-3
+title: "Solar Isle 3 — a trail-condition reading register bound across a field schema and a registry schema through aliased main tables and a four-hop district path"
+description: |
+  The trail-condition register of an island footpath survey, held as one
+  relational store whose field schema carries the wide reading relation and
+  whose registry schema carries the sensor, segment, station and district
+  relations, so every descriptive name a reading publishes is reached across the
+  schema boundary. One relational mapping names an aliased main table for each of
+  the five classes and derives, from the reading relation alone, an eight-armed
+  condition band whose fallback arm publishes a database null, a tier label
+  folded through case and trimmed text, a fitted patrol score and a defaulted
+  status, while the reading resolves its sensor name over one hop, its segment
+  and station names over two and three hops and its district name over a
+  four-hop path through the registry schema. Mapping suites walk every band arm,
+  the null fallback and the full four-hop path.
+modelSources:
+  model:
+    root: solar-isle-3
+    files:
+      - test/solarisle3/domain/IsleTrailDomain.pure
+      - test/solarisle3/mapping/IsleTrailMapping.pure
+      - test/solarisle3/store/IsleTrailDb.pure
+features:
+  - mapping:relational-main-table-alias
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: basic
+tags:
+  - cross-schema-join
+  - duckdb
+  - eight-arm-conditional
+  - four-hop-join-path
+  - main-table-alias
+  - mapping-test
+  - multi-table-store
+  - null-fallback-arm
+  - relational
+  - trail-condition-register

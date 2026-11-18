@@ -1,0 +1,488 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solarprairie2::mapping::PrairieMapping
+(
+  *test::solarprairie2::domain::PrairieSite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site
+    siteCode: [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_code,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code,
+    hectares: [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.hectares,
+    establishedYear: [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.established_year
+  }
+
+  *test::solarprairie2::domain::SoilSample[soil]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.soil_sample.soil_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.soil_sample
+    soilCode: [test::solarprairie2::store::PrairieFieldDB]prairie.soil_sample.soil_code,
+    soilLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.soil_sample.soil_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.soil_sample.recorded_on,
+    phReading: [test::solarprairie2::store::PrairieFieldDB]prairie.soil_sample.ph_reading,
+    coreDepthCm: [test::solarprairie2::store::PrairieFieldDB]prairie.soil_sample.core_depth_cm,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_SoilSample | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_SoilSample | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::SeedMix[seed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.seed_mix.seed_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.seed_mix
+    seedCode: [test::solarprairie2::store::PrairieFieldDB]prairie.seed_mix.seed_code,
+    seedLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.seed_mix.seed_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.seed_mix.recorded_on,
+    sowRateKgHa: [test::solarprairie2::store::PrairieFieldDB]prairie.seed_mix.sow_rate_kg_ha,
+    speciesCount: [test::solarprairie2::store::PrairieFieldDB]prairie.seed_mix.species_count,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_SeedMix | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_SeedMix | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::BurnEvent[burn]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.burn_event.burn_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.burn_event
+    burnCode: [test::solarprairie2::store::PrairieFieldDB]prairie.burn_event.burn_code,
+    burnLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.burn_event.burn_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.burn_event.recorded_on,
+    burnedHectares: [test::solarprairie2::store::PrairieFieldDB]prairie.burn_event.burned_hectares,
+    crewSize: [test::solarprairie2::store::PrairieFieldDB]prairie.burn_event.crew_size,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_BurnEvent | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_BurnEvent | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::GrazingRound[grazing]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.grazing_round.grazing_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.grazing_round
+    grazingCode: [test::solarprairie2::store::PrairieFieldDB]prairie.grazing_round.grazing_code,
+    grazingLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.grazing_round.grazing_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.grazing_round.recorded_on,
+    stockingRate: [test::solarprairie2::store::PrairieFieldDB]prairie.grazing_round.stocking_rate,
+    headCount: [test::solarprairie2::store::PrairieFieldDB]prairie.grazing_round.head_count,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_GrazingRound | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_GrazingRound | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::PollinatorCount[pollinator]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.pollinator_count.pollinator_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.pollinator_count
+    pollinatorCode: [test::solarprairie2::store::PrairieFieldDB]prairie.pollinator_count.pollinator_code,
+    pollinatorLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.pollinator_count.pollinator_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.pollinator_count.recorded_on,
+    visitsPerHour: [test::solarprairie2::store::PrairieFieldDB]prairie.pollinator_count.visits_per_hour,
+    speciesSeen: [test::solarprairie2::store::PrairieFieldDB]prairie.pollinator_count.species_seen,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_PollinatorCount | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_PollinatorCount | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::RainGauge[rain]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.rain_gauge.rain_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.rain_gauge
+    rainCode: [test::solarprairie2::store::PrairieFieldDB]prairie.rain_gauge.rain_code,
+    rainLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.rain_gauge.rain_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.rain_gauge.recorded_on,
+    rainfallMm: [test::solarprairie2::store::PrairieFieldDB]prairie.rain_gauge.rainfall_mm,
+    gaugeHeightCm: [test::solarprairie2::store::PrairieFieldDB]prairie.rain_gauge.gauge_height_cm,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_RainGauge | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_RainGauge | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::BirdTransect[bird]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.bird_transect.bird_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.bird_transect
+    birdCode: [test::solarprairie2::store::PrairieFieldDB]prairie.bird_transect.bird_code,
+    birdLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.bird_transect.bird_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.bird_transect.recorded_on,
+    transectLengthM: [test::solarprairie2::store::PrairieFieldDB]prairie.bird_transect.transect_length_m,
+    birdsCounted: [test::solarprairie2::store::PrairieFieldDB]prairie.bird_transect.birds_counted,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_BirdTransect | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_BirdTransect | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::WeedPatch[weed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.weed_patch.weed_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.weed_patch
+    weedCode: [test::solarprairie2::store::PrairieFieldDB]prairie.weed_patch.weed_code,
+    weedLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.weed_patch.weed_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.weed_patch.recorded_on,
+    coverPct: [test::solarprairie2::store::PrairieFieldDB]prairie.weed_patch.cover_pct,
+    patchCount: [test::solarprairie2::store::PrairieFieldDB]prairie.weed_patch.patch_count,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_WeedPatch | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_WeedPatch | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::VolunteerCrew[crew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.volunteer_crew.crew_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.volunteer_crew
+    crewCode: [test::solarprairie2::store::PrairieFieldDB]prairie.volunteer_crew.crew_code,
+    crewLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.volunteer_crew.crew_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.volunteer_crew.recorded_on,
+    hoursWorked: [test::solarprairie2::store::PrairieFieldDB]prairie.volunteer_crew.hours_worked,
+    memberCount: [test::solarprairie2::store::PrairieFieldDB]prairie.volunteer_crew.member_count,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_VolunteerCrew | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_VolunteerCrew | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::FenceSegment[fence]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.fence_segment.fence_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.fence_segment
+    fenceCode: [test::solarprairie2::store::PrairieFieldDB]prairie.fence_segment.fence_code,
+    fenceLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.fence_segment.fence_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.fence_segment.recorded_on,
+    segmentLengthM: [test::solarprairie2::store::PrairieFieldDB]prairie.fence_segment.segment_length_m,
+    postCount: [test::solarprairie2::store::PrairieFieldDB]prairie.fence_segment.post_count,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_FenceSegment | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_FenceSegment | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::WindPump[pump]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.wind_pump.pump_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.wind_pump
+    pumpCode: [test::solarprairie2::store::PrairieFieldDB]prairie.wind_pump.pump_code,
+    pumpLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.wind_pump.pump_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.wind_pump.recorded_on,
+    flowLitresMin: [test::solarprairie2::store::PrairieFieldDB]prairie.wind_pump.flow_litres_min,
+    bladeCount: [test::solarprairie2::store::PrairieFieldDB]prairie.wind_pump.blade_count,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_WindPump | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_WindPump | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::SignPost[sign]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.sign_post.sign_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.sign_post
+    signCode: [test::solarprairie2::store::PrairieFieldDB]prairie.sign_post.sign_code,
+    signLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.sign_post.sign_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.sign_post.recorded_on,
+    postHeightM: [test::solarprairie2::store::PrairieFieldDB]prairie.sign_post.post_height_m,
+    panelCount: [test::solarprairie2::store::PrairieFieldDB]prairie.sign_post.panel_count,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_SignPost | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_SignPost | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  *test::solarprairie2::domain::TrailSection[trail]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarprairie2::store::PrairieFieldDB]prairie.trail_section.trail_code
+    )
+    ~mainTable [test::solarprairie2::store::PrairieFieldDB]prairie.trail_section
+    trailCode: [test::solarprairie2::store::PrairieFieldDB]prairie.trail_section.trail_code,
+    trailLabel: [test::solarprairie2::store::PrairieFieldDB]prairie.trail_section.trail_label,
+    recordedOn: [test::solarprairie2::store::PrairieFieldDB]prairie.trail_section.recorded_on,
+    sectionLengthKm: [test::solarprairie2::store::PrairieFieldDB]prairie.trail_section.section_length_km,
+    markerCount: [test::solarprairie2::store::PrairieFieldDB]prairie.trail_section.marker_count,
+    siteName: [test::solarprairie2::store::PrairieFieldDB]@Site_TrailSection | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.site_name,
+    districtCode: [test::solarprairie2::store::PrairieFieldDB]@Site_TrailSection | [test::solarprairie2::store::PrairieFieldDB]prairie.prairie_site.district_code
+  }
+
+  test::solarprairie2::domain::SiteSoilSamples: Relational
+  {
+    AssociationMapping
+    (
+      soilSamples[site, soil]: [test::solarprairie2::store::PrairieFieldDB]@Site_SoilSample,
+      siteSoilSample[soil, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_SoilSample
+    )
+  }
+
+  test::solarprairie2::domain::SiteSeedMixes: Relational
+  {
+    AssociationMapping
+    (
+      seedMixes[site, seed]: [test::solarprairie2::store::PrairieFieldDB]@Site_SeedMix,
+      siteSeedMix[seed, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_SeedMix
+    )
+  }
+
+  test::solarprairie2::domain::SiteBurnEvents: Relational
+  {
+    AssociationMapping
+    (
+      burnEvents[site, burn]: [test::solarprairie2::store::PrairieFieldDB]@Site_BurnEvent,
+      siteBurnEvent[burn, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_BurnEvent
+    )
+  }
+
+  test::solarprairie2::domain::SiteGrazingRounds: Relational
+  {
+    AssociationMapping
+    (
+      grazingRounds[site, grazing]: [test::solarprairie2::store::PrairieFieldDB]@Site_GrazingRound,
+      siteGrazingRound[grazing, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_GrazingRound
+    )
+  }
+
+  test::solarprairie2::domain::SitePollinatorCounts: Relational
+  {
+    AssociationMapping
+    (
+      pollinatorCounts[site, pollinator]: [test::solarprairie2::store::PrairieFieldDB]@Site_PollinatorCount,
+      sitePollinatorCount[pollinator, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_PollinatorCount
+    )
+  }
+
+  test::solarprairie2::domain::SiteRainGauges: Relational
+  {
+    AssociationMapping
+    (
+      rainGauges[site, rain]: [test::solarprairie2::store::PrairieFieldDB]@Site_RainGauge,
+      siteRainGauge[rain, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_RainGauge
+    )
+  }
+
+  test::solarprairie2::domain::SiteBirdTransects: Relational
+  {
+    AssociationMapping
+    (
+      birdTransects[site, bird]: [test::solarprairie2::store::PrairieFieldDB]@Site_BirdTransect,
+      siteBirdTransect[bird, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_BirdTransect
+    )
+  }
+
+  test::solarprairie2::domain::SiteWeedPatches: Relational
+  {
+    AssociationMapping
+    (
+      weedPatches[site, weed]: [test::solarprairie2::store::PrairieFieldDB]@Site_WeedPatch,
+      siteWeedPatch[weed, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_WeedPatch
+    )
+  }
+
+  test::solarprairie2::domain::SiteVolunteerCrews: Relational
+  {
+    AssociationMapping
+    (
+      volunteerCrews[site, crew]: [test::solarprairie2::store::PrairieFieldDB]@Site_VolunteerCrew,
+      siteVolunteerCrew[crew, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_VolunteerCrew
+    )
+  }
+
+  test::solarprairie2::domain::SiteFenceSegments: Relational
+  {
+    AssociationMapping
+    (
+      fenceSegments[site, fence]: [test::solarprairie2::store::PrairieFieldDB]@Site_FenceSegment,
+      siteFenceSegment[fence, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_FenceSegment
+    )
+  }
+
+  test::solarprairie2::domain::SiteWindPumps: Relational
+  {
+    AssociationMapping
+    (
+      windPumps[site, pump]: [test::solarprairie2::store::PrairieFieldDB]@Site_WindPump,
+      siteWindPump[pump, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_WindPump
+    )
+  }
+
+  test::solarprairie2::domain::SiteSignPosts: Relational
+  {
+    AssociationMapping
+    (
+      signPosts[site, sign]: [test::solarprairie2::store::PrairieFieldDB]@Site_SignPost,
+      siteSignPost[sign, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_SignPost
+    )
+  }
+
+  test::solarprairie2::domain::SiteTrailSections: Relational
+  {
+    AssociationMapping
+    (
+      trailSections[site, trail]: [test::solarprairie2::store::PrairieFieldDB]@Site_TrailSection,
+      siteTrailSection[trail, site]: [test::solarprairie2::store::PrairieFieldDB]@Site_TrailSection
+    )
+  }
+
+  test::solarprairie2::domain::RainfallWeedWatch: Relational
+  {
+    AssociationMapping
+    (
+      watchedPatches[rain, weed]: [test::solarprairie2::store::PrairieFieldDB]@Rain_Weed,
+      watchedGauges[weed, rain]: [test::solarprairie2::store::PrairieFieldDB]@Rain_Weed
+    )
+  }
+
+  testSuites:
+  [
+    soilSampleSuite:
+    {
+      function: |test::solarprairie2::domain::SoilSample.all()->project(
+        [
+          s|$s.soilCode,
+          s|$s.soilLabel->toUpper(),
+          s|$s.recordedOn,
+          s|$s.phReading,
+          s|$s.coreDepthCm,
+          s|$s.siteName,
+          s|$s.districtCode
+        ],
+        [
+          'Sample',
+          'Label',
+          'Recorded',
+          'Ph',
+          'DepthCm',
+          'Site',
+          'District'
+        ]
+      )->sort(
+        [
+          asc('Sample')
+        ]
+      );
+      tests:
+      [
+        samplesResolveTheirSiteAcrossTheDeclaredJoin:
+        {
+          doc: 'Projects the soil cores through their own main table alias and resolves the site name and district of each core across the declared join, including a core whose survey date is absent.';
+          data:
+          [
+            test::solarprairie2::store::PrairieFieldDB:
+              Relational
+              #{
+                prairie.prairie_site:
+                  'site_code,site_name,district_code,hectares,established_year\n'+
+                  'PS-01,North Ridge Prairie,DIS-NORTH,42.5,2015\n'+
+                  'PS-02,South Draw Prairie,DIS-SOUTH,18.25,2019\n';
+                prairie.soil_sample:
+                  'soil_code,site_code,soil_label,recorded_on,ph_reading,core_depth_cm\n'+
+                  'SS-01,PS-01,Ridge Core One,2026-04-08,6.4,30\n'+
+                  'SS-02,PS-01,Ridge Core Two,,6.9,45\n'+
+                  'SS-03,PS-02,Draw Core One,2026-05-20,7.2,25\n';
+              }#
+          ];
+          asserts:
+          [
+            threeCoresResolved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":"SS-01","Label":"RIDGE CORE ONE","Recorded":"2026-04-08","Ph":6.4,"DepthCm":30,"Site":"North Ridge Prairie","District":"DIS-NORTH"},{"Sample":"SS-02","Label":"RIDGE CORE TWO","Recorded":null,"Ph":6.9,"DepthCm":45,"Site":"North Ridge Prairie","District":"DIS-NORTH"},{"Sample":"SS-03","Label":"DRAW CORE ONE","Recorded":"2026-05-20","Ph":7.2,"DepthCm":25,"Site":"South Draw Prairie","District":"DIS-SOUTH"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    prairieSiteSuite:
+    {
+      function: |test::solarprairie2::domain::PrairieSite.all()->filter(
+        p|$p.hectares >= 20.0
+      )->project(
+        [
+          p|$p.siteCode,
+          p|$p.siteName->toUpper(),
+          p|$p.districtCode,
+          p|$p.hectares,
+          p|$p.establishedYear
+        ],
+        [
+          'Site',
+          'Name',
+          'District',
+          'Hectares',
+          'Established'
+        ]
+      )->sort(
+        [
+          asc('Site')
+        ]
+      );
+      tests:
+      [
+        onlySitesAboveTheAreaFloorAreProjected:
+        {
+          doc: 'Projects the site main table on its own, keeping only the sites whose managed area clears the reporting floor so the smaller site is suppressed.';
+          data:
+          [
+            test::solarprairie2::store::PrairieFieldDB:
+              Relational
+              #{
+                prairie.prairie_site:
+                  'site_code,site_name,district_code,hectares,established_year\n'+
+                  'PS-01,North Ridge Prairie,DIS-NORTH,42.5,2015\n'+
+                  'PS-02,South Draw Prairie,DIS-SOUTH,18.25,2019\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyTheLargerSiteRetained:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"PS-01","Name":"NORTH RIDGE PRAIRIE","District":"DIS-NORTH","Hectares":42.5,"Established":2015}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

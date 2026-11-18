@@ -1,0 +1,327 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::boreallagoon2::service::LagoonZoneRollup
+{
+  pattern: '/boreallagoon2/v1/zone-rollup/{minPaddlers}';
+  ownership: UserList { users: ['lagoon-hire-desk'] };
+  documentation: 'Rolls the briefed kayak trips of the caller-supplied launch zones onto the zone-and-craft grain, sums the paddlers and the paddled minutes, and drops a rolled zone whose summed paddlers fall short of the caller-supplied floor, so a zone outside the requested set and a zone whose trips are all short contribute nothing.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {zones: String[*], minPaddlers: Integer[1]|test::boreallagoon2::domain::LagoonTrip.all()->filter(
+      t|($t.launchZone->in($zones)) &&
+        (($t.craftKind == 'KAYAK') &&
+          (($t.safetyState == 'BRIEFED') &&
+            (($t.hireCode == 'DAY') || !($t.tripMinutes < 90))))
+    )->groupBy(
+      [t|$t.launchZone, t|$t.craftKind],
+      [agg(t|$t.paddlerCount, y|$y->sum()), agg(t|$t.tripMinutes, y|$y->sum())],
+      ['LaunchZone', 'CraftKind', 'TotalPaddlers', 'TotalMinutes']
+    )->filter(
+      r|($r.getInteger('TotalPaddlers') >= $minPaddlers) || ($r.getString('LaunchZone')->in(['WEST-CREEK']))
+    )->sort([asc('LaunchZone')])};
+    mapping: test::boreallagoon2::mapping::LagoonTripMapping;
+    runtime: test::boreallagoon2::runtime::LagoonTripRuntime;
+  }
+  testSuites:
+  [
+    zoneRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lagoonTripFeed:
+            Relational
+            #{
+              hire.trip_log:
+                'trip_ref,hire_code,craft_kind,launch_zone,guide_code,paddler_count,trip_minutes,safety_state\n'+
+                'TP-01,DAY,KAYAK,NORTH-SPIT,GD-1,6,120,BRIEFED\n'+
+                'TP-02,HOUR,KAYAK,NORTH-SPIT,GD-1,4,95,BRIEFED\n'+
+                'TP-03,HOUR,KAYAK,NORTH-SPIT,GD-2,3,45,BRIEFED\n'+
+                'TP-04,DAY,KAYAK,SOUTH-BAR,GD-3,5,150,BRIEFED\n'+
+                'TP-05,DAY,CANOE,SOUTH-BAR,GD-3,8,180,BRIEFED\n'+
+                'TP-06,DAY,KAYAK,WEST-CREEK,UNASSIGNED,2,200,UNBRIEFED\n';
+              hire.trip_tag:
+                'tag_ref,trip_ref,hazard_tag\n'+
+                'TG-01,TP-01,SURF\n'+
+                'TG-02,TP-01,WIND\n'+
+                'TG-03,TP-02,WIND\n'+
+                'TG-04,TP-04,SURF\n'+
+                'TG-05,TP-05,SURF\n'+
+                'TG-06,TP-05,SHOAL\n'+
+                'TG-07,TP-06,SHOAL\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        briefedKayakZonesOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zones = ['NORTH-SPIT', 'SOUTH-BAR'],
+            minPaddlers = 5
+          ]
+          asserts:
+          [
+            rolledZones:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LaunchZone":"NORTH-SPIT","CraftKind":"KAYAK","TotalPaddlers":10,"TotalMinutes":215},{"LaunchZone":"SOUTH-BAR","CraftKind":"KAYAK","TotalPaddlers":5,"TotalMinutes":150}]';
+                  }#;
+              }#
+          ]
+        },
+        floorRemovesEveryRolledZone:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zones = ['NORTH-SPIT', 'SOUTH-BAR'],
+            minPaddlers = 40
+          ]
+          asserts:
+          [
+            noRolledZone:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::boreallagoon2::service::LagoonHazardTripReport
+{
+  pattern: '/boreallagoon2/v1/hazard-trips';
+  ownership: UserList { users: ['lagoon-hire-desk'] };
+  documentation: 'Reports the trips carrying one of the caller-supplied hazard tags on the collection the desk filed against the trip, projects the trip identifiers with the paddled minutes, and then keeps only the rows whose craft is one of the listed hulls, so a trip with no tag at all is removed by the collection test.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {hazardTags: String[*]|test::boreallagoon2::domain::LagoonTrip.all()->filter(
+      t|$t.hazardTags->exists(g|$g.hazardTag->in($hazardTags))
+    )->project(
+      [
+        t|$t.tripRef,
+        t|$t.launchZone,
+        t|$t.craftKind,
+        t|$t.tripMinutes
+      ],
+      ['TripRef', 'LaunchZone', 'CraftKind', 'TripMinutes']
+    )->filter(
+      r|$r.getString('CraftKind')->in(['KAYAK', 'CANOE'])
+    )->sort([asc('TripRef')])};
+    mapping: test::boreallagoon2::mapping::LagoonTripMapping;
+    runtime: test::boreallagoon2::runtime::LagoonTripRuntime;
+  }
+  testSuites:
+  [
+    hazardTripSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lagoonTripFeed:
+            Relational
+            #{
+              hire.trip_log:
+                'trip_ref,hire_code,craft_kind,launch_zone,guide_code,paddler_count,trip_minutes,safety_state\n'+
+                'TP-01,DAY,KAYAK,NORTH-SPIT,GD-1,6,120,BRIEFED\n'+
+                'TP-02,HOUR,KAYAK,NORTH-SPIT,GD-1,4,95,BRIEFED\n'+
+                'TP-03,HOUR,KAYAK,NORTH-SPIT,GD-2,3,45,BRIEFED\n'+
+                'TP-04,DAY,KAYAK,SOUTH-BAR,GD-3,5,150,BRIEFED\n'+
+                'TP-05,DAY,CANOE,SOUTH-BAR,GD-3,8,180,BRIEFED\n'+
+                'TP-06,DAY,KAYAK,WEST-CREEK,UNASSIGNED,2,200,UNBRIEFED\n';
+              hire.trip_tag:
+                'tag_ref,trip_ref,hazard_tag\n'+
+                'TG-01,TP-01,SURF\n'+
+                'TG-02,TP-01,WIND\n'+
+                'TG-03,TP-02,WIND\n'+
+                'TG-04,TP-04,SURF\n'+
+                'TG-05,TP-05,SURF\n'+
+                'TG-06,TP-05,SHOAL\n'+
+                'TG-07,TP-06,SHOAL\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        surfTaggedTripsOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            hazardTags = ['SURF']
+          ]
+          asserts:
+          [
+            taggedTrips:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TripRef":"TP-01","LaunchZone":"NORTH-SPIT","CraftKind":"KAYAK","TripMinutes":120},{"TripRef":"TP-04","LaunchZone":"SOUTH-BAR","CraftKind":"KAYAK","TripMinutes":150},{"TripRef":"TP-05","LaunchZone":"SOUTH-BAR","CraftKind":"CANOE","TripMinutes":180}]';
+                  }#;
+              }#
+          ]
+        },
+        unrequestedTagLeavesNoTrip:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            hazardTags = ['ICE']
+          ]
+          asserts:
+          [
+            noTaggedTrip:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::boreallagoon2::service::LagoonGuideDigest
+{
+  pattern: '/boreallagoon2/v1/guide-digest/{guideCode}';
+  ownership: UserList { users: ['lagoon-hire-desk'] };
+  documentation: 'Digests the trips led by one guide, including the unassigned guide a trip is registered under when no guide led it, and projects the trip identifiers with the paddlers and the safety state the trip was published under.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {guideCode: String[1]|test::boreallagoon2::domain::LagoonTrip.all()->filter(
+      t|($t.guideCode == $guideCode) && !($t.craftKind == 'RAFT')
+    )->project(
+      [
+        t|$t.tripRef,
+        t|$t.guideCode,
+        t|$t.paddlerCount,
+        t|$t.safetyState
+      ],
+      ['TripRef', 'GuideCode', 'PaddlerCount', 'SafetyState']
+    )->sort([asc('TripRef')])};
+    mapping: test::boreallagoon2::mapping::LagoonTripMapping;
+    runtime: test::boreallagoon2::runtime::LagoonTripRuntime;
+  }
+  testSuites:
+  [
+    guideDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lagoonTripFeed:
+            Relational
+            #{
+              hire.trip_log:
+                'trip_ref,hire_code,craft_kind,launch_zone,guide_code,paddler_count,trip_minutes,safety_state\n'+
+                'TP-01,DAY,KAYAK,NORTH-SPIT,GD-1,6,120,BRIEFED\n'+
+                'TP-02,HOUR,KAYAK,NORTH-SPIT,GD-1,4,95,BRIEFED\n'+
+                'TP-03,HOUR,KAYAK,NORTH-SPIT,GD-2,3,45,BRIEFED\n'+
+                'TP-04,DAY,KAYAK,SOUTH-BAR,GD-3,5,150,BRIEFED\n'+
+                'TP-05,DAY,CANOE,SOUTH-BAR,GD-3,8,180,BRIEFED\n'+
+                'TP-06,DAY,KAYAK,WEST-CREEK,UNASSIGNED,2,200,UNBRIEFED\n';
+              hire.trip_tag:
+                'tag_ref,trip_ref,hazard_tag\n'+
+                'TG-01,TP-01,SURF\n'+
+                'TG-02,TP-01,WIND\n'+
+                'TG-03,TP-02,WIND\n'+
+                'TG-04,TP-04,SURF\n'+
+                'TG-05,TP-05,SURF\n'+
+                'TG-06,TP-05,SHOAL\n'+
+                'TG-07,TP-06,SHOAL\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        namedGuideTrips:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            guideCode = 'GD-1'
+          ]
+          asserts:
+          [
+            namedGuideRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TripRef":"TP-01","GuideCode":"GD-1","PaddlerCount":6,"SafetyState":"BRIEFED"},{"TripRef":"TP-02","GuideCode":"GD-1","PaddlerCount":4,"SafetyState":"BRIEFED"}]';
+                  }#;
+              }#
+          ]
+        },
+        unassignedGuideTrips:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            guideCode = 'UNASSIGNED'
+          ]
+          asserts:
+          [
+            unassignedGuideRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TripRef":"TP-06","GuideCode":"UNASSIGNED","PaddlerCount":2,"SafetyState":"UNBRIEFED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

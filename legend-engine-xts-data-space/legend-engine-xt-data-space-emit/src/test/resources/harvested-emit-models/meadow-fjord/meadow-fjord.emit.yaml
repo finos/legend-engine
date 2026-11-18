@@ -1,0 +1,48 @@
+name: meadow-fjord
+title: "Meadow Fjord - Snowflake Fjord Registry (cross-schema, inline view)"
+description: |
+  A relational model over a fjord and hydrology registry spanning two schemas.
+  Defines `Fjord` and `Measurement` classes joined by a bidirectional
+  `Fjord_Measurement` association across schema `GEOGRAPHY` (`FJORD`) and schema
+  `HYDROLOGY` (`MEASUREMENT`), plus a `FjordProfile` class backed by an
+  inline relational view `FJORD_PROFILE_VW` that itself resolves the
+  cross-schema inner join. The `FjordMapping` exercises main-table aliases,
+  explicit primary keys, cross-schema joins and a view-backed class mapping.
+  Wires a Snowflake connection, EngineRuntime, a governed `FjordDataSpace`
+  entry point, and a mapping testSuite over the inline view. Mapping test
+  execution runs against embedded relational fixtures.
+modelSources:
+  model:
+    root: meadow-fjord
+    files:
+      - test/meadowfjord/connection/FjordConnection.pure
+      - test/meadowfjord/data/FjordTestData.pure
+      - test/meadowfjord/dataspace/FjordDataSpace.pure
+      - test/meadowfjord/domain/Domain.pure
+      - test/meadowfjord/mapping/FjordMapping.pure
+      - test/meadowfjord/runtime/FjordRuntime.pure
+      - test/meadowfjord/store/FjordDatabase.pure
+features:
+  - execution:data-space
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - cross-schema
+  - dataspace
+  - fjord
+  - hydrology
+  - inline-view
+  - relational
+  - snowflake
