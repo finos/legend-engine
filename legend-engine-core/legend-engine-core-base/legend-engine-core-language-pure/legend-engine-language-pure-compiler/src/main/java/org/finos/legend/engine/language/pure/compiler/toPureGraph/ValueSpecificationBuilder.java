@@ -170,6 +170,10 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     @Override
     public ValueSpecification visit(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification valueSpecification)
     {
+        if (valueSpecification instanceof CompiledValueSpecification)
+        {
+            return ((CompiledValueSpecification) valueSpecification).compiled;
+        }
         return this.context.getCompilerExtensions().getExtraValueSpecificationProcessors().stream()
                 .map(processor -> processor.value(valueSpecification, this.context, this.openVariables, this.processingContext))
                 .filter(Objects::nonNull)

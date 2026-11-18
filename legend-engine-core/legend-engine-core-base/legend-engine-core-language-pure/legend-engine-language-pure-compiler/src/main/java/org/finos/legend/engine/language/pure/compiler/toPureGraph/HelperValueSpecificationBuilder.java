@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Stack;
 
 public class HelperValueSpecificationBuilder
 {
@@ -184,7 +185,12 @@ public class HelperValueSpecificationBuilder
         // for X.property. X is the first parameter
         processingContext.push("Processing property " + property);
         ValueSpecification firstArgument = parameters.get(0);
-        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processedParameters = ListIterate.collect(parameters, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)));
+        Stack<MilestoningDatePropagationContext> milestoningBeforeReceiver = copyOf(processingContext.milestoningDatePropagationContext);
+        boolean datePropagationBeforeReceiver = processingContext.isDatePropagationSupported;
+        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processedParameters = Lists.mutable.with(firstArgument.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)));
+        Stack<MilestoningDatePropagationContext> milestoningAfterReceiver = copyOf(processingContext.milestoningDatePropagationContext);
+        boolean datePropagationAfterReceiver = processingContext.isDatePropagationSupported;
+        ListIterate.collect(parameters.subList(1, parameters.size()), p -> p.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)), processedParameters);
 
         GenericType genericType;
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity multiplicity;
@@ -319,8 +325,17 @@ public class HelperValueSpecificationBuilder
                 List<Variable> lambdaParams = new FastList<>();
                 lambdaParams.add(automaLambdaparam);
                 automapLambda.parameters = lambdaParams;
-                List<ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
                 MilestoningDatePropagationHelper.updateMilestoningPropagationContextWhileReprocessingFunctionExpression(processingContext);
+                // Compiling the receiver again from the same state gives the same result, and would make a chain
+                // of n to-many properties cost 2^n. The state can differ only in its milestoning context.
+                ValueSpecification receiver = parameters.get(0);
+                if (processingContext.isDatePropagationSupported == datePropagationBeforeReceiver && sameMilestoningDates(processingContext.milestoningDatePropagationContext, milestoningBeforeReceiver))
+                {
+                    receiver = new CompiledValueSpecification(processedParameters.get(0), firstArgument.sourceInformation);
+                    processingContext.milestoningDatePropagationContext = milestoningAfterReceiver;
+                    processingContext.isDatePropagationSupported = datePropagationAfterReceiver;
+                }
+                List<ValueSpecification> newParams = Lists.mutable.of(receiver, automapLambda);
                 result = context.buildFunctionExpression("map", null, newParams, sourceInformation, new ValueSpecificationBuilder(context, openVariables, processingContext)).getOne();
                 processingContext.pop();
             }
@@ -347,7 +362,30 @@ public class HelperValueSpecificationBuilder
         return result;
     }
 
-    private static AbstractProperty<?> findProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> aClass, List<ValueSpecification> parameters, String name, SourceInformation sourceInformation)
+    private static Stack<MilestoningDatePropagationContext> copyOf(Stack<MilestoningDatePropagationContext> stack)
+    {
+        Stack<MilestoningDatePropagationContext> copy = new Stack<>();
+        copy.addAll(stack);
+        return copy;
+    }
+
+    private static boolean sameMilestoningDates(Stack<MilestoningDatePropagationContext> left, Stack<MilestoningDatePropagationContext> right)
+    {
+        if (left.size() != right.size())
+        {
+            return false;
+        }
+        for (int i = 0; i < left.size(); i++)
+        {
+            if (left.get(i).getBusinessDate() != right.get(i).getBusinessDate() || left.get(i).getProcessingDate() != right.get(i).getProcessingDate())
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static AbstractProperty<?> findProperty(CompileContext context,org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> aClass, List<ValueSpecification> parameters, String name, SourceInformation sourceInformation)
     {
         try
         {
