@@ -348,8 +348,9 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
         let routed            = $firstPass->map(fp|$fp->match([f:FunctionRoutedValueSpecification[1]|$f.value,v:ValueSpecification[1]|$v]))->filter(p|!$p->isFunction() && $p->instanceOf(ExtendedRoutedValueSpecification))->cast(@ExtendedRoutedValueSpecification)->concatenate($state.routed->cast(@ExtendedRoutedValueSpecification)->evaluateAndDeactivate());
         // Second pass (lambdas)
         let preLastFirstPass  = $firstPassResults->last()->toOne();
-        let lastFirstPass     = ^$preLastFirstPass(depth = $f.name->toOne()+'('+$fe.parametersValues->map(p|$p->varToString())->joinStrings(',')+')');
-        let pathPrefix        = $state.pathPrefix->add($fe->varToString())->joinStrings(',');
+        let parameterStrings  = $fe.parametersValues->map(p|$p->varToString());
+        let lastFirstPass     = ^$preLastFirstPass(depth = $f.name->toOne()+'('+$parameterStrings->joinStrings(',')+')');
+        let pathPrefix        = $state.pathPrefix->add($fe->functionExpressionToString($parameterStrings))->joinStrings(',');
         let iterated          = $firstPassResults->filter(r | $r.value->evaluateAndDeactivate()->match([vs:ValueSpecification[1] | !$vs->isFunction(), a:Any[*] | false]))->first();
         let iteratedIsRoutable = if($iterated->isEmpty(), | $state.shouldBeRouted, | $iterated->toOne().shouldBeRouted);
         let secondPassResults = $firstPass->fold({p,a|  let previous    = $a->last()->toOne();
@@ -793,9 +794,22 @@ function meta::pure::router::routing::propToString(v:ValueSpecification[1], vars
    ])->toOne();
 }
 
+function <<access.private>> meta::pure::router::routing::isSubTypeFunction(f:Function<Any>[1]):Boolean[1]
+{
+   $f->in([meta::pure::functions::lang::subType_Any_m__T_1__T_m_, meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_])
+}
+
+function <<access.private>> meta::pure::router::routing::functionExpressionToString(fe:FunctionExpression[1], parameterStrings:String[*]):String[1]
+{
+   $fe->match([
+      s:SimpleFunctionExpression[1]|if($s.func->isSubTypeFunction(), |$s->varToString(), |$s.func.name->toOne() + $parameterStrings->makeString('(',',',')')),
+      a:Any[1]|$a->varToString()
+   ])
+}
+
 function meta::pure::router::routing::varToString(a:Any[1]):String[1]
 {
-   $a->match([s:SimpleFunctionExpression[1]|$s.func.name->toOne()+ if($s.func->in([meta::pure::functions::lang::subType_Any_m__T_1__T_m_, meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_]),| $s.parametersValues->at(1)->genericType().rawType->toOne()->cast(@Class<Any>).name->toOne(),| $s.parametersValues->map(p|$p->varToString()))->makeString('(',',',')'),
+   $a->match([s:SimpleFunctionExpression[1]|$s.func.name->toOne()+ if($s.func->isSubTypeFunction(),| $s.parametersValues->at(1)->genericType().rawType->toOne()->cast(@Class<Any>).name->toOne(),| $s.parametersValues->map(p|$p->varToString()))->makeString('(',',',')'),
               e:RoutedValueSpecification[1]|$e.value->varToString(),
               a:meta::pure::functions::collection::AggregateValue<Nil,Nil,Any>[1]|$a.mapFn->varToString()+$a.aggregateFn->varToString(),
               a:meta::pure::tds::AggregateValue<Any,Any>[1]|$a.name+$a.mapFn->varToString()+$a.aggregateFn->varToString(),
