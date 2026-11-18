@@ -132,7 +132,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::dynamic
 
 function meta::external::query::sql::transformation::queryToPure::tests::dynamic::transform(sql:String[1], extraPacks:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1]):String[1]
 {
-  let transformed = meta::external::query::sql::transformation::queryToPure::sqlToPure(parseSqlStatement($sql->toOne())->cast(@Query), meta::external::query::sql::transformation::queryToPure::getSources(), $extraPacks, $scopeVariables, false,{l:LambdaFunction<Any>[1] | compileViaGrammar($l, true)})->cast(@FunctionDefinition<Any>);
+  let transformed = meta::external::query::sql::transformation::queryToPure::sqlToPure(parseSqlStatement($sql->toOne())->cast(@Query), meta::external::query::sql::transformation::queryToPure::getSources(), $extraPacks, $scopeVariables, false, false, {l:LambdaFunction<Any>[1] | compileViaGrammar($l, true)})->cast(@FunctionDefinition<Any>);
   $transformed->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''));
 }
 
@@ -140,7 +140,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   let sql = 'with tab as (select n from tb(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb\')) select n from tab where n = \'a\'';
   let statement = parseSqlStatement($sql);
-  let sqlLambda = sqlToPure($statement->cast(@Query), getSources(), [], ^Map<String, ValueSpecification>(), false, {l:LambdaFunction<Any>[1] | compileViaGrammar($l, true)})->cast(@LambdaFunction<Any>);
+  let sqlLambda = sqlToPure($statement->cast(@Query), getSources(), [], ^Map<String, ValueSpecification>(), false, false, {l:LambdaFunction<Any>[1] | compileViaGrammar($l, true)})->cast(@LambdaFunction<Any>);
   let sqlExpression = ^meta::external::query::sql::expression::SQLExpression<Any>(sqlString = $sql, linkedStatement = $statement, pureFunction = $sqlLambda);
   let evalLambda = ^$sqlLambda(expressionSequence = meta::external::query::sql::expression::extractFunctionFromSQLExpression($sqlExpression));
 
