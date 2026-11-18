@@ -116,6 +116,31 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->toString());
 }
 
+'''
+Empty values in an aggregated column are skipped, so the row with an empty `val` does not change the
+total. Only `plus` is used, so unlike `testSimpleAggregate_AggColSpecArray` this does not depend on
+`joinStrings`.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_WithNulls<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, val
+                  1, 10
+                  2, null
+                  3, 30
+                  4, 5
+                #->aggregate(~[valSum : x | $x.val : y | $y->plus(), idSum : x | $x.id : y | $y->plus()]);
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   valSum,idSum\n'+
+                  '   45,10\n'+
+                  '#', $res->toString());
+}
+
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_WithFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     /*

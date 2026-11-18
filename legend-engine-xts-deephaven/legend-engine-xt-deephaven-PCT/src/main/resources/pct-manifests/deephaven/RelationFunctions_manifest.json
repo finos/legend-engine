@@ -16,6 +16,9 @@
     "test" : "meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_"
   }, {
+    "test" : "meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_WithNulls_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_"
+  }, {
     "test" : "meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpec_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::aggregate_Relation_1__AggColSpec_1__Relation_1_"
   }, {
