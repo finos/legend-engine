@@ -164,6 +164,22 @@ scripts/demangle_pure_frames.py main.collapsed demangled.collapsed report.txt
 Wall-clock mode matters: a CPU sampler under-reports class loading, lock and IO waits, which
 dominate the cold path. On CI runners where `perf_events` is restricted, use `ctimer`.
 
+Without async-profiler, record with JFR and convert the samples with `scripts/JfrToCollapsed.java`.
+`--root` keeps one phase, cut at its outermost frame; `--routeonly` keeps the run on routing:
+
+```bash
+java -Xss16m -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints \
+     -XX:FlightRecorderOptions:stackdepth=2048 \
+     -XX:StartFlightRecording:method-profiling=max,filename=route.jfr \
+     ... org.finos.legend.engine.perf.PipelineBench --routeonly --nospans --query if32 --iters 1500
+java -Xmx2g scripts/JfrToCollapsed.java route.jfr main.collapsed \
+     --root core_pure_router_deprecated_deprecated.Root_meta_pure_router_routeFunction
+scripts/demangle_pure_frames.py main.collapsed demangled.collapsed report.txt
+```
+
+The converter streams the recording, so its memory stays bounded by the number of distinct stacks;
+`jfr print --json` at full stack depth needs several gigabytes for a recording of this size.
+
 ## Suite runs, baselines and regression checks
 
 A suite run executes a fixed set of workloads in one JVM and writes a results file describing both
